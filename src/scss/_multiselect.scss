@@ -1,0 +1,707 @@
+// Multiselect Component
+// Typeahead multiselect with rich content support and floating hints
+
+// Variables
+$multiselect-input-padding-v: 0.5rem !default;
+$multiselect-input-padding-h: 0.75rem !default;
+$multiselect-hint-padding: 0.5rem 0.75rem !default;
+$multiselect-hint-bg: #ffffff !default;
+$multiselect-hint-border: #e5e7eb !default;
+
+$font-size-xs: 0.75rem !default;
+$font-size-sm: 0.875rem !default;
+$font-size-base: 1rem !default;
+$font-weight-medium: 500 !default;
+$font-weight-semibold: 600 !default;
+
+$border-width-base: 1px !default;
+$border-radius: 0.375rem !default;
+$border-radius-sm: 0.25rem !default;
+
+$input-bg: #ffffff !default;
+$input-text: #111827 !default;
+$input-border: #d1d5db !default;
+$input-focus-border-color: #3b82f6 !default;
+
+$text-primary: #111827 !default;
+$text-secondary: #6b7280 !default;
+
+$accent-color: #3b82f6 !default;
+$primary-bg: #f3f4f6 !default;
+$primary-bg-hover: #e5e7eb !default;
+$accent-color-hover: #2563eb !default;
+
+$shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !default;
+$shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !default;
+
+$transition-fast: 150ms !default;
+$easing-snappy: cubic-bezier(0.4, 0.0, 0.2, 1) !default;
+
+$multiselect-dropdown-bg: #ffffff !default;
+$multiselect-dropdown-border: #e5e7eb !default;
+$multiselect-dropdown-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !default;
+$multiselect-dropdown-max-height: 20rem !default;
+$multiselect-dropdown-text: #111827 !default;
+
+$multiselect-option-padding-v: 0.5rem !default;
+$multiselect-option-padding-h: 0.75rem !default;
+$multiselect-option-hover-bg: #f9fafb !default;
+
+$multiselect-pill-gap: 0.5rem !default;
+$multiselect-pill-bg: #eff6ff !default;
+
+$multiselect-selected-popover-width: 20rem !default;
+
+$spacing-xs: 0.25rem !default;
+$spacing-sm: 0.5rem !default;
+$spacing-md: 0.75rem !default;
+$spacing-lg: 1rem !default;
+
+$border-color: #e5e7eb !default;
+
+$font-size-2xs: 0.625rem !default;
+$font-size-lg: 1.125rem !default;
+$font-size-xl: 1.25rem !default;
+
+$transition-normal: 200ms !default;
+
+$focus-outline-width: 2px !default;
+
+// Wrapper (contains multiselect + pills)
+.pa-multiselect-wrapper {
+  display: flex;
+  flex-direction: column; // Default: pills above/below input
+  align-items: stretch;
+
+  // Inline layout for left/right positioning
+  &--inline {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+// Container
+.pa-multiselect {
+  position: relative;
+  width: 100%;
+}
+
+// Input wrapper
+.pa-multiselect__input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+// Search input
+.pa-multiselect__input {
+  width: 100%;
+  padding: $multiselect-input-padding-v $multiselect-input-padding-h;
+  padding-right: 2.5rem; // Space for dropdown icon
+  font-size: $font-size-sm;
+  border: $border-width-base solid $input-border;
+  border-radius: $border-radius;
+  background: $input-bg;
+  color: $input-text;
+  transition: border-color $transition-fast $easing-snappy;
+
+  &:focus {
+    outline: none;
+    border-color: $input-focus-border-color;
+  }
+
+  &::placeholder {
+    color: $text-secondary;
+    opacity: 0.6;
+  }
+}
+
+// Dropdown toggle icon
+.pa-multiselect__toggle {
+  position: absolute;
+  right: $multiselect-input-padding-h;
+  top: 50%;
+  transform: translateY(-50%);
+  pointer-events: none;
+  color: $text-secondary;
+  transition: transform $transition-fast $easing-snappy;
+
+  .pa-multiselect--open & {
+    transform: translateY(-50%) rotate(180deg);
+  }
+}
+
+// Count badge (appears next to toggle icon)
+.pa-multiselect__count-badge {
+  position: absolute;
+  right: 2rem; // Space for toggle icon
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0.125rem 0.25rem;
+  background: $accent-color;
+  color: #ffffff;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  border-radius: $border-radius-sm;
+  cursor: pointer;
+  transition: all $transition-fast $easing-snappy;
+
+  &:hover {
+    background: darken($accent-color, 10%);
+    transform: translateY(-50%) scale(1.1);
+  }
+}
+
+// Floating search hint (appears above input)
+.pa-multiselect__hint {
+  display: none;
+  position: absolute;
+  z-index: 10000;
+  padding: $multiselect-hint-padding;
+  background: $multiselect-hint-bg;
+  border: $border-width-base solid $multiselect-hint-border;
+  border-radius: $border-radius;
+  box-shadow: $shadow-md;
+  font-size: $font-size-xs;
+  color: $text-secondary;
+  line-height: 1.4;
+  max-width: 100%;
+
+  &--visible {
+    display: block;
+  }
+}
+
+// Floating dropdown (appears below input)
+.pa-multiselect__dropdown {
+  display: none;
+  position: absolute;
+  z-index: 9999;
+  background: $multiselect-dropdown-bg;
+  border: $border-width-base solid $multiselect-dropdown-border;
+  border-radius: $border-radius;
+  box-shadow: $multiselect-dropdown-shadow;
+  max-height: $multiselect-dropdown-max-height;
+  overflow-y: auto;
+  color: $multiselect-dropdown-text;
+
+  &--visible {
+    display: block;
+  }
+}
+
+// Dropdown actions (Select All / Clear All)
+.pa-multiselect__actions {
+  display: flex;
+  gap: $spacing-xs;
+  padding: $spacing-sm;
+  border-bottom: $border-width-base solid $border-color;
+
+  &--sticky {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background: $multiselect-dropdown-bg;
+  }
+}
+
+.pa-multiselect__action-btn {
+  flex: 1;
+  padding: $spacing-xs $spacing-sm;
+  font-size: $font-size-xs;
+  border: $border-width-base solid $border-color;
+  border-radius: $border-radius-sm;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  transition: all $transition-fast $easing-snappy;
+
+  &:hover {
+    background: $primary-bg;
+    border-color: $accent-color;
+  }
+
+  &:active {
+    transform: scale(0.98);
+  }
+}
+
+// Options container
+.pa-multiselect__options {
+  padding: $spacing-xs 0;
+}
+
+// Group
+.pa-multiselect__group {
+  & + & {
+    border-top: $border-width-base solid $border-color;
+    margin-top: $spacing-xs;
+    padding-top: $spacing-xs;
+  }
+}
+
+// Group label
+.pa-multiselect__group-label {
+  padding: $spacing-xs $multiselect-option-padding-h;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  color: $text-secondary;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+// Individual option
+.pa-multiselect__option {
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-sm;
+  padding: $multiselect-option-padding-v $multiselect-option-padding-h;
+  cursor: pointer;
+  transition: background-color $transition-fast $easing-snappy;
+
+  &:hover {
+    background: $multiselect-option-hover-bg;
+  }
+
+  &--focused {
+    background: $multiselect-option-hover-bg;
+    outline: 2px solid $accent-color;
+    outline-offset: -2px;
+  }
+
+  &--selected {
+    background: rgba($accent-color, 0.1);
+  }
+
+  &--disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+
+    &:hover {
+      background: transparent;
+    }
+  }
+}
+
+// Checkbox
+.pa-multiselect__checkbox {
+  flex-shrink: 0;
+  margin-top: 0.125rem; // Align with first line of text
+  cursor: pointer;
+
+  .pa-multiselect__option--disabled & {
+    cursor: not-allowed;
+  }
+}
+
+// Option content (rich content wrapper)
+.pa-multiselect__option-content {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: $spacing-sm;
+  min-width: 0; // Allow text truncation
+}
+
+// Option icon/SVG
+.pa-multiselect__option-icon {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: $font-size-base;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+  }
+}
+
+// Option text container
+.pa-multiselect__option-text {
+  flex: 1;
+  min-width: 0;
+}
+
+// Option title/main text
+.pa-multiselect__option-title {
+  font-size: $font-size-sm;
+  color: inherit;
+  line-height: 1.4;
+
+  // Highlight matched text
+  mark {
+    background: rgba($accent-color, 0.2);
+    color: inherit;
+    font-weight: $font-weight-semibold;
+  }
+}
+
+// Option subtitle (multiline support)
+.pa-multiselect__option-subtitle {
+  margin-top: $spacing-xs;
+  font-size: $font-size-xs;
+  color: $text-secondary;
+  line-height: 1.3;
+}
+
+// Empty state
+.pa-multiselect__empty {
+  padding: $spacing-lg $multiselect-option-padding-h;
+  text-align: center;
+  font-size: $font-size-sm;
+  color: $text-secondary;
+}
+
+// Loading state
+.pa-multiselect__loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: $spacing-lg;
+  gap: $spacing-sm;
+}
+
+.pa-multiselect__loading-text {
+  font-size: $font-size-sm;
+  color: $text-secondary;
+}
+
+// Selected pills container
+.pa-multiselect__pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $multiselect-pill-gap;
+  padding: 0;
+
+  &:empty {
+    display: none;
+  }
+
+  // Position variants
+  &--bottom {
+    margin-top: $spacing-sm;
+  }
+
+  &--top {
+    margin-bottom: $spacing-sm;
+    order: -1; // Place before multiselect in flex container
+  }
+
+  &--left {
+    order: -1; // Place before multiselect
+    margin-right: $spacing-sm;
+    justify-content: flex-start;
+  }
+
+  &--right {
+    margin-left: $spacing-sm;
+    justify-content: flex-end;
+  }
+}
+
+// Count display (alternative to pills)
+.pa-multiselect__count-display {
+  display: flex;
+  align-items: center;
+
+  &:empty {
+    display: none;
+  }
+
+  // Position variants
+  &--bottom {
+    margin-top: $spacing-sm;
+  }
+
+  &--top {
+    margin-bottom: $spacing-sm;
+    order: -1; // Place before multiselect in flex container
+  }
+
+  &--left {
+    order: -1; // Place before multiselect
+    margin-right: $spacing-sm;
+    justify-content: flex-start;
+  }
+
+  &--right {
+    margin-left: $spacing-sm;
+    justify-content: flex-end;
+  }
+}
+
+// Wrapper containing count text and clear button
+.pa-multiselect__count-badge-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: $spacing-xs;
+  background: transparent;
+  border: $border-width-base solid $border-color;
+  border-radius: $border-radius-sm;
+  padding: $spacing-xs $spacing-sm;
+  transition: all $transition-fast $easing-snappy;
+
+  &:hover {
+    background: $multiselect-option-hover-bg;
+    border-color: $accent-color;
+  }
+}
+
+.pa-multiselect__count-text {
+  display: inline-flex;
+  align-items: center;
+  background: transparent;
+  border: none;
+  padding: 0;
+  font-size: $font-size-sm;
+  color: $text-primary;
+  cursor: pointer;
+  transition: color $transition-fast $easing-snappy;
+}
+
+.pa-multiselect__count-clear {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: $text-secondary;
+  font-size: $font-size-lg;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all $transition-fast $easing-snappy;
+
+  &:hover {
+    background: rgba($accent-color, 0.2);
+    color: $accent-color;
+  }
+
+  &::before {
+    content: '×';
+  }
+}
+
+// Individual pill (styled like Pure Admin composite badge)
+.pa-multiselect__pill {
+  display: inline-flex;
+  align-items: center;
+  height: 1.5rem; // Match composite badge height
+  font-size: $font-size-xs;
+  font-weight: $font-weight-semibold;
+  line-height: 1;
+  border-radius: $border-radius;
+  overflow: hidden;
+  max-width: 100%;
+}
+
+// Pill text (like composite badge label)
+.pa-multiselect__pill-text {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: 0 $spacing-sm;
+  background: $multiselect-pill-bg;
+  color: $accent-color;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background-color $transition-normal ease;
+}
+
+// Pill remove button (like composite badge button)
+.pa-multiselect__pill-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 100%;
+  flex-shrink: 0;
+  background: $accent-color;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  transition: background-color $transition-normal ease;
+  font-size: $font-size-xs;
+
+  &:hover {
+    background: darken($accent-color, 10%);
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 $focus-outline-width rgba($accent-color, 0.5);
+  }
+
+  &::before {
+    content: '×';
+    font-size: $font-size-base;
+    line-height: 1;
+  }
+}
+
+// Selected items popover (for count display mode)
+.pa-multiselect__selected-popover {
+  display: none;
+  position: absolute;
+  z-index: 10000;
+  background: $multiselect-dropdown-bg;
+  border: $border-width-base solid $multiselect-dropdown-border;
+  border-radius: $border-radius;
+  box-shadow: $multiselect-dropdown-shadow;
+  width: $multiselect-selected-popover-width;
+  max-height: 20rem;
+  overflow: hidden;
+
+  &--visible {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.pa-multiselect__selected-popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-sm $spacing-md;
+  background: rgba($accent-color, 0.1);
+  border-bottom: $border-width-base solid $border-color;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+  color: $text-primary;
+}
+
+.pa-multiselect__selected-popover-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: $text-secondary;
+  font-size: $font-size-xl;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: all $transition-fast $easing-snappy;
+
+  &:hover {
+    background: rgba($accent-color, 0.2);
+    color: $accent-color;
+  }
+}
+
+.pa-multiselect__selected-popover-body {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xs;
+  padding: $spacing-sm;
+  overflow-y: auto;
+  max-height: 18rem;
+
+  // Pills inside popover
+  .pa-multiselect__pill {
+    width: 100%;
+  }
+
+  .pa-multiselect__pill-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0; // Allow text truncation
+  }
+}
+
+// Size variants
+.pa-multiselect--xs {
+  .pa-multiselect__input {
+    font-size: $font-size-xs;
+  }
+
+  .pa-multiselect__option {
+    padding: $spacing-xs $spacing-sm;
+  }
+
+  .pa-multiselect__option-title {
+    font-size: $font-size-xs;
+  }
+
+  .pa-multiselect__pill {
+    font-size: $font-size-2xs;
+  }
+}
+
+.pa-multiselect--sm {
+  .pa-multiselect__input {
+    font-size: $font-size-xs;
+  }
+
+  .pa-multiselect__option-title {
+    font-size: $font-size-xs;
+  }
+}
+
+.pa-multiselect--lg {
+  .pa-multiselect__input {
+    font-size: $font-size-base;
+  }
+
+  .pa-multiselect__option-title {
+    font-size: $font-size-base;
+  }
+
+  .pa-multiselect__pill {
+    font-size: $font-size-sm;
+  }
+}
+
+.pa-multiselect--xl {
+  .pa-multiselect__input {
+    font-size: $font-size-lg;
+  }
+
+  .pa-multiselect__option-title {
+    font-size: $font-size-lg;
+  }
+
+  .pa-multiselect__pill {
+    font-size: $font-size-base;
+  }
+}
+
+// Disabled state
+.pa-multiselect--disabled {
+  .pa-multiselect__input {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: rgba($text-secondary, 0.05);
+  }
+
+  .pa-multiselect__toggle {
+    opacity: 0.6;
+  }
+}
+
+// No checkboxes modifier (for simple select mode)
+.pa-multiselect--no-checkboxes {
+  .pa-multiselect__option {
+    gap: 0; // Remove gap since there's no checkbox
+    padding-left: $multiselect-option-padding-h; // Adjust padding
+  }
+
+  .pa-multiselect__option-content {
+    padding-left: 0; // No extra padding needed
+  }
+}
