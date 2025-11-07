@@ -1,6 +1,8 @@
 // Multiselect Component
 // Typeahead multiselect with rich content support and floating hints
 
+@use "sass:color";
+
 // Variables
 $multiselect-input-padding-v: 0.5rem !default;
 $multiselect-input-padding-h: 0.75rem !default;
@@ -8,38 +10,40 @@ $multiselect-hint-padding: 0.5rem 0.75rem !default;
 $multiselect-hint-bg: #ffffff !default;
 $multiselect-hint-border: #e5e7eb !default;
 
-$font-size-xs: 0.75rem !default;
-$font-size-sm: 0.875rem !default;
-$font-size-base: 1rem !default;
-$font-weight-medium: 500 !default;
-$font-weight-semibold: 600 !default;
+$ml-font-size-xs: 0.75rem !default;
+$ml-font-size-sm: 0.875rem !default;
+$ml-font-size-base: 1rem !default;
+$ml-font-weight-medium: 500 !default;
+$ml-font-weight-semibold: 600 !default;
 
-$border-width-base: 1px !default;
-$border-radius: 0.375rem !default;
-$border-radius-sm: 0.25rem !default;
+$ml-border-width-base: 1px !default;
+$ml-border-radius: 0.375rem !default;
+$ml-border-radius-sm: 0.25rem !default;
 
-$input-bg: #ffffff !default;
-$input-text: #111827 !default;
-$input-border: #d1d5db !default;
-$input-focus-border-color: #3b82f6 !default;
+$ml-input-bg: #ffffff !default;
+$ml-input-text: #111827 !default;
+$ml-input-border: #d1d5db !default;
+$ml-input-focus-border-color: #3b82f6 !default;
 
-$text-primary: #111827 !default;
-$text-secondary: #6b7280 !default;
+$ml-text-primary: #111827 !default;
+$ml-text-secondary: #6b7280 !default;
 
-$accent-color: #3b82f6 !default;
-$primary-bg: #f3f4f6 !default;
-$primary-bg-hover: #e5e7eb !default;
-$accent-color-hover: #2563eb !default;
+$ml-accent-color: #3b82f6 !default;
+$ml-primary-bg: #f3f4f6 !default;
+$ml-primary-bg-hover: #e5e7eb !default;
+$ml-accent-color-hover: #2563eb !default;
 
-$shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !default;
-$shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !default;
+$ml-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !default;
+$ml-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+  0 8px 10px -6px rgb(0 0 0 / 0.1) !default;
 
-$transition-fast: 150ms !default;
-$easing-snappy: cubic-bezier(0.4, 0.0, 0.2, 1) !default;
+$ml-transition-fast: 150ms !default;
+$ml-easing-snappy: cubic-bezier(0.4, 0, 0.2, 1) !default;
 
 $multiselect-dropdown-bg: #ffffff !default;
 $multiselect-dropdown-border: #e5e7eb !default;
-$multiselect-dropdown-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !default;
+$multiselect-dropdown-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1),
+  0 8px 10px -6px rgb(0 0 0 / 0.1) !default;
 $multiselect-dropdown-max-height: 20rem !default;
 $multiselect-dropdown-text: #111827 !default;
 
@@ -52,23 +56,306 @@ $multiselect-pill-bg: #eff6ff !default;
 
 $multiselect-selected-popover-width: 20rem !default;
 
-$spacing-xs: 0.25rem !default;
-$spacing-sm: 0.5rem !default;
-$spacing-md: 0.75rem !default;
-$spacing-lg: 1rem !default;
+$ml-spacing-xs: 0.25rem !default;
+$ml-spacing-sm: 0.5rem !default;
+$ml-spacing-md: 0.75rem !default;
+$ml-spacing-lg: 1rem !default;
 
-$border-color: #e5e7eb !default;
+$ml-border-color: #e5e7eb !default;
 
-$font-size-2xs: 0.625rem !default;
-$font-size-lg: 1.125rem !default;
-$font-size-xl: 1.25rem !default;
+$ml-font-size-2xs: 0.625rem !default;
+$ml-font-size-lg: 1.125rem !default;
+$ml-font-size-xl: 1.25rem !default;
 
-$transition-normal: 200ms !default;
+$ml-transition-normal: 200ms !default;
 
-$focus-outline-width: 2px !default;
+$ml-focus-outline-width: 2px !default;
+
+// Additional colors
+$ml-text-white: #ffffff !default;
+
+// Layout & Dimensions
+$multiselect-input-icon-spacing: 2.5rem !default;
+$multiselect-count-badge-offset: 2rem !default;
+$multiselect-option-icon-size: 1.25rem !default;
+$multiselect-count-clear-size: 1rem !default;
+$multiselect-pill-height: 1.5rem !default;
+$multiselect-pill-remove-width: 1.5rem !default;
+$multiselect-selected-popover-max-height: 20rem !default;
+$multiselect-popover-close-size: 1.5rem !default;
+$multiselect-selected-popover-body-max-height: 18rem !default;
+$multiselect-count-badge-padding: 0.125rem 0.25rem !default;
+
+// Spacing offsets
+$multiselect-checkbox-offset: 0.125rem !default;
+
+// Typography
+$ml-line-height-none: 1 !default;
+$ml-line-height-relaxed: 1.4 !default;
+$multiselect-placeholder-opacity: 0.6 !default;
+$multiselect-group-label-letter-spacing: 0.05em !default;
+$multiselect-option-subtitle-line-height: 1.3 !default;
+$multiselect-group-label-transform: uppercase !default;
+$multiselect-darken-amount: 10% !default;
+
+// Opacity values
+$multiselect-disabled-opacity: 0.5 !default;
+$multiselect-disabled-input-opacity: 0.6 !default;
+$multiselect-option-selected-bg-opacity: 0.1 !default;
+$multiselect-highlight-bg-opacity: 0.2 !default;
+$multiselect-focus-shadow-opacity: 0.5 !default;
+$multiselect-disabled-bg-opacity: 0.05 !default;
+
+// Z-index layers
+$ml-z-index-dropdown: 9999 !default;
+$ml-z-index-popover: 10000 !default;
+$ml-z-index-sticky: 1 !default;
+
+// Transforms
+$ml-transform-center-y: translateY(-50%) !default;
+$multiselect-toggle-rotate-angle: 180deg !default;
+$multiselect-count-badge-hover-scale: 1.1 !default;
+$multiselect-active-scale: 0.98 !default;
+
+// Border & Outline
+$ml-border-radius-full: 50% !default;
+$multiselect-option-focus-outline-offset: -2px !default;
+
+// Icons & Content
+$multiselect-clear-icon: "×" !default;
+$multiselect-remove-icon: "×" !default;
+
+// Layout values
+$ml-order-first: -1 !default;
+
+// ==============================================================================
+// COMPONENT-SPECIFIC SEMANTIC VARIABLES
+// ==============================================================================
+// These provide a semantic layer over primitive variables for easier customization.
+// Override these to customize individual components without knowing internal structure.
+
+// Input
+$ml-input-border-style: $ml-border-width-base solid $ml-input-border !default;
+$ml-input-border-radius: $ml-border-radius !default;
+$ml-input-font-size: $ml-font-size-sm !default;
+$ml-input-padding: $multiselect-input-padding-v $multiselect-input-padding-h !default;
+$ml-input-padding-right: $multiselect-input-icon-spacing !default;
+$ml-input-placeholder-color: $ml-text-secondary !default;
+$ml-input-bg-disabled: rgba(
+  $ml-text-secondary,
+  $multiselect-disabled-bg-opacity
+) !default;
+
+// Toggle Icon
+$ml-toggle-color: $ml-text-secondary !default;
+$ml-toggle-right: $multiselect-input-padding-h !default;
+
+// Count Badge (in input)
+$ml-count-badge-bg: $ml-accent-color !default;
+$ml-count-badge-color: $ml-text-white !default;
+$ml-count-badge-font-size: $ml-font-size-xs !default;
+$ml-count-badge-font-weight: $ml-font-weight-semibold !default;
+$ml-count-badge-border-radius: $ml-border-radius-sm !default;
+$ml-count-badge-padding: $multiselect-count-badge-padding !default;
+$ml-count-badge-bg-hover: color.adjust(
+  $ml-accent-color,
+  $lightness: -$multiselect-darken-amount
+) !default;
+
+// Floating Hint
+$ml-hint-bg: $multiselect-hint-bg !default;
+$ml-hint-border: $ml-border-width-base solid $multiselect-hint-border !default;
+$ml-hint-border-radius: $ml-border-radius !default;
+$ml-hint-box-shadow: $ml-shadow-md !default;
+$ml-hint-font-size: $ml-font-size-xs !default;
+$ml-hint-color: $ml-text-secondary !default;
+$ml-hint-padding: $multiselect-hint-padding !default;
+
+// Dropdown
+$ml-dropdown-bg: $multiselect-dropdown-bg !default;
+$ml-dropdown-border: $ml-border-width-base solid $multiselect-dropdown-border !default;
+$ml-dropdown-border-radius: $ml-border-radius !default;
+$ml-dropdown-box-shadow: $multiselect-dropdown-shadow !default;
+$ml-dropdown-color: $multiselect-dropdown-text !default;
+
+// Dropdown Actions
+$ml-actions-gap: $ml-spacing-xs !default;
+$ml-actions-padding: $ml-spacing-sm !default;
+$ml-actions-border-bottom: $ml-border-width-base solid $ml-border-color !default;
+$ml-actions-bg: $multiselect-dropdown-bg !default;
+
+// Action Button
+$ml-action-btn-padding: $ml-spacing-xs $ml-spacing-sm !default;
+$ml-action-btn-font-size: $ml-font-size-xs !default;
+$ml-action-btn-border: $ml-border-width-base solid $ml-border-color !default;
+$ml-action-btn-border-radius: $ml-border-radius-sm !default;
+$ml-action-btn-bg: transparent !default;
+$ml-action-btn-color: inherit !default;
+$ml-action-btn-bg-hover: $ml-primary-bg !default;
+$ml-action-btn-border-color-hover: $ml-accent-color !default;
+
+// Options Container
+$ml-options-padding: $ml-spacing-xs 0 !default;
+
+// Group
+$ml-group-border-top: $ml-border-width-base solid $ml-border-color !default;
+$ml-group-margin-top: $ml-spacing-xs !default;
+$ml-group-padding-top: $ml-spacing-xs !default;
+
+// Group Label
+$ml-group-label-padding: $ml-spacing-xs $multiselect-option-padding-h !default;
+$ml-group-label-font-size: $ml-font-size-xs !default;
+$ml-group-label-font-weight: $ml-font-weight-semibold !default;
+$ml-group-label-color: $ml-text-secondary !default;
+
+// Option
+$ml-option-gap: $ml-spacing-sm !default;
+$ml-option-padding: $multiselect-option-padding-v $multiselect-option-padding-h !default;
+$ml-option-bg: transparent !default;
+$ml-option-bg-hover: $multiselect-option-hover-bg !default;
+$ml-option-bg-focused: $multiselect-option-hover-bg !default;
+$ml-option-outline-focused: $ml-focus-outline-width solid $ml-accent-color !default;
+$ml-option-bg-selected: rgba(
+  $ml-accent-color,
+  $multiselect-option-selected-bg-opacity
+) !default;
+
+// Option Content
+$ml-option-content-gap: $ml-spacing-sm !default;
+
+// Option Icon
+$ml-option-icon-font-size: $ml-font-size-base !default;
+
+// Option Title
+$ml-option-title-font-size: $ml-font-size-sm !default;
+$ml-option-title-color: inherit !default;
+$ml-option-mark-bg: rgba(
+  $ml-accent-color,
+  $multiselect-highlight-bg-opacity
+) !default;
+$ml-option-mark-color: inherit !default;
+$ml-option-mark-font-weight: $ml-font-weight-semibold !default;
+
+// Option Subtitle
+$ml-option-subtitle-margin-top: $ml-spacing-xs !default;
+$ml-option-subtitle-font-size: $ml-font-size-xs !default;
+$ml-option-subtitle-color: $ml-text-secondary !default;
+
+// Empty State
+$ml-empty-padding: $ml-spacing-lg $multiselect-option-padding-h !default;
+$ml-empty-font-size: $ml-font-size-sm !default;
+$ml-empty-color: $ml-text-secondary !default;
+
+// Loader
+$ml-loader-padding: $ml-spacing-lg !default;
+$ml-loader-gap: $ml-spacing-sm !default;
+
+// Loading Text
+$ml-loading-text-font-size: $ml-font-size-sm !default;
+$ml-loading-text-color: $ml-text-secondary !default;
+
+// Pills Container
+$ml-pills-gap: $multiselect-pill-gap !default;
+$ml-pills-margin-bottom: $ml-spacing-sm !default;
+$ml-pills-margin-top: $ml-spacing-sm !default;
+$ml-pills-margin-left: $ml-spacing-sm !default;
+$ml-pills-margin-right: $ml-spacing-sm !default;
+
+// Count Display
+$ml-count-display-margin-bottom: $ml-spacing-sm !default;
+$ml-count-display-margin-top: $ml-spacing-sm !default;
+$ml-count-display-margin-left: $ml-spacing-sm !default;
+$ml-count-display-margin-right: $ml-spacing-sm !default;
+
+// Count Badge Wrapper
+$ml-count-badge-wrapper-bg: transparent !default;
+$ml-count-badge-wrapper-border: $ml-border-width-base solid $ml-border-color !default;
+$ml-count-badge-wrapper-border-radius: $ml-border-radius-sm !default;
+$ml-count-badge-wrapper-padding: $ml-spacing-xs $ml-spacing-sm !default;
+$ml-count-badge-wrapper-gap: $ml-spacing-xs !default;
+$ml-count-badge-wrapper-bg-hover: $multiselect-option-hover-bg !default;
+$ml-count-badge-wrapper-border-color-hover: $ml-accent-color !default;
+
+// Count Text
+$ml-count-text-bg: transparent !default;
+$ml-count-text-border: none !default;
+$ml-count-text-font-size: $ml-font-size-sm !default;
+$ml-count-text-color: $ml-text-primary !default;
+
+// Count Clear Button
+$ml-count-clear-bg: transparent !default;
+$ml-count-clear-color: $ml-text-secondary !default;
+$ml-count-clear-font-size: $ml-font-size-lg !default;
+$ml-count-clear-border-radius: $ml-border-radius-full !default;
+$ml-count-clear-bg-hover: rgba(
+  $ml-accent-color,
+  $multiselect-highlight-bg-opacity
+) !default;
+$ml-count-clear-color-hover: $ml-accent-color !default;
+
+// Pill
+$ml-pill-font-size: $ml-font-size-xs !default;
+$ml-pill-font-weight: $ml-font-weight-semibold !default;
+$ml-pill-border-radius: $ml-border-radius !default;
+
+// Pill Text
+$ml-pill-text-padding: 0 $ml-spacing-sm !default;
+$ml-pill-text-bg: $multiselect-pill-bg !default;
+$ml-pill-text-color: $ml-accent-color !default;
+
+// Pill Remove Button
+$ml-pill-remove-bg: $ml-accent-color !default;
+$ml-pill-remove-color: $ml-text-white !default;
+$ml-pill-remove-border: none !default;
+$ml-pill-remove-font-size: $ml-font-size-xs !default;
+$ml-pill-remove-bg-hover: color.adjust(
+  $ml-accent-color,
+  $lightness: -$multiselect-darken-amount
+) !default;
+$ml-pill-remove-box-shadow-focus: 0 0 0 $ml-focus-outline-width
+  rgba($ml-accent-color, $multiselect-focus-shadow-opacity) !default;
+
+// Selected Popover
+$ml-selected-popover-bg: $multiselect-dropdown-bg !default;
+$ml-selected-popover-border: $ml-border-width-base solid
+  $multiselect-dropdown-border !default;
+$ml-selected-popover-border-radius: $ml-border-radius !default;
+$ml-selected-popover-box-shadow: $multiselect-dropdown-shadow !default;
+
+// Selected Popover Header
+$ml-selected-popover-header-padding: $ml-spacing-sm $ml-spacing-md !default;
+$ml-selected-popover-header-bg: rgba(
+  $ml-accent-color,
+  $multiselect-option-selected-bg-opacity
+) !default;
+$ml-selected-popover-header-border-bottom: $ml-border-width-base solid
+  $ml-border-color !default;
+$ml-selected-popover-header-font-size: $ml-font-size-sm !default;
+$ml-selected-popover-header-font-weight: $ml-font-weight-semibold !default;
+$ml-selected-popover-header-color: $ml-text-primary !default;
+
+// Selected Popover Close
+$ml-selected-popover-close-bg: transparent !default;
+$ml-selected-popover-close-color: $ml-text-secondary !default;
+$ml-selected-popover-close-font-size: $ml-font-size-xl !default;
+$ml-selected-popover-close-border-radius: $ml-border-radius-full !default;
+$ml-selected-popover-close-bg-hover: rgba(
+  $ml-accent-color,
+  $multiselect-highlight-bg-opacity
+) !default;
+$ml-selected-popover-close-color-hover: $ml-accent-color !default;
+
+// Selected Popover Body
+$ml-selected-popover-body-gap: $ml-spacing-xs !default;
+$ml-selected-popover-body-padding: $ml-spacing-sm !default;
+
+// Checkbox
+$ml-checkbox-margin-top: $multiselect-checkbox-offset !default;
+
+// ==============================================================================
 
 // Wrapper (contains multiselect + pills)
-.pa-multiselect-wrapper {
+.ml-wrapper {
   display: flex;
   flex-direction: column; // Default: pills above/below input
   align-items: stretch;
@@ -81,90 +368,91 @@ $focus-outline-width: 2px !default;
 }
 
 // Container
-.pa-multiselect {
+.ml {
   position: relative;
   width: 100%;
 }
 
 // Input wrapper
-.pa-multiselect__input-wrapper {
+.ml__input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
 }
 
 // Search input
-.pa-multiselect__input {
+.ml__input {
   width: 100%;
-  padding: $multiselect-input-padding-v $multiselect-input-padding-h;
-  padding-right: 2.5rem; // Space for dropdown icon
-  font-size: $font-size-sm;
-  border: $border-width-base solid $input-border;
-  border-radius: $border-radius;
-  background: $input-bg;
-  color: $input-text;
-  transition: border-color $transition-fast $easing-snappy;
+  padding: $ml-input-padding;
+  padding-right: $ml-input-padding-right; // Space for dropdown icon
+  font-size: $ml-input-font-size;
+  border: $ml-input-border-style;
+  border-radius: $ml-input-border-radius;
+  background: $ml-input-bg;
+  color: $ml-input-text;
+  transition: border-color $ml-transition-fast $ml-easing-snappy;
 
   &:focus {
     outline: none;
-    border-color: $input-focus-border-color;
+    border-color: $ml-input-focus-border-color;
   }
 
   &::placeholder {
-    color: $text-secondary;
-    opacity: 0.6;
+    color: $ml-input-placeholder-color;
+    opacity: $multiselect-placeholder-opacity;
   }
 }
 
 // Dropdown toggle icon
-.pa-multiselect__toggle {
+.ml__toggle {
   position: absolute;
-  right: $multiselect-input-padding-h;
+  right: $ml-toggle-right;
   top: 50%;
-  transform: translateY(-50%);
+  transform: $ml-transform-center-y;
   pointer-events: none;
-  color: $text-secondary;
-  transition: transform $transition-fast $easing-snappy;
+  color: $ml-toggle-color;
+  transition: transform $ml-transition-fast $ml-easing-snappy;
 
-  .pa-multiselect--open & {
-    transform: translateY(-50%) rotate(180deg);
+  .ml--open & {
+    transform: $ml-transform-center-y rotate($multiselect-toggle-rotate-angle);
   }
 }
 
 // Count badge (appears next to toggle icon)
-.pa-multiselect__count-badge {
+.ml__count-badge {
   position: absolute;
-  right: 2rem; // Space for toggle icon
+  right: $multiselect-count-badge-offset; // Space for toggle icon
   top: 50%;
-  transform: translateY(-50%);
-  padding: 0.125rem 0.25rem;
-  background: $accent-color;
-  color: #ffffff;
-  font-size: $font-size-xs;
-  font-weight: $font-weight-semibold;
-  border-radius: $border-radius-sm;
+  transform: $ml-transform-center-y;
+  padding: $ml-count-badge-padding;
+  background: $ml-count-badge-bg;
+  color: $ml-count-badge-color;
+  font-size: $ml-count-badge-font-size;
+  font-weight: $ml-count-badge-font-weight;
+  border-radius: $ml-count-badge-border-radius;
   cursor: pointer;
-  transition: all $transition-fast $easing-snappy;
+  transition: all $ml-transition-fast $ml-easing-snappy;
 
   &:hover {
-    background: darken($accent-color, 10%);
-    transform: translateY(-50%) scale(1.1);
+    background: $ml-count-badge-bg-hover;
+    transform: $ml-transform-center-y
+      scale($multiselect-count-badge-hover-scale);
   }
 }
 
 // Floating search hint (appears above input)
-.pa-multiselect__hint {
+.ml__hint {
   display: none;
   position: absolute;
-  z-index: 10000;
-  padding: $multiselect-hint-padding;
-  background: $multiselect-hint-bg;
-  border: $border-width-base solid $multiselect-hint-border;
-  border-radius: $border-radius;
-  box-shadow: $shadow-md;
-  font-size: $font-size-xs;
-  color: $text-secondary;
-  line-height: 1.4;
+  z-index: $ml-z-index-popover;
+  padding: $ml-hint-padding;
+  background: $ml-hint-bg;
+  border: $ml-hint-border;
+  border-radius: $ml-hint-border-radius;
+  box-shadow: $ml-hint-box-shadow;
+  font-size: $ml-hint-font-size;
+  color: $ml-hint-color;
+  line-height: $ml-line-height-relaxed;
   max-width: 100%;
 
   &--visible {
@@ -173,17 +461,17 @@ $focus-outline-width: 2px !default;
 }
 
 // Floating dropdown (appears below input)
-.pa-multiselect__dropdown {
+.ml__dropdown {
   display: none;
   position: absolute;
-  z-index: 9999;
-  background: $multiselect-dropdown-bg;
-  border: $border-width-base solid $multiselect-dropdown-border;
-  border-radius: $border-radius;
-  box-shadow: $multiselect-dropdown-shadow;
+  z-index: $ml-z-index-dropdown;
+  background: $ml-dropdown-bg;
+  border: $ml-dropdown-border;
+  border-radius: $ml-dropdown-border-radius;
+  box-shadow: $ml-dropdown-box-shadow;
   max-height: $multiselect-dropdown-max-height;
   overflow-y: auto;
-  color: $multiselect-dropdown-text;
+  color: $ml-dropdown-color;
 
   &--visible {
     display: block;
@@ -191,127 +479,127 @@ $focus-outline-width: 2px !default;
 }
 
 // Dropdown actions (Select All / Clear All)
-.pa-multiselect__actions {
+.ml__actions {
   display: flex;
-  gap: $spacing-xs;
-  padding: $spacing-sm;
-  border-bottom: $border-width-base solid $border-color;
+  gap: $ml-actions-gap;
+  padding: $ml-actions-padding;
+  border-bottom: $ml-actions-border-bottom;
 
   &--sticky {
     position: sticky;
     top: 0;
-    z-index: 1;
-    background: $multiselect-dropdown-bg;
+    z-index: $ml-z-index-sticky;
+    background: $ml-actions-bg;
   }
 }
 
-.pa-multiselect__action-btn {
+.ml__action-btn {
   flex: 1;
-  padding: $spacing-xs $spacing-sm;
-  font-size: $font-size-xs;
-  border: $border-width-base solid $border-color;
-  border-radius: $border-radius-sm;
-  background: transparent;
-  color: inherit;
+  padding: $ml-action-btn-padding;
+  font-size: $ml-action-btn-font-size;
+  border: $ml-action-btn-border;
+  border-radius: $ml-action-btn-border-radius;
+  background: $ml-action-btn-bg;
+  color: $ml-action-btn-color;
   cursor: pointer;
-  transition: all $transition-fast $easing-snappy;
+  transition: all $ml-transition-fast $ml-easing-snappy;
 
   &:hover {
-    background: $primary-bg;
-    border-color: $accent-color;
+    background: $ml-action-btn-bg-hover;
+    border-color: $ml-action-btn-border-color-hover;
   }
 
   &:active {
-    transform: scale(0.98);
+    transform: scale($multiselect-active-scale);
   }
 }
 
 // Options container
-.pa-multiselect__options {
-  padding: $spacing-xs 0;
+.ml__options {
+  padding: $ml-options-padding;
 }
 
 // Group
-.pa-multiselect__group {
+.ml__group {
   & + & {
-    border-top: $border-width-base solid $border-color;
-    margin-top: $spacing-xs;
-    padding-top: $spacing-xs;
+    border-top: $ml-group-border-top;
+    margin-top: $ml-group-margin-top;
+    padding-top: $ml-group-padding-top;
   }
 }
 
 // Group label
-.pa-multiselect__group-label {
-  padding: $spacing-xs $multiselect-option-padding-h;
-  font-size: $font-size-xs;
-  font-weight: $font-weight-semibold;
-  color: $text-secondary;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+.ml__group-label {
+  padding: $ml-group-label-padding;
+  font-size: $ml-group-label-font-size;
+  font-weight: $ml-group-label-font-weight;
+  color: $ml-group-label-color;
+  text-transform: $multiselect-group-label-transform;
+  letter-spacing: $multiselect-group-label-letter-spacing;
 }
 
 // Individual option
-.pa-multiselect__option {
+.ml__option {
   display: flex;
   align-items: flex-start;
-  gap: $spacing-sm;
-  padding: $multiselect-option-padding-v $multiselect-option-padding-h;
+  gap: $ml-option-gap;
+  padding: $ml-option-padding;
   cursor: pointer;
-  transition: background-color $transition-fast $easing-snappy;
+  transition: background-color $ml-transition-fast $ml-easing-snappy;
 
   &:hover {
-    background: $multiselect-option-hover-bg;
+    background: $ml-option-bg-hover;
   }
 
   &--focused {
-    background: $multiselect-option-hover-bg;
-    outline: 2px solid $accent-color;
-    outline-offset: -2px;
+    background: $ml-option-bg-focused;
+    outline: $ml-option-outline-focused;
+    outline-offset: $multiselect-option-focus-outline-offset;
   }
 
   &--selected {
-    background: rgba($accent-color, 0.1);
+    background: $ml-option-bg-selected;
   }
 
   &--disabled {
-    opacity: 0.5;
+    opacity: $multiselect-disabled-opacity;
     cursor: not-allowed;
 
     &:hover {
-      background: transparent;
+      background: $ml-option-bg;
     }
   }
 }
 
 // Checkbox
-.pa-multiselect__checkbox {
+.ml__checkbox {
   flex-shrink: 0;
-  margin-top: 0.125rem; // Align with first line of text
+  margin-top: $ml-checkbox-margin-top; // Align with first line of text
   cursor: pointer;
 
-  .pa-multiselect__option--disabled & {
+  .ml__option--disabled & {
     cursor: not-allowed;
   }
 }
 
 // Option content (rich content wrapper)
-.pa-multiselect__option-content {
+.ml__option-content {
   flex: 1;
   display: flex;
   align-items: flex-start;
-  gap: $spacing-sm;
+  gap: $ml-option-content-gap;
   min-width: 0; // Allow text truncation
 }
 
 // Option icon/SVG
-.pa-multiselect__option-icon {
+.ml__option-icon {
   flex-shrink: 0;
-  width: 1.25rem;
-  height: 1.25rem;
+  width: $multiselect-option-icon-size;
+  height: $multiselect-option-icon-size;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: $font-size-base;
+  font-size: $ml-option-icon-font-size;
 
   svg {
     width: 100%;
@@ -321,61 +609,61 @@ $focus-outline-width: 2px !default;
 }
 
 // Option text container
-.pa-multiselect__option-text {
+.ml__option-text {
   flex: 1;
   min-width: 0;
 }
 
 // Option title/main text
-.pa-multiselect__option-title {
-  font-size: $font-size-sm;
-  color: inherit;
-  line-height: 1.4;
+.ml__option-title {
+  font-size: $ml-option-title-font-size;
+  color: $ml-option-title-color;
+  line-height: $ml-line-height-relaxed;
 
   // Highlight matched text
   mark {
-    background: rgba($accent-color, 0.2);
-    color: inherit;
-    font-weight: $font-weight-semibold;
+    background: $ml-option-mark-bg;
+    color: $ml-option-mark-color;
+    font-weight: $ml-option-mark-font-weight;
   }
 }
 
 // Option subtitle (multiline support)
-.pa-multiselect__option-subtitle {
-  margin-top: $spacing-xs;
-  font-size: $font-size-xs;
-  color: $text-secondary;
-  line-height: 1.3;
+.ml__option-subtitle {
+  margin-top: $ml-option-subtitle-margin-top;
+  font-size: $ml-option-subtitle-font-size;
+  color: $ml-option-subtitle-color;
+  line-height: $multiselect-option-subtitle-line-height;
 }
 
 // Empty state
-.pa-multiselect__empty {
-  padding: $spacing-lg $multiselect-option-padding-h;
+.ml__empty {
+  padding: $ml-empty-padding;
   text-align: center;
-  font-size: $font-size-sm;
-  color: $text-secondary;
+  font-size: $ml-empty-font-size;
+  color: $ml-empty-color;
 }
 
 // Loading state
-.pa-multiselect__loader {
+.ml__loader {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: $spacing-lg;
-  gap: $spacing-sm;
+  padding: $ml-loader-padding;
+  gap: $ml-loader-gap;
 }
 
-.pa-multiselect__loading-text {
-  font-size: $font-size-sm;
-  color: $text-secondary;
+.ml__loading-text {
+  font-size: $ml-loading-text-font-size;
+  color: $ml-loading-text-color;
 }
 
 // Selected pills container
-.pa-multiselect__pills {
+.ml__pills {
   display: flex;
   flex-wrap: wrap;
-  gap: $multiselect-pill-gap;
+  gap: $ml-pills-gap;
   padding: 0;
 
   &:empty {
@@ -384,28 +672,28 @@ $focus-outline-width: 2px !default;
 
   // Position variants
   &--bottom {
-    margin-top: $spacing-sm;
+    margin-top: $ml-pills-margin-bottom;
   }
 
   &--top {
-    margin-bottom: $spacing-sm;
-    order: -1; // Place before multiselect in flex container
+    margin-bottom: $ml-pills-margin-top;
+    order: $ml-order-first; // Place before multiselect in flex container
   }
 
   &--left {
-    order: -1; // Place before multiselect
-    margin-right: $spacing-sm;
+    order: $ml-order-first; // Place before multiselect
+    margin-right: $ml-pills-margin-left;
     justify-content: flex-start;
   }
 
   &--right {
-    margin-left: $spacing-sm;
+    margin-left: $ml-pills-margin-right;
     justify-content: flex-end;
   }
 }
 
 // Count display (alternative to pills)
-.pa-multiselect__count-display {
+.ml__count-display {
   display: flex;
   align-items: center;
 
@@ -415,151 +703,151 @@ $focus-outline-width: 2px !default;
 
   // Position variants
   &--bottom {
-    margin-top: $spacing-sm;
+    margin-top: $ml-count-display-margin-bottom;
   }
 
   &--top {
-    margin-bottom: $spacing-sm;
-    order: -1; // Place before multiselect in flex container
+    margin-bottom: $ml-count-display-margin-top;
+    order: $ml-order-first; // Place before multiselect in flex container
   }
 
   &--left {
-    order: -1; // Place before multiselect
-    margin-right: $spacing-sm;
+    order: $ml-order-first; // Place before multiselect
+    margin-right: $ml-count-display-margin-left;
     justify-content: flex-start;
   }
 
   &--right {
-    margin-left: $spacing-sm;
+    margin-left: $ml-count-display-margin-right;
     justify-content: flex-end;
   }
 }
 
 // Wrapper containing count text and clear button
-.pa-multiselect__count-badge-wrapper {
+.ml__count-badge-wrapper {
   display: inline-flex;
   align-items: center;
-  gap: $spacing-xs;
-  background: transparent;
-  border: $border-width-base solid $border-color;
-  border-radius: $border-radius-sm;
-  padding: $spacing-xs $spacing-sm;
-  transition: all $transition-fast $easing-snappy;
+  gap: $ml-count-badge-wrapper-gap;
+  background: $ml-count-badge-wrapper-bg;
+  border: $ml-count-badge-wrapper-border;
+  border-radius: $ml-count-badge-wrapper-border-radius;
+  padding: $ml-count-badge-wrapper-padding;
+  transition: all $ml-transition-fast $ml-easing-snappy;
 
   &:hover {
-    background: $multiselect-option-hover-bg;
-    border-color: $accent-color;
+    background: $ml-count-badge-wrapper-bg-hover;
+    border-color: $ml-count-badge-wrapper-border-color-hover;
   }
 }
 
-.pa-multiselect__count-text {
+.ml__count-text {
   display: inline-flex;
   align-items: center;
-  background: transparent;
-  border: none;
+  background: $ml-count-text-bg;
+  border: $ml-count-text-border;
   padding: 0;
-  font-size: $font-size-sm;
-  color: $text-primary;
+  font-size: $ml-count-text-font-size;
+  color: $ml-count-text-color;
   cursor: pointer;
-  transition: color $transition-fast $easing-snappy;
+  transition: color $ml-transition-fast $ml-easing-snappy;
 }
 
-.pa-multiselect__count-clear {
+.ml__count-clear {
   flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 1rem;
-  height: 1rem;
+  width: $multiselect-count-clear-size;
+  height: $multiselect-count-clear-size;
   padding: 0;
   border: none;
-  background: transparent;
-  color: $text-secondary;
-  font-size: $font-size-lg;
-  line-height: 1;
+  background: $ml-count-clear-bg;
+  color: $ml-count-clear-color;
+  font-size: $ml-count-clear-font-size;
+  line-height: $ml-line-height-none;
   cursor: pointer;
-  border-radius: 50%;
-  transition: all $transition-fast $easing-snappy;
+  border-radius: $ml-count-clear-border-radius;
+  transition: all $ml-transition-fast $ml-easing-snappy;
 
   &:hover {
-    background: rgba($accent-color, 0.2);
-    color: $accent-color;
+    background: $ml-count-clear-bg-hover;
+    color: $ml-count-clear-color-hover;
   }
 
   &::before {
-    content: '×';
+    content: $multiselect-clear-icon;
   }
 }
 
 // Individual pill (styled like Pure Admin composite badge)
-.pa-multiselect__pill {
+.ml__pill {
   display: inline-flex;
   align-items: center;
-  height: 1.5rem; // Match composite badge height
-  font-size: $font-size-xs;
-  font-weight: $font-weight-semibold;
-  line-height: 1;
-  border-radius: $border-radius;
+  height: $multiselect-pill-height; // Match composite badge height
+  font-size: $ml-pill-font-size;
+  font-weight: $ml-pill-font-weight;
+  line-height: $ml-line-height-none;
+  border-radius: $ml-pill-border-radius;
   overflow: hidden;
   max-width: 100%;
 }
 
 // Pill text (like composite badge label)
-.pa-multiselect__pill-text {
+.ml__pill-text {
   display: flex;
   align-items: center;
   height: 100%;
-  padding: 0 $spacing-sm;
-  background: $multiselect-pill-bg;
-  color: $accent-color;
+  padding: $ml-pill-text-padding;
+  background: $ml-pill-text-bg;
+  color: $ml-pill-text-color;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  transition: background-color $transition-normal ease;
+  transition: background-color $ml-transition-normal ease;
 }
 
 // Pill remove button (like composite badge button)
-.pa-multiselect__pill-remove {
+.ml__pill-remove {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 1.5rem;
+  width: $multiselect-pill-remove-width;
   height: 100%;
   flex-shrink: 0;
-  background: $accent-color;
-  color: #ffffff;
-  border: none;
+  background: $ml-pill-remove-bg;
+  color: $ml-pill-remove-color;
+  border: $ml-pill-remove-border;
   cursor: pointer;
-  transition: background-color $transition-normal ease;
-  font-size: $font-size-xs;
+  transition: background-color $ml-transition-normal ease;
+  font-size: $ml-pill-remove-font-size;
 
   &:hover {
-    background: darken($accent-color, 10%);
+    background: $ml-pill-remove-bg-hover;
   }
 
   &:focus {
     outline: none;
-    box-shadow: 0 0 0 $focus-outline-width rgba($accent-color, 0.5);
+    box-shadow: $ml-pill-remove-box-shadow-focus;
   }
 
   &::before {
-    content: '×';
-    font-size: $font-size-base;
-    line-height: 1;
+    content: $multiselect-remove-icon;
+    font-size: $ml-font-size-base;
+    line-height: $ml-line-height-none;
   }
 }
 
 // Selected items popover (for count display mode)
-.pa-multiselect__selected-popover {
+.ml__selected-popover {
   display: none;
   position: absolute;
-  z-index: 10000;
-  background: $multiselect-dropdown-bg;
-  border: $border-width-base solid $multiselect-dropdown-border;
-  border-radius: $border-radius;
-  box-shadow: $multiselect-dropdown-shadow;
+  z-index: $ml-z-index-popover;
+  background: $ml-selected-popover-bg;
+  border: $ml-selected-popover-border;
+  border-radius: $ml-selected-popover-border-radius;
+  box-shadow: $ml-selected-popover-box-shadow;
   width: $multiselect-selected-popover-width;
-  max-height: 20rem;
+  max-height: $multiselect-selected-popover-max-height;
   overflow: hidden;
 
   &--visible {
@@ -568,54 +856,54 @@ $focus-outline-width: 2px !default;
   }
 }
 
-.pa-multiselect__selected-popover-header {
+.ml__selected-popover-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: $spacing-sm $spacing-md;
-  background: rgba($accent-color, 0.1);
-  border-bottom: $border-width-base solid $border-color;
-  font-size: $font-size-sm;
-  font-weight: $font-weight-semibold;
-  color: $text-primary;
+  padding: $ml-selected-popover-header-padding;
+  background: $ml-selected-popover-header-bg;
+  border-bottom: $ml-selected-popover-header-border-bottom;
+  font-size: $ml-selected-popover-header-font-size;
+  font-weight: $ml-selected-popover-header-font-weight;
+  color: $ml-selected-popover-header-color;
 }
 
-.pa-multiselect__selected-popover-close {
+.ml__selected-popover-close {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 1.5rem;
-  height: 1.5rem;
+  width: $multiselect-popover-close-size;
+  height: $multiselect-popover-close-size;
   padding: 0;
   border: none;
-  background: transparent;
-  color: $text-secondary;
-  font-size: $font-size-xl;
-  line-height: 1;
+  background: $ml-selected-popover-close-bg;
+  color: $ml-selected-popover-close-color;
+  font-size: $ml-selected-popover-close-font-size;
+  line-height: $ml-line-height-none;
   cursor: pointer;
-  border-radius: 50%;
-  transition: all $transition-fast $easing-snappy;
+  border-radius: $ml-selected-popover-close-border-radius;
+  transition: all $ml-transition-fast $ml-easing-snappy;
 
   &:hover {
-    background: rgba($accent-color, 0.2);
-    color: $accent-color;
+    background: $ml-selected-popover-close-bg-hover;
+    color: $ml-selected-popover-close-color-hover;
   }
 }
 
-.pa-multiselect__selected-popover-body {
+.ml__selected-popover-body {
   display: flex;
   flex-direction: column;
-  gap: $spacing-xs;
-  padding: $spacing-sm;
+  gap: $ml-selected-popover-body-gap;
+  padding: $ml-selected-popover-body-padding;
   overflow-y: auto;
-  max-height: 18rem;
+  max-height: $multiselect-selected-popover-body-max-height;
 
   // Pills inside popover
-  .pa-multiselect__pill {
+  .ml__pill {
     width: 100%;
   }
 
-  .pa-multiselect__pill-text {
+  .ml__pill-text {
     flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -625,83 +913,83 @@ $focus-outline-width: 2px !default;
 }
 
 // Size variants
-.pa-multiselect--xs {
-  .pa-multiselect__input {
-    font-size: $font-size-xs;
+.ml--xs {
+  .ml__input {
+    font-size: $ml-font-size-xs;
   }
 
-  .pa-multiselect__option {
-    padding: $spacing-xs $spacing-sm;
+  .ml__option {
+    padding: $ml-spacing-xs $ml-spacing-sm;
   }
 
-  .pa-multiselect__option-title {
-    font-size: $font-size-xs;
+  .ml__option-title {
+    font-size: $ml-font-size-xs;
   }
 
-  .pa-multiselect__pill {
-    font-size: $font-size-2xs;
-  }
-}
-
-.pa-multiselect--sm {
-  .pa-multiselect__input {
-    font-size: $font-size-xs;
-  }
-
-  .pa-multiselect__option-title {
-    font-size: $font-size-xs;
+  .ml__pill {
+    font-size: $ml-font-size-2xs;
   }
 }
 
-.pa-multiselect--lg {
-  .pa-multiselect__input {
-    font-size: $font-size-base;
+.ml--sm {
+  .ml__input {
+    font-size: $ml-font-size-xs;
   }
 
-  .pa-multiselect__option-title {
-    font-size: $font-size-base;
-  }
-
-  .pa-multiselect__pill {
-    font-size: $font-size-sm;
+  .ml__option-title {
+    font-size: $ml-font-size-xs;
   }
 }
 
-.pa-multiselect--xl {
-  .pa-multiselect__input {
-    font-size: $font-size-lg;
+.ml--lg {
+  .ml__input {
+    font-size: $ml-font-size-base;
   }
 
-  .pa-multiselect__option-title {
-    font-size: $font-size-lg;
+  .ml__option-title {
+    font-size: $ml-font-size-base;
   }
 
-  .pa-multiselect__pill {
-    font-size: $font-size-base;
+  .ml__pill {
+    font-size: $ml-font-size-sm;
+  }
+}
+
+.ml--xl {
+  .ml__input {
+    font-size: $ml-font-size-lg;
+  }
+
+  .ml__option-title {
+    font-size: $ml-font-size-lg;
+  }
+
+  .ml__pill {
+    font-size: $ml-font-size-base;
   }
 }
 
 // Disabled state
-.pa-multiselect--disabled {
-  .pa-multiselect__input {
-    opacity: 0.6;
+.ml--disabled {
+  .ml__input {
+    opacity: $multiselect-disabled-input-opacity;
     cursor: not-allowed;
-    background: rgba($text-secondary, 0.05);
+    background: $ml-input-bg-disabled;
   }
 
-  .pa-multiselect__toggle {
-    opacity: 0.6;
+  .ml__toggle {
+    opacity: $multiselect-disabled-input-opacity;
   }
 }
 
 // No checkboxes modifier (for simple select mode)
-.pa-multiselect--no-checkboxes {
-  .pa-multiselect__option {
+.ml--no-checkboxes {
+  .ml__option {
     gap: 0; // Remove gap since there's no checkbox
     padding-left: $multiselect-option-padding-h; // Adjust padding
   }
 
-  .pa-multiselect__option-content {
+  .ml__option-content {
     padding-left: 0; // No extra padding needed
   }
 }

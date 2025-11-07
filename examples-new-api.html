@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>New Flexible API Examples - MultiSelect</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f7fafc;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: white;
+            text-decoration: none;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .back-link:hover {
+            opacity: 1;
+        }
+
+        .example-section {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .example-section h2 {
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .example-section h3 {
+            color: #4a5568;
+            margin: 1.5rem 0 1rem;
+            font-size: 1.1rem;
+        }
+
+        .badge {
+            background: #667eea;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge.new {
+            background: #f56565;
+        }
+
+        .description {
+            color: #718096;
+            margin-bottom: 1.5rem;
+        }
+
+        .demo-area {
+            background: #f7fafc;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .demo-label {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .output {
+            background: #2d3748;
+            color: #a0aec0;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            overflow-x: auto;
+        }
+
+        .output-label {
+            color: #667eea;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .output pre {
+            margin: 0;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        code {
+            background: #edf2f7;
+            padding: 0.125rem 0.375rem;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            color: #d53f8c;
+        }
+
+        .code-block {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+        }
+
+        .code-block pre {
+            margin: 0;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: background 0.2s;
+            margin-right: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        button:hover {
+            background: #5568d3;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        form {
+            background: #edf2f7;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-top: 1rem;
+        }
+
+        .form-actions {
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #cbd5e0;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .feature-list {
+            list-style: none;
+            margin: 1rem 0;
+        }
+
+        .feature-list li {
+            padding: 0.5rem 0;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .feature-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="index.html" class="back-link">← Back to Examples</a>
+            <h1>🚀 New Flexible API</h1>
+            <p class="subtitle">Flexible data handling, form integration, and powerful new features</p>
+        </header>
+
+        <!-- Example 1: Custom Object Structure with Members -->
+        <section class="example-section">
+            <h2>
+                1. Custom Object Structure
+                <span class="badge new">NEW</span>
+            </h2>
+            <p class="description">
+                Use your own data structure! Specify which properties to use for value, display, and other fields using <code>valueMember</code> and <code>displayValueMember</code>.
+            </p>
+
+            <div class="code-block"><pre>// Your custom data structure
+const users = [
+  { userId: 1, fullName: 'John Doe', email: 'john@example.com', role: 'Admin' },
+  { userId: 2, fullName: 'Jane Smith', email: 'jane@example.com', role: 'User' },
+  ...
+];
+
+// Configure which properties to use
+multiselect.valueMember = 'userId';
+multiselect.displayValueMember = 'fullName';
+multiselect.subtitleMember = 'email';
+multiselect.options = users;</pre></div>
+
+            <div class="demo-area">
+                <label class="demo-label">Select Users:</label>
+                <multi-select id="custom-objects" value-member="userId" display-value-member="fullName" subtitle-member="email"></multi-select>
+
+                <div class="output">
+                    <div class="output-label">Selected Values:</div>
+                    <pre id="output-custom-objects">[]</pre>
+                </div>
+
+                <button onclick="showCustomObjectsData()">Show Selected Data</button>
+                <button onclick="setCustomObjects()">Select John & Alice</button>
+            </div>
+        </section>
+
+        <!-- Example 2: [key, value] Tuples -->
+        <section class="example-section">
+            <h2>
+                2. [key, value] Tuple Arrays
+                <span class="badge new">NEW</span>
+            </h2>
+            <p class="description">
+                Auto-detected! Simply pass an array of <code>[key, value]</code> tuples. Perfect for simple key-value pairs without creating objects.
+            </p>
+
+            <div class="code-block"><pre>// Simple tuple arrays - no configuration needed!
+const languages = [
+  ['js', 'JavaScript'],
+  ['ts', 'TypeScript'],
+  ['py', 'Python'],
+  ['go', 'Go']
+];
+
+multiselect.options = languages; // Auto-detected as tuples</pre></div>
+
+            <div class="demo-area">
+                <label class="demo-label">Select Programming Languages:</label>
+                <multi-select id="tuples"></multi-select>
+
+                <div class="output">
+                    <div class="output-label">getValue() → </div>
+                    <pre id="output-tuples">[]</pre>
+                </div>
+
+                <button onclick="showTuplesData()">Show Selected</button>
+                <button onclick="setTuples()">Select JS & TS</button>
+            </div>
+        </section>
+
+        <!-- Example 3: Using Callbacks -->
+        <section class="example-section">
+            <h2>
+                3. Callbacks for Complex Logic
+                <span class="badge new">NEW</span>
+            </h2>
+            <p class="description">
+                Use callbacks when you need complex logic to extract values. Callbacks take precedence over members.
+            </p>
+
+            <div class="code-block"><pre>const products = [
+  { sku: 'PRD-001', name: 'Laptop', price: 999, inStock: true },
+  { sku: 'PRD-002', name: 'Mouse', price: 29, inStock: false },
+  ...
+];
+
+multiselect.getValueCallback = (item) => item.sku;
+multiselect.getDisplayValueCallback = (item) => `${item.name} - $${item.price}`;
+multiselect.getDisabledCallback = (item) => !item.inStock; // Disable out of stock
+multiselect.options = products;</pre></div>
+
+            <div class="demo-area">
+                <label class="demo-label">Select Products (out of stock disabled):</label>
+                <multi-select id="callbacks"></multi-select>
+
+                <div class="output">
+                    <div class="output-label">Selected SKUs:</div>
+                    <pre id="output-callbacks">[]</pre>
+                </div>
+
+                <button onclick="showCallbacksData()">Show Selected</button>
+            </div>
+        </section>
+
+        <!-- Example 4: Form Integration - JSON Format -->
+        <section class="example-section">
+            <h2>
+                4. Form Integration - JSON Format
+                <span class="badge new">NEW</span>
+            </h2>
+            <p class="description">
+                Seamless HTML form integration! Hidden inputs are automatically created and updated. Choose from 3 formats: <code>json</code>, <code>csv</code>, or <code>array</code>.
+            </p>
+
+            <div class="code-block"><pre>&lt;form id="myform"&gt;
+  &lt;multi-select
+    name="skills"           &lt;!-- Creates hidden input with this name --&gt;
+    form-value-format="json"  &lt;!-- Default: JSON array --&gt;
+    multiple&gt;
+  &lt;/multi-select&gt;
+&lt;/form&gt;
+
+// Hidden input value: ["js","ts","py"]</pre></div>
+
+            <form id="form-json" onsubmit="handleFormSubmit(event, 'form-json')">
+                <label class="demo-label">Select Your Skills:</label>
+                <multi-select id="form-json-select" name="skills" form-value-format="json"></multi-select>
+
+                <div class="form-actions">
+                    <button type="submit">Submit Form</button>
+                    <button type="button" onclick="inspectFormData('form-json')">Inspect Form Data</button>
+                </div>
+
+                <div class="output">
+                    <div class="output-label">Hidden Input Value:</div>
+                    <pre id="output-form-json">Not submitted yet</pre>
+                </div>
+            </form>
+        </section>
+
+        <!-- Example 5: Form Integration - CSV Format -->
+        <section class="example-section">
+            <h2>
+                5. Form Integration - CSV Format
+                <span class="badge new">NEW</span>
+            </h2>
+            <p class="description">
+                Use CSV format for traditional comma-separated values. Great for legacy systems.
+            </p>
+
+            <div class="code-block"><pre>&lt;multi-select
+  name="categories"
+  form-value-format="csv"&gt;  &lt;!-- CSV format --&gt;
+&lt;/multi-select&gt;
+
+// Hidden input value: "tech,design,business"</pre></div>
+
+            <form id="form-csv" onsubmit="handleFormSubmit(event, 'form-csv')">
+                <label class="demo-label">Select Categories:</label>
+                <multi-select id="form-csv-select" name="categories" form-value-format="csv"></multi-select>
+
+                <div class="form-actions">
+                    <button type="submit">Submit Form</button>
+                    <button type="button" onclick="inspectFormData('form-csv')">Inspect Form Data</button>
+                </div>
+
+                <div class="output">
+                    <div class="output-label">Hidden Input Value (CSV):</div>
+                    <pre id="output-form-csv">Not submitted yet</pre>
+                </div>
+            </form>
+        </section>
+
+        <!-- Example 6: Form Integration - Array Format -->
+        <section class="example-section">
+            <h2>
+                6. Form Integration - Array Format
+                <span class="badge new">NEW</span>
+            </h2>
+            <p class="description">
+                Use array format to create multiple hidden inputs. Standard HTML array handling with <code>name[]</code>.
+            </p>
+
+            <div class="code-block"><pre>&lt;multi-select
+  name="tags"
+  form-value-format="array"&gt;  &lt;!-- Multiple inputs --&gt;
+&lt;/multi-select&gt;
+
+// Creates multiple hidden inputs:
+// &lt;input name="tags[]" value="urgent"&gt;
+// &lt;input name="tags[]" value="feature"&gt;
+// &lt;input name="tags[]" value="bug"&gt;</pre></div>
+
+            <form id="form-array" onsubmit="handleFormSubmit(event, 'form-array')">
+                <label class="demo-label">Select Tags:</label>
+                <multi-select id="form-array-select" name="tags" form-value-format="array"></multi-select>
+
+                <div class="form-actions">
+                    <button type="submit">Submit Form</button>
+                    <button type="button" onclick="inspectFormData('form-array')">Inspect Form Data</button>
+                </div>
+
+                <div class="output">
+                    <div class="output-label">Hidden Inputs Created:</div>
+                    <pre id="output-form-array">Not submitted yet</pre>
+                </div>
+            </form>
+        </section>
+
+        <!-- Example 7: New getValue() API -->
+        <section class="example-section">
+            <h2>
+                7. New Public API Methods
+                <span class="badge new">NEW</span>
+            </h2>
+            <p class="description">
+                New properties and methods for easier value access:
+            </p>
+
+            <ul class="feature-list">
+                <li><code>getValue()</code> - Returns single value or array depending on mode</li>
+                <li><code>selectedValue</code> - Get the selected value(s)</li>
+                <li><code>selectedItem</code> - Get the first selected item object</li>
+                <li><code>getSelected()</code> - Get all selected item objects</li>
+            </ul>
+
+            <div class="grid-2">
+                <div>
+                    <div class="demo-area">
+                        <label class="demo-label">Single Select:</label>
+                        <multi-select id="single-mode" multiple="false"></multi-select>
+
+                        <div class="output">
+                            <div class="output-label">getValue() returns single value:</div>
+                            <pre id="output-single">null</pre>
+                        </div>
+
+                        <button onclick="showSingleModeData()">Show Value</button>
+                    </div>
+                </div>
+
+                <div>
+                    <div class="demo-area">
+                        <label class="demo-label">Multi Select:</label>
+                        <multi-select id="multi-mode"></multi-select>
+
+                        <div class="output">
+                            <div class="output-label">getValue() returns array:</div>
+                            <pre id="output-multi">[]</pre>
+                        </div>
+
+                        <button onclick="showMultiModeData()">Show Values</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Example 8: Async Search / Lookup -->
+        <section class="example-section">
+            <h2>
+                8. Async Search / Lookup
+                <span class="badge">DYNAMIC</span>
+            </h2>
+            <p class="description">
+                Load options dynamically as users type. Perfect for large datasets, API searches, or real-time filtering.
+            </p>
+
+            <div class="code-block"><pre>// Simulate API search
+multiselect.searchCallback = async (searchTerm) => {
+    const response = await fetch(`/api/users?search=${searchTerm}`);
+    return await response.json();
+};
+
+// Built-in debouncing, loading states, and error handling</pre></div>
+
+            <h3>User Search (GitHub API with Fallback)</h3>
+            <div class="demo-area">
+                <label class="demo-label">Search GitHub Users (tries API, falls back to mock data if rate-limited):</label>
+                <multi-select
+                    id="async-search"
+                    min-search-length="2"
+                    value-member="value"
+                    display-value-member="label"
+                    subtitle-member="subtitle"
+                    icon-member="icon"
+                    search-placeholder="Type to search GitHub users..."
+                    search-hint="💡 Type at least 2 characters to search"></multi-select>
+
+                <div class="output">
+                    <div class="output-label">Selected Users:</div>
+                    <pre id="output-async">[]</pre>
+                </div>
+
+                <button onclick="showAsyncData()">Show Selected</button>
+            </div>
+
+            <h3>Product Search (Simulated API)</h3>
+            <div class="demo-area">
+                <label class="demo-label">Search Products:</label>
+                <multi-select
+                    id="product-search"
+                    min-search-length="1"
+                    search-placeholder="Search products..."
+                    display-value-member="name"
+                    subtitle-member="category"
+                    value-member="id"></multi-select>
+
+                <div class="output">
+                    <div class="output-label">Selected Product IDs:</div>
+                    <pre id="output-products">[]</pre>
+                </div>
+
+                <button onclick="showProductData()">Show Selected</button>
+            </div>
+
+            <h3>Country Lookup with Icons</h3>
+            <div class="demo-area">
+                <label class="demo-label">Search Countries:</label>
+                <multi-select
+                    id="country-search"
+                    min-search-length="2"
+                    search-placeholder="Search countries..."
+                    value-member="code"
+                    display-value-member="name"
+                    icon-member="flag"></multi-select>
+
+                <div class="output">
+                    <div class="output-label">Selected Country Codes:</div>
+                    <pre id="output-countries">[]</pre>
+                </div>
+            </div>
+        </section>
+
+        <!-- Summary -->
+        <section class="example-section">
+            <h2>✨ Benefits Summary</h2>
+            <div class="grid-2">
+                <div>
+                    <h3>Flexible Data Handling</h3>
+                    <ul class="feature-list">
+                        <li>Works with any data structure</li>
+                        <li>No need to transform your data</li>
+                        <li>Auto-detects tuple arrays</li>
+                        <li>Member or callback patterns</li>
+                        <li>Full TypeScript support</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Form Integration</h3>
+                    <ul class="feature-list">
+                        <li>Automatic hidden input creation</li>
+                        <li>3 format options (JSON, CSV, array)</li>
+                        <li>Custom formatters via callback</li>
+                        <li>Auto-updates on changes</li>
+                        <li>Standard HTML form behavior</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script type="module">
+        import './dist/multiselect.js';
+
+        // Wait for custom element to be defined
+        customElements.whenDefined('multi-select').then(() => {
+            // Example 1: Custom Objects
+            const customObjectsSelect = document.querySelector('#custom-objects');
+            customObjectsSelect.options = [
+                { userId: 1, fullName: 'John Doe', email: 'john@example.com', role: 'Admin', avatar: '👨‍💼' },
+                { userId: 2, fullName: 'Jane Smith', email: 'jane@example.com', role: 'User', avatar: '👩‍💻' },
+                { userId: 3, fullName: 'Alice Johnson', email: 'alice@example.com', role: 'Manager', avatar: '👩‍💼' },
+                { userId: 4, fullName: 'Bob Wilson', email: 'bob@example.com', role: 'User', avatar: '👨‍💻' }
+            ];
+
+            customObjectsSelect.addEventListener('change', () => {
+                const value = customObjectsSelect.getValue();
+                document.getElementById('output-custom-objects').textContent = JSON.stringify(value, null, 2);
+            });
+
+            // Example 2: Tuples
+            const tuplesSelect = document.querySelector('#tuples');
+            tuplesSelect.options = [
+                ['js', 'JavaScript'],
+                ['ts', 'TypeScript'],
+                ['py', 'Python'],
+                ['go', 'Go'],
+                ['rust', 'Rust'],
+                ['java', 'Java']
+            ];
+
+            tuplesSelect.addEventListener('change', () => {
+                const value = tuplesSelect.getValue();
+                document.getElementById('output-tuples').textContent = JSON.stringify(value, null, 2);
+            });
+
+            // Example 3: Callbacks
+            const callbacksSelect = document.querySelector('#callbacks');
+            const products = [
+                { sku: 'PRD-001', name: 'Laptop', price: 999, inStock: true },
+                { sku: 'PRD-002', name: 'Mouse', price: 29, inStock: false },
+                { sku: 'PRD-003', name: 'Keyboard', price: 79, inStock: true },
+                { sku: 'PRD-004', name: 'Monitor', price: 299, inStock: false },
+                { sku: 'PRD-005', name: 'Webcam', price: 89, inStock: true }
+            ];
+
+            callbacksSelect.getValueCallback = (item) => item.sku;
+            callbacksSelect.getDisplayValueCallback = (item) => `${item.name} - $${item.price}`;
+            callbacksSelect.getSubtitleCallback = (item) => item.inStock ? 'In Stock ✓' : 'Out of Stock';
+            callbacksSelect.getDisabledCallback = (item) => !item.inStock;
+            callbacksSelect.options = products;
+
+            callbacksSelect.addEventListener('change', () => {
+                const value = callbacksSelect.getValue();
+                const items = callbacksSelect.getSelected();
+                document.getElementById('output-callbacks').textContent = JSON.stringify({
+                    skus: value,
+                    products: items.map(p => ({ name: p.name, price: p.price }))
+                }, null, 2);
+            });
+
+            // Example 4-6: Form Integration
+            const formJsonSelect = document.querySelector('#form-json-select');
+            formJsonSelect.options = [
+                ['js', 'JavaScript'],
+                ['ts', 'TypeScript'],
+                ['py', 'Python'],
+                ['react', 'React'],
+                ['vue', 'Vue.js']
+            ];
+
+            const formCsvSelect = document.querySelector('#form-csv-select');
+            formCsvSelect.options = [
+                ['tech', 'Technology'],
+                ['design', 'Design'],
+                ['business', 'Business'],
+                ['marketing', 'Marketing'],
+                ['sales', 'Sales']
+            ];
+
+            const formArraySelect = document.querySelector('#form-array-select');
+            formArraySelect.options = [
+                ['urgent', 'Urgent'],
+                ['feature', 'Feature Request'],
+                ['bug', 'Bug Fix'],
+                ['enhancement', 'Enhancement'],
+                ['documentation', 'Documentation']
+            ];
+
+            // Example 7: Mode-dependent API
+            const singleModeSelect = document.querySelector('#single-mode');
+            singleModeSelect.options = [
+                ['opt1', 'Option 1'],
+                ['opt2', 'Option 2'],
+                ['opt3', 'Option 3']
+            ];
+
+            singleModeSelect.addEventListener('change', () => {
+                const value = singleModeSelect.getValue();
+                const item = singleModeSelect.selectedItem;
+                document.getElementById('output-single').textContent = JSON.stringify({
+                    'getValue()': value,
+                    'selectedItem': item,
+                    'type': typeof value
+                }, null, 2);
+            });
+
+            const multiModeSelect = document.querySelector('#multi-mode');
+            multiModeSelect.options = [
+                ['opt1', 'Option 1'],
+                ['opt2', 'Option 2'],
+                ['opt3', 'Option 3']
+            ];
+
+            multiModeSelect.addEventListener('change', () => {
+                const value = multiModeSelect.getValue();
+                const items = multiModeSelect.getSelected();
+                document.getElementById('output-multi').textContent = JSON.stringify({
+                    'getValue()': value,
+                    'getSelected() count': items.length,
+                    'Array.isArray': Array.isArray(value)
+                }, null, 2);
+            });
+
+            // Example 8: Async Search
+            // 8a. GitHub Users Search
+            const asyncSearchSelect = document.querySelector('#async-search');
+
+            // Mock users for when GitHub API is rate-limited
+            const mockGitHubUsers = [
+                { login: 'octocat', id: 583231 },
+                { login: 'torvalds', id: 1024025 },
+                { login: 'gaearon', id: 810438 },
+                { login: 'tj', id: 25254 },
+                { login: 'sindresorhus', id: 170270 },
+                { login: 'addyosmani', id: 110953 },
+                { login: 'paulirish', id: 39191 },
+                { login: 'substack', id: 12631 },
+                { login: 'mbostock', id: 230541 },
+                { login: 'defunkt', id: 2 }
+            ];
+
+            asyncSearchSelect.searchCallback = async (searchTerm) => {
+                try {
+                    const response = await fetch(`https://api.github.com/search/users?q=${searchTerm}&per_page=10`);
+
+                    if (!response.ok) {
+                        console.warn('GitHub API rate limit reached, using mock data');
+                        // Show error message and fallback data
+                        const term = searchTerm.toLowerCase();
+                        const filtered = mockGitHubUsers.filter(user =>
+                            user.login.toLowerCase().includes(term)
+                        );
+
+                        return [
+                            {
+                                value: '__error__',
+                                label: '⚠️ GitHub API Rate Limit - Showing Mock Data',
+                                subtitle: 'API is temporarily unavailable',
+                                disabled: true
+                            },
+                            ...filtered.map(user => ({
+                                value: user.login,
+                                label: user.login,
+                                subtitle: `ID: ${user.id} (mock data)`,
+                                icon: '👤'
+                            }))
+                        ];
+                    }
+
+                    const data = await response.json();
+
+                    if (!data.items || !Array.isArray(data.items)) {
+                        console.warn('Invalid GitHub API response, using mock data');
+                        const term = searchTerm.toLowerCase();
+                        const filtered = mockGitHubUsers.filter(user =>
+                            user.login.toLowerCase().includes(term)
+                        );
+
+                        return [
+                            {
+                                value: '__error__',
+                                label: '⚠️ Invalid API Response - Showing Mock Data',
+                                subtitle: 'Could not parse GitHub API response',
+                                disabled: true
+                            },
+                            ...filtered.map(user => ({
+                                value: user.login,
+                                label: user.login,
+                                subtitle: `ID: ${user.id} (mock data)`,
+                                icon: '👤'
+                            }))
+                        ];
+                    }
+
+                    return data.items.map(user => ({
+                        value: user.login,
+                        label: user.login,
+                        subtitle: `ID: ${user.id}`,
+                        icon: '👤'
+                    }));
+                } catch (error) {
+                    console.error('GitHub search error:', error);
+                    // Show error and fallback to mock data
+                    const term = searchTerm.toLowerCase();
+                    const filtered = mockGitHubUsers.filter(user =>
+                        user.login.toLowerCase().includes(term)
+                    );
+
+                    return [
+                        {
+                            value: '__error__',
+                            label: '⚠️ Network Error - Showing Mock Data',
+                            subtitle: error.message || 'Could not connect to GitHub API',
+                            disabled: true
+                        },
+                        ...filtered.map(user => ({
+                            value: user.login,
+                            label: user.login,
+                            subtitle: `ID: ${user.id} (mock data)`,
+                            icon: '👤'
+                        }))
+                    ];
+                }
+            };
+
+            asyncSearchSelect.addEventListener('change', () => {
+                const value = asyncSearchSelect.getValue();
+                document.getElementById('output-async').textContent = JSON.stringify(value, null, 2);
+            });
+
+            // 8b. Simulated Product Search
+            const productSearchSelect = document.querySelector('#product-search');
+
+            // Simulated product database
+            const allProducts = [
+                { id: 1, name: 'Laptop Pro 15', category: 'Electronics', price: 1299 },
+                { id: 2, name: 'Wireless Mouse', category: 'Electronics', price: 29 },
+                { id: 3, name: 'Mechanical Keyboard', category: 'Electronics', price: 89 },
+                { id: 4, name: 'USB-C Hub', category: 'Electronics', price: 49 },
+                { id: 5, name: 'Office Chair Deluxe', category: 'Furniture', price: 299 },
+                { id: 6, name: 'Standing Desk', category: 'Furniture', price: 499 },
+                { id: 7, name: 'Desk Lamp LED', category: 'Furniture', price: 39 },
+                { id: 8, name: 'Monitor 27"', category: 'Electronics', price: 349 },
+                { id: 9, name: 'Webcam HD', category: 'Electronics', price: 79 },
+                { id: 10, name: 'Headphones Noise-Canceling', category: 'Electronics', price: 199 },
+                { id: 11, name: 'Coffee Maker', category: 'Kitchen', price: 89 },
+                { id: 12, name: 'Water Bottle', category: 'Kitchen', price: 15 },
+                { id: 13, name: 'Notebook Set', category: 'Stationery', price: 12 },
+                { id: 14, name: 'Pen Set Premium', category: 'Stationery', price: 24 },
+                { id: 15, name: 'Backpack', category: 'Accessories', price: 59 }
+            ];
+
+            productSearchSelect.searchCallback = async (searchTerm) => {
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 300));
+
+                const term = searchTerm.toLowerCase();
+                return allProducts.filter(product =>
+                    product.name.toLowerCase().includes(term) ||
+                    product.category.toLowerCase().includes(term)
+                );
+            };
+
+            productSearchSelect.addEventListener('change', () => {
+                const value = productSearchSelect.getValue();
+                document.getElementById('output-products').textContent = JSON.stringify(value, null, 2);
+            });
+
+            // 8c. Country Search with Flags
+            const countrySearchSelect = document.querySelector('#country-search');
+
+            const countries = [
+                { code: 'us', name: 'United States', flag: '🇺🇸' },
+                { code: 'gb', name: 'United Kingdom', flag: '🇬🇧' },
+                { code: 'de', name: 'Germany', flag: '🇩🇪' },
+                { code: 'fr', name: 'France', flag: '🇫🇷' },
+                { code: 'es', name: 'Spain', flag: '🇪🇸' },
+                { code: 'it', name: 'Italy', flag: '🇮🇹' },
+                { code: 'jp', name: 'Japan', flag: '🇯🇵' },
+                { code: 'cn', name: 'China', flag: '🇨🇳' },
+                { code: 'in', name: 'India', flag: '🇮🇳' },
+                { code: 'br', name: 'Brazil', flag: '🇧🇷' },
+                { code: 'ca', name: 'Canada', flag: '🇨🇦' },
+                { code: 'au', name: 'Australia', flag: '🇦🇺' },
+                { code: 'ru', name: 'Russia', flag: '🇷🇺' },
+                { code: 'kr', name: 'South Korea', flag: '🇰🇷' },
+                { code: 'mx', name: 'Mexico', flag: '🇲🇽' },
+                { code: 'nl', name: 'Netherlands', flag: '🇳🇱' },
+                { code: 'se', name: 'Sweden', flag: '🇸🇪' },
+                { code: 'ch', name: 'Switzerland', flag: '🇨🇭' },
+                { code: 'pl', name: 'Poland', flag: '🇵🇱' },
+                { code: 'be', name: 'Belgium', flag: '🇧🇪' }
+            ];
+
+            countrySearchSelect.searchCallback = async (searchTerm) => {
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 200));
+
+                const term = searchTerm.toLowerCase();
+                return countries.filter(country =>
+                    country.name.toLowerCase().includes(term) ||
+                    country.code.toLowerCase().includes(term)
+                );
+            };
+
+            countrySearchSelect.addEventListener('change', () => {
+                const value = countrySearchSelect.getValue();
+                document.getElementById('output-countries').textContent = JSON.stringify(value, null, 2);
+            });
+        });
+
+        // Global functions for buttons
+        window.showCustomObjectsData = () => {
+            const select = document.querySelector('#custom-objects');
+            const value = select.getValue();
+            const item = select.selectedItem;
+            const selected = select.getSelected();
+
+            document.getElementById('output-custom-objects').textContent = JSON.stringify({
+                'getValue()': value,
+                'selectedItem': item,
+                'getSelected()': selected
+            }, null, 2);
+        };
+
+        window.setCustomObjects = () => {
+            const select = document.querySelector('#custom-objects');
+            select.setSelected([1, 3]); // John and Alice
+        };
+
+        window.showTuplesData = () => {
+            const select = document.querySelector('#tuples');
+            const value = select.getValue();
+            const selected = select.getSelected();
+
+            document.getElementById('output-tuples').textContent = JSON.stringify({
+                'getValue()': value,
+                'getSelected()': selected
+            }, null, 2);
+        };
+
+        window.setTuples = () => {
+            const select = document.querySelector('#tuples');
+            select.setSelected(['js', 'ts']);
+        };
+
+        window.showCallbacksData = () => {
+            const select = document.querySelector('#callbacks');
+            const value = select.getValue();
+            const items = select.getSelected();
+
+            document.getElementById('output-callbacks').textContent = JSON.stringify({
+                'getValue() - SKUs': value,
+                'getSelected()': items.map(p => ({ sku: p.sku, name: p.name, price: p.price }))
+            }, null, 2);
+        };
+
+        window.inspectFormData = (formId) => {
+            const form = document.getElementById(formId);
+            const formData = new FormData(form);
+            const data = {};
+
+            for (let [key, value] of formData.entries()) {
+                if (data[key]) {
+                    // Handle array format
+                    if (!Array.isArray(data[key])) {
+                        data[key] = [data[key]];
+                    }
+                    data[key].push(value);
+                } else {
+                    data[key] = value;
+                }
+            }
+
+            // Also show hidden inputs
+            const hiddenInputs = form.querySelectorAll('input[type="hidden"]');
+            const inputsInfo = Array.from(hiddenInputs).map(input => ({
+                name: input.name,
+                value: input.value
+            }));
+
+            const output = document.getElementById(`output-${formId}`);
+            output.textContent = JSON.stringify({
+                'FormData': data,
+                'Hidden Inputs': inputsInfo
+            }, null, 2);
+        };
+
+        window.handleFormSubmit = (event, formId) => {
+            event.preventDefault();
+            const form = document.getElementById(formId);
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+
+            const output = document.getElementById(`output-${formId}`);
+            output.textContent = `Form submitted!\n\n${JSON.stringify(data, null, 2)}`;
+
+            alert(`Form data: ${JSON.stringify(data, null, 2)}`);
+        };
+
+        window.showSingleModeData = () => {
+            const select = document.querySelector('#single-mode');
+            const value = select.getValue();
+            const item = select.selectedItem;
+
+            document.getElementById('output-single').textContent = JSON.stringify({
+                'getValue()': value,
+                'selectedItem': item,
+                'type': typeof value,
+                'note': 'Returns single value in single-select mode'
+            }, null, 2);
+        };
+
+        window.showMultiModeData = () => {
+            const select = document.querySelector('#multi-mode');
+            const value = select.getValue();
+            const items = select.getSelected();
+
+            document.getElementById('output-multi').textContent = JSON.stringify({
+                'getValue()': value,
+                'getSelected() count': items.length,
+                'Array.isArray(getValue())': Array.isArray(value),
+                'note': 'Returns array in multi-select mode'
+            }, null, 2);
+        };
+
+        window.showAsyncData = () => {
+            const select = document.querySelector('#async-search');
+            const value = select.getValue();
+            const items = select.getSelected();
+
+            document.getElementById('output-async').textContent = JSON.stringify({
+                'getValue()': value,
+                'Selected Users': items.map(u => ({ login: u.value, label: u.label })),
+                'count': items.length
+            }, null, 2);
+        };
+
+        window.showProductData = () => {
+            const select = document.querySelector('#product-search');
+            const value = select.getValue();
+            const items = select.getSelected();
+
+            document.getElementById('output-products').textContent = JSON.stringify({
+                'getValue() - Product IDs': value,
+                'Selected Products': items.map(p => ({ id: p.id, name: p.name, category: p.category })),
+                'count': items.length
+            }, null, 2);
+        };
+    </script>
+</body>
+</html>

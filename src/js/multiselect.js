@@ -162,32 +162,32 @@ class MultiSelect {
 
     buildHTML() {
         // Add multiselect class to container
-        this.element.classList.add('pa-multiselect');
+        this.element.classList.add('ml');
 
         // Add modifier class if checkboxes are hidden
         if (!this.options.showCheckboxes || !this.options.multiple) {
-            this.element.classList.add('pa-multiselect--no-checkboxes');
+            this.element.classList.add('ml--no-checkboxes');
         }
 
         // Create input wrapper
         const inputWrapper = document.createElement('div');
-        inputWrapper.className = 'pa-multiselect__input-wrapper';
+        inputWrapper.className = 'ml__input-wrapper';
 
         // Create search input
         this.input = document.createElement('input');
         this.input.type = 'text';
-        this.input.className = 'pa-multiselect__input';
+        this.input.className = 'ml__input';
         this.input.placeholder = this.options.searchPlaceholder;
         this.input.autocomplete = 'off';
 
         // Create toggle icon
         const toggle = document.createElement('span');
-        toggle.className = 'pa-multiselect__toggle';
+        toggle.className = 'ml__toggle';
         toggle.innerHTML = '▼';
 
         // Create count badge (initially hidden)
         this.countBadge = document.createElement('span');
-        this.countBadge.className = 'pa-multiselect__count-badge';
+        this.countBadge.className = 'ml__count-badge';
         this.countBadge.style.display = 'none';
 
         inputWrapper.appendChild(this.input);
@@ -197,32 +197,32 @@ class MultiSelect {
         // Create floating hint (if provided)
         if (this.options.searchHint) {
             this.hint = document.createElement('div');
-            this.hint.className = 'pa-multiselect__hint';
+            this.hint.className = 'ml__hint';
             this.hint.textContent = this.options.searchHint;
             document.body.appendChild(this.hint);
         }
 
         // Create dropdown
         this.dropdown = document.createElement('div');
-        this.dropdown.className = 'pa-multiselect__dropdown';
+        this.dropdown.className = 'ml__dropdown';
         document.body.appendChild(this.dropdown);
 
         // Create pills container
         this.pillsContainer = document.createElement('div');
-        this.pillsContainer.className = 'pa-multiselect__pills';
+        this.pillsContainer.className = 'ml__pills';
 
         // Create selected items popover (for count display mode)
         this.selectedPopover = document.createElement('div');
-        this.selectedPopover.className = 'pa-multiselect__selected-popover';
+        this.selectedPopover.className = 'ml__selected-popover';
         document.body.appendChild(this.selectedPopover);
 
         // Create wrapper for multiselect + pills
         const wrapper = document.createElement('div');
-        wrapper.className = 'pa-multiselect-wrapper';
+        wrapper.className = 'ml-wrapper';
 
         // Add layout modifier based on pills position
         if (this.options.pillsPosition === 'left' || this.options.pillsPosition === 'right') {
-            wrapper.classList.add('pa-multiselect-wrapper--inline');
+            wrapper.classList.add('ml-wrapper--inline');
         }
 
         // Width classes stay on the multiselect element, not transferred to wrapper
@@ -249,9 +249,9 @@ class MultiSelect {
 
         // Show loader if loading
         if (this.isLoading) {
-            html += '<div class="pa-multiselect__loader">';
+            html += '<div class="ml__loader">';
             html += '<div class="pa-loader pa-loader--sm"></div>';
-            html += `<div class="pa-multiselect__loading-text">${this.options.loadingMessage}</div>`;
+            html += `<div class="ml__loading-text">${this.options.loadingMessage}</div>`;
             html += '</div>';
             this.dropdown.innerHTML = html;
             return;
@@ -259,29 +259,29 @@ class MultiSelect {
 
         // Actions (Select All / Clear All) - only in multi-select mode
         if (this.options.multiple && (this.options.allowSelectAll || this.options.allowClearAll)) {
-            html += '<div class="pa-multiselect__actions">';
+            html += '<div class="ml__actions">';
             if (this.options.allowSelectAll) {
-                html += '<button type="button" class="pa-multiselect__action-btn" data-action="select-all">Select All</button>';
+                html += '<button type="button" class="ml__action-btn" data-action="select-all">Select All</button>';
             }
             if (this.options.allowClearAll) {
-                html += '<button type="button" class="pa-multiselect__action-btn" data-action="clear-all">Clear All</button>';
+                html += '<button type="button" class="ml__action-btn" data-action="clear-all">Clear All</button>';
             }
             html += '</div>';
         }
 
         // Options
-        html += '<div class="pa-multiselect__options">';
+        html += '<div class="ml__options">';
 
         if (this.filteredOptions.length === 0) {
-            html += `<div class="pa-multiselect__empty">${this.options.emptyMessage}</div>`;
+            html += `<div class="ml__empty">${this.options.emptyMessage}</div>`;
         } else {
             // Group options if enabled
             if (this.options.allowGroups) {
                 const groups = this.groupOptions(this.filteredOptions);
                 Object.keys(groups).forEach(groupName => {
-                    html += '<div class="pa-multiselect__group">';
+                    html += '<div class="ml__group">';
                     if (groupName !== '__ungrouped__') {
-                        html += `<div class="pa-multiselect__group-label">${groupName}</div>`;
+                        html += `<div class="ml__group-label">${groupName}</div>`;
                     }
                     groups[groupName].forEach((option, index) => {
                         html += this.renderOption(option, index);
@@ -305,33 +305,33 @@ class MultiSelect {
         const isFocused = index === this.focusedIndex;
         const isDisabled = option.disabled || false;
 
-        let classes = ['pa-multiselect__option'];
-        if (isSelected) classes.push('pa-multiselect__option--selected');
-        if (isFocused) classes.push('pa-multiselect__option--focused');
-        if (isDisabled) classes.push('pa-multiselect__option--disabled');
+        let classes = ['ml__option'];
+        if (isSelected) classes.push('ml__option--selected');
+        if (isFocused) classes.push('ml__option--focused');
+        if (isDisabled) classes.push('ml__option--disabled');
 
         let html = `<div class="${classes.join(' ')}" data-value="${option.value}" data-index="${index}">`;
 
         // Checkbox (only if showCheckboxes is true AND multiple mode is enabled)
         if (this.options.showCheckboxes && this.options.multiple) {
-            html += `<input type="checkbox" class="pa-multiselect__checkbox" ${isSelected ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}>`;
+            html += `<input type="checkbox" class="ml__checkbox" ${isSelected ? 'checked' : ''} ${isDisabled ? 'disabled' : ''}>`;
         }
 
         // Content
-        html += '<div class="pa-multiselect__option-content">';
+        html += '<div class="ml__option-content">';
 
         // Icon (if provided)
         if (option.icon) {
-            html += `<span class="pa-multiselect__option-icon">${option.icon}</span>`;
+            html += `<span class="ml__option-icon">${option.icon}</span>`;
         }
 
         // Text
-        html += '<div class="pa-multiselect__option-text">';
-        html += `<div class="pa-multiselect__option-title">${this.highlightMatch(option.label, this.searchTerm)}</div>`;
+        html += '<div class="ml__option-text">';
+        html += `<div class="ml__option-title">${this.highlightMatch(option.label, this.searchTerm)}</div>`;
 
         // Subtitle (if provided)
         if (option.subtitle) {
-            html += `<div class="pa-multiselect__option-subtitle">${option.subtitle}</div>`;
+            html += `<div class="ml__option-subtitle">${option.subtitle}</div>`;
         }
 
         html += '</div>'; // Close option-text
@@ -410,24 +410,24 @@ class MultiSelect {
         // Render pills or count display
         if (effectiveMode === 'pills') {
             // Standard pills display
-            this.pillsContainer.className = `pa-multiselect__pills pa-multiselect__pills--${this.options.pillsPosition}`;
+            this.pillsContainer.className = `ml__pills ml__pills--${this.options.pillsPosition}`;
             this.pillsContainer.innerHTML = selectedOptions.map(option => `
-                <div class="pa-multiselect__pill">
-                    <span class="pa-multiselect__pill-text">${option.label}</span>
-                    <button type="button" class="pa-multiselect__pill-remove" data-value="${option.value}" aria-label="Remove ${option.label}"></button>
+                <div class="ml__pill">
+                    <span class="ml__pill-text">${option.label}</span>
+                    <button type="button" class="ml__pill-remove" data-value="${option.value}" aria-label="Remove ${option.label}"></button>
                 </div>
             `).join('');
         } else {
             // Count display mode (count or compact)
-            this.pillsContainer.className = `pa-multiselect__count-display pa-multiselect__count-display--${this.options.pillsPosition}`;
+            this.pillsContainer.className = `ml__count-display ml__count-display--${this.options.pillsPosition}`;
             if (count > 0) {
                 const countText = this.options.countFormat.replace('{count}', count);
                 this.pillsContainer.innerHTML = `
-                    <div class="pa-multiselect__count-badge-wrapper">
-                        <button type="button" class="pa-multiselect__count-text" data-action="show-selected">
+                    <div class="ml__count-badge-wrapper">
+                        <button type="button" class="ml__count-text" data-action="show-selected">
                             ${countText}
                         </button>
-                        <button type="button" class="pa-multiselect__count-clear" data-action="clear-count" aria-label="Clear all selections"></button>
+                        <button type="button" class="ml__count-clear" data-action="clear-count" aria-label="Clear all selections"></button>
                     </div>
                 `;
             } else {
@@ -584,8 +584,8 @@ class MultiSelect {
         }
 
         // Option selection
-        const option = e.target.closest('.pa-multiselect__option');
-        if (option && !option.classList.contains('pa-multiselect__option--disabled')) {
+        const option = e.target.closest('.ml__option');
+        if (option && !option.classList.contains('ml__option--disabled')) {
             e.preventDefault();
             const value = option.dataset.value;
             const optionData = this.filteredOptions.find(opt => opt.value === value);
@@ -602,7 +602,7 @@ class MultiSelect {
 
     handlePillClick(e) {
         // Handle count clear button
-        const countClearBtn = e.target.closest('.pa-multiselect__count-clear');
+        const countClearBtn = e.target.closest('.ml__count-clear');
         if (countClearBtn) {
             e.preventDefault();
             e.stopPropagation();
@@ -612,7 +612,7 @@ class MultiSelect {
         }
 
         // Handle count text button
-        const countTextBtn = e.target.closest('.pa-multiselect__count-text');
+        const countTextBtn = e.target.closest('.ml__count-text');
         if (countTextBtn) {
             e.preventDefault();
             e.stopPropagation();
@@ -621,7 +621,7 @@ class MultiSelect {
         }
 
         // Handle pill removal
-        const removeBtn = e.target.closest('.pa-multiselect__pill-remove');
+        const removeBtn = e.target.closest('.ml__pill-remove');
         if (removeBtn) {
             e.preventDefault();
             const value = removeBtn.dataset.value;
@@ -637,7 +637,7 @@ class MultiSelect {
         if (this.showSelectedPopover) {
             const clickedInsidePopover = this.selectedPopover.contains(e.target) ||
                                         this.countBadge.contains(e.target) ||
-                                        (e.target.closest && e.target.closest('.pa-multiselect__count-text'));
+                                        (e.target.closest && e.target.closest('.ml__count-text'));
 
             if (!clickedInsidePopover) {
                 log.debug(`[${this.instanceId}] Closing selected popover due to click outside`);
@@ -690,7 +690,7 @@ class MultiSelect {
     }
 
     scrollToFocused() {
-        const focusedElement = this.dropdown.querySelector('.pa-multiselect__option--focused');
+        const focusedElement = this.dropdown.querySelector('.ml__option--focused');
         if (focusedElement) {
             focusedElement.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         }
@@ -800,8 +800,8 @@ class MultiSelect {
         if (this.isOpen) return;
 
         this.isOpen = true;
-        this.element.classList.add('pa-multiselect--open');
-        this.dropdown.classList.add('pa-multiselect__dropdown--visible');
+        this.element.classList.add('ml--open');
+        this.dropdown.classList.add('ml__dropdown--visible');
         log.info(`[${this.instanceId}] Dropdown opened`);
 
         // Reset placeholder to search placeholder when opening
@@ -820,7 +820,7 @@ class MultiSelect {
 
         // Position hint if it exists
         if (this.hint) {
-            this.hint.classList.add('pa-multiselect__hint--visible');
+            this.hint.classList.add('ml__hint--visible');
             this.positionHint();
         }
     }
@@ -830,10 +830,10 @@ class MultiSelect {
         if (!this.isOpen) return;
 
         this.isOpen = false;
-        this.element.classList.remove('pa-multiselect--open');
-        this.dropdown.classList.remove('pa-multiselect__dropdown--visible');
+        this.element.classList.remove('ml--open');
+        this.dropdown.classList.remove('ml__dropdown--visible');
         if (this.hint) {
-            this.hint.classList.remove('pa-multiselect__hint--visible');
+            this.hint.classList.remove('ml__hint--visible');
         }
         this.searchTerm = '';
         this.input.value = '';
@@ -949,14 +949,14 @@ class MultiSelect {
 
         this.showSelectedPopover = true;
         this.renderSelectedPopover();
-        this.selectedPopover.classList.add('pa-multiselect__selected-popover--visible');
+        this.selectedPopover.classList.add('ml__selected-popover--visible');
         this.positionSelectedPopover();
     }
 
     hideSelectedPopover() {
         log.debug(`[${this.instanceId}] hideSelectedPopover() called`);
         this.showSelectedPopover = false;
-        this.selectedPopover.classList.remove('pa-multiselect__selected-popover--visible');
+        this.selectedPopover.classList.remove('ml__selected-popover--visible');
         this.selectedPopoverPlacement = null; // Reset locked placement
 
         // Clean up Floating UI
@@ -971,15 +971,15 @@ class MultiSelect {
         const count = this.selectedValues.size;
 
         this.selectedPopover.innerHTML = `
-            <div class="pa-multiselect__selected-popover-header">
+            <div class="ml__selected-popover-header">
                 <span>Selected Items (${count})</span>
-                <button type="button" class="pa-multiselect__selected-popover-close" aria-label="Close">&times;</button>
+                <button type="button" class="ml__selected-popover-close" aria-label="Close">&times;</button>
             </div>
-            <div class="pa-multiselect__selected-popover-body">
+            <div class="ml__selected-popover-body">
                 ${selectedOptions.map(option => `
-                    <div class="pa-multiselect__pill">
-                        <span class="pa-multiselect__pill-text">${option.label}</span>
-                        <button type="button" class="pa-multiselect__pill-remove" data-value="${option.value}" aria-label="Remove ${option.label}"></button>
+                    <div class="ml__pill">
+                        <span class="ml__pill-text">${option.label}</span>
+                        <button type="button" class="ml__pill-remove" data-value="${option.value}" aria-label="Remove ${option.label}"></button>
                     </div>
                 `).join('')}
             </div>
@@ -990,7 +990,7 @@ class MultiSelect {
         e.stopPropagation();
 
         // Close button
-        const closeBtn = e.target.closest('.pa-multiselect__selected-popover-close');
+        const closeBtn = e.target.closest('.ml__selected-popover-close');
         if (closeBtn) {
             e.preventDefault();
             this.hideSelectedPopover();
@@ -998,7 +998,7 @@ class MultiSelect {
         }
 
         // Remove button
-        const removeBtn = e.target.closest('.pa-multiselect__pill-remove');
+        const removeBtn = e.target.closest('.ml__pill-remove');
         if (removeBtn) {
             e.preventDefault();
             const value = removeBtn.dataset.value;
@@ -1079,7 +1079,7 @@ class MultiSelect {
         if (this.selectedPopover) this.selectedPopover.remove();
 
         // Remove event listeners (ideally store references to remove properly)
-        this.element.classList.remove('pa-multiselect', 'pa-multiselect--open');
+        this.element.classList.remove('ml', 'ml--open');
 
         console.log('[MultiSelect] Destroyed');
     }

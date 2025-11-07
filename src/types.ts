@@ -18,7 +18,181 @@ export type PillsPosition = 'top' | 'bottom' | 'left' | 'right';
 export type SearchInputMode = 'normal' | 'readonly' | 'hidden';
 
 /**
- * Option structure for the multiselect
+ * Form value format for hidden input
+ */
+export type FormValueFormat = 'json' | 'csv' | 'array';
+
+/**
+ * Support both object arrays and [key, value] tuples
+ */
+export type MultiSelectDataItem<T> = T | [string | number, string];
+
+/**
+ * Generic configuration options for the MultiSelect component
+ * @template T The type of data items
+ */
+export interface MultiSelectConfig<T = any> {
+    // ========================================================================
+    // DATA AND OPTIONS
+    // ========================================================================
+
+    /** Options array - can be objects or [key, value] tuples */
+    options?: T[];
+
+    // ========================================================================
+    // MEMBER/CALLBACK PROPERTIES (following svelte-treeview pattern)
+    // ========================================================================
+
+    /** Member property name for value/ID extraction */
+    valueMember?: string;
+    /** Callback to extract value/ID from item */
+    getValueCallback?: (item: T) => string | number;
+
+    /** Member property name for display value extraction */
+    displayValueMember?: string;
+    /** Callback to extract display value from item */
+    getDisplayValueCallback?: (item: T) => string;
+
+    /** Member property name for search value extraction */
+    searchValueMember?: string;
+    /** Callback to extract search value from item */
+    getSearchValueCallback?: (item: T) => string;
+
+    /** Member property name for icon extraction */
+    iconMember?: string;
+    /** Callback to extract icon from item */
+    getIconCallback?: (item: T) => string;
+
+    /** Member property name for subtitle extraction */
+    subtitleMember?: string;
+    /** Callback to extract subtitle from item */
+    getSubtitleCallback?: (item: T) => string;
+
+    /** Member property name for group extraction */
+    groupMember?: string;
+    /** Callback to extract group from item */
+    getGroupCallback?: (item: T) => string;
+
+    /** Member property name for disabled state extraction */
+    disabledMember?: string;
+    /** Callback to extract disabled state from item */
+    getDisabledCallback?: (item: T) => boolean;
+
+    // ========================================================================
+    // FORM INTEGRATION
+    // ========================================================================
+
+    /** HTML form field ID/name for hidden input */
+    formFieldId?: string;
+    /** Format for form value serialization */
+    formValueFormat?: FormValueFormat;
+    /** Custom callback to format form value */
+    getFormValueCallback?: (selectedValues: (string | number)[]) => string;
+
+    // ========================================================================
+    // BOOLEAN OPTIONS (internal names with 'is' prefix)
+    // ========================================================================
+
+    /** Allow multiple selections (internal: isMultipleEnabled) */
+    isMultipleEnabled?: boolean;
+    /** Enable search/filtering (internal: isSearchEnabled) */
+    isSearchEnabled?: boolean;
+    /** Allow grouping of options (internal: isGroupsAllowed) */
+    isGroupsAllowed?: boolean;
+    /** Show 'Select All' button (internal: isSelectAllAllowed) */
+    isSelectAllAllowed?: boolean;
+    /** Show 'Clear All' button (internal: isClearAllAllowed) */
+    isClearAllAllowed?: boolean;
+    /** Show checkboxes next to options (internal: isCheckboxesShown) */
+    isCheckboxesShown?: boolean;
+    /** Keep Select All/Clear All buttons fixed at top while scrolling (internal: isActionsSticky) */
+    isActionsSticky?: boolean;
+    /** Close dropdown after selecting an option (internal: isCloseOnSelect) */
+    isCloseOnSelect?: boolean;
+    /** Lock dropdown placement after first open (internal: isPlacementLocked) */
+    isPlacementLocked?: boolean;
+    /** Allow adding new options not in the list (internal: isAddNewAllowed) */
+    isAddNewAllowed?: boolean;
+    /** Show count badge next to toggle icon (internal: isCountBadgeShown) */
+    isCountBadgeShown?: boolean;
+
+    // ========================================================================
+    // STRING OPTIONS
+    // ========================================================================
+
+    /** Hint text shown above the input when focused */
+    searchHint?: string;
+    /** Placeholder text for the search input */
+    searchPlaceholder?: string;
+    /** Minimum width for the dropdown (e.g., '20rem', '300px') */
+    dropdownMinWidth?: string | null;
+    /** Display mode for selected items */
+    displayMode?: DisplayMode;
+    /** Position of pills container */
+    pillsPosition?: PillsPosition;
+    /** Template for count display (use {count} placeholder) */
+    countFormat?: string;
+    /** Maximum height for dropdown */
+    maxHeight?: string;
+    /** Message shown when no results found */
+    emptyMessage?: string;
+    /** Message shown while loading async data */
+    loadingMessage?: string;
+    /** Search input display mode */
+    searchInputMode?: SearchInputMode;
+
+    // ========================================================================
+    // NUMBER OPTIONS
+    // ========================================================================
+
+    /** Auto-switch from pills to count when threshold is exceeded */
+    pillsThreshold?: number | null;
+    /** Minimum search length before loading data */
+    minSearchLength?: number;
+
+    // ========================================================================
+    // CALLBACK FUNCTIONS
+    // ========================================================================
+
+    /** Async function to load data: (searchTerm) => Promise<options[]> */
+    searchCallback?: ((searchTerm: string) => Promise<T[]>) | null;
+    /** Callback to add a new option when isAddNewAllowed is true */
+    addNewCallback?: ((value: string) => T | Promise<T>) | null;
+    /** Callback when an option is selected */
+    selectCallback?: ((option: T) => void) | null;
+    /** Callback when an option is deselected */
+    deselectCallback?: ((option: T) => void) | null;
+    /** Callback when selection changes */
+    changeCallback?: ((selectedOptions: T[]) => void) | null;
+
+    // ========================================================================
+    // OTHER OPTIONS
+    // ========================================================================
+
+    /** Container element for dropdown/hint/popover (for Shadow DOM support) */
+    container?: HTMLElement | null;
+
+    /** Host element for appending hidden inputs (for form integration with shadow DOM) */
+    hostElement?: HTMLElement;
+}
+
+/**
+ * Event detail structure for multiselect events
+ * @template T The type of data items
+ */
+export interface MultiSelectEventDetail<T = any> {
+    /** Currently selected options */
+    selectedOptions: T[];
+    /** Selected values array */
+    selectedValues: (string | number)[];
+    /** The option that triggered the event (for select/deselect) */
+    option?: T;
+}
+
+/**
+ * Legacy interface for backward reference
+ * Note: New code should use generic types with member/callback properties
+ * @deprecated Use generic types with valueMember/displayValueMember instead
  */
 export interface MultiSelectOption {
     /** Unique identifier for the option */
@@ -36,79 +210,14 @@ export interface MultiSelectOption {
 }
 
 /**
- * Configuration options for the MultiSelect component
+ * Legacy options interface
+ * @deprecated Use MultiSelectConfig<T> instead
  */
-export interface MultiSelectOptions {
-    /** Options array */
+export interface MultiSelectOptions extends MultiSelectConfig<MultiSelectOption> {
     options?: MultiSelectOption[];
-    /** Hint text shown above the input when focused */
-    searchHint?: string;
-    /** Placeholder text for the search input */
-    searchPlaceholder?: string;
-    /** Allow multiple selections (default: true) */
-    multiple?: boolean;
-    /** Allow grouping of options (default: true) */
-    allowGroups?: boolean;
-    /** Show 'Select All' button (default: true) */
-    allowSelectAll?: boolean;
-    /** Show 'Clear All' button (default: true) */
-    allowClearAll?: boolean;
-    /** Show checkboxes next to options (default: true) */
-    showCheckboxes?: boolean;
-    /** Keep Select All/Clear All buttons fixed at top while scrolling (default: true) */
-    stickyActions?: boolean;
-    /** Close dropdown after selecting an option (default: false) */
-    closeOnSelect?: boolean;
-    /** Lock dropdown placement after first open to prevent jumping when content changes (default: true) */
-    lockPlacement?: boolean;
-    /** Minimum width for the dropdown (e.g., '20rem', '300px') */
-    dropdownMinWidth?: string | null;
-    /** Display mode for selected items */
-    displayMode?: DisplayMode;
-    /** Auto-switch from pills to count when threshold is exceeded */
-    pillsThreshold?: number | null;
-    /** Position of pills container */
-    pillsPosition?: PillsPosition;
-    /** Template for count display (use {count} placeholder) */
-    countFormat?: string;
-    /** Show count badge next to toggle icon */
-    showCountBadge?: boolean;
-    /** Maximum height for dropdown */
-    maxHeight?: string;
-    /** Message shown when no results found */
-    emptyMessage?: string;
-    /** Message shown while loading async data */
-    loadingMessage?: string;
-    /** Minimum search length before loading data */
-    minSearchLength?: number;
-    /** Enable search/filtering (default: true). When false, only keyboard navigation works */
-    enableSearch?: boolean;
-    /** Search input display mode (default: 'normal') */
-    searchInputMode?: SearchInputMode;
-    /** Allow adding new options not in the list (default: false) */
-    allowAddNew?: boolean;
-    /** Async function to load data: (searchTerm) => Promise<options[]> */
-    onSearch?: ((searchTerm: string) => Promise<MultiSelectOption[]>) | null;
-    /** Callback to add a new option when allowAddNew is true */
-    onAddNew?: ((value: string) => MultiSelectOption | Promise<MultiSelectOption>) | null;
-    /** Callback when an option is selected */
-    onSelect?: ((option: MultiSelectOption) => void) | null;
-    /** Callback when an option is deselected */
-    onDeselect?: ((option: MultiSelectOption) => void) | null;
-    /** Callback when selection changes */
-    onChange?: ((selectedOptions: MultiSelectOption[]) => void) | null;
-    /** Container element for dropdown/hint/popover (for Shadow DOM support) */
-    container?: HTMLElement | null;
-}
-
-/**
- * Event detail structure for multiselect events
- */
-export interface MultiSelectEventDetail {
-    /** Currently selected options */
-    selectedOptions: MultiSelectOption[];
-    /** Selected values array */
-    selectedValues: string[];
-    /** The option that triggered the event (for select/deselect) */
-    option?: MultiSelectOption;
+    searchCallback?: ((searchTerm: string) => Promise<MultiSelectOption[]>) | null;
+    addNewCallback?: ((value: string) => MultiSelectOption | Promise<MultiSelectOption>) | null;
+    selectCallback?: ((option: MultiSelectOption) => void) | null;
+    deselectCallback?: ((option: MultiSelectOption) => void) | null;
+    changeCallback?: ((selectedOptions: MultiSelectOption[]) => void) | null;
 }

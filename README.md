@@ -1,5 +1,8 @@
 # MultiSelect Web Component
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![npm version](https://img.shields.io/npm/v/@keenmate/web-multiselect.svg)](https://www.npmjs.com/package/@keenmate/web-multiselect)
+
 A lightweight, accessible multiselect web component with typeahead search, rich content support, and excellent keyboard navigation.
 
 ## Features
@@ -316,7 +319,16 @@ npm run package
 
 ## License
 
-MIT
+Copyright (c) 2024 Keenmate
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+**What this means:**
+- ✅ Free to use in commercial products
+- ✅ Free to modify and distribute
+- ✅ No licensing fees or restrictions
+- ⚠️ Provided "as is" without warranty
+- 📝 Must include copyright notice in copies
 
 ## Credits
 

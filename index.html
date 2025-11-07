@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MultiSelect Web Component - Demo</title>
+    <title>MultiSelect Examples - Choose Your Demo</title>
     <style>
         * {
             margin: 0;
@@ -13,493 +13,197 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             padding: 2rem;
-            background: #f5f5f5;
-            line-height: 1.6;
         }
 
         .container {
-            max-width: 1200px;
-            margin: 0 auto;
+            max-width: 900px;
+            width: 100%;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: white;
         }
 
         h1 {
+            font-size: 3rem;
+            font-weight: 700;
             margin-bottom: 0.5rem;
-            color: #333;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
         }
 
         .subtitle {
-            color: #666;
-            margin-bottom: 2rem;
+            font-size: 1.25rem;
+            opacity: 0.9;
+            font-weight: 300;
         }
 
-        .card {
-            background: white;
-            border-radius: 8px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .card h2 {
-            margin-bottom: 1rem;
-            color: #333;
-            font-size: 1.5rem;
-        }
-
-        .card p {
-            margin-bottom: 1rem;
-            color: #666;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: #333;
-        }
-
-        .form-text {
-            display: block;
-            margin-top: 0.25rem;
+        .version-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
             font-size: 0.875rem;
-            color: #666;
+            margin-top: 0.5rem;
+            backdrop-filter: blur(10px);
         }
 
-        .grid {
+        .cards {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 2rem;
         }
 
-        code {
-            background: #f0f0f0;
-            padding: 0.2rem 0.4rem;
-            border-radius: 3px;
-            font-size: 0.9em;
+        .card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: block;
         }
 
-        /* Let the web component handle all multiselect styling */
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #2d3748;
+        }
+
+        .card-description {
+            color: #718096;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .card-features {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .card-features li {
+            padding: 0.5rem 0;
+            border-top: 1px solid #e2e8f0;
+            font-size: 0.875rem;
+            color: #4a5568;
+            display: flex;
+            align-items: center;
+        }
+
+        .card-features li:before {
+            content: "✓";
+            color: #667eea;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        .badge {
+            display: inline-block;
+            background: #667eea;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 0.5rem;
+        }
+
+        .badge.new {
+            background: #f56565;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            color: white;
+            opacity: 0.8;
+            font-size: 0.875rem;
+        }
+
+        footer a {
+            color: white;
+            text-decoration: underline;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>MultiSelect Web Component</h1>
-        <p class="subtitle">Lightweight multiselect with typeahead search, rich content support, and excellent keyboard navigation</p>
+        <header>
+            <h1>🎨 MultiSelect Examples</h1>
+            <p class="subtitle">Choose a demo to explore</p>
+            <span class="version-badge">v1.0.0-rc01</span>
+        </header>
 
-        <!-- Basic Example -->
-        <div class="card">
-            <h2>Basic MultiSelect</h2>
-            <p>Simple multiselect with basic options</p>
-            <div class="grid">
-                <div class="form-group">
-                    <label>Select Technologies</label>
-                    <multi-select
-                        id="basic-select"
-                        search-placeholder="Search technologies...">
-                    </multi-select>
-                    <small class="form-text">Select multiple programming languages</small>
-                </div>
+        <div class="cards">
+            <!-- Classic Examples -->
+            <a href="examples-classic.html" class="card">
+                <div class="card-icon">📦</div>
+                <h2 class="card-title">Classic Examples</h2>
+                <p class="card-description">
+                    Traditional multiselect demos showing basic functionality and common use cases.
+                </p>
+                <ul class="card-features">
+                    <li>Basic single & multi-select</li>
+                    <li>Grouped options</li>
+                    <li>Rich content (icons, subtitles)</li>
+                    <li>Display modes (pills, count)</li>
+                    <li>Async data loading</li>
+                </ul>
+            </a>
 
-                <div class="form-group">
-                    <label>Select Countries</label>
-                    <multi-select
-                        id="countries-select"
-                        search-placeholder="Search countries...">
-                    </multi-select>
-                    <small class="form-text">Start typing to filter options</small>
-                </div>
-            </div>
+            <!-- New API Examples -->
+            <a href="examples-new-api.html" class="card">
+                <div class="card-icon">🚀</div>
+                <h2 class="card-title">
+                    New Flexible API
+                    <span class="badge new">NEW</span>
+                </h2>
+                <p class="card-description">
+                    Explore the new flexible data handling and form integration features.
+                </p>
+                <ul class="card-features">
+                    <li>Custom object structures</li>
+                    <li>[key, value] tuple arrays</li>
+                    <li>Member/Callback patterns</li>
+                    <li>Form integration (3 formats)</li>
+                    <li>New getValue() API</li>
+                </ul>
+            </a>
         </div>
 
-        <!-- Single Select Mode -->
-        <div class="card">
-            <h2>Single-Select Mode</h2>
-            <p>Only one item can be selected at a time. Use <code>multiple="false"</code></p>
-            <div class="grid">
-                <div class="form-group">
-                    <label>Select Programming Language</label>
-                    <multi-select
-                        id="single-select"
-                        multiple="false"
-                        search-placeholder="Select language...">
-                    </multi-select>
-                    <small class="form-text">Only one language can be selected</small>
-                </div>
-            </div>
-        </div>
-
-        <!-- Single-Select Keyboard Navigation Only -->
-        <div class="card">
-            <h2>Single-Select: Keyboard Navigation Only</h2>
-            <p>No search - use arrow keys, PageUp/PageDown, Home/End to navigate. Press Enter to select.</p>
-            <div class="grid">
-                <div class="form-group">
-                    <label>Select Country (No Search)</label>
-                    <multi-select
-                        id="keyboard-nav-select"
-                        multiple="false"
-                        enable-search="false"
-                        search-input-mode="readonly"
-                        search-placeholder="Use arrow keys to navigate...">
-                    </multi-select>
-                    <small class="form-text">
-                        Try: ↑/↓ arrows, PageUp/Down (10 items), Home/End, Enter to select
-                    </small>
-                </div>
-            </div>
-        </div>
-
-        <!-- Rich Content -->
-        <div class="card">
-            <h2>Rich Content with Icons</h2>
-            <p>Options with icons, subtitles, and multiline content</p>
-            <div class="grid">
-                <div class="form-group">
-                    <label>Select Frameworks</label>
-                    <multi-select
-                        id="frameworks-select"
-                        search-placeholder="Search frameworks...">
-                    </multi-select>
-                    <small class="form-text">Options with icons and descriptions</small>
-                </div>
-            </div>
-        </div>
-
-        <!-- Search Hint -->
-        <div class="card">
-            <h2>Search Hint</h2>
-            <p>Display helpful text above the input to guide users</p>
-            <div class="grid">
-                <div class="form-group">
-                    <label>With Search Hint</label>
-                    <multi-select
-                        id="hint-select"
-                        search-hint="💡 Start typing to filter options"
-                        search-placeholder="Search cities...">
-                    </multi-select>
-                    <small class="form-text">Open the dropdown to see the hint above the input</small>
-                </div>
-            </div>
-        </div>
-
-        <!-- Count Display Mode -->
-        <div class="card">
-            <h2>Count Display Mode</h2>
-            <p>For narrow inputs, display selection count instead of pills</p>
-            <div class="grid">
-                <div class="form-group">
-                    <label>Count Display</label>
-                    <multi-select
-                        id="count-select"
-                        display-mode="count"
-                        count-format="{count} selected"
-                        show-count-badge="true"
-                        search-placeholder="Select..."
-                        style="max-width: 12rem;">
-                    </multi-select>
-                    <small class="form-text">Shows count instead of pills. Click count to view selected items.</small>
-                </div>
-
-                <div class="form-group">
-                    <label>Auto-Switch at Threshold</label>
-                    <multi-select
-                        id="threshold-select"
-                        display-mode="pills"
-                        pills-threshold="3"
-                        show-count-badge="true"
-                        search-placeholder="Select..."
-                        style="max-width: 12rem;">
-                    </multi-select>
-                    <small class="form-text">Shows pills when ≤3 selected, switches to count when >3</small>
-                </div>
-            </div>
-        </div>
-
-        <!-- Event Handling -->
-        <div class="card">
-            <h2>Event Handling</h2>
-            <p>Listen to <code>select</code>, <code>deselect</code>, and <code>change</code> events</p>
-            <div class="form-group">
-                <label>Select Options (Check Console)</label>
-                <multi-select
-                    id="events-select"
-                    search-placeholder="Select options...">
-                </multi-select>
-                <small class="form-text">Open browser console to see events</small>
-            </div>
-            <div id="event-log" style="background: #f9f9f9; padding: 1rem; border-radius: 4px; margin-top: 1rem; font-family: monospace; font-size: 0.875rem; max-height: 200px; overflow-y: auto;">
-                <div style="color: #666;">Event log will appear here...</div>
-            </div>
-        </div>
+        <footer>
+            <p>
+                Created by <a href="https://github.com/keenmate" target="_blank">Keenmate</a> |
+                <a href="https://github.com/keenmate/web-multiselect" target="_blank">GitHub</a> |
+                <a href="docs/api-reference.html" target="_blank">API Documentation</a>
+            </p>
+        </footer>
     </div>
-
-    <script type="module">
-        // Component is loaded via the script tag at the bottom of the page
-        // Sample data
-        const technologies = [
-            { value: 'js', label: 'JavaScript' },
-            { value: 'ts', label: 'TypeScript' },
-            { value: 'python', label: 'Python' },
-            { value: 'java', label: 'Java' },
-            { value: 'csharp', label: 'C#' },
-            { value: 'php', label: 'PHP' },
-            { value: 'ruby', label: 'Ruby' },
-            { value: 'go', label: 'Go' }
-        ];
-
-        const countries = [
-            { value: 'us', label: 'United States' },
-            { value: 'uk', label: 'United Kingdom' },
-            { value: 'de', label: 'Germany' },
-            { value: 'fr', label: 'France' },
-            { value: 'es', label: 'Spain' },
-            { value: 'it', label: 'Italy' },
-            { value: 'jp', label: 'Japan' },
-            { value: 'cn', label: 'China' }
-        ];
-
-        const languages = [
-            { value: 'js', label: 'JavaScript', icon: '🟨' },
-            { value: 'ts', label: 'TypeScript', icon: '🔷' },
-            { value: 'python', label: 'Python', icon: '🐍' },
-            { value: 'java', label: 'Java', icon: '☕' },
-            { value: 'csharp', label: 'C#', icon: '💜' },
-            { value: 'php', label: 'PHP', icon: '🐘' },
-            { value: 'ruby', label: 'Ruby', icon: '💎' },
-            { value: 'go', label: 'Go', icon: '🐹' }
-        ];
-
-        const frameworks = [
-            { value: 'react', label: 'React', icon: '⚛️', subtitle: 'A JavaScript library for building user interfaces' },
-            { value: 'vue', label: 'Vue.js', icon: '🖖', subtitle: 'The Progressive JavaScript Framework' },
-            { value: 'angular', label: 'Angular', icon: '🅰️', subtitle: 'Platform for building web applications' },
-            { value: 'svelte', label: 'Svelte', icon: '🔥', subtitle: 'Cybernetically enhanced web apps' },
-            { value: 'solid', label: 'Solid', icon: '💎', subtitle: 'Simple and performant reactivity' }
-        ];
-
-        const categories = [
-            { value: 'cat1', label: 'Category 1' },
-            { value: 'cat2', label: 'Category 2' },
-            { value: 'cat3', label: 'Category 3' },
-            { value: 'cat4', label: 'Category 4' },
-            { value: 'cat5', label: 'Category 5' },
-            { value: 'cat6', label: 'Category 6' }
-        ];
-
-        const cities = [
-            { value: 'nyc', label: 'New York', icon: '🗽' },
-            { value: 'lon', label: 'London', icon: '🇬🇧' },
-            { value: 'par', label: 'Paris', icon: '🇫🇷' },
-            { value: 'tok', label: 'Tokyo', icon: '🇯🇵' },
-            { value: 'syd', label: 'Sydney', icon: '🇦🇺' },
-            { value: 'ber', label: 'Berlin', icon: '🇩🇪' },
-            { value: 'rom', label: 'Rome', icon: '🇮🇹' },
-            { value: 'bar', label: 'Barcelona', icon: '🇪🇸' },
-            { value: 'ams', label: 'Amsterdam', icon: '🇳🇱' },
-            { value: 'dub', label: 'Dubai', icon: '🇦🇪' }
-        ];
-
-        const allCountries = [
-            { value: 'af', label: 'Afghanistan' },
-            { value: 'al', label: 'Albania' },
-            { value: 'dz', label: 'Algeria' },
-            { value: 'ar', label: 'Argentina' },
-            { value: 'am', label: 'Armenia' },
-            { value: 'au', label: 'Australia' },
-            { value: 'at', label: 'Austria' },
-            { value: 'az', label: 'Azerbaijan' },
-            { value: 'bh', label: 'Bahrain' },
-            { value: 'bd', label: 'Bangladesh' },
-            { value: 'by', label: 'Belarus' },
-            { value: 'be', label: 'Belgium' },
-            { value: 'bz', label: 'Belize' },
-            { value: 'bo', label: 'Bolivia' },
-            { value: 'br', label: 'Brazil' },
-            { value: 'bg', label: 'Bulgaria' },
-            { value: 'kh', label: 'Cambodia' },
-            { value: 'cm', label: 'Cameroon' },
-            { value: 'ca', label: 'Canada' },
-            { value: 'cl', label: 'Chile' },
-            { value: 'cn', label: 'China' },
-            { value: 'co', label: 'Colombia' },
-            { value: 'cr', label: 'Costa Rica' },
-            { value: 'hr', label: 'Croatia' },
-            { value: 'cu', label: 'Cuba' },
-            { value: 'cy', label: 'Cyprus' },
-            { value: 'cz', label: 'Czech Republic' },
-            { value: 'dk', label: 'Denmark' },
-            { value: 'ec', label: 'Ecuador' },
-            { value: 'eg', label: 'Egypt' },
-            { value: 'sv', label: 'El Salvador' },
-            { value: 'ee', label: 'Estonia' },
-            { value: 'et', label: 'Ethiopia' },
-            { value: 'fi', label: 'Finland' },
-            { value: 'fr', label: 'France' },
-            { value: 'ge', label: 'Georgia' },
-            { value: 'de', label: 'Germany' },
-            { value: 'gh', label: 'Ghana' },
-            { value: 'gr', label: 'Greece' },
-            { value: 'gt', label: 'Guatemala' },
-            { value: 'hn', label: 'Honduras' },
-            { value: 'hk', label: 'Hong Kong' },
-            { value: 'hu', label: 'Hungary' },
-            { value: 'is', label: 'Iceland' },
-            { value: 'in', label: 'India' },
-            { value: 'id', label: 'Indonesia' },
-            { value: 'ir', label: 'Iran' },
-            { value: 'iq', label: 'Iraq' },
-            { value: 'ie', label: 'Ireland' },
-            { value: 'il', label: 'Israel' },
-            { value: 'it', label: 'Italy' },
-            { value: 'jm', label: 'Jamaica' },
-            { value: 'jp', label: 'Japan' },
-            { value: 'jo', label: 'Jordan' },
-            { value: 'kz', label: 'Kazakhstan' },
-            { value: 'ke', label: 'Kenya' },
-            { value: 'kw', label: 'Kuwait' },
-            { value: 'lv', label: 'Latvia' },
-            { value: 'lb', label: 'Lebanon' },
-            { value: 'lt', label: 'Lithuania' },
-            { value: 'lu', label: 'Luxembourg' },
-            { value: 'my', label: 'Malaysia' },
-            { value: 'mt', label: 'Malta' },
-            { value: 'mx', label: 'Mexico' },
-            { value: 'ma', label: 'Morocco' },
-            { value: 'np', label: 'Nepal' },
-            { value: 'nl', label: 'Netherlands' },
-            { value: 'nz', label: 'New Zealand' },
-            { value: 'ng', label: 'Nigeria' },
-            { value: 'no', label: 'Norway' },
-            { value: 'om', label: 'Oman' },
-            { value: 'pk', label: 'Pakistan' },
-            { value: 'pa', label: 'Panama' },
-            { value: 'py', label: 'Paraguay' },
-            { value: 'pe', label: 'Peru' },
-            { value: 'ph', label: 'Philippines' },
-            { value: 'pl', label: 'Poland' },
-            { value: 'pt', label: 'Portugal' },
-            { value: 'qa', label: 'Qatar' },
-            { value: 'ro', label: 'Romania' },
-            { value: 'ru', label: 'Russia' },
-            { value: 'sa', label: 'Saudi Arabia' },
-            { value: 'rs', label: 'Serbia' },
-            { value: 'sg', label: 'Singapore' },
-            { value: 'sk', label: 'Slovakia' },
-            { value: 'si', label: 'Slovenia' },
-            { value: 'za', label: 'South Africa' },
-            { value: 'kr', label: 'South Korea' },
-            { value: 'es', label: 'Spain' },
-            { value: 'lk', label: 'Sri Lanka' },
-            { value: 'se', label: 'Sweden' },
-            { value: 'ch', label: 'Switzerland' },
-            { value: 'tw', label: 'Taiwan' },
-            { value: 'th', label: 'Thailand' },
-            { value: 'tr', label: 'Turkey' },
-            { value: 'ua', label: 'Ukraine' },
-            { value: 'ae', label: 'United Arab Emirates' },
-            { value: 'uk', label: 'United Kingdom' },
-            { value: 'us', label: 'United States' },
-            { value: 'uy', label: 'Uruguay' },
-            { value: 've', label: 'Venezuela' },
-            { value: 'vn', label: 'Vietnam' }
-        ];
-
-        // Initialize components
-        document.addEventListener('DOMContentLoaded', () => {
-            // Basic select
-            const basicSelect = document.getElementById('basic-select');
-            if (basicSelect) {
-                basicSelect.options = technologies;
-                // Set selected values after options are loaded
-                basicSelect.setSelected(['js', 'ts']);
-            }
-
-            // Countries select
-            const countriesSelect = document.getElementById('countries-select');
-            if (countriesSelect) {
-                countriesSelect.options = countries;
-            }
-
-            // Single select
-            const singleSelect = document.getElementById('single-select');
-            if (singleSelect) {
-                singleSelect.options = languages;
-                singleSelect.setSelected(['python']);
-            }
-
-            // Keyboard navigation select (no search, 100+ options)
-            const keyboardNavSelect = document.getElementById('keyboard-nav-select');
-            if (keyboardNavSelect) {
-                keyboardNavSelect.options = allCountries;
-                keyboardNavSelect.setSelected(['us']);
-            }
-
-            // Frameworks select
-            const frameworksSelect = document.getElementById('frameworks-select');
-            if (frameworksSelect) {
-                frameworksSelect.options = frameworks;
-            }
-
-            // Hint select
-            const hintSelect = document.getElementById('hint-select');
-            if (hintSelect) {
-                hintSelect.options = cities;
-            }
-
-            // Count select
-            const countSelect = document.getElementById('count-select');
-            if (countSelect) {
-                countSelect.options = languages;
-                countSelect.setSelected(['js', 'ts', 'python']);
-            }
-
-            // Threshold select
-            const thresholdSelect = document.getElementById('threshold-select');
-            if (thresholdSelect) {
-                thresholdSelect.options = categories;
-                thresholdSelect.setSelected(['cat1']);
-            }
-
-            // Events select
-            const eventsSelect = document.getElementById('events-select');
-            const eventLog = document.getElementById('event-log');
-
-            if (eventsSelect) {
-                eventsSelect.options = technologies;
-
-                const logEvent = (eventName, detail) => {
-                    const timestamp = new Date().toLocaleTimeString();
-                    const logEntry = document.createElement('div');
-                    logEntry.style.marginBottom = '0.5rem';
-                    logEntry.innerHTML = `<strong style="color: #0066cc;">[${timestamp}] ${eventName}:</strong> ${JSON.stringify(detail, null, 2)}`;
-                    eventLog.appendChild(logEntry);
-                    eventLog.scrollTop = eventLog.scrollHeight;
-                };
-
-                eventsSelect.addEventListener('select', (e) => {
-                    console.log('select event:', e.detail);
-                    logEvent('select', { option: e.detail.option?.label });
-                });
-
-                eventsSelect.addEventListener('deselect', (e) => {
-                    console.log('deselect event:', e.detail);
-                    logEvent('deselect', { option: e.detail.option?.label });
-                });
-
-                eventsSelect.addEventListener('change', (e) => {
-                    console.log('change event:', e.detail);
-                    logEvent('change', { count: e.detail.selectedOptions?.length });
-                });
-            }
-        });
-    </script>
-
-    <!-- Development mode: Load from src -->
-    <script type="module" src="/src/index.ts"></script>
 </body>
 </html>
