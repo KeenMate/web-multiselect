@@ -1,0 +1,175 @@
+// ==============================================================================
+// OPTIONS & CONTENT
+// ==============================================================================
+// Options list, groups, checkbox, option content, icons, text, and states
+
+@use 'variables' as *;
+
+// ==============================================================================
+// OPTIONS CONTAINER
+// ==============================================================================
+
+// Options container
+.ml__options {
+  padding: var(--ml-options-padding, $ml-options-padding);
+}
+
+// ==============================================================================
+// GROUPS
+// ==============================================================================
+
+// Group
+.ml__group {
+  & + & {
+    border-top: var(--ml-group-border-top, $ml-group-border-top);
+    margin-top: var(--ml-group-margin-top, $ml-group-margin-top);
+    padding-top: var(--ml-group-padding-top, $ml-group-padding-top);
+  }
+}
+
+// Group label
+.ml__group-label {
+  padding: var(--ml-group-label-padding, $ml-group-label-padding);
+  font-size: var(--ml-group-label-font-size, $ml-group-label-font-size);
+  font-weight: var(--ml-group-label-font-weight, $ml-group-label-font-weight);
+  color: var(--ml-group-label-color, $ml-group-label-color);
+  text-transform: var(--ml-group-label-transform, $ml-group-label-transform);
+  letter-spacing: var(--ml-group-label-letter-spacing, $ml-group-label-letter-spacing);
+}
+
+// ==============================================================================
+// INDIVIDUAL OPTION
+// ==============================================================================
+
+// Individual option
+.ml__option {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ml-option-gap, $ml-option-gap);
+  padding: var(--ml-option-padding, $ml-option-padding);
+  cursor: pointer;
+  transition: background-color var(--ml-transition-fast, $ml-transition-fast) var(--ml-easing-snappy, $ml-easing-snappy);
+
+  &:hover {
+    background: var(--ml-option-bg-hover, $ml-option-bg-hover);
+  }
+
+  &--focused {
+    background: var(--ml-option-bg-focused, $ml-option-bg-focused);
+    outline: var(--ml-option-outline-focused, $ml-option-outline-focused);
+    outline-offset: var(--ml-option-focus-outline-offset, $ml-option-focus-outline-offset);
+  }
+
+  &--selected {
+    background: var(--ml-option-bg-selected, $ml-option-bg-selected);
+  }
+
+  &--disabled {
+    opacity: var(--ml-disabled-opacity, $ml-disabled-opacity);
+    cursor: not-allowed;
+
+    &:hover {
+      background: var(--ml-option-bg, $ml-option-bg);
+    }
+  }
+}
+
+// ==============================================================================
+// CHECKBOX
+// ==============================================================================
+
+// Checkbox
+.ml__checkbox {
+  flex-shrink: 0;
+  margin-top: var(--ml-checkbox-margin-top, $ml-checkbox-margin-top); // Align with first line of text
+  cursor: pointer;
+
+  .ml__option--disabled & {
+    cursor: not-allowed;
+  }
+}
+
+// ==============================================================================
+// OPTION CONTENT
+// ==============================================================================
+
+// Option content (rich content wrapper)
+.ml__option-content {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  gap: var(--ml-option-content-gap, $ml-option-content-gap);
+  min-width: 0; // Allow text truncation
+}
+
+// Option icon/SVG
+.ml__option-icon {
+  flex-shrink: 0;
+  width: var(--ml-option-icon-size, $ml-option-icon-size);
+  height: var(--ml-option-icon-size, $ml-option-icon-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--ml-option-icon-font-size, $ml-option-icon-font-size);
+
+  svg {
+    width: 100%;
+    height: 100%;
+    fill: currentColor;
+  }
+}
+
+// Option text container
+.ml__option-text {
+  flex: 1;
+  min-width: 0;
+}
+
+// Option title/main text
+.ml__option-title {
+  font-size: var(--ml-option-title-font-size, $ml-option-title-font-size);
+  color: var(--ml-option-title-color, $ml-option-title-color);
+  line-height: var(--ml-line-height-relaxed, $ml-line-height-relaxed);
+
+  // Highlight matched text
+  mark {
+    background: var(--ml-option-mark-bg, $ml-option-mark-bg);
+    color: var(--ml-option-mark-color, $ml-option-mark-color);
+    font-weight: var(--ml-option-mark-font-weight, $ml-option-mark-font-weight);
+  }
+}
+
+// Option subtitle (multiline support)
+.ml__option-subtitle {
+  margin-top: var(--ml-option-subtitle-margin-top, $ml-option-subtitle-margin-top);
+  font-size: var(--ml-option-subtitle-font-size, $ml-option-subtitle-font-size);
+  color: var(--ml-option-subtitle-color, $ml-option-subtitle-color);
+  line-height: var(--ml-option-subtitle-line-height, $ml-option-subtitle-line-height);
+}
+
+// ==============================================================================
+// STATES
+// ==============================================================================
+
+// Empty state
+.ml__empty {
+  padding: var(--ml-empty-padding, $ml-empty-padding);
+  text-align: center;
+  font-size: var(--ml-empty-font-size, $ml-empty-font-size);
+  color: var(--ml-empty-color, $ml-empty-color);
+}
+
+// Loading state
+.ml__loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ml-loader-padding, $ml-loader-padding);
+  gap: var(--ml-loader-gap, $ml-loader-gap);
+}
+
+.ml__loading-text {
+  font-size: var(--ml-loading-text-font-size, $ml-loading-text-font-size);
+  color: var(--ml-loading-text-color, $ml-loading-text-color);
+}

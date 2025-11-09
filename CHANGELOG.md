@@ -7,7 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc03] - 2025-11-09
+
+### Fixed
+- **SSR Compatibility** - Fixed "HTMLElement is not defined" error in Server-Side Rendering environments
+  - Added HTMLElement stub for safe module imports in Node.js SSR contexts (SvelteKit, Next.js, Nuxt, etc.)
+  - Component remains client-side only but module can now be safely imported during SSR
+  - Added browser environment checks around all `customElements` API calls
+  - No special client-side wrappers or dynamic imports required
+
+## [1.0.0-rc02] - Previous Release
+
 ### Added
+
+#### Pill Tooltips
+- **`enable-pill-tooltips` attribute** - Enable tooltips on selected item pills
+- **`pill-tooltip-placement` attribute** - Control tooltip position ('top', 'bottom', 'left', 'right')
+- **`pill-tooltip-delay` attribute** - Customize tooltip show delay (default: 300ms, previously 500ms)
+- **`pill-tooltip-offset` attribute** - Control distance between pill and tooltip (default: 8px)
+- **`getPillTooltipCallback` property** - Custom callback for tooltip content
+- **Separate tooltips** for pill text vs remove button to prevent overlap
+- **Floating UI integration** with `strategy: 'fixed'` for proper Shadow DOM positioning
+- Tooltips automatically clean up on component updates
+
+#### Display Mode Enhancements
+- **Enhanced `getCountPillCallback`** - Now supports optional `moreCount` parameter for i18n/pluralization
+  - When `moreCount` is provided: Used for "+X more" badge in partial mode
+  - When `moreCount` is undefined: Used for total count display in count mode
+  - Enables unified i18n handling: `(count: number, moreCount?: number) => string`
 
 #### Flexible Data Handling (Major Feature)
 - **Generic Type Support**: Component now supports `PureMultiSelect<T>` and `MultiSelectElement<T>` for any data structure
@@ -46,6 +73,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive API documentation for all semantic variables
 
 ### Changed
+
+#### Tooltip Improvements
+- **Default tooltip delay reduced** from 500ms to 300ms for faster response
+- **Tooltip attachment** now targets pill text element instead of entire pill to prevent overlap with remove button
 
 #### Breaking Changes - Data Handling
 - **Internal property names** now use `is` prefix for booleans:

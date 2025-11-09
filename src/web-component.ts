@@ -1,8 +1,22 @@
 import { PureMultiSelect } from './multiselect';
 import type { MultiSelectConfig, MultiSelectEventDetail } from './types';
-import styles from './scss/_multiselect.scss?inline';
+import styles from './scss/main.scss?inline';
 
-export class MultiSelectElement<T = any> extends HTMLElement {
+// SSR compatibility: provide stub HTMLElement if not in browser
+const BaseElement = (typeof HTMLElement !== 'undefined' ? HTMLElement : class {}) as typeof HTMLElement;
+
+// Type declarations for build-time constants
+declare const __VERSION__: string;
+
+// Instance tracking for global API
+const instances = new Set<MultiSelectElement>();
+
+// Export for global API
+export function getAllInstances(): MultiSelectElement[] {
+    return Array.from(instances);
+}
+
+export class MultiSelectElement<T = any> extends BaseElement {
     private picker?: PureMultiSelect<T>;
     private containerElement?: HTMLDivElement;
     private shadow: ShadowRoot;
@@ -26,8 +40,14 @@ export class MultiSelectElement<T = any> extends HTMLElement {
     private _disabledMember?: string;
     private _getDisabledCallback?: (item: T) => boolean;
 
-    // Form integration callbacks
-    private _getFormValueCallback?: (selectedValues: (string | number)[]) => string;
+    // Value formatting callbacks
+    private _getValueFormatCallback?: (selectedValues: (string | number)[]) => string;
+
+    // Tooltip callbacks
+    private _getPillTooltipCallback?: (item: T) => string | HTMLElement;
+
+    // Count pill callback
+    private _getCountPillCallback?: (count: number, moreCount?: number) => string;
 
     // Event callbacks
     private _searchCallback?: (searchTerm: string) => Promise<T[]>;
@@ -41,8 +61,8 @@ export class MultiSelectElement<T = any> extends HTMLElement {
             // Existing attributes (external names - standard/familiar)
             'search-hint', 'search-placeholder', 'multiple', 'allow-groups',
             'allow-select-all', 'allow-clear-all', 'show-checkboxes', 'sticky-actions', 'close-on-select',
-            'lock-placement', 'dropdown-min-width', 'display-mode', 'pills-threshold', 'pills-position',
-            'count-format', 'show-count-badge', 'max-height', 'empty-message',
+            'lock-placement', 'dropdown-min-width', 'pills-display-mode', 'pills-threshold', 'pills-max-visible',
+            'pills-threshold-mode', 'pills-position', 'show-count-badge', 'max-height', 'empty-message',
             'loading-message', 'min-search-length', 'enable-search', 'search-input-mode', 'allow-add-new',
             'initial-values',
 
@@ -51,21 +71,39 @@ export class MultiSelectElement<T = any> extends HTMLElement {
             'icon-member', 'subtitle-member', 'group-member', 'disabled-member',
 
             // Form integration
-            'name', 'form-value-format'
+            'name', 'value-format',
+
+            // Tooltip options
+            'enable-pill-tooltips', 'pill-tooltip-placement',
+
+            // Debug
+            'show-debug-info'
         ];
     }
 
     constructor() {
         super();
         this.shadow = this.attachShadow({ mode: 'open' });
+
+        // Inject styles immediately to prevent FOUC
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = styles;
+        this.shadow.appendChild(styleSheet);
+
+        // Mark as ready after initialization to enable placeholder visibility
+        requestAnimationFrame(() => {
+            this.setAttribute('data-ready', '');
+        });
     }
 
     connectedCallback() {
+        instances.add(this);
         this.render();
         this.initializePicker();
     }
 
     disconnectedCallback() {
+        instances.delete(this);
         if (this.picker) {
             this.picker.destroy();
         }
@@ -82,11 +120,6 @@ export class MultiSelectElement<T = any> extends HTMLElement {
     }
 
     private render() {
-        // Inject styles
-        const styleSheet = document.createElement('style');
-        styleSheet.textContent = styles;
-        this.shadow.appendChild(styleSheet);
-
         // Create container element
         this.containerElement = document.createElement('div');
         this.containerElement.setAttribute('data-multiselect', '');
@@ -97,6 +130,75 @@ export class MultiSelectElement<T = any> extends HTMLElement {
         }
 
         this.shadow.appendChild(this.containerElement);
+
+        // Add debug info if enabled
+        if (this.getAttribute('show-debug-info') === 'true') {
+            this.renderDebugInfo();
+        }
+    }
+
+    private renderDebugInfo() {
+        // Remove existing debug info if present
+        const existingDebug = this.shadow.querySelector('.ml-debug-info');
+        if (existingDebug) {
+            existingDebug.remove();
+        }
+
+        // Create debug info container
+        const debugContainer = document.createElement('div');
+        debugContainer.className = 'ml-debug-info';
+
+        const details = document.createElement('details');
+        const summary = document.createElement('summary');
+        summary.textContent = 'Debug Info';
+
+        const statsDiv = document.createElement('div');
+        statsDiv.className = 'ml-debug-stats';
+
+        details.appendChild(summary);
+        details.appendChild(statsDiv);
+        debugContainer.appendChild(details);
+
+        this.shadow.appendChild(debugContainer);
+
+        // Update debug info periodically
+        this.updateDebugInfo();
+    }
+
+    private updateDebugInfo() {
+        const statsDiv = this.shadow.querySelector('.ml-debug-stats');
+        if (!statsDiv || !this.picker) return;
+
+        const version = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'unknown';
+        const totalInstances = getAllInstances().length;
+        const selected = this.picker.getSelected();
+        const selectedCount = selected.length;
+        const totalOptions = this._options?.length || 0;
+
+        // Access internal state via any type cast to avoid TS errors
+        const pickerAny = this.picker as any;
+        const isDropdownOpen = pickerAny.isOpen || false;
+        const searchTerm = pickerAny.searchTerm || '';
+        const isLoading = pickerAny.isLoading || false;
+        const filteredCount = pickerAny.filteredOptions?.length || 0;
+
+        statsDiv.innerHTML = `
+            <span>Version: ${version}</span>
+            <span>Total Instances: ${totalInstances}</span>
+            <span>Options: ${totalOptions}</span>
+            <span>Filtered: ${filteredCount}</span>
+            <span>Selected: ${selectedCount}</span>
+            <span>Dropdown: ${isDropdownOpen ? 'Open' : 'Closed'}</span>
+            <span>Search: ${searchTerm || 'none'}</span>
+            <span>Loading: ${isLoading ? 'Yes' : 'No'}</span>
+        `;
+
+        // Update again after a delay to catch state changes
+        setTimeout(() => {
+            if (this.getAttribute('show-debug-info') === 'true') {
+                this.updateDebugInfo();
+            }
+        }, 500);
     }
 
     private initializePicker() {
@@ -119,9 +221,9 @@ export class MultiSelectElement<T = any> extends HTMLElement {
             searchHint: this.getAttribute('search-hint') || undefined,
             searchPlaceholder: this.getAttribute('search-placeholder') || 'Search...',
             dropdownMinWidth: this.getAttribute('dropdown-min-width') || undefined,
-            displayMode: (this.getAttribute('display-mode') as any) || 'pills',
+            pillsDisplayMode: (this.getAttribute('pills-display-mode') as any) || 'pills',
             pillsPosition: (this.getAttribute('pills-position') as any) || 'bottom',
-            countFormat: this.getAttribute('count-format') || '{count} selected',
+            pillsThresholdMode: (this.getAttribute('pills-threshold-mode') as any) || 'count',
             maxHeight: this.getAttribute('max-height') || '20rem',
             emptyMessage: this.getAttribute('empty-message') || 'No results found',
             loadingMessage: this.getAttribute('loading-message') || 'Loading...',
@@ -129,6 +231,7 @@ export class MultiSelectElement<T = any> extends HTMLElement {
 
             // Number options
             pillsThreshold: this.getAttribute('pills-threshold') ? parseInt(this.getAttribute('pills-threshold')!) : undefined,
+            pillsMaxVisible: this.getAttribute('pills-max-visible') ? parseInt(this.getAttribute('pills-max-visible')!) : undefined,
             minSearchLength: this.getAttribute('min-search-length') ? parseInt(this.getAttribute('min-search-length')!) : 0,
 
             // Boolean options (map external to internal with 'is' prefix)
@@ -162,10 +265,25 @@ export class MultiSelectElement<T = any> extends HTMLElement {
             getGroupCallback: this._getGroupCallback,
             getDisabledCallback: this._getDisabledCallback,
 
-            // Form integration
+            // Form integration & value formatting
             formFieldId: this.getAttribute('name') || undefined,
-            formValueFormat: (this.getAttribute('form-value-format') as any) || 'json',
-            getFormValueCallback: this._getFormValueCallback,
+            valueFormat: (this.getAttribute('value-format') as any) || 'json',
+            getValueFormatCallback: this._getValueFormatCallback,
+
+            // Tooltip options
+            isPillTooltipsEnabled: this.getAttribute('enable-pill-tooltips') === 'true',
+            getPillTooltipCallback: this._getPillTooltipCallback,
+            pillTooltipPlacement: (this.getAttribute('pill-tooltip-placement') as any) || 'top',
+            pillTooltipDelay: parseInt(this.getAttribute('pill-tooltip-delay') || '300'),
+            pillTooltipOffset: parseInt(this.getAttribute('pill-tooltip-offset') || '8'),
+
+            // Count pill callback
+            getCountPillCallback: this._getCountPillCallback || ((count: number, moreCount?: number) => {
+                if (moreCount !== undefined) {
+                    return `+${moreCount} more`;
+                }
+                return `${count} selected`;
+            }),
 
             // Data and callbacks
             options: this._options,
@@ -380,22 +498,79 @@ export class MultiSelectElement<T = any> extends HTMLElement {
         return this.getAttribute('name');
     }
 
-    set formValueFormat(value: 'json' | 'csv' | 'array' | null) {
-        if (value) this.setAttribute('form-value-format', value);
-        else this.removeAttribute('form-value-format');
+    set valueFormat(value: 'json' | 'csv' | 'array' | null) {
+        if (value) this.setAttribute('value-format', value);
+        else this.removeAttribute('value-format');
     }
 
-    get formValueFormat(): string | null {
-        return this.getAttribute('form-value-format');
+    get valueFormat(): string | null {
+        return this.getAttribute('value-format');
     }
 
-    set getFormValueCallback(callback: ((values: (string | number)[]) => string) | undefined) {
-        this._getFormValueCallback = callback;
+    set getValueFormatCallback(callback: ((values: (string | number)[]) => string) | undefined) {
+        this._getValueFormatCallback = callback;
         this.reinitialize();
     }
 
-    get getFormValueCallback() {
-        return this._getFormValueCallback;
+    get getValueFormatCallback() {
+        return this._getValueFormatCallback;
+    }
+
+    // Pills display options
+    set thresholdMode(value: 'count' | 'partial' | null) {
+        if (value) this.setAttribute('threshold-mode', value);
+        else this.removeAttribute('threshold-mode');
+    }
+
+    get thresholdMode(): string | null {
+        return this.getAttribute('threshold-mode');
+    }
+
+    set pillsMaxVisible(value: number | null) {
+        if (value !== null) this.setAttribute('pills-max-visible', String(value));
+        else this.removeAttribute('pills-max-visible');
+    }
+
+    get pillsMaxVisible(): number | null {
+        const value = this.getAttribute('pills-max-visible');
+        return value ? parseInt(value) : null;
+    }
+
+    // Tooltip options
+    set enablePillTooltips(value: boolean) {
+        if (value) this.setAttribute('enable-pill-tooltips', 'true');
+        else this.removeAttribute('enable-pill-tooltips');
+    }
+
+    get enablePillTooltips(): boolean {
+        return this.getAttribute('enable-pill-tooltips') === 'true';
+    }
+
+    set pillTooltipPlacement(value: string | null) {
+        if (value) this.setAttribute('pill-tooltip-placement', value);
+        else this.removeAttribute('pill-tooltip-placement');
+    }
+
+    get pillTooltipPlacement(): string | null {
+        return this.getAttribute('pill-tooltip-placement');
+    }
+
+    set getPillTooltipCallback(callback: ((item: T) => string | HTMLElement) | undefined) {
+        this._getPillTooltipCallback = callback;
+        this.reinitialize();
+    }
+
+    get getPillTooltipCallback() {
+        return this._getPillTooltipCallback;
+    }
+
+    set getCountPillCallback(callback: ((count: number, moreCount?: number) => string) | undefined) {
+        this._getCountPillCallback = callback;
+        this.reinitialize();
+    }
+
+    get getCountPillCallback() {
+        return this._getCountPillCallback;
     }
 
     // Event callbacks
@@ -475,7 +650,9 @@ export class MultiSelectElement<T = any> extends HTMLElement {
     }
 }
 
-// Auto-register the custom element
-if (!customElements.get('multi-select')) {
-    customElements.define('multi-select', MultiSelectElement);
+// Auto-register the custom element (browser only)
+if (typeof window !== 'undefined' && typeof customElements !== 'undefined') {
+    if (!customElements.get('multi-select')) {
+        customElements.define('multi-select', MultiSelectElement);
+    }
 }

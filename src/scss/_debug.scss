@@ -1,0 +1,60 @@
+// ==============================================================================
+// DEBUG INFO PANEL
+// ==============================================================================
+// Debug information display for development and troubleshooting
+
+@use 'variables' as *;
+
+.ml-debug-info {
+    margin-top: $ml-spacing-xs;
+    padding: $ml-spacing-xs;
+    background-color: $ml-color-neutral-lightest;
+    border: 1px solid $ml-color-neutral-light;
+    border-radius: $ml-border-radius;
+    font-size: $ml-font-size-xs;
+    color: $ml-color-neutral-darkest;
+
+    details {
+        summary {
+            cursor: pointer;
+            font-weight: $ml-font-weight-semibold;
+            color: $ml-color-accent-dark;
+            user-select: none;
+            padding: $ml-spacing-xs;
+            border-radius: $ml-border-radius-sm;
+
+            &:hover {
+                background-color: $ml-color-neutral-lighter;
+            }
+
+            &:focus {
+                outline: 2px solid $ml-color-accent-base;
+                outline-offset: 2px;
+            }
+        }
+    }
+
+    .ml-debug-stats {
+        display: flex;
+        flex-direction: column;
+        gap: $ml-spacing-xs;
+        margin-top: $ml-spacing-xs;
+        padding: $ml-spacing-xs;
+        background-color: $ml-color-white;
+        border-radius: $ml-border-radius-sm;
+
+        span {
+            display: flex;
+            justify-content: space-between;
+            padding: 2px 4px;
+            font-family: monospace;
+            font-size: $ml-font-size-2xs;
+
+            &::before {
+                content: '•';
+                margin-right: $ml-spacing-xs;
+                color: $ml-color-accent-base;
+            }
+        }
+    }
+}

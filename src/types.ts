@@ -2,10 +2,8 @@
  * Type definitions for the MultiSelect component
  */
 
-/**
- * Display mode for selected items
- */
-export type DisplayMode = 'pills' | 'count' | 'compact';
+import type { Placement } from '@floating-ui/dom';
+
 
 /**
  * Position of the pills container relative to the input
@@ -18,9 +16,19 @@ export type PillsPosition = 'top' | 'bottom' | 'left' | 'right';
 export type SearchInputMode = 'normal' | 'readonly' | 'hidden';
 
 /**
- * Form value format for hidden input
+ * Value format for serialization (forms and callbacks)
  */
-export type FormValueFormat = 'json' | 'csv' | 'array';
+export type ValueFormat = 'json' | 'csv' | 'array';
+
+/**
+ * Threshold behavior mode when pills exceed threshold
+ */
+export type PillsThresholdMode = 'count' | 'partial';
+
+/**
+ * Display mode for selected items (pills area)
+ */
+export type PillsDisplayMode = 'pills' | 'count' | 'compact' | 'partial';
 
 /**
  * Support both object arrays and [key, value] tuples
@@ -79,15 +87,15 @@ export interface MultiSelectConfig<T = any> {
     getDisabledCallback?: (item: T) => boolean;
 
     // ========================================================================
-    // FORM INTEGRATION
+    // FORM INTEGRATION & VALUE FORMATTING
     // ========================================================================
 
     /** HTML form field ID/name for hidden input */
     formFieldId?: string;
-    /** Format for form value serialization */
-    formValueFormat?: FormValueFormat;
-    /** Custom callback to format form value */
-    getFormValueCallback?: (selectedValues: (string | number)[]) => string;
+    /** Format for value serialization (forms and callbacks) */
+    valueFormat?: ValueFormat;
+    /** Custom callback to format value */
+    getValueFormatCallback?: (selectedValues: (string | number)[]) => string;
 
     // ========================================================================
     // BOOLEAN OPTIONS (internal names with 'is' prefix)
@@ -126,12 +134,12 @@ export interface MultiSelectConfig<T = any> {
     searchPlaceholder?: string;
     /** Minimum width for the dropdown (e.g., '20rem', '300px') */
     dropdownMinWidth?: string | null;
-    /** Display mode for selected items */
-    displayMode?: DisplayMode;
+    /** Display mode for selected items in pills area */
+    pillsDisplayMode?: PillsDisplayMode;
     /** Position of pills container */
     pillsPosition?: PillsPosition;
-    /** Template for count display (use {count} placeholder) */
-    countFormat?: string;
+    /** Threshold behavior mode: 'count' shows count badge, 'partial' shows limited pills + more badge */
+    pillsThresholdMode?: PillsThresholdMode;
     /** Maximum height for dropdown */
     maxHeight?: string;
     /** Message shown when no results found */
@@ -147,6 +155,8 @@ export interface MultiSelectConfig<T = any> {
 
     /** Auto-switch from pills to count when threshold is exceeded */
     pillsThreshold?: number | null;
+    /** Maximum number of pills to show in partial mode (used with thresholdMode='partial') */
+    pillsMaxVisible?: number | null;
     /** Minimum search length before loading data */
     minSearchLength?: number;
 
@@ -164,6 +174,23 @@ export interface MultiSelectConfig<T = any> {
     deselectCallback?: ((option: T) => void) | null;
     /** Callback when selection changes */
     changeCallback?: ((selectedOptions: T[]) => void) | null;
+    /** Callback to format count pill text (for i18n/pluralization). When moreCount is provided, it's for the "+X more" badge in partial mode. */
+    getCountPillCallback?: ((count: number, moreCount?: number) => string) | null;
+
+    // ========================================================================
+    // TOOLTIP OPTIONS
+    // ========================================================================
+
+    /** Enable tooltips on selected item pills (internal: isPillTooltipsEnabled) */
+    isPillTooltipsEnabled?: boolean;
+    /** Callback to generate custom tooltip content for a pill */
+    getPillTooltipCallback?: ((item: T) => string | HTMLElement) | null;
+    /** Tooltip placement relative to pill */
+    pillTooltipPlacement?: Placement;
+    /** Delay before showing tooltip in milliseconds */
+    pillTooltipDelay?: number;
+    /** Offset distance for tooltip in pixels */
+    pillTooltipOffset?: number;
 
     // ========================================================================
     // OTHER OPTIONS

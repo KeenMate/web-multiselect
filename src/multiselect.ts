@@ -4,7 +4,7 @@
  */
 
 import { computePosition, flip, offset, autoUpdate, shift, type Placement } from '@floating-ui/dom';
-import type { MultiSelectOption, MultiSelectOptions, MultiSelectConfig, DisplayMode, PillsPosition, SearchInputMode } from './types';
+import type { MultiSelectOption, MultiSelectOptions, MultiSelectConfig, PillsDisplayMode, PillsPosition, SearchInputMode, PillsThresholdMode } from './types';
 
 // Simple inline logger for debugging
 const LOG_ENABLED = true; // Set to false to disable all logs
@@ -78,6 +78,10 @@ export class PureMultiSelect<T = any> {
     private dropdownCleanup: (() => void) | null = null;
     private hintCleanup: (() => void) | null = null;
     private selectedPopoverCleanup: (() => void) | null = null;
+
+    // Pill tooltip storage
+    private pillTooltips = new Map<string, HTMLDivElement>();
+    private pillTooltipCleanups = new Map<string, () => void>();
 
     // DOM elements
     private input!: HTMLInputElement;
@@ -236,9 +240,9 @@ export class PureMultiSelect<T = any> {
             searchHint: element.dataset.searchHint || '',
             searchPlaceholder: element.dataset.searchPlaceholder || 'Search...',
             dropdownMinWidth: element.dataset.dropdownMinWidth || undefined,
-            displayMode: (element.dataset.displayMode as DisplayMode) || 'pills',
+            pillsDisplayMode: (element.dataset.pillsDisplayMode as any) || 'pills',
             pillsPosition: (element.dataset.pillsPosition as PillsPosition) || 'bottom',
-            countFormat: element.dataset.countFormat || '{count} selected',
+            pillsThresholdMode: (element.dataset.pillsThresholdMode as any) || 'count',
             maxHeight: element.dataset.maxHeight || '20rem',
             emptyMessage: element.dataset.emptyMessage || 'No results found',
             loadingMessage: element.dataset.loadingMessage || 'Loading...',
@@ -488,6 +492,9 @@ export class PureMultiSelect<T = any> {
     }
 
     private renderPills(): void {
+        // Clean up existing tooltips before re-rendering
+        this.destroyAllPillTooltips();
+
         const selectedOptions = Array.from(this.selectedOptions.values());
         const count = this.selectedValues.size;
 
@@ -518,14 +525,17 @@ export class PureMultiSelect<T = any> {
             return;
         }
 
-        let effectiveMode = this.options.displayMode;
-        if (this.options.pillsThreshold !== null && count > this.options.pillsThreshold) {
-            effectiveMode = 'count';
+        let effectiveMode = this.options.pillsDisplayMode;
+        const exceedsThreshold = this.options.pillsThreshold !== null && count > this.options.pillsThreshold;
+
+        if (exceedsThreshold) {
+            effectiveMode = this.options.pillsThresholdMode || 'count';
         }
 
         if (!this.isOpen) {
             if (count > 0 && effectiveMode === 'count') {
-                this.input.placeholder = this.options.countFormat.replace('{count}', count.toString());
+                const countText = this.options.getCountPillCallback ? this.options.getCountPillCallback(count) : `${count} selected`;
+                this.input.placeholder = countText;
             } else {
                 this.input.placeholder = this.options.searchPlaceholder;
             }
@@ -550,10 +560,45 @@ export class PureMultiSelect<T = any> {
                 </div>
             `;
             }).join('');
+        } else if (effectiveMode === 'partial') {
+            // Partial mode: show limited pills + "+X more" badge
+            this.pillsContainer.className = `ml__pills ml__pills--${this.options.pillsPosition}`;
+
+            const maxVisible = this.options.pillsMaxVisible || 3;
+            const visibleOptions = selectedOptions.slice(0, maxVisible);
+            const remainingCount = count - maxVisible;
+
+            const visiblePillsHtml = visibleOptions.map(option => {
+                const value = this.getItemValue(option);
+                const displayValue = this.getItemDisplayValue(option);
+                return `
+                <div class="ml__pill">
+                    <span class="ml__pill-text">${displayValue}</span>
+                    <button type="button" class="ml__pill-remove" data-value="${value}" aria-label="Remove ${displayValue}"></button>
+                </div>
+            `;
+            }).join('');
+
+            let moreBadgeHtml = '';
+            if (remainingCount > 0) {
+                const moreText = this.options.getCountPillCallback
+                    ? this.options.getCountPillCallback(count, remainingCount)
+                    : `+${remainingCount} more`;
+
+                moreBadgeHtml = `
+                    <div class="ml__pill ml__pill--more" data-action="show-selected">
+                        <span class="ml__pill-text">${moreText}</span>
+                        <button type="button" class="ml__pill-remove" data-action="remove-hidden" aria-label="Remove ${remainingCount} hidden items"></button>
+                    </div>
+                `;
+            }
+
+            this.pillsContainer.innerHTML = visiblePillsHtml + moreBadgeHtml;
         } else {
+            // Count mode
             this.pillsContainer.className = `ml__count-display ml__count-display--${this.options.pillsPosition}`;
             if (count > 0) {
-                const countText = this.options.countFormat.replace('{count}', count.toString());
+                const countText = this.options.getCountPillCallback ? this.options.getCountPillCallback(count) : `${count} selected`;
                 this.pillsContainer.innerHTML = `
                     <div class="ml__count-badge-wrapper">
                         <button type="button" class="ml__count-text" data-action="show-selected">
@@ -566,6 +611,9 @@ export class PureMultiSelect<T = any> {
                 this.pillsContainer.innerHTML = '';
             }
         }
+
+        // Attach tooltips after rendering pills
+        this.attachPillTooltips();
     }
 
     private attachEvents(): void {
@@ -793,11 +841,37 @@ export class PureMultiSelect<T = any> {
         const removeBtn = (e.target as HTMLElement).closest('.ml__pill-remove') as HTMLElement;
         if (removeBtn) {
             e.preventDefault();
+            e.stopPropagation();
+
+            // Handle remove-hidden action (remove all hidden items in partial mode)
+            if (removeBtn.dataset.action === 'remove-hidden') {
+                log.debug(`[${this.instanceId}] Remove hidden items button clicked`);
+                const maxVisible = this.options.pillsMaxVisible || 3;
+                const selectedOptions = Array.from(this.selectedOptions.values());
+                const hiddenOptions = selectedOptions.slice(maxVisible);
+
+                // Deselect all hidden options
+                hiddenOptions.forEach(option => this.deselectOption(option));
+                return;
+            }
+
+            // Handle regular pill remove
             const value = removeBtn.dataset.value!;
             const option = this.selectedOptions.get(value);
             if (option) {
                 this.deselectOption(option);
             }
+            return;
+        }
+
+        // Handle clicking the "+X more" badge itself (not the remove button)
+        const morePill = (e.target as HTMLElement).closest('.ml__pill--more');
+        if (morePill && !(e.target as HTMLElement).closest('.ml__pill-remove')) {
+            e.preventDefault();
+            e.stopPropagation();
+            log.debug(`[${this.instanceId}] '+X more' badge clicked, showing popover`);
+            this.toggleSelectedPopover();
+            return;
         }
     }
 
@@ -1354,7 +1428,7 @@ export class PureMultiSelect<T = any> {
         this.hiddenInputs.forEach(input => input.remove());
         this.hiddenInputs = [];
 
-        const format = this.options.formValueFormat || 'json';
+        const format = this.options.valueFormat || 'json';
         const values = Array.from(this.selectedOptions.values()).map(opt => this.getItemValue(opt));
 
         // Use hostElement if provided (for shadow DOM), otherwise use element
@@ -1386,11 +1460,11 @@ export class PureMultiSelect<T = any> {
         const values = Array.from(this.selectedOptions.values()).map(opt => this.getItemValue(opt));
 
         // Custom callback takes precedence
-        if (this.options.getFormValueCallback) {
-            return this.options.getFormValueCallback(values);
+        if (this.options.getValueFormatCallback) {
+            return this.options.getValueFormatCallback(values);
         }
 
-        const format = this.options.formValueFormat || 'json';
+        const format = this.options.valueFormat || 'json';
 
         if (format === 'csv') {
             return values.join(',');
@@ -1455,7 +1529,201 @@ export class PureMultiSelect<T = any> {
         return this.options.isMultipleEnabled ? values : (values[0] ?? null);
     }
 
+    // ========================================================================
+    // PILL TOOLTIP METHODS
+    // ========================================================================
+
+    private attachPillTooltips(): void {
+        if (!this.options.isPillTooltipsEnabled) {
+            console.log('[Tooltips] Disabled - isPillTooltipsEnabled is false');
+            return;
+        }
+
+        const pills = this.pillsContainer.querySelectorAll('.ml__pill:not(.ml__pill--more)');
+        console.log(`[Tooltips] Found ${pills.length} pills to attach tooltips to`);
+        pills.forEach((pill: Element) => {
+            const pillElement = pill as HTMLElement;
+            const removeBtn = pillElement.querySelector('.ml__pill-remove') as HTMLElement;
+            if (!removeBtn) return;
+
+            const value = removeBtn.dataset.value!;
+            const option = this.selectedOptions.get(value);
+            if (!option) return;
+
+            // Create tooltip for pill text (not the entire pill to avoid conflicts with remove button)
+            const pillText = pillElement.querySelector('.ml__pill-text') as HTMLElement;
+            if (pillText) {
+                this.createTooltipForElement(pillText, option, value);
+            }
+
+            // Create tooltip for remove button
+            const displayValue = this.getItemDisplayValue(option);
+            this.createRemoveButtonTooltip(removeBtn, displayValue, value);
+        });
+
+        // Handle "+X more" badge remove button tooltip
+        const morePill = this.pillsContainer.querySelector('.ml__pill--more');
+        if (morePill) {
+            const removeBtn = morePill.querySelector('.ml__pill-remove') as HTMLElement;
+            if (removeBtn && removeBtn.dataset.action === 'remove-hidden') {
+                const maxVisible = this.options.pillsMaxVisible || 3;
+                const selectedOptions = Array.from(this.selectedOptions.values());
+                const hiddenCount = selectedOptions.length - maxVisible;
+                this.createRemoveButtonTooltip(removeBtn, `${hiddenCount} hidden items`, 'more-badge-remove');
+            }
+        }
+    }
+
+    private createTooltipForElement(element: HTMLElement, option: any, uniqueId: string): void {
+        const tooltip = document.createElement('div');
+        tooltip.className = 'ml__pill-tooltip';
+
+        // Get content from callback or use default (display value + subtitle)
+        let content: string | HTMLElement;
+        if (this.options.getPillTooltipCallback) {
+            content = this.options.getPillTooltipCallback(option);
+            console.log('[Tooltips] Using custom callback for tooltip content');
+        } else {
+            const displayValue = this.getItemDisplayValue(option);
+            const subtitle = this.getItemSubtitle(option);
+            content = subtitle ? `${displayValue}\n${subtitle}` : displayValue;
+            console.log(`[Tooltips] Using default content: "${content}"`);
+        }
+
+        if (typeof content === 'string') {
+            tooltip.textContent = content;
+        } else {
+            tooltip.appendChild(content);
+        }
+
+        const container = this.options.container || document.body;
+        container.appendChild(tooltip);
+        console.log(`[Tooltips] Tooltip element created and appended for "${uniqueId}"`);
+
+        this.pillTooltips.set(uniqueId, tooltip);
+
+        // Setup hover handlers
+        let showTimeout: number;
+        let hideTimeout: number;
+
+        const showTooltip = () => {
+            clearTimeout(hideTimeout);
+            console.log(`[Tooltips] Mouse entered pill "${uniqueId}", will show tooltip in ${this.options.pillTooltipDelay || 300}ms`);
+            showTimeout = window.setTimeout(() => {
+                console.log(`[Tooltips] Showing tooltip for "${uniqueId}"`);
+                tooltip.classList.add('ml__pill-tooltip--visible');
+                this.positionPillTooltip(element, tooltip, uniqueId);
+            }, this.options.pillTooltipDelay || 300);
+        };
+
+        const hideTooltip = () => {
+            clearTimeout(showTimeout);
+            hideTimeout = window.setTimeout(() => {
+                tooltip.classList.remove('ml__pill-tooltip--visible');
+                this.cleanupPillTooltip(uniqueId);
+            }, 100);
+        };
+
+        element.addEventListener('mouseenter', showTooltip);
+        element.addEventListener('mouseleave', hideTooltip);
+    }
+
+    private createRemoveButtonTooltip(removeBtn: HTMLElement, itemName: string, uniqueId: string): void {
+        const tooltip = document.createElement('div');
+        tooltip.className = 'ml__pill-tooltip';
+        tooltip.textContent = `Remove ${itemName}`;
+
+        const container = this.options.container || document.body;
+        container.appendChild(tooltip);
+
+        const tooltipId = `${uniqueId}-remove`;
+        this.pillTooltips.set(tooltipId, tooltip);
+
+        let showTimeout: number;
+        let hideTimeout: number;
+
+        const showTooltip = () => {
+            clearTimeout(hideTimeout);
+
+            // Hide the parent pill tooltip to prevent overlap
+            const pillTooltip = this.pillTooltips.get(uniqueId);
+            if (pillTooltip) {
+                pillTooltip.classList.remove('ml__pill-tooltip--visible');
+            }
+
+            showTimeout = window.setTimeout(() => {
+                tooltip.classList.add('ml__pill-tooltip--visible');
+                this.positionPillTooltip(removeBtn, tooltip, tooltipId);
+            }, this.options.pillTooltipDelay || 300);
+        };
+
+        const hideTooltip = () => {
+            clearTimeout(showTimeout);
+            hideTimeout = window.setTimeout(() => {
+                tooltip.classList.remove('ml__pill-tooltip--visible');
+                this.cleanupPillTooltip(tooltipId);
+            }, 100);
+        };
+
+        removeBtn.addEventListener('mouseenter', showTooltip);
+        removeBtn.addEventListener('mouseleave', hideTooltip);
+    }
+
+    private positionPillTooltip(referenceElement: HTMLElement, tooltip: HTMLElement, uniqueId: string): void {
+        const cleanup = autoUpdate(referenceElement, tooltip, () => {
+            computePosition(referenceElement, tooltip, {
+                placement: this.options.pillTooltipPlacement || 'top',
+                strategy: 'fixed',
+                middleware: [
+                    offset(this.options.pillTooltipOffset || 8),
+                    flip(),
+                    shift({ padding: 8 })
+                ]
+            }).then(({ x, y }) => {
+                Object.assign(tooltip.style, {
+                    left: `${x}px`,
+                    top: `${y}px`
+                });
+                console.log(`[Tooltips] Positioned tooltip "${uniqueId}" at x:${x}, y:${y}`, {
+                    placement: this.options.pillTooltipPlacement || 'top',
+                    tooltipClasses: tooltip.className,
+                    tooltipDisplay: window.getComputedStyle(tooltip).display,
+                    tooltipOpacity: window.getComputedStyle(tooltip).opacity,
+                    tooltipVisibility: window.getComputedStyle(tooltip).visibility,
+                    tooltipZIndex: window.getComputedStyle(tooltip).zIndex,
+                    tooltipPosition: window.getComputedStyle(tooltip).position
+                });
+            });
+        });
+
+        this.pillTooltipCleanups.set(uniqueId, cleanup);
+    }
+
+    private cleanupPillTooltip(uniqueId: string): void {
+        const cleanup = this.pillTooltipCleanups.get(uniqueId);
+        if (cleanup) {
+            cleanup();
+            this.pillTooltipCleanups.delete(uniqueId);
+        }
+    }
+
+    private destroyAllPillTooltips(): void {
+        // Clean up all tooltip positioning
+        this.pillTooltipCleanups.forEach(cleanup => cleanup());
+        this.pillTooltipCleanups.clear();
+
+        // Remove all tooltip elements
+        this.pillTooltips.forEach(tooltip => tooltip.remove());
+        this.pillTooltips.clear();
+    }
+
+    // ========================================================================
+    // PUBLIC API
+    // ========================================================================
+
     public destroy(): void {
+        this.destroyAllPillTooltips();
+
         if (this.dropdownCleanup) this.dropdownCleanup();
         if (this.hintCleanup) this.hintCleanup();
         if (this.selectedPopoverCleanup) this.selectedPopoverCleanup();

@@ -5,7 +5,17 @@
       "Bash(npm install:*)",
       "Bash(npm run build:*)",
       "Bash(npm run dev:*)",
-      "Bash(dir:*)"
+      "Bash(dir:*)",
+      "Bash(tree:*)",
+      "Bash(npx sv create:*)",
+      "Bash(cat:*)",
+      "Bash(nul)",
+      "Bash(findstr:*)",
+      "Bash(npm view:*)",
+      "Bash(md5sum:*)",
+      "Bash(curl:*)",
+      "Bash(npm publish:*)",
+      "Bash(gzip:*)"
     ],
     "deny": [],
     "ask": []

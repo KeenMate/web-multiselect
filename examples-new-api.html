@@ -344,7 +344,7 @@ multiselect.options = products;</pre></div>
             <div class="code-block"><pre>&lt;form id="myform"&gt;
   &lt;multi-select
     name="skills"           &lt;!-- Creates hidden input with this name --&gt;
-    form-value-format="json"  &lt;!-- Default: JSON array --&gt;
+    value-format="json"  &lt;!-- Default: JSON array --&gt;
     multiple&gt;
   &lt;/multi-select&gt;
 &lt;/form&gt;
@@ -353,7 +353,7 @@ multiselect.options = products;</pre></div>
 
             <form id="form-json" onsubmit="handleFormSubmit(event, 'form-json')">
                 <label class="demo-label">Select Your Skills:</label>
-                <multi-select id="form-json-select" name="skills" form-value-format="json"></multi-select>
+                <multi-select id="form-json-select" name="skills" value-format="json"></multi-select>
 
                 <div class="form-actions">
                     <button type="submit">Submit Form</button>
@@ -379,14 +379,14 @@ multiselect.options = products;</pre></div>
 
             <div class="code-block"><pre>&lt;multi-select
   name="categories"
-  form-value-format="csv"&gt;  &lt;!-- CSV format --&gt;
+  value-format="csv"&gt;  &lt;!-- CSV format --&gt;
 &lt;/multi-select&gt;
 
 // Hidden input value: "tech,design,business"</pre></div>
 
             <form id="form-csv" onsubmit="handleFormSubmit(event, 'form-csv')">
                 <label class="demo-label">Select Categories:</label>
-                <multi-select id="form-csv-select" name="categories" form-value-format="csv"></multi-select>
+                <multi-select id="form-csv-select" name="categories" value-format="csv"></multi-select>
 
                 <div class="form-actions">
                     <button type="submit">Submit Form</button>
@@ -412,7 +412,7 @@ multiselect.options = products;</pre></div>
 
             <div class="code-block"><pre>&lt;multi-select
   name="tags"
-  form-value-format="array"&gt;  &lt;!-- Multiple inputs --&gt;
+  value-format="array"&gt;  &lt;!-- Multiple inputs --&gt;
 &lt;/multi-select&gt;
 
 // Creates multiple hidden inputs:
@@ -422,7 +422,7 @@ multiselect.options = products;</pre></div>
 
             <form id="form-array" onsubmit="handleFormSubmit(event, 'form-array')">
                 <label class="demo-label">Select Tags:</label>
-                <multi-select id="form-array-select" name="tags" form-value-format="array"></multi-select>
+                <multi-select id="form-array-select" name="tags" value-format="array"></multi-select>
 
                 <div class="form-actions">
                     <button type="submit">Submit Form</button>
@@ -560,7 +560,61 @@ multiselect.searchCallback = async (searchTerm) => {
             </div>
         </section>
 
-        <!-- Summary -->
+        <section class="example-section">
+            <h2>💬 Pill Tooltips <span class="badge new">NEW</span></h2>
+            <p class="description">
+                Show informative tooltips when hovering over pills and remove buttons. Perfect for truncated text or additional context.
+            </p>
+
+            <h3>Basic Tooltips</h3>
+            <div class="demo-area">
+                <multi-select
+                    id="tooltips-basic"
+                    value-member="value"
+                    display-value-member="label"
+                    subtitle-member="subtitle"
+                    enable-pill-tooltips="true"
+                    pill-tooltip-placement="top"
+                    search-placeholder="Select items (hover pills to see tooltips)..."
+                ></multi-select>
+            </div>
+            <p class="code-label">Configuration:</p>
+            <pre><code>&lt;multi-select
+    enable-pill-tooltips="true"      <!-- Enable tooltips -->
+    pill-tooltip-placement="top"     <!-- Placement: top, bottom, left, right -->
+    subtitle-member="subtitle"       <!-- Tooltips show display + subtitle -->
+&gt;
+&lt;/multi-select&gt;</code></pre>
+
+            <h3>Custom Tooltip Callback</h3>
+            <div class="demo-area">
+                <multi-select
+                    id="tooltips-custom"
+                    enable-pill-tooltips="true"
+                    search-placeholder="Select users (custom tooltip content)..."
+                ></multi-select>
+            </div>
+            <p class="code-label">JavaScript:</p>
+            <pre><code>const select = document.querySelector('#tooltips-custom');
+select.options = users; // Your data
+
+// Custom tooltip content
+select.getPillTooltipCallback = (user) => {
+    return `${user.name}
+${user.email}
+${user.role}`;
+};</code></pre>
+
+            <p class="code-label">Features:</p>
+            <ul class="feature-list">
+                <li><strong>Default content:</strong> Display value + subtitle</li>
+                <li><strong>Custom content:</strong> Use <code>getPillTooltipCallback</code> for rich content</li>
+                <li><strong>Remove button tooltips:</strong> Shows "Remove [item name]"</li>
+                <li><strong>Configurable placement:</strong> top, bottom, left, right</li>
+                <li><strong>CSS customization:</strong> Use CSS variables for styling</li>
+            </ul>
+        </section>
+
         <section class="example-section">
             <h2>✨ Benefits Summary</h2>
             <div class="grid-2">
@@ -1036,6 +1090,35 @@ multiselect.searchCallback = async (searchTerm) => {
                 'Selected Products': items.map(p => ({ id: p.id, name: p.name, category: p.category })),
                 'count': items.length
             }, null, 2);
+        };
+
+        // New Feature: Basic Tooltips
+        const tooltipsBasicSelect = document.querySelector('#tooltips-basic');
+        tooltipsBasicSelect.options = [
+            { value: '1', label: 'MacBook Pro 16"', subtitle: 'M3 Max, 36GB RAM, 1TB SSD' },
+            { value: '2', label: 'Dell XPS 15', subtitle: 'Intel i9, 32GB RAM, 512GB SSD' },
+            { value: '3', label: 'ThinkPad X1 Carbon', subtitle: 'Intel i7, 16GB RAM, 256GB SSD' },
+            { value: '4', label: 'Surface Laptop 5', subtitle: 'Intel i5, 8GB RAM, 256GB SSD' },
+            { value: '5', label: 'HP Spectre x360', subtitle: 'Intel i7, 16GB RAM, 512GB SSD' }
+        ];
+
+        // New Feature: Custom Tooltip Callback
+        const tooltipsCustomSelect = document.querySelector('#tooltips-custom');
+        const users = [
+            { id: 1, name: 'John Doe', email: 'john.doe@example.com', role: 'Admin' },
+            { id: 2, name: 'Jane Smith', email: 'jane.smith@example.com', role: 'Manager' },
+            { id: 3, name: 'Bob Johnson', email: 'bob.johnson@example.com', role: 'Developer' },
+            { id: 4, name: 'Alice Williams', email: 'alice.w@example.com', role: 'Designer' },
+            { id: 5, name: 'Charlie Brown', email: 'charlie.b@example.com', role: 'Developer' }
+        ];
+
+        tooltipsCustomSelect.getValueCallback = (user) => user.id;
+        tooltipsCustomSelect.getDisplayValueCallback = (user) => user.name;
+        tooltipsCustomSelect.options = users;
+
+        // Custom tooltip showing full user info
+        tooltipsCustomSelect.getPillTooltipCallback = (user) => {
+            return `${user.name}\n${user.email}\n${user.role}`;
         };
     </script>
 </body>

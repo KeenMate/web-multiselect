@@ -1,0 +1,218 @@
+// ==============================================================================
+// PILLS & DISPLAY MODES
+// ==============================================================================
+// Pills container, count display, individual pills, and remove buttons
+
+@use 'variables' as *;
+
+// ==============================================================================
+// PILLS CONTAINER
+// ==============================================================================
+
+// Selected pills container
+.ml__pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ml-pills-gap, $ml-pills-gap);
+  padding: 0;
+
+  &:empty {
+    display: none;
+  }
+
+  // Position variants
+  &--bottom {
+    margin-top: var(--ml-pills-margin-bottom, $ml-pills-margin-bottom);
+  }
+
+  &--top {
+    margin-bottom: var(--ml-pills-margin-top, $ml-pills-margin-top);
+    order: var(--ml-order-first, $ml-order-first); // Place before multiselect in flex container
+  }
+
+  &--left {
+    order: var(--ml-order-first, $ml-order-first); // Place before multiselect
+    margin-right: var(--ml-pills-margin-left, $ml-pills-margin-left);
+    justify-content: flex-start;
+  }
+
+  &--right {
+    margin-left: var(--ml-pills-margin-right, $ml-pills-margin-right);
+    justify-content: flex-end;
+  }
+}
+
+// ==============================================================================
+// COUNT DISPLAY MODE
+// ==============================================================================
+
+// Count display (alternative to pills)
+.ml__count-display {
+  display: flex;
+  align-items: center;
+
+  &:empty {
+    display: none;
+  }
+
+  // Position variants
+  &--bottom {
+    margin-top: var(--ml-count-display-margin-bottom, $ml-count-display-margin-bottom);
+  }
+
+  &--top {
+    margin-bottom: var(--ml-count-display-margin-top, $ml-count-display-margin-top);
+    order: var(--ml-order-first, $ml-order-first); // Place before multiselect in flex container
+  }
+
+  &--left {
+    order: var(--ml-order-first, $ml-order-first); // Place before multiselect
+    margin-right: var(--ml-count-display-margin-left, $ml-count-display-margin-left);
+    justify-content: flex-start;
+  }
+
+  &--right {
+    margin-left: var(--ml-count-display-margin-right, $ml-count-display-margin-right);
+    justify-content: flex-end;
+  }
+}
+
+// Wrapper containing count text and clear button
+.ml__count-badge-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ml-count-badge-wrapper-gap, $ml-count-badge-wrapper-gap);
+  background: var(--ml-count-badge-wrapper-bg, $ml-count-badge-wrapper-bg);
+  border: var(--ml-count-badge-wrapper-border, $ml-count-badge-wrapper-border);
+  border-radius: var(--ml-count-badge-wrapper-border-radius, $ml-count-badge-wrapper-border-radius);
+  padding: var(--ml-count-badge-wrapper-padding, $ml-count-badge-wrapper-padding);
+  transition: all var(--ml-transition-fast, $ml-transition-fast) var(--ml-easing-snappy, $ml-easing-snappy);
+
+  &:hover {
+    background: var(--ml-count-badge-wrapper-bg-hover, $ml-count-badge-wrapper-bg-hover);
+    border-color: var(--ml-count-badge-wrapper-border-color-hover, $ml-count-badge-wrapper-border-color-hover);
+  }
+}
+
+.ml__count-text {
+  display: inline-flex;
+  align-items: center;
+  background: var(--ml-count-text-bg, $ml-count-text-bg);
+  border: var(--ml-count-text-border, $ml-count-text-border);
+  padding: 0;
+  font-size: var(--ml-count-text-font-size, $ml-count-text-font-size);
+  color: var(--ml-count-text-color, $ml-count-text-color);
+  cursor: pointer;
+  transition: color var(--ml-transition-fast, $ml-transition-fast) var(--ml-easing-snappy, $ml-easing-snappy);
+}
+
+.ml__count-clear {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ml-count-clear-size, $ml-count-clear-size);
+  height: var(--ml-count-clear-size, $ml-count-clear-size);
+  padding: 0;
+  border: none;
+  background: var(--ml-count-clear-bg, $ml-count-clear-bg);
+  color: var(--ml-count-clear-color, $ml-count-clear-color);
+  font-size: var(--ml-count-clear-font-size, $ml-count-clear-font-size);
+  line-height: var(--ml-line-height-none, $ml-line-height-none);
+  cursor: pointer;
+  border-radius: var(--ml-count-clear-border-radius, $ml-count-clear-border-radius);
+  transition: all var(--ml-transition-fast, $ml-transition-fast) var(--ml-easing-snappy, $ml-easing-snappy);
+
+  &:hover {
+    background: var(--ml-count-clear-bg-hover, $ml-count-clear-bg-hover);
+    color: var(--ml-count-clear-color-hover, $ml-count-clear-color-hover);
+  }
+
+  &::before {
+    content: var(--ml-icon-clear, $ml-icon-clear);
+  }
+}
+
+// ==============================================================================
+// INDIVIDUAL PILLS
+// ==============================================================================
+
+// Individual pill (styled like Pure Admin composite badge)
+.ml__pill {
+  display: inline-flex;
+  align-items: center;
+  height: var(--ml-pill-height, $ml-pill-height); // Match composite badge height
+  font-size: var(--ml-pill-font-size, $ml-pill-font-size);
+  font-weight: var(--ml-pill-font-weight, $ml-pill-font-weight);
+  line-height: var(--ml-line-height-none, $ml-line-height-none);
+  border-radius: var(--ml-pill-border-radius, $ml-pill-border-radius);
+  overflow: hidden;
+  max-width: 100%;
+}
+
+// Pill text (like composite badge label)
+.ml__pill-text {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding: var(--ml-pill-text-padding, $ml-pill-text-padding);
+  background: var(--ml-pill-text-bg, $ml-pill-text-bg);
+  color: var(--ml-pill-text-color, $ml-pill-text-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background-color var(--ml-transition-normal, $ml-transition-normal) ease;
+}
+
+// Pill remove button (like composite badge button)
+.ml__pill-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ml-pill-remove-width, $ml-pill-remove-width);
+  height: 100%;
+  flex-shrink: 0;
+  background: var(--ml-pill-remove-bg, $ml-pill-remove-bg);
+  color: var(--ml-pill-remove-color, $ml-pill-remove-color);
+  border: var(--ml-pill-remove-border, $ml-pill-remove-border);
+  cursor: pointer;
+  transition: background-color var(--ml-transition-normal, $ml-transition-normal) ease;
+  font-size: var(--ml-pill-remove-font-size, $ml-pill-remove-font-size);
+
+  &:hover {
+    background: var(--ml-pill-remove-bg-hover, $ml-pill-remove-bg-hover);
+  }
+
+  &:focus {
+    outline: none;
+    box-shadow: var(--ml-pill-remove-box-shadow-focus, $ml-pill-remove-box-shadow-focus);
+  }
+
+  &::before {
+    content: var(--ml-icon-remove, $ml-icon-remove);
+    font-size: var(--ml-font-size-base, $ml-font-size-base);
+    line-height: var(--ml-line-height-none, $ml-line-height-none);
+  }
+}
+
+// ==============================================================================
+// "+X MORE" PILL VARIANT
+// ==============================================================================
+
+// "+X more" pill variant (partial mode)
+.ml__pill--more {
+  cursor: pointer;
+
+  .ml__pill-text {
+    background: var(--ml-more-badge-bg, $ml-more-badge-bg);
+    font-weight: var(--ml-pill-font-weight, $ml-pill-font-weight);
+  }
+
+  &:hover .ml__pill-text {
+    background: var(--ml-more-badge-hover-bg, $ml-more-badge-hover-bg);
+  }
+
+  &:active .ml__pill-text {
+    background: var(--ml-more-badge-active-bg, $ml-more-badge-active-bg);
+  }
+}

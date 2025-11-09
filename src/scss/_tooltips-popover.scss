@@ -1,0 +1,114 @@
+// ==============================================================================
+// TOOLTIPS & POPOVER
+// ==============================================================================
+// Pill tooltips and selected items popover
+
+@use 'variables' as *;
+
+// ==============================================================================
+// PILL TOOLTIPS
+// ==============================================================================
+
+.ml__pill-tooltip {
+  position: fixed;
+  z-index: var(--ml-tooltip-z-index, $ml-tooltip-z-index);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--ml-transition-normal, $ml-transition-normal) ease, visibility var(--ml-transition-normal, $ml-transition-normal) ease;
+
+  background: var(--ml-tooltip-bg, $ml-tooltip-bg);
+  color: var(--ml-tooltip-color, $ml-tooltip-color);
+  padding: var(--ml-tooltip-padding, $ml-tooltip-padding);
+  border-radius: var(--ml-tooltip-border-radius, $ml-tooltip-border-radius);
+  font-size: var(--ml-tooltip-font-size, $ml-tooltip-font-size);
+  line-height: var(--ml-line-height-relaxed, $ml-line-height-relaxed);
+  max-width: var(--ml-tooltip-max-width, $ml-tooltip-max-width);
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  box-shadow: var(--ml-tooltip-shadow, $ml-tooltip-shadow);
+  pointer-events: none; // Prevent tooltip from interfering with mouse events
+
+  &--visible {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+
+// ==============================================================================
+// SELECTED ITEMS POPOVER
+// ==============================================================================
+
+// Selected items popover (for count display mode)
+.ml__selected-popover {
+  display: none;
+  position: absolute;
+  z-index: var(--ml-z-index-popover, $ml-z-index-popover);
+  background: var(--ml-selected-popover-bg, $ml-selected-popover-bg);
+  border: var(--ml-selected-popover-border, $ml-selected-popover-border);
+  border-radius: var(--ml-selected-popover-border-radius, $ml-selected-popover-border-radius);
+  box-shadow: var(--ml-selected-popover-box-shadow, $ml-selected-popover-box-shadow);
+  width: var(--ml-selected-popover-width, $ml-selected-popover-width);
+  max-height: var(--ml-selected-popover-max-height, $ml-selected-popover-max-height);
+  overflow: hidden;
+
+  &--visible {
+    display: flex;
+    flex-direction: column;
+  }
+}
+
+.ml__selected-popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--ml-selected-popover-header-padding, $ml-selected-popover-header-padding);
+  background: var(--ml-selected-popover-header-bg, $ml-selected-popover-header-bg);
+  border-bottom: var(--ml-selected-popover-header-border-bottom, $ml-selected-popover-header-border-bottom);
+  font-size: var(--ml-selected-popover-header-font-size, $ml-selected-popover-header-font-size);
+  font-weight: var(--ml-selected-popover-header-font-weight, $ml-selected-popover-header-font-weight);
+  color: var(--ml-selected-popover-header-color, $ml-selected-popover-header-color);
+}
+
+.ml__selected-popover-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ml-popover-close-size, $ml-popover-close-size);
+  height: var(--ml-popover-close-size, $ml-popover-close-size);
+  padding: 0;
+  border: none;
+  background: var(--ml-selected-popover-close-bg, $ml-selected-popover-close-bg);
+  color: var(--ml-selected-popover-close-color, $ml-selected-popover-close-color);
+  font-size: var(--ml-selected-popover-close-font-size, $ml-selected-popover-close-font-size);
+  line-height: var(--ml-line-height-none, $ml-line-height-none);
+  cursor: pointer;
+  border-radius: var(--ml-selected-popover-close-border-radius, $ml-selected-popover-close-border-radius);
+  transition: all var(--ml-transition-fast, $ml-transition-fast) var(--ml-easing-snappy, $ml-easing-snappy);
+
+  &:hover {
+    background: var(--ml-selected-popover-close-bg-hover, $ml-selected-popover-close-bg-hover);
+    color: var(--ml-selected-popover-close-color-hover, $ml-selected-popover-close-color-hover);
+  }
+}
+
+.ml__selected-popover-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ml-selected-popover-body-gap, $ml-selected-popover-body-gap);
+  padding: var(--ml-selected-popover-body-padding, $ml-selected-popover-body-padding);
+  overflow-y: auto;
+  max-height: var(--ml-selected-popover-body-max-height, $ml-selected-popover-body-max-height);
+
+  // Pills inside popover
+  .ml__pill {
+    width: 100%;
+  }
+
+  .ml__pill-text {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0; // Allow text truncation
+  }
+}

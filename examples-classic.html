@@ -116,35 +116,6 @@
             <p class="subtitle">Traditional multiselect demos showing basic functionality and common use cases</p>
         </header>
 
-        <!-- Basic Example -->
-        <div class="card">
-            <h2>Basic MultiSelect</h2>
-            <p>Simple multiselect with basic options</p>
-            <div class="grid">
-                <div class="form-group">
-                    <label>Select Technologies</label>
-                    <multi-select
-                        id="basic-select"
-                        value-member="value"
-                        display-value-member="label"
-                        search-placeholder="Search technologies...">
-                    </multi-select>
-                    <small class="form-text">Select multiple programming languages</small>
-                </div>
-
-                <div class="form-group">
-                    <label>Select Countries</label>
-                    <multi-select
-                        id="countries-select"
-                        value-member="value"
-                        display-value-member="label"
-                        search-placeholder="Search countries...">
-                    </multi-select>
-                    <small class="form-text">Start typing to filter options</small>
-                </div>
-            </div>
-        </div>
-
         <!-- Single Select Mode -->
         <div class="card">
             <h2>Single-Select Mode</h2>
@@ -184,6 +155,35 @@
                     <small class="form-text">
                         Try: ↑/↓ arrows, PageUp/Down (10 items), Home/End, Enter to select
                     </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Basic Example -->
+        <div class="card">
+            <h2>Basic MultiSelect</h2>
+            <p>Simple multiselect with basic options</p>
+            <div class="grid">
+                <div class="form-group">
+                    <label>Select Technologies</label>
+                    <multi-select
+                        id="basic-select"
+                        value-member="value"
+                        display-value-member="label"
+                        search-placeholder="Search technologies...">
+                    </multi-select>
+                    <small class="form-text">Select multiple programming languages</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Select Countries</label>
+                    <multi-select
+                        id="countries-select"
+                        value-member="value"
+                        display-value-member="label"
+                        search-placeholder="Search countries...">
+                    </multi-select>
+                    <small class="form-text">Start typing to filter options</small>
                 </div>
             </div>
         </div>
@@ -240,8 +240,7 @@
                         value-member="value"
                         display-value-member="label"
                         icon-member="icon"
-                        display-mode="count"
-                        count-format="{count} selected"
+                        pills-display-mode="count"
                         show-count-badge="true"
                         search-placeholder="Select..."
                         style="max-width: 12rem;">
@@ -250,18 +249,140 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Auto-Switch at Threshold</label>
+                    <label>Auto-Switch at Threshold (Count Mode)</label>
                     <multi-select
                         id="threshold-select"
                         value-member="value"
                         display-value-member="label"
-                        display-mode="pills"
+                        pills-display-mode="pills"
                         pills-threshold="3"
+                        pills-threshold-mode="count"
                         show-count-badge="true"
                         search-placeholder="Select..."
                         style="max-width: 12rem;">
                     </multi-select>
                     <small class="form-text">Shows pills when ≤3 selected, switches to count when >3</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Auto-Switch at Threshold (Partial Mode)</label>
+                    <multi-select
+                        id="partial-pills"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        pills-threshold="5"
+                        pills-threshold-mode="partial"
+                        pills-max-visible="3"
+                        search-placeholder="Select technologies...">
+                    </multi-select>
+                    <small class="form-text">Shows limited pills + "+X more" badge when >5 selected (max 3 visible pills)</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Custom Count Text (English Pluralization)</label>
+                    <multi-select
+                        id="i18n-english"
+                        value-member="value"
+                        display-value-member="label"
+                        pills-display-mode="count"
+                        show-count-badge="true"
+                        search-placeholder="Select..."
+                        style="max-width: 12rem;">
+                    </multi-select>
+                    <small class="form-text">Uses callback: "1 item selected" vs "3 items selected"</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Czech Pluralization (Complex Rules)</label>
+                    <multi-select
+                        id="i18n-czech"
+                        value-member="value"
+                        display-value-member="label"
+                        pills-display-mode="count"
+                        show-count-badge="true"
+                        search-placeholder="Vyberte..."
+                        style="max-width: 12rem;">
+                    </multi-select>
+                    <small class="form-text">1 položka | 2-4 položky | 5+ položek (Czech pluralization rules)</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Partial Mode with i18n (Spanish)</label>
+                    <multi-select
+                        id="i18n-partial"
+                        value-member="value"
+                        display-value-member="label"
+                        pills-threshold="5"
+                        pills-threshold-mode="partial"
+                        pills-max-visible="3"
+                        search-placeholder="Seleccionar...">
+                    </multi-select>
+                    <small class="form-text">Shows "+X más" badge in Spanish when threshold exceeded</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pill Tooltips -->
+        <div class="card">
+            <h2>Pill Tooltips</h2>
+            <p>Display helpful tooltips when hovering over selected item pills</p>
+            <div class="grid">
+                <div class="form-group">
+                    <label>Basic Tooltips</label>
+                    <multi-select
+                        id="tooltip-basic"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        enable-pill-tooltips="true"
+                        pill-tooltip-placement="top"
+                        search-placeholder="Select frameworks...">
+                    </multi-select>
+                    <small class="form-text">Hover over pills to see default tooltip</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Custom Tooltip Content</label>
+                    <multi-select
+                        id="tooltip-custom"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        subtitle-member="subtitle"
+                        enable-pill-tooltips="true"
+                        pill-tooltip-placement="top"
+                        search-placeholder="Select frameworks...">
+                    </multi-select>
+                    <small class="form-text">Shows custom tooltip with description</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Tooltip Placement: Bottom</label>
+                    <multi-select
+                        id="tooltip-bottom"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        enable-pill-tooltips="true"
+                        pill-tooltip-placement="bottom"
+                        search-placeholder="Select technologies...">
+                    </multi-select>
+                    <small class="form-text">Tooltip appears below the pill</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Custom Delay (100ms)</label>
+                    <multi-select
+                        id="tooltip-fast"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        enable-pill-tooltips="true"
+                        pill-tooltip-delay="100"
+                        search-placeholder="Select frameworks...">
+                    </multi-select>
+                    <small class="form-text">Faster tooltip appearance (default is 300ms)</small>
                 </div>
             </div>
         </div>
@@ -546,6 +667,112 @@
             if (thresholdSelect) {
                 thresholdSelect.options = categories;
                 thresholdSelect.setSelected(['cat1']);
+            }
+
+            // Partial pills select
+            const partialPillsSelect = document.getElementById('partial-pills');
+            if (partialPillsSelect) {
+                partialPillsSelect.options = [
+                    { value: 'js', label: 'JavaScript', icon: '🟨' },
+                    { value: 'ts', label: 'TypeScript', icon: '🔷' },
+                    { value: 'py', label: 'Python', icon: '🐍' },
+                    { value: 'java', label: 'Java', icon: '☕' },
+                    { value: 'cpp', label: 'C++', icon: '⚡' },
+                    { value: 'rust', label: 'Rust', icon: '🦀' },
+                    { value: 'go', label: 'Go', icon: '🔵' },
+                    { value: 'ruby', label: 'Ruby', icon: '💎' },
+                    { value: 'php', label: 'PHP', icon: '🐘' },
+                    { value: 'swift', label: 'Swift', icon: '🍎' }
+                ];
+            }
+
+            // I18n English - Simple English pluralization
+            const i18nEnglishSelect = document.getElementById('i18n-english');
+            if (i18nEnglishSelect) {
+                i18nEnglishSelect.options = categories;
+                // Set custom callback for English pluralization
+                i18nEnglishSelect.getCountPillCallback = (count) => {
+                    return count === 1 ? '1 item selected' : `${count} items selected`;
+                };
+                i18nEnglishSelect.setSelected(['cat1', 'cat2', 'cat3']);
+            }
+
+            // I18n Czech - Complex Czech pluralization rules
+            const i18nCzechSelect = document.getElementById('i18n-czech');
+            if (i18nCzechSelect) {
+                i18nCzechSelect.options = categories;
+                // Set custom callback for Czech pluralization
+                // Czech has complex rules: 1 = singular, 2-4 = paucal, 5+ = plural
+                i18nCzechSelect.getCountPillCallback = (count) => {
+                    if (count === 1) {
+                        return '1 položka vybrána'; // 1 item selected
+                    } else if (count >= 2 && count <= 4) {
+                        return `${count} položky vybrány`; // 2-4 items selected
+                    } else {
+                        return `${count} položek vybráno`; // 5+ items selected
+                    }
+                };
+                i18nCzechSelect.setSelected(['cat1', 'cat2']);
+            }
+
+            // I18n Partial - Spanish pluralization for partial mode
+            const i18nPartialSelect = document.getElementById('i18n-partial');
+            if (i18nPartialSelect) {
+                i18nPartialSelect.options = [
+                    { value: 'js', label: 'JavaScript', icon: '🟨' },
+                    { value: 'ts', label: 'TypeScript', icon: '🔷' },
+                    { value: 'py', label: 'Python', icon: '🐍' },
+                    { value: 'java', label: 'Java', icon: '☕' },
+                    { value: 'cpp', label: 'C++', icon: '⚡' },
+                    { value: 'rust', label: 'Rust', icon: '🦀' },
+                    { value: 'go', label: 'Go', icon: '🔵' },
+                    { value: 'ruby', label: 'Ruby', icon: '💎' },
+                    { value: 'php', label: 'PHP', icon: '🐘' },
+                    { value: 'swift', label: 'Swift', icon: '🍎' }
+                ];
+                // Set custom callback that handles both count mode and partial mode "+X more" badge
+                // When moreCount is provided, it's for the "+X more" badge in partial mode
+                // When moreCount is undefined, it's for regular count mode
+                i18nPartialSelect.getCountPillCallback = (count, moreCount) => {
+                    if (moreCount !== undefined) {
+                        // Partial mode: "+X more" badge with Spanish pluralization
+                        return moreCount === 1 ? '+1 más' : `+${moreCount} más`;
+                    }
+                    // Count mode: total count with Spanish pluralization
+                    return count === 1 ? '1 elemento seleccionado' : `${count} elementos seleccionados`;
+                };
+                i18nPartialSelect.setSelected(['js', 'ts', 'py', 'java', 'cpp', 'rust']);
+            }
+
+            // Tooltip Basic - Basic tooltips with default content
+            const tooltipBasicSelect = document.getElementById('tooltip-basic');
+            if (tooltipBasicSelect) {
+                tooltipBasicSelect.options = frameworks;
+                tooltipBasicSelect.setSelected(['react', 'vue', 'svelte']);
+            }
+
+            // Tooltip Custom - Custom tooltip content with callback
+            const tooltipCustomSelect = document.getElementById('tooltip-custom');
+            if (tooltipCustomSelect) {
+                tooltipCustomSelect.options = frameworks;
+                // Custom tooltip callback that shows the subtitle as tooltip content
+                tooltipCustomSelect.getPillTooltipCallback = (item) => {
+                    return item.subtitle || item.label;
+                };
+                tooltipCustomSelect.setSelected(['react', 'vue']);
+            }
+
+            // Tooltip Bottom - Tooltip placement at bottom
+            const tooltipBottomSelect = document.getElementById('tooltip-bottom');
+            if (tooltipBottomSelect) {
+                tooltipBottomSelect.options = languages;
+                tooltipBottomSelect.setSelected(['js', 'ts', 'python']);
+            }
+
+            const tooltipFastSelect = document.getElementById('tooltip-fast');
+            if (tooltipFastSelect) {
+                tooltipFastSelect.options = frameworks;
+                tooltipFastSelect.setSelected(['react', 'vue']);
             }
 
             // Async Search: GitHub Users

@@ -1,0 +1,41 @@
+// ==============================================================================
+// BASE STYLES
+// ==============================================================================
+// Foundation styles: FOUC prevention and layout containers
+
+@use 'variables' as *;
+
+// ==============================================================================
+// FOUC PREVENTION
+// ==============================================================================
+// Prevent Flash of Unstyled Content by hiding undefined custom elements
+// Keep element visible to prevent layout shift, but hide any text content
+multi-select:not(:defined) {
+  display: block;
+  min-height: 2.5rem;
+  color: transparent !important;
+  background: transparent;
+}
+
+// ==============================================================================
+// LAYOUT CONTAINERS
+// ==============================================================================
+
+// Wrapper (contains multiselect + pills)
+.ml-wrapper {
+  display: flex;
+  flex-direction: column; // Default: pills above/below input
+  align-items: stretch;
+
+  // Inline layout for left/right positioning
+  &--inline {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}
+
+// Main container
+.ml {
+  position: relative;
+  width: 100%;
+}

@@ -1,0 +1,453 @@
+// ==============================================================================
+// MULTISELECT COMPONENT VARIABLES
+// ==============================================================================
+//  Organized by concern for easy discovery and customization
+// Three-tier system:
+//  1. Base primitives - Raw foundational values
+//  2. Semantic scales - Named scales (spacing, colors, typography)
+//  3. Component variables - Component-specific variables
+
+// ==============================================================================
+// 1. BASE PRIMITIVES
+// ==============================================================================
+// Raw values that other variables reference
+
+// Padding & Spacing
+$padding-xs: 0.25rem !default;
+$padding-sm: 0.5rem !default;
+$padding-base: 0.75rem !default;
+$padding-lg: 1rem !default;
+
+// Border Radius
+$border-radius-base: 0.375rem !default;
+$border-radius-sm: 0.25rem !default;
+$border-radius-full: 50% !default;
+
+// Font Sizes
+$font-size-base: 0.875rem !default;
+$font-size-sm: 0.75rem !default;
+$font-size-lg: 1rem !default;
+
+// Border Width
+$border-width-base: 1px !default;
+
+// ==============================================================================
+// 2. SPACING SCALE
+// ==============================================================================
+$ml-spacing-xs: $padding-xs !default;      // 0.25rem
+$ml-spacing-sm: $padding-sm !default;      // 0.5rem
+$ml-spacing-md: $padding-base !default;    // 0.75rem
+$ml-spacing-lg: $padding-lg !default;      // 1rem
+
+// ==============================================================================
+// 3. COLOR PALETTE
+// ==============================================================================
+// Neutral Colors
+$ml-color-white: #ffffff !default;
+$ml-color-neutral-lightest: #f9fafb !default;
+$ml-color-neutral-lighter: #f3f4f6 !default;
+$ml-color-neutral-light: #e5e7eb !default;
+$ml-color-neutral-base: #d1d5db !default;
+$ml-color-neutral-dark: #6b7280 !default;
+$ml-color-neutral-darkest: #111827 !default;
+
+// Accent Colors
+$ml-color-accent-lightest: #eff6ff !default;
+$ml-color-accent-lighter: #e0f2fe !default;
+$ml-color-accent-base: #3b82f6 !default;
+$ml-color-accent-dark: #2563eb !default;
+$ml-color-accent-darker: #1d4ed8 !default;
+
+// Tooltip Colors
+$ml-color-tooltip-bg: #333 !default;
+$ml-color-tooltip-text: #fff !default;
+
+// ==============================================================================
+// 4. TYPOGRAPHY SCALE
+// ==============================================================================
+$ml-font-size-2xs: 0.625rem !default;
+$ml-font-size-xs: $font-size-sm !default;       // 0.75rem
+$ml-font-size-sm: $font-size-base !default;     // 0.875rem
+$ml-font-size-base: $font-size-lg !default;     // 1rem
+$ml-font-size-lg: 1.125rem !default;
+$ml-font-size-xl: 1.25rem !default;
+
+$ml-font-weight-medium: 500 !default;
+$ml-font-weight-semibold: 600 !default;
+
+$ml-line-height-none: 1 !default;
+$ml-line-height-relaxed: 1.4 !default;
+
+$ml-letter-spacing-wide: 0.05em !default;
+
+// ==============================================================================
+// 5. BORDERS & SHADOWS
+// ==============================================================================
+$ml-border-width-base: $border-width-base !default;
+$ml-border-radius: $border-radius-base !default;
+$ml-border-radius-sm: $border-radius-sm !default;
+$ml-border-radius-full: $border-radius-full !default;
+
+$ml-border-color: $ml-color-neutral-light !default;
+
+$ml-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !default;
+$ml-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !default;
+
+// ==============================================================================
+// 6. TRANSITIONS & ANIMATIONS
+// ==============================================================================
+$ml-transition-fast: 150ms !default;
+$ml-transition-normal: 200ms !default;
+$ml-easing-snappy: cubic-bezier(0.4, 0, 0.2, 1) !default;
+
+// ==============================================================================
+// 7. Z-INDEX LAYERS
+// ==============================================================================
+$ml-z-index-sticky: 1 !default;
+$ml-z-index-dropdown: 9999 !default;
+$ml-z-index-popover: 10000 !default;
+
+// ==============================================================================
+// 8. LAYOUT & DIMENSIONS
+// ==============================================================================
+$ml-input-icon-spacing: 2.5rem !default;
+$ml-count-badge-offset: 2rem !default;
+$ml-option-icon-size: 1.25rem !default;
+$ml-count-clear-size: 1rem !default;
+$ml-pill-height: 1.5rem !default;
+$ml-pill-remove-width: 1.5rem !default;
+$ml-popover-close-size: 1.5rem !default;
+
+$ml-dropdown-max-height: 20rem !default;
+$ml-selected-popover-width: 20rem !default;
+$ml-selected-popover-max-height: 20rem !default;
+$ml-selected-popover-body-max-height: 18rem !default;
+$ml-tooltip-max-width: 20rem !default;
+
+// ==============================================================================
+// 9. OPACITY VALUES
+// ==============================================================================
+$ml-opacity-placeholder: 0.6 !default;
+$ml-opacity-disabled: 0.5 !default;
+$ml-opacity-disabled-input: 0.6 !default;
+$ml-opacity-option-selected-bg: 0.1 !default;
+$ml-opacity-highlight-bg: 0.2 !default;
+$ml-opacity-focus-shadow: 0.5 !default;
+$ml-opacity-disabled-bg: 0.05 !default;
+
+// ==============================================================================
+// 10. TRANSFORMS
+// ==============================================================================
+$ml-transform-center-y: translateY(-50%) !default;
+$ml-transform-rotate-180: 180deg !default;
+$ml-transform-scale-hover: 1.1 !default;
+$ml-transform-scale-active: 0.98 !default;
+
+// ==============================================================================
+// 11. ICONS & CONTENT
+// ==============================================================================
+$ml-icon-clear: "×" !default;
+$ml-icon-remove: "×" !default;
+
+// ==============================================================================
+// 12. LAYOUT HELPERS
+// ==============================================================================
+$ml-order-first: -1 !default;
+$ml-focus-outline-width: 2px !default;
+$ml-option-focus-outline-offset: -2px !default;
+
+// ==============================================================================
+// COMPONENT SEMANTIC VARIABLES
+// ==============================================================================
+// These provide a semantic layer over primitive variables for easier customization.
+// Override these to customize individual components without knowing internal structure.
+
+// Input Component
+// ==============================================================================
+$ml-input-padding-v: $ml-spacing-sm !default;
+$ml-input-padding-h: $ml-spacing-md !default;
+$ml-input-bg: $ml-color-white !default;
+$ml-input-text: $ml-color-neutral-darkest !default;
+$ml-input-border: $ml-color-neutral-base !default;
+$ml-input-focus-border-color: $ml-color-accent-base !default;
+
+$ml-input-border-style: $ml-border-width-base solid $ml-input-border !default;
+$ml-input-border-radius: $ml-border-radius !default;
+$ml-input-font-size: $ml-font-size-sm !default;
+$ml-input-padding: $ml-input-padding-v $ml-input-padding-h !default;
+$ml-input-padding-right: $ml-input-icon-spacing !default;
+$ml-input-placeholder-color: $ml-color-neutral-dark !default;
+$ml-input-bg-disabled: rgba($ml-color-neutral-dark, $ml-opacity-disabled-bg) !default;
+
+// Text Colors
+// ==============================================================================
+$ml-text-primary: $ml-color-neutral-darkest !default;
+$ml-text-secondary: $ml-color-neutral-dark !default;
+$ml-text-white: $ml-color-white !default;
+
+// Accent Colors
+// ==============================================================================
+$ml-accent-color: $ml-color-accent-base !default;
+$ml-accent-color-hover: $ml-color-accent-dark !default;
+$ml-accent-color-active: $ml-color-accent-darker !default;
+
+// Background Colors
+// ==============================================================================
+$ml-primary-bg: $ml-color-neutral-lighter !default;
+$ml-primary-bg-hover: $ml-color-neutral-light !default;
+
+// Toggle Icon
+// ==============================================================================
+$ml-toggle-color: $ml-text-secondary !default;
+$ml-toggle-right: $ml-input-padding-h !default;
+
+// Count Badge (in input)
+// ==============================================================================
+$ml-count-badge-padding: 0.125rem 0.25rem !default;
+$ml-count-badge-bg: $ml-accent-color !default;
+$ml-count-badge-color: $ml-text-white !default;
+$ml-count-badge-font-size: $ml-font-size-xs !default;
+$ml-count-badge-font-weight: $ml-font-weight-semibold !default;
+$ml-count-badge-border-radius: $ml-border-radius-sm !default;
+$ml-count-badge-bg-hover: $ml-accent-color-hover !default;
+
+// Floating Hint
+// ==============================================================================
+$ml-hint-padding: $ml-spacing-sm $ml-spacing-md !default;
+$ml-hint-bg: $ml-color-white !default;
+$ml-hint-border-color: $ml-color-neutral-light !default;
+$ml-hint-border: $ml-border-width-base solid $ml-hint-border-color !default;
+$ml-hint-border-radius: $ml-border-radius !default;
+$ml-hint-box-shadow: $ml-shadow-md !default;
+$ml-hint-font-size: $ml-font-size-xs !default;
+$ml-hint-color: $ml-text-secondary !default;
+
+// Dropdown
+// ==============================================================================
+$ml-dropdown-bg: $ml-color-white !default;
+$ml-dropdown-border-color: $ml-color-neutral-light !default;
+$ml-dropdown-shadow: $ml-shadow-xl !default;
+$ml-dropdown-text: $ml-color-neutral-darkest !default;
+
+$ml-dropdown-border: $ml-border-width-base solid $ml-dropdown-border-color !default;
+$ml-dropdown-border-radius: $ml-border-radius !default;
+$ml-dropdown-box-shadow: $ml-dropdown-shadow !default;
+$ml-dropdown-color: $ml-dropdown-text !default;
+
+// Dropdown Actions
+// ==============================================================================
+$ml-actions-gap: $ml-spacing-xs !default;
+$ml-actions-padding: $ml-spacing-sm !default;
+$ml-actions-border-bottom: $ml-border-width-base solid $ml-border-color !default;
+$ml-actions-bg: $ml-dropdown-bg !default;
+
+// Action Button
+// ==============================================================================
+$ml-action-btn-padding: $ml-spacing-xs $ml-spacing-sm !default;
+$ml-action-btn-font-size: $ml-font-size-xs !default;
+$ml-action-btn-border: $ml-border-width-base solid $ml-border-color !default;
+$ml-action-btn-border-radius: $ml-border-radius-sm !default;
+$ml-action-btn-bg: transparent !default;
+$ml-action-btn-color: inherit !default;
+$ml-action-btn-bg-hover: $ml-primary-bg !default;
+$ml-action-btn-border-color-hover: $ml-accent-color !default;
+
+// Options Container
+// ==============================================================================
+$ml-options-padding: $ml-spacing-xs 0 !default;
+
+// Group
+// ==============================================================================
+$ml-group-border-top: $ml-border-width-base solid $ml-border-color !default;
+$ml-group-margin-top: $ml-spacing-xs !default;
+$ml-group-padding-top: $ml-spacing-xs !default;
+
+// Group Label
+// ==============================================================================
+$ml-option-padding-h: $ml-spacing-md !default;
+$ml-group-label-padding: $ml-spacing-xs $ml-option-padding-h !default;
+$ml-group-label-font-size: $ml-font-size-xs !default;
+$ml-group-label-font-weight: $ml-font-weight-semibold !default;
+$ml-group-label-color: $ml-text-secondary !default;
+$ml-group-label-transform: uppercase !default;
+$ml-group-label-letter-spacing: $ml-letter-spacing-wide !default;
+
+// Option
+// ==============================================================================
+$ml-option-padding-v: $ml-spacing-sm !default;
+$ml-option-gap: $ml-spacing-sm !default;
+$ml-option-hover-bg: $ml-color-neutral-lightest !default;
+
+$ml-option-padding: $ml-option-padding-v $ml-option-padding-h !default;
+$ml-option-bg: transparent !default;
+$ml-option-bg-hover: $ml-option-hover-bg !default;
+$ml-option-bg-focused: $ml-option-hover-bg !default;
+$ml-option-outline-focused: $ml-focus-outline-width solid $ml-accent-color !default;
+$ml-option-bg-selected: rgba($ml-accent-color, $ml-opacity-option-selected-bg) !default;
+
+// Option Content
+// ==============================================================================
+$ml-option-content-gap: $ml-spacing-sm !default;
+
+// Option Icon
+// ==============================================================================
+$ml-option-icon-font-size: $ml-font-size-base !default;
+
+// Option Title
+// ==============================================================================
+$ml-option-title-font-size: $ml-font-size-sm !default;
+$ml-option-title-color: inherit !default;
+$ml-option-mark-bg: rgba($ml-accent-color, $ml-opacity-highlight-bg) !default;
+$ml-option-mark-color: inherit !default;
+$ml-option-mark-font-weight: $ml-font-weight-semibold !default;
+
+// Option Subtitle
+// ==============================================================================
+$ml-option-subtitle-margin-top: $ml-spacing-xs !default;
+$ml-option-subtitle-font-size: $ml-font-size-xs !default;
+$ml-option-subtitle-color: $ml-text-secondary !default;
+$ml-option-subtitle-line-height: 1.3 !default;
+
+// Empty State
+// ==============================================================================
+$ml-empty-padding: $ml-spacing-lg $ml-option-padding-h !default;
+$ml-empty-font-size: $ml-font-size-sm !default;
+$ml-empty-color: $ml-text-secondary !default;
+
+// Loader
+// ==============================================================================
+$ml-loader-padding: $ml-spacing-lg !default;
+$ml-loader-gap: $ml-spacing-sm !default;
+
+// Loading Text
+// ==============================================================================
+$ml-loading-text-font-size: $ml-font-size-sm !default;
+$ml-loading-text-color: $ml-text-secondary !default;
+
+// Pills Container
+// ==============================================================================
+$ml-pill-gap: $ml-spacing-sm !default;
+$ml-pills-gap: $ml-pill-gap !default;
+$ml-pills-margin-bottom: $ml-spacing-sm !default;
+$ml-pills-margin-top: $ml-spacing-sm !default;
+$ml-pills-margin-left: $ml-spacing-sm !default;
+$ml-pills-margin-right: $ml-spacing-sm !default;
+
+// Count Display
+// ==============================================================================
+$ml-count-display-margin-bottom: $ml-spacing-sm !default;
+$ml-count-display-margin-top: $ml-spacing-sm !default;
+$ml-count-display-margin-left: $ml-spacing-sm !default;
+$ml-count-display-margin-right: $ml-spacing-sm !default;
+
+// Count Badge Wrapper
+// ==============================================================================
+$ml-count-badge-wrapper-bg: transparent !default;
+$ml-count-badge-wrapper-border: $ml-border-width-base solid $ml-border-color !default;
+$ml-count-badge-wrapper-border-radius: $ml-border-radius-sm !default;
+$ml-count-badge-wrapper-padding: $ml-spacing-xs $ml-spacing-sm !default;
+$ml-count-badge-wrapper-gap: $ml-spacing-xs !default;
+$ml-count-badge-wrapper-bg-hover: $ml-option-hover-bg !default;
+$ml-count-badge-wrapper-border-color-hover: $ml-accent-color !default;
+
+// Count Text
+// ==============================================================================
+$ml-count-text-bg: transparent !default;
+$ml-count-text-border: none !default;
+$ml-count-text-font-size: $ml-font-size-sm !default;
+$ml-count-text-color: $ml-text-primary !default;
+
+// Count Clear Button
+// ==============================================================================
+$ml-count-clear-bg: transparent !default;
+$ml-count-clear-color: $ml-text-secondary !default;
+$ml-count-clear-font-size: $ml-font-size-lg !default;
+$ml-count-clear-border-radius: $ml-border-radius-full !default;
+$ml-count-clear-bg-hover: rgba($ml-accent-color, $ml-opacity-highlight-bg) !default;
+$ml-count-clear-color-hover: $ml-accent-color !default;
+
+// Pill
+// ==============================================================================
+$ml-pill-bg: $ml-color-accent-lightest !default;
+$ml-pill-bg-hover: $ml-color-white !default;
+$ml-pill-bg-active: $ml-color-accent-lighter !default;
+
+$ml-pill-font-size: $ml-font-size-xs !default;
+$ml-pill-font-weight: $ml-font-weight-semibold !default;
+$ml-pill-border-radius: $ml-border-radius !default;
+
+// Pill Text
+// ==============================================================================
+$ml-pill-text-padding: 0 $ml-spacing-sm !default;
+$ml-pill-text-bg: $ml-pill-bg !default;
+$ml-pill-text-color: $ml-accent-color !default;
+
+// Pill Remove Button
+// ==============================================================================
+$ml-pill-remove-bg: $ml-accent-color !default;
+$ml-pill-remove-color: $ml-text-white !default;
+$ml-pill-remove-border: none !default;
+$ml-pill-remove-font-size: $ml-font-size-xs !default;
+$ml-pill-remove-bg-hover: $ml-accent-color-hover !default;
+$ml-pill-remove-box-shadow-focus: 0 0 0 $ml-focus-outline-width
+  rgba($ml-accent-color, $ml-opacity-focus-shadow) !default;
+
+// "+X more" badge (partial mode)
+// ==============================================================================
+$ml-more-badge-bg: $ml-pill-text-bg !default;
+$ml-more-badge-hover-bg: $ml-pill-bg-hover !default;
+$ml-more-badge-active-bg: $ml-pill-bg-active !default;
+
+// Tooltip
+// ==============================================================================
+$ml-tooltip-bg: $ml-color-tooltip-bg !default;
+$ml-tooltip-color: $ml-color-tooltip-text !default;
+$ml-tooltip-padding: $ml-spacing-sm $ml-spacing-md !default;
+$ml-tooltip-border-radius: $ml-border-radius !default;
+$ml-tooltip-font-size: $ml-font-size-sm !default;
+$ml-tooltip-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !default;
+$ml-tooltip-z-index: $ml-z-index-popover !default;
+
+// Selected Popover
+// ==============================================================================
+$ml-selected-popover-bg: $ml-dropdown-bg !default;
+$ml-selected-popover-border: $ml-border-width-base solid $ml-dropdown-border-color !default;
+$ml-selected-popover-border-radius: $ml-border-radius !default;
+$ml-selected-popover-box-shadow: $ml-dropdown-shadow !default;
+
+// Selected Popover Header
+// ==============================================================================
+$ml-selected-popover-header-padding: $ml-spacing-sm $ml-spacing-md !default;
+$ml-selected-popover-header-bg: rgba($ml-accent-color, $ml-opacity-option-selected-bg) !default;
+$ml-selected-popover-header-border-bottom: $ml-border-width-base solid $ml-border-color !default;
+$ml-selected-popover-header-font-size: $ml-font-size-sm !default;
+$ml-selected-popover-header-font-weight: $ml-font-weight-semibold !default;
+$ml-selected-popover-header-color: $ml-text-primary !default;
+
+// Selected Popover Close
+// ==============================================================================
+$ml-selected-popover-close-bg: transparent !default;
+$ml-selected-popover-close-color: $ml-text-secondary !default;
+$ml-selected-popover-close-font-size: $ml-font-size-xl !default;
+$ml-selected-popover-close-border-radius: $ml-border-radius-full !default;
+$ml-selected-popover-close-bg-hover: rgba($ml-accent-color, $ml-opacity-highlight-bg) !default;
+$ml-selected-popover-close-color-hover: $ml-accent-color !default;
+
+// Selected Popover Body
+// ==============================================================================
+$ml-selected-popover-body-gap: $ml-spacing-xs !default;
+$ml-selected-popover-body-padding: $ml-spacing-sm !default;
+
+// Checkbox
+// ==============================================================================
+$ml-checkbox-offset: 0.125rem !default;
+$ml-checkbox-margin-top: $ml-checkbox-offset !default;
+
+// Placeholder
+// ==============================================================================
+$ml-placeholder-opacity: $ml-opacity-placeholder !default;
+
+// Disabled States
+// ==============================================================================
+$ml-disabled-opacity: $ml-opacity-disabled !default;
+$ml-disabled-input-opacity: $ml-opacity-disabled-input !default;

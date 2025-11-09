@@ -1,0 +1,24 @@
+// ==============================================================================
+// MULTISELECT COMPONENT - MAIN ENTRY POINT
+// ==============================================================================
+// Typeahead multiselect with rich content support and floating hints
+//
+// File structure:
+// - _variables.scss       : All variables (base primitives + semantic)
+// - _base.scss            : FOUC prevention + layout containers
+// - _input-dropdown.scss  : Input, toggle, badge, hint, dropdown, actions
+// - _options.scss         : Options list, groups, checkbox, content, states
+// - _pills-display.scss   : Pills, count display, individual pills
+// - _tooltips-popover.scss: Pill tooltips + selected items popover
+// - _modifiers.scss       : Size variants + state modifiers
+// - _debug.scss           : Debug information panel
+
+// Import all partials in dependency order
+@use 'variables';
+@use 'base';
+@use 'input-dropdown';
+@use 'options';
+@use 'pills-display';
+@use 'tooltips-popover';
+@use 'modifiers';
+@use 'debug';

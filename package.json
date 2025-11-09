@@ -1,19 +1,23 @@
 {
   "name": "@keenmate/web-multiselect",
-  "version": "1.0.0-rc01",
+  "version": "1.0.0-rc03",
   "description": "Lightweight multiselect web component with typeahead search, rich content support, and excellent keyboard navigation",
   "type": "module",
   "main": "./dist/multiselect.umd.js",
   "module": "./dist/multiselect.js",
+  "types": "./dist/index.d.ts",
   "style": "./dist/style.css",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/multiselect.js",
       "require": "./dist/multiselect.umd.js",
       "default": "./dist/multiselect.js"
     },
     "./style.css": "./dist/style.css",
+    "./scss": "./src/scss/_multiselect.scss",
     "./dist/*": "./dist/*",
+    "./src/scss/*": "./src/scss/*",
     "./package.json": "./package.json"
   },
   "sideEffects": [
@@ -22,13 +26,14 @@
     "*.css"
   ],
   "files": [
-    "dist"
+    "dist",
+    "src/scss"
   ],
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "npm run clean:dist && tsc && vite build",
     "build:types": "tsc",
-    "build:full": "tsc && vite build",
+    "build:full": "npm run build",
     "preview": "vite preview",
     "package": "npm run build && npm pack",
     "publish:dry": "npm run build && npm publish --dry-run",
@@ -60,7 +65,7 @@
   },
   "devDependencies": {
     "rimraf": "^5.0.5",
-    "sass": "^1.69.5",
+    "sass-embedded": "^1.93.3",
     "typescript": "^5.3.3",
     "vite": "^5.0.8"
   },
