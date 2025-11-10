@@ -29,6 +29,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
     private _getValueCallback?: (item: T) => string | number;
     private _displayValueMember?: string;
     private _getDisplayValueCallback?: (item: T) => string;
+    private _getPillDisplayCallback?: (item: T) => string;
     private _searchValueMember?: string;
     private _getSearchValueCallback?: (item: T) => string;
     private _iconMember?: string;
@@ -259,6 +260,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
             // Callback properties (JavaScript only)
             getValueCallback: this._getValueCallback,
             getDisplayValueCallback: this._getDisplayValueCallback,
+            getPillDisplayCallback: this._getPillDisplayCallback,
             getSearchValueCallback: this._getSearchValueCallback,
             getIconCallback: this._getIconCallback,
             getSubtitleCallback: this._getSubtitleCallback,
@@ -441,6 +443,15 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     get getDisplayValueCallback() {
         return this._getDisplayValueCallback;
+    }
+
+    set getPillDisplayCallback(callback: ((item: T) => string) | undefined) {
+        this._getPillDisplayCallback = callback;
+        this.reinitialize();
+    }
+
+    get getPillDisplayCallback() {
+        return this._getPillDisplayCallback;
     }
 
     set getSearchValueCallback(callback: ((item: T) => string) | undefined) {

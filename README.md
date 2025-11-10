@@ -146,6 +146,12 @@ multiselect.onChange = (selectedOptions) => {
   console.log('Changed:', selectedOptions);
 };
 
+// Pill display customization (show different text in pills vs dropdown)
+multiselect.getPillDisplayCallback = (item) => {
+  // Show shorter text in pills (e.g., just name instead of "name (email)")
+  return item.name; // Dropdown might show "John Doe (john@example.com)"
+};
+
 // Pill tooltip customization
 multiselect.getPillTooltipCallback = (item) => {
   return `${item.label} - ${item.subtitle}`;
@@ -495,6 +501,13 @@ select.getSubtitleCallback = (item) => {
 // Disable based on conditions
 select.getDisabledCallback = (item) => {
   return item.stock === 0 || item.discontinued;
+};
+
+// Customize pill display (show different text in pills vs dropdown)
+select.getPillDisplayCallback = (item) => {
+  // Pills show just the name for space efficiency
+  return item.name;
+  // While dropdown can show full details: "Laptop - $999 - Electronics"
 };
 ```
 

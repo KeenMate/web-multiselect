@@ -616,6 +616,49 @@ ${user.role}`;
         </section>
 
         <section class="example-section">
+            <h2>🎨 Custom Pill Display <span class="badge new">NEW</span></h2>
+            <p class="description">
+                Show different text in pills vs dropdown options. This example shows <strong>full details in dropdown</strong> ("John Doe - Senior Developer") with subtitle showing email, but <strong>just first names in pills</strong> ("John") for maximum space efficiency!
+            </p>
+
+            <div class="demo-area">
+                <label class="demo-label">Select Team Members:</label>
+                <multi-select
+                    id="custom-pill-display"
+                    search-placeholder="Search team members (see the difference!)..."
+                ></multi-select>
+
+                <div class="output">
+                    <div class="output-label">Selected:</div>
+                    <pre id="output-custom-pill">[]</pre>
+                </div>
+            </div>
+
+            <p class="code-label">Notice the dramatic difference:</p>
+            <div class="code-block"><pre>const select = document.getElementById('custom-pill-display');
+
+// Dropdown shows FULL details with role
+select.getDisplayValueCallback = (user) => {
+    return `${user.fullName} - ${user.role}`;
+    // Shows: "John Doe - Senior Developer"
+};
+
+// Pills show JUST first name: "John" (much more compact!)
+select.getPillDisplayCallback = (user) => {
+    return user.firstName;
+    // Shows: "John" (saves tons of space!)
+};</pre></div>
+
+            <p class="code-label">Use Cases:</p>
+            <ul class="feature-list">
+                <li><strong>Space efficiency:</strong> Show abbreviated text in pills</li>
+                <li><strong>Different context:</strong> Pills show names, dropdown shows full details</li>
+                <li><strong>Cleaner UI:</strong> Reduce clutter in selected items display</li>
+                <li><strong>Optional:</strong> Falls back to standard display value if not provided</li>
+            </ul>
+        </section>
+
+        <section class="example-section">
             <h2>✨ Benefits Summary</h2>
             <div class="grid-2">
                 <div>
@@ -1120,6 +1163,47 @@ ${user.role}`;
         tooltipsCustomSelect.getPillTooltipCallback = (user) => {
             return `${user.name}\n${user.email}\n${user.role}`;
         };
+
+        // New Feature: Custom Pill Display (show different text in pills vs dropdown)
+        const customPillDisplaySelect = document.querySelector('#custom-pill-display');
+        const teamMembers = [
+            { id: 1, fullName: 'John Doe', firstName: 'John', email: 'john.doe@company.com', role: 'Senior Developer', avatar: '👨‍💻' },
+            { id: 2, fullName: 'Jane Smith', firstName: 'Jane', email: 'jane.smith@company.com', role: 'Product Manager', avatar: '👩‍💼' },
+            { id: 3, fullName: 'Bob Johnson', firstName: 'Bob', email: 'bob.j@company.com', role: 'UX Designer', avatar: '🎨' },
+            { id: 4, fullName: 'Alice Williams', firstName: 'Alice', email: 'alice.w@company.com', role: 'QA Engineer', avatar: '🔍' },
+            { id: 5, fullName: 'Charlie Brown', firstName: 'Charlie', email: 'charlie.b@company.com', role: 'DevOps Engineer', avatar: '⚙️' },
+            { id: 6, fullName: 'Diana Martinez', firstName: 'Diana', email: 'diana.m@company.com', role: 'Tech Lead', avatar: '🚀' }
+        ];
+
+        // Set up data extraction
+        customPillDisplaySelect.getValueCallback = (user) => user.id;
+        customPillDisplaySelect.getIconCallback = (user) => user.avatar;
+        customPillDisplaySelect.getSubtitleCallback = (user) => user.email;
+
+        // Dropdown shows FULL details: "Name - Role (email)"
+        customPillDisplaySelect.getDisplayValueCallback = (user) => {
+            return `${user.fullName} - ${user.role}`;
+        };
+
+        // Pills show JUST first name (very compact!)
+        customPillDisplaySelect.getPillDisplayCallback = (user) => {
+            return user.firstName; // Much shorter: "John" instead of full details
+        };
+
+        customPillDisplaySelect.options = teamMembers;
+
+        // Update output on change
+        customPillDisplaySelect.addEventListener('change', (e) => {
+            const output = document.getElementById('output-custom-pill');
+            output.textContent = JSON.stringify({
+                selectedValues: e.detail.selectedValues,
+                selectedItems: e.detail.selectedOptions.map(user => ({
+                    name: user.fullName,
+                    email: user.email,
+                    role: user.role
+                }))
+            }, null, 2);
+        });
     </script>
 </body>
 </html>

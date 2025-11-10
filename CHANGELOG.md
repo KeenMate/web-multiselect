@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc05] - 2025-11-10
+
+### Added
+- **Pill Display Customization** - New `getPillDisplayCallback` property to customize pill text independently from dropdown display
+  - Allows showing different text in pills vs dropdown (e.g., "John Doe" in pill, "John Doe (john@example.com)" in dropdown)
+  - Falls back to standard display value if not provided
+  - Useful for showing concise text in pills while keeping detailed information in dropdown
+  - Applied to all pill rendering locations: pills mode, partial mode, selected popover, and tooltips
+
 ### Fixed
 - **RTL Detection in Shadow DOM** - Fixed RTL mode not being detected when using web components
   - Root cause: Shadow DOM prevents direct access to host element's `dir` attribute

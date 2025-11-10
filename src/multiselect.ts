@@ -147,6 +147,21 @@ export class PureMultiSelect<T = any> {
     }
 
     /**
+     * Extract pill display value from item
+     * Precedence: getPillDisplayCallback -> getItemDisplayValue()
+     * This allows customizing pill text separately from dropdown display text
+     */
+    private getItemPillDisplayValue(item: T): string {
+        // Custom pill callback (if provided)
+        if (this.options.getPillDisplayCallback) {
+            return this.options.getPillDisplayCallback(item);
+        }
+
+        // Fall back to standard display value
+        return this.getItemDisplayValue(item);
+    }
+
+    /**
      * Extract search value from item
      * Precedence: searchValueMember -> getSearchValueCallback -> displayValue
      */
@@ -600,7 +615,7 @@ export class PureMultiSelect<T = any> {
             this.pillsContainer.className = `ml__pills ml__pills--${this.effectivePillsPosition}`;
             this.pillsContainer.innerHTML = selectedOptions.map(option => {
                 const value = this.getItemValue(option);
-                const displayValue = this.getItemDisplayValue(option);
+                const displayValue = this.getItemPillDisplayValue(option);
                 return `
                 <div class="ml__pill">
                     <span class="ml__pill-text">${displayValue}</span>
@@ -618,7 +633,7 @@ export class PureMultiSelect<T = any> {
 
             const visiblePillsHtml = visibleOptions.map(option => {
                 const value = this.getItemValue(option);
-                const displayValue = this.getItemDisplayValue(option);
+                const displayValue = this.getItemPillDisplayValue(option);
                 return `
                 <div class="ml__pill">
                     <span class="ml__pill-text">${displayValue}</span>
@@ -1408,7 +1423,7 @@ export class PureMultiSelect<T = any> {
             <div class="ml__selected-popover-body">
                 ${selectedOptions.map(option => {
                     const value = this.getItemValue(option);
-                    const displayValue = this.getItemDisplayValue(option);
+                    const displayValue = this.getItemPillDisplayValue(option);
                     return `
                     <div class="ml__pill">
                         <span class="ml__pill-text">${displayValue}</span>
@@ -1621,7 +1636,7 @@ export class PureMultiSelect<T = any> {
             }
 
             // Create tooltip for remove button
-            const displayValue = this.getItemDisplayValue(option);
+            const displayValue = this.getItemPillDisplayValue(option);
             this.createRemoveButtonTooltip(removeBtn, displayValue, value);
         });
 
@@ -1648,7 +1663,7 @@ export class PureMultiSelect<T = any> {
             content = this.options.getPillTooltipCallback(option);
             console.log('[Tooltips] Using custom callback for tooltip content');
         } else {
-            const displayValue = this.getItemDisplayValue(option);
+            const displayValue = this.getItemPillDisplayValue(option);
             const subtitle = this.getItemSubtitle(option);
             content = subtitle ? `${displayValue}\n${subtitle}` : displayValue;
             console.log(`[Tooltips] Using default content: "${content}"`);

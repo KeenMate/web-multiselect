@@ -60,6 +60,8 @@ export interface MultiSelectConfig<T = any> {
     displayValueMember?: string;
     /** Callback to extract display value from item */
     getDisplayValueCallback?: (item: T) => string;
+    /** Callback to customize pill display text (defaults to display value if not provided) */
+    getPillDisplayCallback?: (item: T) => string;
 
     /** Member property name for search value extraction */
     searchValueMember?: string;
