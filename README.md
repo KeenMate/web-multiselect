@@ -88,7 +88,7 @@ multiselect.setSelected(['js', 'ts']);
 | `show-checkboxes` | `boolean` | `true` | Show checkboxes next to options |
 | `close-on-select` | `boolean` | `false` | Close dropdown after selecting |
 | `dropdown-min-width` | `string` | - | Min width for dropdown (e.g., '20rem') |
-| `pills-display-mode` | `'pills' \| 'count' \| 'compact'` | `'pills'` | How to display selected items |
+| `pills-display-mode` | `'pills' \| 'count' \| 'compact' \| 'partial'` | `'pills'` | How to display selected items |
 | `pills-threshold` | `number` | - | Auto-switch mode when exceeded (see pills-threshold-mode) |
 | `pills-threshold-mode` | `'count' \| 'partial'` | `'count'` | Mode after threshold: 'count' shows badge, 'partial' shows limited pills + more badge |
 | `pills-max-visible` | `number` | `3` | Max pills shown in partial mode |
@@ -102,6 +102,20 @@ multiselect.setSelected(['js', 'ts']);
 | `empty-message` | `string` | `'No results found'` | Message when no options found |
 | `loading-message` | `string` | `'Loading...'` | Message while loading async data |
 | `min-search-length` | `number` | `0` | Minimum search length for async |
+| `sticky-actions` | `boolean` | `true` | Keep Select All/Clear All buttons fixed at top while scrolling |
+| `lock-placement` | `boolean` | `true` | Lock dropdown placement after first open to prevent flipping |
+| `enable-search` | `boolean` | `true` | Enable/disable search functionality |
+| `search-input-mode` | `'normal' \| 'readonly' \| 'hidden'` | `'normal'` | Search input display mode |
+| `allow-add-new` | `boolean` | `false` | Allow adding new options not in the list |
+| `value-member` | `string` | - | Property name for value/ID extraction from custom objects |
+| `display-value-member` | `string` | - | Property name for display text extraction from custom objects |
+| `search-value-member` | `string` | - | Property name for search text extraction from custom objects |
+| `icon-member` | `string` | - | Property name for icon extraction from custom objects |
+| `subtitle-member` | `string` | - | Property name for subtitle extraction from custom objects |
+| `group-member` | `string` | - | Property name for group extraction from custom objects |
+| `disabled-member` | `string` | - | Property name for disabled state extraction from custom objects |
+| `name` | `string` | - | HTML form field name for form integration (creates hidden input) |
+| `value-format` | `'json' \| 'csv' \| 'array'` | `'json'` | Format for form value serialization |
 | `initial-values` | `string` (JSON array) | - | Pre-selected values |
 
 ## Properties
@@ -144,14 +158,51 @@ multiselect.getCountPillCallback = (count, moreCount) => {
   }
   return `${count} selected`; // Count mode display
 };
+
+// Data extraction - Member properties (for simple property names)
+multiselect.valueMember = 'id';
+multiselect.displayValueMember = 'name';
+multiselect.iconMember = 'icon';
+multiselect.subtitleMember = 'description';
+multiselect.groupMember = 'category';
+multiselect.disabledMember = 'isDisabled';
+
+// Data extraction - Callback functions (for complex logic)
+multiselect.getValueCallback = (item) => item.id || item.value;
+multiselect.getDisplayValueCallback = (item) => item.label || item.name;
+multiselect.getSearchValueCallback = (item) => `${item.name} ${item.tags.join(' ')}`;
+multiselect.getIconCallback = (item) => item.icon || '📄';
+multiselect.getSubtitleCallback = (item) => `${item.price} - ${item.stock} in stock`;
+multiselect.getGroupCallback = (item) => item.category;
+multiselect.getDisabledCallback = (item) => item.stock === 0;
+
+// Form integration
+multiselect.name = 'selected_items';
+multiselect.valueFormat = 'json'; // 'json' | 'csv' | 'array'
+multiselect.getValueFormatCallback = (values) => values.join('|'); // Custom format
+
+// Read-only properties
+const selectedValue = multiselect.selectedValue; // string | number | array | null
+const selectedItem = multiselect.selectedItem; // First selected item object
+
+// Add new option callback
+multiselect.addNewCallback = async (value) => {
+  // Validate and create new option
+  const newOption = await fetch('/api/options', {
+    method: 'POST',
+    body: JSON.stringify({ name: value })
+  }).then(r => r.json());
+  return newOption;
+};
 ```
 
 ## Methods
 
 | Method | Description |
 |--------|-------------|
-| `getSelected()` | Get currently selected options |
-| `setSelected(values: string[])` | Set selected values |
+| `getSelected()` | Get currently selected options as array of option objects |
+| `setSelected(values: (string \| number)[])` | Set selected values by ID/value |
+| `getValue()` | Get selected value(s) - returns single value in single-select mode, array in multi-select mode |
 | `destroy()` | Clean up and destroy instance |
 
 ## Events
@@ -372,6 +423,253 @@ Full RTL support for Arabic, Hebrew, Persian, Urdu, and other right-to-left lang
 - ✅ **Text direction** - All text content properly right-aligned
 - ✅ **No configuration needed** - Just set `dir="rtl"` attribute
 
+### Flexible Data Handling
+
+The component supports **any data structure** through a member/callback pattern, allowing you to work with custom objects, tuple arrays, or existing API responses without transformation.
+
+#### Member Properties (Simple Property Names)
+
+For objects with consistent property names, use member attributes:
+
+```html
+<multi-select
+  id="products"
+  value-member="productId"
+  display-value-member="productName"
+  icon-member="icon"
+  subtitle-member="description"
+  group-member="category">
+</multi-select>
+
+<script type="module">
+  const select = document.getElementById('products');
+  select.options = [
+    {
+      productId: 'p1',
+      productName: 'Laptop',
+      icon: '💻',
+      description: 'High-performance laptop',
+      category: 'Electronics'
+    },
+    {
+      productId: 'p2',
+      productName: 'Mouse',
+      icon: '🖱️',
+      description: 'Wireless mouse',
+      category: 'Electronics'
+    }
+  ];
+</script>
+```
+
+#### Callback Functions (Complex Logic)
+
+For complex data extraction or conditional logic, use callbacks:
+
+```javascript
+const select = document.querySelector('multi-select');
+
+// Custom value extraction
+select.getValueCallback = (item) => item.id || item.code || item.value;
+
+// Combine multiple fields for display
+select.getDisplayValueCallback = (item) => {
+  return `${item.firstName} ${item.lastName}`;
+};
+
+// Include multiple fields in search
+select.getSearchValueCallback = (item) => {
+  return `${item.name} ${item.sku} ${item.tags.join(' ')}`;
+};
+
+// Conditional icons
+select.getIconCallback = (item) => {
+  return item.inStock ? '✅' : '❌';
+};
+
+// Dynamic subtitles
+select.getSubtitleCallback = (item) => {
+  return `$${item.price} - ${item.stock} in stock`;
+};
+
+// Disable based on conditions
+select.getDisabledCallback = (item) => {
+  return item.stock === 0 || item.discontinued;
+};
+```
+
+#### Tuple Array Auto-Detection
+
+The component automatically detects `[key, value]` tuple arrays:
+
+```javascript
+select.options = [
+  ['js', 'JavaScript'],
+  ['ts', 'TypeScript'],
+  ['py', 'Python']
+];
+// First element becomes value, second becomes display text
+```
+
+#### Priority Order
+
+When multiple extraction methods are defined, the component uses this priority:
+
+1. **Callbacks** (highest priority) - `getValueCallback`, `getDisplayValueCallback`, etc.
+2. **Member properties** - `valueMember`, `displayValueMember`, etc.
+3. **Default properties** (lowest priority) - Falls back to `value`, `label`, `name`, etc.
+
+#### TypeScript Support
+
+The component is fully typed with generics:
+
+```typescript
+import type { MultiSelectElement } from '@keenmate/web-multiselect';
+
+interface Product {
+  id: string;
+  name: string;
+  price: number;
+  category: string;
+}
+
+const select = document.querySelector<MultiSelectElement<Product>>('multi-select');
+select.options = [
+  { id: 'p1', name: 'Laptop', price: 999, category: 'Electronics' }
+];
+```
+
+### Form Integration
+
+The component seamlessly integrates with standard HTML forms by automatically creating hidden inputs in the light DOM (outside Shadow DOM) so FormData can access them.
+
+#### Basic Form Integration
+
+```html
+<form id="userForm" action="/submit" method="POST">
+  <label>Select Skills:</label>
+  <multi-select
+    name="skills"
+    value-format="json"
+    multiple="true">
+  </multi-select>
+
+  <button type="submit">Submit</button>
+</form>
+
+<script type="module">
+  import '@keenmate/web-multiselect';
+
+  const form = document.getElementById('userForm');
+  const select = form.querySelector('multi-select');
+
+  select.options = [
+    { value: 'js', label: 'JavaScript' },
+    { value: 'ts', label: 'TypeScript' },
+    { value: 'py', label: 'Python' }
+  ];
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const formData = new FormData(form);
+
+    // Access the value
+    const skills = formData.get('skills');
+    console.log('Selected skills:', skills);
+    // Output: ["js","ts"] (JSON string)
+  });
+</script>
+```
+
+#### Value Formats
+
+Choose how selected values are serialized in forms:
+
+**JSON Format** (default):
+```html
+<multi-select name="items" value-format="json"></multi-select>
+<!-- FormData result: items = ["item1","item2","item3"] -->
+```
+
+**CSV Format**:
+```html
+<multi-select name="items" value-format="csv"></multi-select>
+<!-- FormData result: items = "item1,item2,item3" -->
+```
+
+**Array Format** (multiple inputs):
+```html
+<multi-select name="items" value-format="array"></multi-select>
+<!-- FormData result:
+     items[] = "item1"
+     items[] = "item2"
+     items[] = "item3"
+-->
+```
+
+#### Custom Value Formatting
+
+For advanced use cases, provide a custom formatting function:
+
+```javascript
+const select = document.querySelector('multi-select');
+
+select.name = 'product_ids';
+select.getValueFormatCallback = (values) => {
+  // Custom format: pipe-separated with prefix
+  return values.map(v => `ID:${v}`).join('|');
+};
+
+// When submitted, FormData will have:
+// product_ids = "ID:123|ID:456|ID:789"
+```
+
+#### Using getValue() for JavaScript Submissions
+
+For JavaScript-based form submissions (AJAX, fetch), use `getValue()`:
+
+```javascript
+// Single-select mode
+const select = document.querySelector('multi-select[multiple="false"]');
+const selectedId = select.getValue();
+// Returns: "js" or null
+
+// Multi-select mode
+const multiSelect = document.querySelector('multi-select[multiple="true"]');
+const selectedIds = multiSelect.getValue();
+// Returns: ["js", "ts", "py"] or []
+
+// Submit with fetch
+const response = await fetch('/api/update', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    skills: multiSelect.getValue()
+  })
+});
+```
+
+#### Working with Numeric Values
+
+The component handles both string and numeric values correctly:
+
+```javascript
+select.options = [
+  { value: 1, label: 'Option 1' },
+  { value: 2, label: 'Option 2' },
+  { value: 3, label: 'Option 3' }
+];
+
+// getValue() preserves types
+const values = select.getValue();
+// Returns: [1, 2, 3] (numbers, not strings)
+
+// FormData serialization
+// JSON format: [1,2,3]
+// CSV format: 1,2,3
+// Array format: items[]=1, items[]=2, items[]=3
+```
+
 ### Disabled Options
 
 ```javascript
@@ -439,7 +737,15 @@ You can customize the component using CSS variables even with just a `<script>` 
 
 ### Available CSS Variables
 
-All 211 SCSS variables are exposed as CSS custom properties with fallbacks. Below are the most commonly customized variables organized by category. For the complete list, see [_multiselect.scss](./src/scss/_multiselect.scss).
+The component exposes 200+ SCSS variables as CSS custom properties with fallbacks. Below are the **50+ most commonly customized variables** organized by category.
+
+For the complete list of all available CSS variables, see the SCSS source files:
+- [_variables.scss](./src/scss/_variables.scss) - Foundation variables (colors, spacing, typography)
+- [_input-dropdown.scss](./src/scss/_input-dropdown.scss) - Input and dropdown styles
+- [_pills-display.scss](./src/scss/_pills-display.scss) - Pills and count display
+- [_options.scss](./src/scss/_options.scss) - Options and groups
+- [_tooltip.scss](./src/scss/_tooltip.scss) - Tooltip styles
+- [_rtl.scss](./src/scss/_rtl.scss) - RTL overrides
 
 #### Colors
 
