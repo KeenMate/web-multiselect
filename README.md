@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 [![npm version](https://img.shields.io/npm/v/@keenmate/web-multiselect.svg)](https://www.npmjs.com/package/@keenmate/web-multiselect)
 
-A lightweight, accessible multiselect web component with typeahead search, rich content support, and excellent keyboard navigation.
+A lightweight, accessible multiselect web component with typeahead search, RTL language support, rich content, and excellent keyboard navigation.
 
 ## Features
 
@@ -17,6 +17,7 @@ A lightweight, accessible multiselect web component with typeahead search, rich 
 - 📦 **Grouped Options** - Organize options into collapsible groups
 - 🎉 **Smart Positioning** - Uses Floating UI for intelligent dropdown placement
 - 🌍 **i18n Support** - Customizable callbacks for pluralization and localization
+- 🌐 **RTL Support** - Full right-to-left language support (Arabic, Hebrew, Persian, Urdu, etc.)
 - ✨ **Modern** - Web Component with Shadow DOM, TypeScript, bundled with Vite
 - 🌐 **Framework Agnostic** - Works with any framework or vanilla JS
 
@@ -272,7 +273,7 @@ Perfect for different use cases and space constraints:
 
 ### Pills Positioning
 
-Control where selected item badges appear:
+Control where selected item badges appear relative to the input:
 
 ```html
 <!-- Pills below input (default) -->
@@ -281,12 +282,14 @@ Control where selected item badges appear:
 <!-- Pills above input -->
 <multi-select pills-position="top"></multi-select>
 
-<!-- Pills to the left (RTL) -->
+<!-- Pills to the left of input -->
 <multi-select pills-position="left"></multi-select>
 
-<!-- Pills to the right (LTR) -->
+<!-- Pills to the right of input -->
 <multi-select pills-position="right"></multi-select>
 ```
+
+**Note:** In RTL mode, left/right positions are automatically mirrored - `pills-position="left"` will appear on the physical right side in RTL languages.
 
 ### Pill Tooltips
 
@@ -341,6 +344,33 @@ Customize count pill text for proper pluralization and localization:
   };
 </script>
 ```
+
+### Right-to-Left (RTL) Language Support
+
+Full RTL support for Arabic, Hebrew, Persian, Urdu, and other right-to-left languages with automatic detection and complete UI mirroring:
+
+```html
+<!-- Automatic RTL detection from dir attribute -->
+<multi-select dir="rtl" search-placeholder="ابحث..."></multi-select>
+
+<!-- RTL inherited from parent element -->
+<div dir="rtl">
+  <multi-select search-placeholder="חיפוש..."></multi-select>
+</div>
+
+<!-- RTL on page level -->
+<html dir="rtl">
+  <!-- All multi-selects will auto-detect RTL -->
+</html>
+```
+
+**RTL Features:**
+- ✅ **Auto-detection** - Detects `dir="rtl"` on component or any ancestor element
+- ✅ **Complete UI mirroring** - Toggle icon, text alignment, pills, dropdown, badges
+- ✅ **Logical positioning** - `pills-position="left"` becomes physically right in RTL
+- ✅ **Pills remove buttons** - Flip to left side in RTL mode
+- ✅ **Text direction** - All text content properly right-aligned
+- ✅ **No configuration needed** - Just set `dir="rtl"` attribute
 
 ### Disabled Options
 
