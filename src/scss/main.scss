@@ -10,6 +10,7 @@
 // - _options.scss         : Options list, groups, checkbox, content, states
 // - _pills-display.scss   : Pills, count display, individual pills
 // - _tooltips-popover.scss: Pill tooltips + selected items popover
+// - _rtl.scss             : RTL (Right-to-Left) language support
 // - _modifiers.scss       : Size variants + state modifiers
 // - _debug.scss           : Debug information panel
 
@@ -20,5 +21,6 @@
 @use 'options';
 @use 'pills-display';
 @use 'tooltips-popover';
+@use 'rtl';
 @use 'modifiers';
 @use 'debug';

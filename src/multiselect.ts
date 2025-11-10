@@ -73,6 +73,9 @@ export class PureMultiSelect<T = any> {
     private showSelectedPopover = false;
     private selectedPopoverPlacement: Placement | null = null;
     private dropdownPlacement: Placement | null = null;
+    private isRTL = false;
+    private effectivePillsPosition: PillsPosition = 'bottom';
+    private justClosedViaClick = false;
 
     // Floating UI cleanup functions
     private dropdownCleanup: (() => void) | null = null;
@@ -312,8 +315,43 @@ export class PureMultiSelect<T = any> {
         // Get container for dropdown/hint/popover (Shadow DOM or body)
         const container = this.options.container || document.body;
 
+        // Detect RTL mode from dir attribute on host element (for shadow DOM) or element itself
+        // In shadow DOM, we need to check the host element (<multi-select>), not the shadow root contents
+        const rootNode = this.element.getRootNode();
+        const hostElement = rootNode instanceof ShadowRoot
+            ? (rootNode as ShadowRoot).host as HTMLElement
+            : this.element;
+
+        const hasElementDir = hostElement.getAttribute('dir') === 'rtl';
+        const hasAncestorDir = hostElement.closest('[dir="rtl"]') !== null;
+        this.isRTL = hasElementDir || hasAncestorDir;
+
+        console.log('[MultiSelect RTL Debug]', {
+            isShadowRoot: rootNode instanceof ShadowRoot,
+            hostElement,
+            elementDir: hostElement.getAttribute('dir'),
+            hasElementDir,
+            hasAncestorDir,
+            isRTL: this.isRTL
+        });
+
+        // Mirror pillsPosition in RTL mode (logical positioning)
+        this.effectivePillsPosition = this.options.pillsPosition || 'bottom';
+        if (this.isRTL) {
+            if (this.effectivePillsPosition === 'left') {
+                this.effectivePillsPosition = 'right';
+            } else if (this.effectivePillsPosition === 'right') {
+                this.effectivePillsPosition = 'left';
+            }
+        }
+
         // Add classes to the element
         this.element.classList.add('ml');
+
+        if (this.isRTL) {
+            this.element.classList.add('ml--rtl');
+            console.log('[MultiSelect RTL] Added ml--rtl class to element');
+        }
 
         if (!this.options.isCheckboxesShown || !this.options.isMultipleEnabled) {
             this.element.classList.add('ml--no-checkboxes');
@@ -352,9 +390,19 @@ export class PureMultiSelect<T = any> {
         this.pillsContainer = document.createElement('div');
         this.pillsContainer.className = 'ml__pills';
 
-        // Build the structure: element contains inputWrapper and pillsContainer
-        this.element.appendChild(inputWrapper);
-        this.element.appendChild(this.pillsContainer);
+        // Create wrapper for input and pills (needed for positioning)
+        const wrapper = document.createElement('div');
+        wrapper.className = 'ml-wrapper';
+
+        // Add layout modifier based on pills position
+        if (this.effectivePillsPosition === 'left' || this.effectivePillsPosition === 'right') {
+            wrapper.classList.add('ml-wrapper--inline');
+        }
+
+        // Build the structure: element contains wrapper, which contains inputWrapper and pillsContainer
+        wrapper.appendChild(inputWrapper);
+        wrapper.appendChild(this.pillsContainer);
+        this.element.appendChild(wrapper);
 
         // Create dropdown (attached to container)
         this.dropdown = document.createElement('div');
@@ -549,7 +597,7 @@ export class PureMultiSelect<T = any> {
         }
 
         if (effectiveMode === 'pills') {
-            this.pillsContainer.className = `ml__pills ml__pills--${this.options.pillsPosition}`;
+            this.pillsContainer.className = `ml__pills ml__pills--${this.effectivePillsPosition}`;
             this.pillsContainer.innerHTML = selectedOptions.map(option => {
                 const value = this.getItemValue(option);
                 const displayValue = this.getItemDisplayValue(option);
@@ -562,7 +610,7 @@ export class PureMultiSelect<T = any> {
             }).join('');
         } else if (effectiveMode === 'partial') {
             // Partial mode: show limited pills + "+X more" badge
-            this.pillsContainer.className = `ml__pills ml__pills--${this.options.pillsPosition}`;
+            this.pillsContainer.className = `ml__pills ml__pills--${this.effectivePillsPosition}`;
 
             const maxVisible = this.options.pillsMaxVisible || 3;
             const visibleOptions = selectedOptions.slice(0, maxVisible);
@@ -596,7 +644,7 @@ export class PureMultiSelect<T = any> {
             this.pillsContainer.innerHTML = visiblePillsHtml + moreBadgeHtml;
         } else {
             // Count mode
-            this.pillsContainer.className = `ml__count-display ml__count-display--${this.options.pillsPosition}`;
+            this.pillsContainer.className = `ml__count-display ml__count-display--${this.effectivePillsPosition}`;
             if (count > 0) {
                 const countText = this.options.getCountPillCallback ? this.options.getCountPillCallback(count) : `${count} selected`;
                 this.pillsContainer.innerHTML = `
@@ -617,14 +665,30 @@ export class PureMultiSelect<T = any> {
     }
 
     private attachEvents(): void {
-        // Prevent click propagation from input to document
+        // Toggle dropdown when clicking input
         this.input.addEventListener('mousedown', (e) => {
-            if (!this.isOpen) {
-                e.stopPropagation();
+            e.stopPropagation();
+
+            if (this.isOpen) {
+                // Close if already open and prevent focus from reopening
+                this.justClosedViaClick = true;
+                this.close();
+                setTimeout(() => {
+                    this.justClosedViaClick = false;
+                }, 0);
+            } else {
+                // Open if closed (don't rely on focus event as input might already be focused)
+                this.open();
             }
         });
 
-        this.input.addEventListener('focus', () => this.open());
+        this.input.addEventListener('focus', () => {
+            // Open on focus only if not already open and didn't just close via click
+            // This handles keyboard navigation (Tab key)
+            if (!this.isOpen && !this.justClosedViaClick) {
+                this.open();
+            }
+        });
         this.input.addEventListener('input', (e) => {
             const value = (e.target as HTMLInputElement).value;
 

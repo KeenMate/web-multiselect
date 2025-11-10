@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **RTL Detection in Shadow DOM** - Fixed RTL mode not being detected when using web components
+  - Root cause: Shadow DOM prevents direct access to host element's `dir` attribute
+  - Solution: Check `shadowRoot.host` element for `dir="rtl"` attribute
+  - RTL styles now properly apply when `dir="rtl"` is set on `<multi-select>` element
+- **Input Toggle Behavior** - Fixed dropdown not properly toggling when clicking input field
+  - Added proper open/close toggle logic on mousedown event
+  - Fixed issue where dropdown couldn't be reopened after first close (focus event conflict)
+  - Dropdown now properly toggles: open → close → open → close indefinitely
+- **Input Cursor** - Added `cursor: pointer` to input field for better UX indication
+- **Left Pills Alignment** - Fixed left-positioned pills appearing at far left edge instead of close to input
+  - Changed from `justify-content: flex-start` to `flex-end` so pills appear immediately before input
+
+## [1.0.0-rc04] - 2025-11-09
+
+### Added
+- **RTL (Right-to-Left) Language Support** - Full support for Arabic, Hebrew, Persian, Urdu, and other RTL languages
+  - Auto-detection from `dir="rtl"` attribute on component or any ancestor element
+  - Complete UI mirroring: toggle icon, text alignment, pills, dropdown, badges
+  - Logical position mirroring: `pills-position="left"` becomes physically right in RTL (and vice versa)
+  - Pills remove buttons flip to left side in RTL mode
+  - All text content properly right-aligned with correct text direction
+  - New RTL showcase page in `/examples/rtl` with Arabic and Hebrew examples
+  - New SCSS file `_rtl.scss` with comprehensive RTL styles
+
+### Fixed
+- **Pills Positioning** - Fixed `pills-position` attribute not working (pills were always below input)
+  - Root cause: Missing `ml-wrapper` flex container in DOM structure
+  - Added wrapper div with `ml-wrapper` class and `--inline` modifier for left/right positioning
+  - Pills now correctly position based on `pills-position` attribute (top, bottom, left, right)
+  - Fixed right-positioned pills alignment: changed from `flex-end` to `flex-start` so pills appear immediately after input instead of at far right edge
+- **Pills Spacing** - Reduced left/right pills margin from 0.5rem to 0.25rem for better spacing next to input
+
 ## [1.0.0-rc03] - 2025-11-09
 
 ### Fixed

@@ -1,6 +1,6 @@
 {
   "name": "@keenmate/web-multiselect",
-  "version": "1.0.0-rc03",
+  "version": "1.0.0-rc04",
   "description": "Lightweight multiselect web component with typeahead search, rich content support, and excellent keyboard navigation",
   "type": "module",
   "main": "./dist/multiselect.umd.js",
@@ -30,7 +30,7 @@
     "src/scss"
   ],
   "scripts": {
-    "dev": "vite",
+    "dev": "vite --port 12200",
     "build": "npm run clean:dist && tsc && vite build",
     "build:types": "tsc",
     "build:full": "npm run build",

@@ -1,0 +1,142 @@
+// ==============================================================================
+// RTL (Right-to-Left) SUPPORT
+// ==============================================================================
+// Styles for RTL languages (Arabic, Hebrew, etc.)
+// Applied when .ml--rtl class is present
+
+@use 'variables' as *;
+
+// ==============================================================================
+// INPUT & TOGGLE ICON
+// ==============================================================================
+
+.ml--rtl {
+  .ml__input-wrapper {
+    direction: rtl;
+  }
+
+  .ml__input {
+    text-align: right;
+    padding-left: var(--ml-input-padding-right, $ml-input-padding-right);
+    padding-right: var(--ml-input-padding-h, $ml-input-padding-h);
+  }
+
+  // Move toggle icon to left side
+  .ml__toggle {
+    left: var(--ml-toggle-right, $ml-toggle-right) !important;
+    right: auto !important;
+  }
+
+  // Move count badge to left side
+  .ml__count-badge {
+    left: var(--ml-count-badge-offset, $ml-count-badge-offset) !important;
+    right: auto !important;
+  }
+
+  // ==============================================================================
+  // DROPDOWN OPTIONS
+  // ==============================================================================
+
+  .ml__dropdown {
+    direction: rtl;
+    text-align: right;
+  }
+
+  // Checkbox on right side
+  .ml__option {
+    flex-direction: row-reverse;
+  }
+
+  .ml__checkbox {
+    margin-left: var(--ml-spacing-sm, $ml-spacing-sm);
+    margin-right: 0;
+  }
+
+  .ml__option-content {
+    text-align: right;
+  }
+
+  .ml__option-icon {
+    margin-left: var(--ml-spacing-xs, $ml-spacing-xs);
+    margin-right: 0;
+  }
+
+  // ==============================================================================
+  // PILLS LAYOUT
+  // ==============================================================================
+
+  .ml__pills {
+    direction: rtl;
+  }
+
+  // Pills flow right-to-left
+  .ml__pill {
+    flex-direction: row-reverse;
+  }
+
+  // Remove button on left side of pill
+  .ml__pill-remove {
+    border-radius: var(--ml-pill-remove-border-radius-rtl, $ml-pill-border-radius) 0 0 var(--ml-pill-remove-border-radius-rtl, $ml-pill-border-radius);
+    border-left: var(--ml-pill-remove-border, $ml-pill-remove-border);
+    border-right: none;
+  }
+
+  // Pill text rounded on right
+  .ml__pill-text {
+    border-radius: 0 var(--ml-pill-text-border-radius-rtl, $ml-pill-border-radius) var(--ml-pill-text-border-radius-rtl, $ml-pill-border-radius) 0;
+  }
+
+  // ==============================================================================
+  // COUNT DISPLAY
+  // ==============================================================================
+
+  .ml__count-display {
+    direction: rtl;
+  }
+
+  .ml__count-badge-wrapper {
+    flex-direction: row-reverse;
+  }
+
+  // ==============================================================================
+  // SELECTED POPOVER
+  // ==============================================================================
+
+  .ml__selected-popover {
+    direction: rtl;
+    text-align: right;
+  }
+
+  // ==============================================================================
+  // ACTIONS
+  // ==============================================================================
+
+  .ml__actions {
+    direction: rtl;
+  }
+
+  // ==============================================================================
+  // GROUPS
+  // ==============================================================================
+
+  .ml__group-label {
+    text-align: right;
+  }
+
+  // ==============================================================================
+  // EMPTY STATE
+  // ==============================================================================
+
+  .ml__empty {
+    text-align: right;
+  }
+
+  // ==============================================================================
+  // HINT
+  // ==============================================================================
+
+  .ml__hint {
+    direction: rtl;
+    text-align: right;
+  }
+}

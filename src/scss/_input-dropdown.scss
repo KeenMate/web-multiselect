@@ -26,6 +26,7 @@
   border-radius: var(--ml-input-border-radius, $ml-input-border-radius);
   background: var(--ml-input-bg, $ml-input-bg);
   color: var(--ml-input-text, $ml-input-text);
+  cursor: pointer;
   transition: border-color var(--ml-transition-fast, $ml-transition-fast) var(--ml-easing-snappy, $ml-easing-snappy);
 
   &:focus {

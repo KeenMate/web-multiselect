@@ -387,6 +387,141 @@
             </div>
         </div>
 
+        <!-- Pills Positioning -->
+        <div class="card">
+            <h2>Pills Positioning</h2>
+            <p>Control where selected pills appear relative to the input: <code>pills-position</code></p>
+            <div class="grid">
+                <div class="form-group">
+                    <label>Pills Position: Bottom (Default)</label>
+                    <multi-select
+                        id="pills-bottom"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        pills-position="bottom"
+                        search-placeholder="Select technologies...">
+                    </multi-select>
+                    <small class="form-text">Pills appear below the input (default)</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Pills Position: Top</label>
+                    <multi-select
+                        id="pills-top"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        pills-position="top"
+                        search-placeholder="Select technologies...">
+                    </multi-select>
+                    <small class="form-text">Pills appear above the input</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Pills Position: Left</label>
+                    <multi-select
+                        id="pills-left"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        pills-position="left"
+                        search-placeholder="Select technologies...">
+                    </multi-select>
+                    <small class="form-text">Pills appear inline to the left of input</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Pills Position: Right</label>
+                    <multi-select
+                        id="pills-right"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        pills-position="right"
+                        search-placeholder="Select technologies...">
+                    </multi-select>
+                    <small class="form-text">Pills appear inline to the right of input</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- RTL Support -->
+        <div class="card">
+            <h2>RTL (Right-to-Left) Support</h2>
+            <p>Full support for RTL languages (Arabic, Hebrew, Persian, etc.) with automatic detection from <code>dir="rtl"</code></p>
+            <div class="grid">
+                <div class="form-group">
+                    <label>Basic RTL Example</label>
+                    <multi-select
+                        id="rtl-basic"
+                        dir="rtl"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        search-placeholder="...بحث">
+                    </multi-select>
+                    <small class="form-text">Toggle on left, text right-aligned, pills flow right-to-left</small>
+                </div>
+
+                <div class="form-group">
+                    <label>RTL with Arabic Text</label>
+                    <multi-select
+                        id="rtl-arabic"
+                        dir="rtl"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        search-placeholder="البحث عن التقنيات...">
+                    </multi-select>
+                    <small class="form-text">Real Arabic technology terms</small>
+                </div>
+
+                <div class="form-group">
+                    <label>RTL Count Mode</label>
+                    <multi-select
+                        id="rtl-count"
+                        dir="rtl"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        pills-display-mode="count"
+                        show-count-badge="true"
+                        search-placeholder="...بحث">
+                    </multi-select>
+                    <small class="form-text">Count badge on left side in RTL mode</small>
+                </div>
+
+                <div class="form-group">
+                    <label>LTR vs RTL Comparison</label>
+                    <div style="display: flex; gap: 1rem; flex-direction: column;">
+                        <div>
+                            <small style="display: block; margin-bottom: 0.25rem;">LTR (Left-to-Right)</small>
+                            <multi-select
+                                id="rtl-comparison-ltr"
+                                value-member="value"
+                                display-value-member="label"
+                                icon-member="icon"
+                                search-placeholder="Search...">
+                            </multi-select>
+                        </div>
+                        <div>
+                            <small style="display: block; margin-bottom: 0.25rem;">RTL (Right-to-Left)</small>
+                            <multi-select
+                                id="rtl-comparison-rtl"
+                                dir="rtl"
+                                value-member="value"
+                                display-value-member="label"
+                                icon-member="icon"
+                                search-placeholder="...بحث">
+                            </multi-select>
+                        </div>
+                    </div>
+                    <small class="form-text">Notice toggle position, text alignment, and pill layout differences</small>
+                </div>
+            </div>
+        </div>
+
         <!-- Async Search / Lookup -->
         <div class="card">
             <h2>Async Search / Lookup</h2>
@@ -773,6 +908,80 @@
             if (tooltipFastSelect) {
                 tooltipFastSelect.options = frameworks;
                 tooltipFastSelect.setSelected(['react', 'vue']);
+            }
+
+            // Pills Positioning - Bottom
+            const pillsBottomSelect = document.getElementById('pills-bottom');
+            if (pillsBottomSelect) {
+                pillsBottomSelect.options = languages;
+                pillsBottomSelect.setSelected(['js', 'ts', 'python']);
+            }
+
+            // Pills Positioning - Top
+            const pillsTopSelect = document.getElementById('pills-top');
+            if (pillsTopSelect) {
+                pillsTopSelect.options = languages;
+                pillsTopSelect.setSelected(['js', 'ts', 'python']);
+            }
+
+            // Pills Positioning - Left
+            const pillsLeftSelect = document.getElementById('pills-left');
+            if (pillsLeftSelect) {
+                pillsLeftSelect.options = languages;
+                pillsLeftSelect.setSelected(['js', 'ts']);
+            }
+
+            // Pills Positioning - Right
+            const pillsRightSelect = document.getElementById('pills-right');
+            if (pillsRightSelect) {
+                pillsRightSelect.options = languages;
+                pillsRightSelect.setSelected(['js', 'ts']);
+            }
+
+            // RTL Support - Basic RTL
+            const rtlBasicSelect = document.getElementById('rtl-basic');
+            if (rtlBasicSelect) {
+                rtlBasicSelect.options = languages;
+                rtlBasicSelect.setSelected(['js', 'ts', 'python']);
+            }
+
+            // RTL Support - Arabic
+            const rtlArabicSelect = document.getElementById('rtl-arabic');
+            if (rtlArabicSelect) {
+                rtlArabicSelect.options = [
+                    { value: 'js', label: 'جافا سكريبت', icon: '🟨' },
+                    { value: 'ts', label: 'تايب سكريبت', icon: '🔷' },
+                    { value: 'python', label: 'بايثون', icon: '🐍' },
+                    { value: 'java', label: 'جافا', icon: '☕' },
+                    { value: 'react', label: 'ري أكت', icon: '⚛️' },
+                    { value: 'vue', label: 'فيو', icon: '💚' }
+                ];
+                rtlArabicSelect.setSelected(['js', 'react']);
+            }
+
+            // RTL Support - Count Mode
+            const rtlCountSelect = document.getElementById('rtl-count');
+            if (rtlCountSelect) {
+                rtlCountSelect.options = languages;
+                rtlCountSelect.setSelected(['js', 'ts', 'python', 'java']);
+                // Custom RTL count callback (Arabic style)
+                rtlCountSelect.getCountPillCallback = (count) => {
+                    return `${count} محدد`; // "selected" in Arabic
+                };
+            }
+
+            // RTL Support - Comparison LTR
+            const rtlComparisonLTR = document.getElementById('rtl-comparison-ltr');
+            if (rtlComparisonLTR) {
+                rtlComparisonLTR.options = languages;
+                rtlComparisonLTR.setSelected(['js', 'ts']);
+            }
+
+            // RTL Support - Comparison RTL
+            const rtlComparisonRTL = document.getElementById('rtl-comparison-rtl');
+            if (rtlComparisonRTL) {
+                rtlComparisonRTL.options = languages;
+                rtlComparisonRTL.setSelected(['js', 'ts']);
             }
 
             // Async Search: GitHub Users

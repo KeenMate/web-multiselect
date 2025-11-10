@@ -33,12 +33,12 @@
   &--left {
     order: var(--ml-order-first, $ml-order-first); // Place before multiselect
     margin-right: var(--ml-pills-margin-left, $ml-pills-margin-left);
-    justify-content: flex-start;
+    justify-content: flex-end; // Pills at right edge of container, close to input
   }
 
   &--right {
     margin-left: var(--ml-pills-margin-right, $ml-pills-margin-right);
-    justify-content: flex-end;
+    justify-content: flex-start; // Pills at left edge of container, close to input
   }
 }
 
