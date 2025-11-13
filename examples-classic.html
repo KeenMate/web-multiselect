@@ -304,46 +304,56 @@
             </div>
         </div>
 
-        <!-- Count Display Mode -->
+        <!-- Display Modes -->
         <div class="card">
-            <h2>Count Display Mode</h2>
-            <p>For narrow inputs, display selection count instead of pills</p>
+            <h2>Display Modes</h2>
+            <p>Different ways to display selected items</p>
+
+            <h3 style="margin-top: 1.5rem; margin-bottom: 1rem; font-size: 1.2rem; color: #667eea;">Basic Display Modes</h3>
             <div class="grid">
                 <div class="form-group">
-                    <label>Count Display</label>
+                    <label>Pills Mode (Default)</label>
                     <web-multiselect
-                        id="count-select"
+                        id="pills-mode"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        pills-display-mode="pills"
+                        search-placeholder="Select technologies...">
+                    </web-multiselect>
+                    <small class="form-text">Shows each selection as a removable pill</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Count Mode</label>
+                    <web-multiselect
+                        id="count-mode"
                         value-member="value"
                         display-value-member="label"
                         icon-member="icon"
                         pills-display-mode="count"
-                        show-count-badge="true"
-                        search-placeholder="Select..."
-                        style="max-width: 12rem;">
+                        search-placeholder="Select technologies...">
                     </web-multiselect>
-                    <small class="form-text">Shows count instead of pills. Click count to view selected items.</small>
+                    <small class="form-text">Shows "X selected" text with clear button</small>
                 </div>
 
                 <div class="form-group">
-                    <label>Auto-Switch at Threshold (Count Mode)</label>
+                    <label>Compact Mode</label>
                     <web-multiselect
-                        id="threshold-select"
+                        id="compact-mode"
                         value-member="value"
                         display-value-member="label"
-                        pills-display-mode="pills"
-                        pills-threshold="3"
-                        pills-threshold-mode="count"
-                        show-count-badge="true"
-                        search-placeholder="Select..."
-                        style="max-width: 12rem;">
+                        icon-member="icon"
+                        pills-display-mode="compact"
+                        search-placeholder="Select technologies...">
                     </web-multiselect>
-                    <small class="form-text">Shows pills when ≤3 selected, switches to count when >3</small>
+                    <small class="form-text">First item + count in single pill: "JavaScript (+2 more)"</small>
                 </div>
 
                 <div class="form-group">
-                    <label>Auto-Switch at Threshold (Partial Mode)</label>
+                    <label>Partial Mode</label>
                     <web-multiselect
-                        id="partial-pills"
+                        id="partial-mode"
                         value-member="value"
                         display-value-member="label"
                         icon-member="icon"
@@ -352,39 +362,130 @@
                         pills-max-visible="3"
                         search-placeholder="Select technologies...">
                     </web-multiselect>
-                    <small class="form-text">Shows limited pills + "+X more" badge when >5 selected (max 3 visible pills)</small>
+                    <small class="form-text">Shows first 3 pills + "+X more" badge (when >5 selected)</small>
                 </div>
 
                 <div class="form-group">
-                    <label>Custom Count Text (English Pluralization)</label>
+                    <label>None Mode (Minimal)</label>
+                    <web-multiselect
+                        id="none-mode"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        pills-display-mode="none"
+                        show-count-badge="true"
+                        search-placeholder="Select technologies...">
+                    </web-multiselect>
+                    <small class="form-text">No pills shown - only [X] badge next to toggle</small>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1.2rem; color: #667eea;">Display Mode + Count Badge Combinations</h3>
+            <div class="grid">
+                <div class="form-group">
+                    <label>Pills + Count Badge</label>
+                    <web-multiselect
+                        id="pills-badge"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        pills-display-mode="pills"
+                        show-count-badge="true"
+                        search-placeholder="Select...">
+                    </web-multiselect>
+                    <small class="form-text">Individual pills + [X] badge</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Count + Count Badge</label>
+                    <web-multiselect
+                        id="count-badge"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        pills-display-mode="count"
+                        show-count-badge="true"
+                        search-placeholder="Select...">
+                    </web-multiselect>
+                    <small class="form-text">"X selected" text + [X] badge (double count display)</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Compact + Count Badge</label>
+                    <web-multiselect
+                        id="compact-badge"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        pills-display-mode="compact"
+                        show-count-badge="true"
+                        search-placeholder="Select...">
+                    </web-multiselect>
+                    <small class="form-text">First item + count pill + [X] badge</small>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1.2rem; color: #667eea;">Threshold Auto-Switching</h3>
+            <div class="grid">
+                <div class="form-group">
+                    <label>Pills → Count at 3</label>
+                    <web-multiselect
+                        id="threshold-count"
+                        value-member="value"
+                        display-value-member="label"
+                        pills-display-mode="pills"
+                        pills-threshold="3"
+                        pills-threshold-mode="count"
+                        show-count-badge="true"
+                        search-placeholder="Select...">
+                    </web-multiselect>
+                    <small class="form-text">Pills when ≤3, switches to count when >3</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Pills → Partial at 5</label>
+                    <web-multiselect
+                        id="threshold-partial"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        pills-threshold="5"
+                        pills-threshold-mode="partial"
+                        pills-max-visible="3"
+                        search-placeholder="Select...">
+                    </web-multiselect>
+                    <small class="form-text">Pills when ≤5, shows 3 pills + "+X more" when >5</small>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1.2rem; color: #667eea;">Internationalization (i18n)</h3>
+            <div class="grid">
+                <div class="form-group">
+                    <label>English Pluralization</label>
                     <web-multiselect
                         id="i18n-english"
                         value-member="value"
                         display-value-member="label"
                         pills-display-mode="count"
-                        show-count-badge="true"
-                        search-placeholder="Select..."
-                        style="max-width: 12rem;">
+                        search-placeholder="Select...">
                     </web-multiselect>
-                    <small class="form-text">Uses callback: "1 item selected" vs "3 items selected"</small>
+                    <small class="form-text">"1 item selected" vs "3 items selected"</small>
                 </div>
 
                 <div class="form-group">
-                    <label>Czech Pluralization (Complex Rules)</label>
+                    <label>Czech Pluralization</label>
                     <web-multiselect
                         id="i18n-czech"
                         value-member="value"
                         display-value-member="label"
                         pills-display-mode="count"
-                        show-count-badge="true"
-                        search-placeholder="Vyberte..."
-                        style="max-width: 12rem;">
+                        search-placeholder="Vyberte...">
                     </web-multiselect>
-                    <small class="form-text">1 položka | 2-4 položky | 5+ položek (Czech pluralization rules)</small>
+                    <small class="form-text">1 položka | 2-4 položky | 5+ položek</small>
                 </div>
 
                 <div class="form-group">
-                    <label>Partial Mode with i18n (Spanish)</label>
+                    <label>Spanish Partial Mode</label>
                     <web-multiselect
                         id="i18n-partial"
                         value-member="value"
@@ -394,7 +495,7 @@
                         pills-max-visible="3"
                         search-placeholder="Seleccionar...">
                     </web-multiselect>
-                    <small class="form-text">Shows "+X más" badge in Spanish when threshold exceeded</small>
+                    <small class="form-text">Shows "+X más" instead of "+X more"</small>
                 </div>
             </div>
         </div>
@@ -906,35 +1007,81 @@
                 hintSelect.options = cities;
             }
 
-            // Count select
-            const countSelect = document.getElementById('count-select');
-            if (countSelect) {
-                countSelect.options = languages;
-                countSelect.setSelected(['js', 'ts', 'python']);
+            // Tech stack options for display mode demos
+            const techStack = [
+                { value: 'js', label: 'JavaScript', icon: '🟨' },
+                { value: 'ts', label: 'TypeScript', icon: '🔷' },
+                { value: 'py', label: 'Python', icon: '🐍' },
+                { value: 'java', label: 'Java', icon: '☕' },
+                { value: 'cpp', label: 'C++', icon: '⚡' },
+                { value: 'rust', label: 'Rust', icon: '🦀' },
+                { value: 'go', label: 'Go', icon: '🔵' },
+                { value: 'ruby', label: 'Ruby', icon: '💎' },
+                { value: 'php', label: 'PHP', icon: '🐘' },
+                { value: 'swift', label: 'Swift', icon: '🍎' }
+            ];
+
+            // Basic Display Modes
+            const pillsMode = document.getElementById('pills-mode');
+            if (pillsMode) {
+                pillsMode.options = techStack;
+                pillsMode.setSelected(['js', 'ts', 'py']);
             }
 
-            // Threshold select
-            const thresholdSelect = document.getElementById('threshold-select');
-            if (thresholdSelect) {
-                thresholdSelect.options = categories;
-                thresholdSelect.setSelected(['cat1']);
+            const countMode = document.getElementById('count-mode');
+            if (countMode) {
+                countMode.options = techStack;
+                countMode.setSelected(['js', 'ts', 'py', 'java']);
             }
 
-            // Partial pills select
-            const partialPillsSelect = document.getElementById('partial-pills');
-            if (partialPillsSelect) {
-                partialPillsSelect.options = [
-                    { value: 'js', label: 'JavaScript', icon: '🟨' },
-                    { value: 'ts', label: 'TypeScript', icon: '🔷' },
-                    { value: 'py', label: 'Python', icon: '🐍' },
-                    { value: 'java', label: 'Java', icon: '☕' },
-                    { value: 'cpp', label: 'C++', icon: '⚡' },
-                    { value: 'rust', label: 'Rust', icon: '🦀' },
-                    { value: 'go', label: 'Go', icon: '🔵' },
-                    { value: 'ruby', label: 'Ruby', icon: '💎' },
-                    { value: 'php', label: 'PHP', icon: '🐘' },
-                    { value: 'swift', label: 'Swift', icon: '🍎' }
-                ];
+            const compactMode = document.getElementById('compact-mode');
+            if (compactMode) {
+                compactMode.options = techStack;
+                compactMode.setSelected(['js', 'ts', 'py']);
+            }
+
+            const partialMode = document.getElementById('partial-mode');
+            if (partialMode) {
+                partialMode.options = techStack;
+                partialMode.setSelected(['js', 'ts', 'py', 'java', 'cpp', 'rust']);
+            }
+
+            const noneMode = document.getElementById('none-mode');
+            if (noneMode) {
+                noneMode.options = techStack;
+                noneMode.setSelected(['js', 'ts', 'py', 'java', 'cpp']);
+            }
+
+            // Display Mode + Count Badge Combinations
+            const pillsBadge = document.getElementById('pills-badge');
+            if (pillsBadge) {
+                pillsBadge.options = techStack;
+                pillsBadge.setSelected(['js', 'ts']);
+            }
+
+            const countBadge = document.getElementById('count-badge');
+            if (countBadge) {
+                countBadge.options = techStack;
+                countBadge.setSelected(['js', 'ts', 'py']);
+            }
+
+            const compactBadge = document.getElementById('compact-badge');
+            if (compactBadge) {
+                compactBadge.options = techStack;
+                compactBadge.setSelected(['js', 'ts', 'py']);
+            }
+
+            // Threshold Auto-Switching
+            const thresholdCount = document.getElementById('threshold-count');
+            if (thresholdCount) {
+                thresholdCount.options = techStack;
+                thresholdCount.setSelected(['js']);
+            }
+
+            const thresholdPartial = document.getElementById('threshold-partial');
+            if (thresholdPartial) {
+                thresholdPartial.options = techStack;
+                thresholdPartial.setSelected(['js', 'ts']);
             }
 
             // I18n English - Simple English pluralization

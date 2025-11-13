@@ -1,6 +1,6 @@
 {
   "name": "@keenmate/web-multiselect",
-  "version": "1.0.0-rc08",
+  "version": "1.0.0-rc11",
   "description": "Lightweight multiselect web component with typeahead search, rich content support, and excellent keyboard navigation",
   "type": "module",
   "main": "./dist/multiselect.umd.js",
@@ -36,7 +36,6 @@
     "build:full": "npm run build",
     "preview": "vite preview",
     "package": "npm run build && npm pack",
-    "publish:dry": "npm run build && npm publish --dry-run",
     "clean": "rimraf dist *.tgz",
     "clean:dist": "rimraf dist"
   },

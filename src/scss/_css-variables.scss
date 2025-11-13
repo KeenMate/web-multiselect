@@ -241,6 +241,16 @@
   --ml-pill-remove-box-shadow-focus: #{$ml-pill-remove-box-shadow-focus};
   --ml-icon-remove: "#{$ml-icon-remove}";
 
+  // Pill Indicator (for "+ X more", "3 selected", compact mode)
+  --ml-pill-indicator-bg: #{$ml-pill-indicator-bg};
+  --ml-pill-indicator-border: #{$ml-pill-indicator-border};
+  --ml-pill-indicator-border-radius: #{$ml-pill-indicator-border-radius};
+  --ml-pill-indicator-text-color: #{$ml-pill-indicator-text-color};
+  --ml-pill-indicator-text-bg: #{$ml-pill-indicator-text-bg};
+  --ml-pill-indicator-remove-bg: #{$ml-pill-indicator-remove-bg};
+  --ml-pill-indicator-remove-color: #{$ml-pill-indicator-remove-color};
+  --ml-pill-indicator-remove-bg-hover: #{$ml-pill-indicator-remove-bg-hover};
+
   // ==========================================================================
   // "+X MORE" BADGE
   // ==========================================================================

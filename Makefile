@@ -24,29 +24,31 @@ package: build ## Create npm package (tarball)
 	@echo "Package created"
 	@ls -lh *.tgz
 
-publish-dry: build ## Publish to npm (dry run)
+publish-dry: ## Publish to npm (dry run) - cleans dist first
 	@echo "Running publish dry-run..."
+	npm run clean:dist
+	npm run build
 	npm publish --dry-run
 	@echo "Dry-run complete - Review the output above"
 
-publish: build ## Publish to npm
+publish: ## Publish to npm - cleans dist first
 	@echo "WARNING: This will publish to npm registry"
 	@echo "Press Ctrl+C to cancel, or Enter to continue..."
 	@powershell -Command "$$null = Read-Host"
 	@echo "Publishing to npm..."
+	npm run clean:dist
+	npm run build
 	npm publish
 	@echo "Published successfully"
 
 clean: ## Clean build artifacts and node_modules
 	@echo "Cleaning build artifacts..."
-	rm -rf dist
-	rm -rf node_modules
-	rm -f *.tgz
+	npm run clean
 	@echo "Clean complete"
 
 clean-dist: ## Clean only dist folder
 	@echo "Cleaning dist folder..."
-	rm -rf dist
+	npm run clean:dist
 	@echo "Dist cleaned"
 
 preview: build ## Preview production build

@@ -55,6 +55,13 @@
     display: flex;
     flex-direction: column;
   }
+
+  &--virtual {
+    // In virtual scroll mode, let the body container handle scrolling (matches dropdown pattern)
+    display: block;        // Change from flex to block (like dropdown)
+    overflow: visible;
+    max-height: none;
+  }
 }
 
 .ml__selected-popover-header {
@@ -110,5 +117,23 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     min-width: 0; // Allow text truncation
+  }
+
+  // Virtual scroll mode
+  &--virtual {
+    // Let inline styles control overflow-y: auto (like dropdown does)
+    display: block;        // Override flex display for virtual scroll
+    max-height: none;      // Remove max-height constraint
+    padding: 0;            // Remove padding as virtual scroll has its own spacing
+
+    .ml__pill {
+      // Fixed height for virtual scroll (default: 36px, configurable via pill-height attribute)
+      height: var(--ml-pill-height-virtual, 36px);
+      min-height: var(--ml-pill-height-virtual, 36px);
+      max-height: var(--ml-pill-height-virtual, 36px);
+      margin-bottom: var(--ml-selected-popover-body-gap, $ml-selected-popover-body-gap); // Add gap between pills
+      overflow: hidden;
+      box-sizing: border-box;
+    }
   }
 }

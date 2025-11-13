@@ -70,7 +70,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
             'initial-values',
 
             // Virtual scroll options
-            'enable-virtual-scroll', 'virtual-scroll-threshold', 'option-height', 'virtual-scroll-buffer',
+            'enable-virtual-scroll', 'virtual-scroll-threshold', 'option-height', 'pill-height', 'virtual-scroll-buffer',
 
             // New member properties
             'value-member', 'display-value-member', 'search-value-member',
@@ -387,6 +387,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
             // Virtual scroll options
             virtualScrollThreshold: this.getAttribute('virtual-scroll-threshold') ? parseInt(this.getAttribute('virtual-scroll-threshold')!) : 100,
             optionHeight: this.getAttribute('option-height') ? parseInt(this.getAttribute('option-height')!) : 50,
+            pillHeight: this.getAttribute('pill-height') ? parseInt(this.getAttribute('pill-height')!) : 36,
             virtualScrollBuffer: this.getAttribute('virtual-scroll-buffer') ? parseInt(this.getAttribute('virtual-scroll-buffer')!) : 10,
 
             // Member properties

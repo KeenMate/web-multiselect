@@ -12,7 +12,7 @@ A lightweight, accessible multiselect web component with typeahead search, RTL l
 - 🔍 **Flexible Search Modes** - Filter (hide non-matches) or navigate (jump to matches, keep all visible)
 - ⌨️ **Keyboard Navigation** - Full keyboard support (arrows, Enter, Esc, Tab)
 - 🎨 **Rich Content** - Icons, subtitles, and multiline text support
-- 📊 **Multiple Display Modes** - Pills, count, compact, or partial (pills + threshold)
+- 📊 **Multiple Display Modes** - Pills, count, compact, partial, or none (minimal UI)
 - 💬 **Pill Tooltips** - Customizable tooltips on selected items with placement control
 - 🎯 **Single & Multi-Select** - Switch between single and multiple selection modes
 - 🔄 **Async Data Loading** - On-demand data fetching support
@@ -116,7 +116,7 @@ multiselect.setSelected(['js', 'ts']);
 | `show-checkboxes` | `boolean` | `true` | Show checkboxes next to options |
 | `close-on-select` | `boolean` | `false` | Close dropdown after selecting |
 | `dropdown-min-width` | `string` | - | Min width for dropdown (e.g., '20rem') |
-| `pills-display-mode` | `'pills' \| 'count' \| 'compact' \| 'partial'` | `'pills'` | How to display selected items |
+| `pills-display-mode` | `'pills' \| 'count' \| 'compact' \| 'partial' \| 'none'` | `'pills'` | How to display selected items. `compact`: first item + count. `none`: no display |
 | `pills-threshold` | `number` | - | Auto-switch mode when exceeded (see pills-threshold-mode) |
 | `pills-threshold-mode` | `'count' \| 'partial'` | `'count'` | Mode after threshold: 'count' shows badge, 'partial' shows limited pills + more badge |
 | `pills-max-visible` | `number` | `3` | Max pills shown in partial mode |
@@ -563,11 +563,16 @@ Perfect for different use cases and space constraints:
 <!-- Pills mode (default) - Show all selections as removable pills -->
 <web-multiselect pills-display-mode="pills"></web-multiselect>
 
-<!-- Count mode - Show only count badge -->
+<!-- Count mode - Show "X selected" text with clear button -->
 <web-multiselect pills-display-mode="count" show-count-badge="true"></web-multiselect>
 
-<!-- Compact mode - Show first item + count -->
+<!-- Compact mode - Show first item + count in a single removable pill -->
 <web-multiselect pills-display-mode="compact"></web-multiselect>
+<!-- Example output: [JavaScript (+2 more) | x] -->
+
+<!-- None mode - No display in pills area (minimal UI) -->
+<web-multiselect pills-display-mode="none" show-count-badge="true"></web-multiselect>
+<!-- Only shows [X] badge next to toggle icon -->
 
 <!-- Auto-switch from pills to count at threshold -->
 <web-multiselect
@@ -583,6 +588,20 @@ Perfect for different use cases and space constraints:
   pills-max-visible="3">
 </web-multiselect>
 ```
+
+**Display Mode Behavior:**
+- **`pills`**: Individual removable pills for each selected item. Calls `getPillDisplayCallback` for each item.
+- **`count`**: Shows "X selected" text with clear button. Calls `getCountPillCallback(count)`.
+- **`compact`**: Shows first item + count in single pill (e.g., "JavaScript (+2 more)"). Calls `getPillDisplayCallback(firstItem)` and `getCountPillCallback(count, remainingCount)`.
+- **`partial`**: Shows first N pills + "+X more" badge. Calls `getPillDisplayCallback` for visible items and `getCountPillCallback(count, remainingCount)` for badge.
+- **`none`**: No display in pills area. No callbacks invoked. Use with `show-count-badge="true"` for minimal UI.
+
+**Pill Styling:**
+- **Data pills** (selected items like "JavaScript", "Python"): Blue styling by default
+- **Indicator pills** ("+3 more", "5 selected", compact mode display): Gray styling to distinguish from data
+- Both can be customized via CSS variables (see `--ml-pill-*` and `--ml-pill-indicator-*`)
+
+**Count Badge (`show-count-badge="true"`)**: Independent feature showing `[X]` next to toggle icon. Works with all display modes. Not affected by callbacks.
 
 ### Pills Positioning
 
@@ -1075,17 +1094,19 @@ For the complete list of all available CSS variables, see:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--ml-pill-bg` | `#eff6ff` | Pill background color |
-| `--ml-pill-text-color` | `#3b82f6` | Pill text color |
+| `--ml-pill-bg` | `#eff6ff` | Pill background color (data pills) |
+| `--ml-pill-text-color` | `#3b82f6` | Pill text color (data pills) |
 | `--ml-pill-gap` | `0.5rem` | Gap between pills |
 | `--ml-pill-height` | `1.5rem` | Height of pills |
 | `--ml-pill-font-size` | `0.75rem` | Pill font size |
 | `--ml-pill-border-radius` | `0.375rem` | Pill border radius |
-| `--ml-pill-remove-bg` | `#3b82f6` | Remove button background |
-| `--ml-pill-remove-color` | `#ffffff` | Remove button color |
-| `--ml-more-badge-bg` | (pill background) | "+X more" badge background |
-| `--ml-more-badge-hover-bg` | `#ffffff` | "+X more" badge hover |
-| `--ml-more-badge-active-bg` | `#e0f2fe` | "+X more" badge active |
+| `--ml-pill-remove-bg` | `#3b82f6` | Remove button background (data pills) |
+| `--ml-pill-remove-color` | `#ffffff` | Remove button color (data pills) |
+| `--ml-pill-indicator-text-bg` | `#d1d5db` | Indicator pill text background (gray) |
+| `--ml-pill-indicator-text-color` | `#6b7280` | Indicator pill text color (gray) |
+| `--ml-pill-indicator-remove-bg` | `#6b7280` | Indicator pill remove button bg (gray) |
+| `--ml-pill-indicator-remove-color` | `#ffffff` | Indicator pill remove button color |
+| `--ml-pill-indicator-border` | `1px solid #e5e7eb` | Indicator pill border |
 
 #### Count Badge (in input)
 

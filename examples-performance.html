@@ -186,9 +186,12 @@
                     enable-virtual-scroll="true"
                     virtual-scroll-threshold="100"
                     option-height="50"
-                    virtual-scroll-buffer="10">
+                    virtual-scroll-buffer="10"
+                    pills-threshold="4"
+                    pills-threshold-mode="count"
+                    show-count-badge="true">
                 </web-multiselect>
-                <span class="form-text">Filter mode hides non-matching options for better performance</span>
+                <span class="form-text">Select 4+ items to see count badge. Click badge to see virtual scrolling in the selected items popover.</span>
             </div>
 
             <!-- Temporarily hidden to reduce console log noise

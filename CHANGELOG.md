@@ -7,6 +7,90 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc11] - 2025-11-13
+
+### Added
+- **Unified Indicator Pill Styling** - Created `.ml__pill--indicator` modifier class for consistent gray styling across all informational pills
+  - Applies to "+ X more" pills (partial mode), "X selected" pills (count mode), and compact mode display pills
+  - Deep gray appearance (`$ml-color-neutral-base` background, `$ml-color-neutral-dark` remove button) to distinguish from blue data pills
+  - New SCSS variables: `$ml-pill-indicator-bg`, `$ml-pill-indicator-text-bg`, `$ml-pill-indicator-text-color`, `$ml-pill-indicator-remove-bg`, `$ml-pill-indicator-remove-color`, `$ml-pill-indicator-remove-bg-hover`
+  - New CSS custom properties for runtime customization: `--ml-pill-indicator-*`
+  - Consistent pill structure (`.ml__pill > .ml__pill-text + .ml__pill-remove`) across all display modes
+
+### Changed
+- **Refactored Compact/Count Mode HTML Structure** - Migrated from custom `.ml__count-badge-wrapper` to standard `.ml__pill--indicator` structure
+  - Compact mode now uses `.ml__pill.ml__pill--indicator` instead of `.ml__count-badge-wrapper > .ml__count-text + .ml__count-clear`
+  - Count mode now uses `.ml__pill.ml__pill--indicator` instead of `.ml__count-badge-wrapper > .ml__count-text + .ml__count-clear`
+  - Updated event handlers to use `data-action` attributes (`show-selected`, `clear-count`) instead of old CSS class selectors
+  - Container class changed from `.ml__count-display` to `.ml__pills` for consistency
+- **Simplified `.ml__pill--more` Styling** - Removed duplicate background/hover styles, now inherits from `.ml__pill--indicator`
+  - `.ml__pill--more` now only adds `cursor: pointer`, all visual styling comes from `.ml__pill--indicator`
+
+### Fixed
+- **Visual Inconsistency Between Display Modes** - Indicator pills ("+3 more", "5 selected", etc.) now have consistent gray styling across all modes instead of varying appearances
+
+## [1.0.0-rc10] - 2025-11-13
+
+### Fixed
+- **Build/Publish Scripts** - Fixed circular dependency causing infinite loop during npm publish
+  - Removed `publish` and `publish:dry` scripts from package.json that conflicted with npm lifecycle hooks
+  - Makefile now handles full build and publish workflow directly
+  - `make publish-dry` and `make publish` now work correctly without looping
+
+## [1.0.0-rc09] - 2025-11-13
+
+### Added
+- **Virtual Scrolling for Selected Items Popover** - Handle massive selections (15,000+ items) with instant performance
+  - Automatically activates when 100+ items are selected
+  - Requires count badge setup: `pills-threshold="4"` + `pills-threshold-mode="count"` + `show-count-badge="true"`
+  - Click the count badge to open popover with virtual scrolling
+  - New `pill-height` attribute (default: 36px) - configurable height for pills in virtual scroll mode
+  - Consistent 4px gap between pills (matches standard mode)
+  - Same VirtualScroll implementation as dropdown for consistency
+  - Performance: Renders only ~20-30 visible pills instead of all 15,000
+- **`pills-display-mode="none"`** - New minimal display mode showing no pills/count in input area
+  - Perfect for extremely space-constrained layouts
+  - Typically combined with `show-count-badge="true"` to show only `[X]` indicator
+  - No callbacks invoked (no display to render)
+  - Pills container is empty and hidden via CSS
+- **Proper `pills-display-mode="compact"` Implementation** - Shows first selected item + count in a single removable pill
+  - Format: `[JavaScript (+2 more) | x]`
+  - Uses `getPillDisplayCallback` for first item text (respects pill callback)
+  - Uses `getCountPillCallback(count, remainingCount)` for count text
+  - Single X button clears ALL selections
+  - Entire pill clickable to show selected items popover
+  - Automatically shows next item when selections change
+- **Comprehensive Callback Behavior Documentation** - Added detailed showcase documentation
+  - When `getPillDisplayCallback` is invoked for each display mode
+  - When `getCountPillCallback` is invoked with `moreCount` parameter vs without
+  - Clarified that count badge `[X]` is independent and works with all modes
+  - Added quick reference tables showing what's displayed and which callbacks are used
+
+### Fixed
+- **Popover Virtual Scroll Display Issues** - Fixed multiple CSS and layout problems
+  - Fixed parent container using `display: flex` which constrained child scrolling
+  - Fixed body container `display: flex` and `max-height` preventing wrapper expansion
+  - Solution: Apply `display: block` and `max-height: none` on both parent and body in virtual mode
+  - Removed `max-height` from inline styles to allow 540,000px wrapper height
+  - Now matches dropdown pattern exactly: parent doesn't constrain, child handles scrolling
+- **Consistent Pill Heights** - Pills now have same height (36px) and spacing (4px) in virtual mode
+  - Initially had mismatch: standard mode 24px, virtual mode was inconsistent
+  - Now uses configurable `pill-height` attribute with 36px default
+  - Gap properly included in itemHeight calculation (36px pill + 4px gap = 40px total)
+- **`pills-display-mode="compact"` Implementation** - Was previously identical to 'count' mode (now properly implemented)
+  - Previously fell through to count mode rendering
+  - Now shows first item + count in a single pill as intended
+
+### Changed
+- **Count Badge Independence** - Clarified that `show-count-badge="true"` works independently with ALL display modes
+  - Can be combined with any mode: pills, count, compact, partial, or none
+  - Not affected by any callbacks - always shows just the number `[X]`
+- **Classic Examples Reorganization** - Reorganized "Display Modes" section in `examples-classic.html`
+  - Split into 4 clear categories: Basic Modes, Mode + Badge Combinations, Threshold Auto-Switching, and i18n
+  - Each mode shown exactly once with clear labels and descriptions
+  - Added all 5 basic modes including new 'none' mode
+  - Better organization for understanding display mode options
+
 ## [1.0.0-rc08] - 2025-11-12
 
 ### Added

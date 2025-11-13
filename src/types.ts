@@ -28,7 +28,7 @@ export type PillsThresholdMode = 'count' | 'partial';
 /**
  * Display mode for selected items (pills area)
  */
-export type PillsDisplayMode = 'pills' | 'count' | 'compact' | 'partial';
+export type PillsDisplayMode = 'pills' | 'count' | 'compact' | 'partial' | 'none';
 
 /**
  * Search behavior mode
@@ -178,6 +178,8 @@ export interface MultiSelectConfig<T = any> {
     virtualScrollThreshold?: number;
     /** Fixed height for each option in pixels (required for virtual scroll, default: 50) */
     optionHeight?: number;
+    /** Fixed height for each pill in selected items popover in pixels (required for virtual scroll, default: 36) */
+    pillHeight?: number;
     /** Buffer size for virtual scroll - items above/below viewport (default: 10) */
     virtualScrollBuffer?: number;
 

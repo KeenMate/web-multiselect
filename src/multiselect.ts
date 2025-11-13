@@ -42,6 +42,8 @@ export class PureMultiSelect<T = any> {
     // Virtual scroll instance
     private virtualScroll: VirtualScroll<T> | null = null;
     private optionsContainer: HTMLDivElement | null = null;
+    private selectedPopoverVirtualScroll: VirtualScroll<T> | null = null;
+    private selectedPopoverContainer: HTMLDivElement | null = null;
 
     // DOM elements
     private input!: HTMLInputElement;
@@ -642,7 +644,8 @@ export class PureMultiSelect<T = any> {
         let effectiveMode = this.options.pillsDisplayMode;
         const exceedsThreshold = this.options.pillsThreshold !== null && count > this.options.pillsThreshold;
 
-        if (exceedsThreshold) {
+        // Preserve 'none' mode even when threshold exceeded (user explicitly wants no display)
+        if (exceedsThreshold && effectiveMode !== 'none') {
             effectiveMode = this.options.pillsThresholdMode || 'count';
         }
 
@@ -660,6 +663,12 @@ export class PureMultiSelect<T = any> {
             this.countBadge.style.display = '';
         } else {
             this.countBadge.style.display = 'none';
+        }
+
+        // None mode: no display in pills area
+        if (effectiveMode === 'none') {
+            this.pillsContainer.innerHTML = '';
+            return;
         }
 
         if (effectiveMode === 'pills') {
@@ -700,7 +709,7 @@ export class PureMultiSelect<T = any> {
                     : `+${remainingCount} more`;
 
                 moreBadgeHtml = `
-                    <div class="ml__pill ml__pill--more" data-action="show-selected">
+                    <div class="ml__pill ml__pill--indicator ml__pill--more" data-action="show-selected">
                         <span class="ml__pill-text">${moreText}</span>
                         <button type="button" class="ml__pill-remove" data-action="remove-hidden" aria-label="Remove ${remainingCount} hidden items"></button>
                     </div>
@@ -708,17 +717,41 @@ export class PureMultiSelect<T = any> {
             }
 
             this.pillsContainer.innerHTML = visiblePillsHtml + moreBadgeHtml;
+        } else if (effectiveMode === 'compact') {
+            // Compact mode: show first item + count in a single removable pill
+            this.pillsContainer.className = `ml__pills ml__pills--${this.effectivePillsPosition}`;
+            if (count > 0) {
+                const firstItem = selectedOptions[0];
+                const firstItemText = this.getItemPillDisplayValue(firstItem);
+                const remainingCount = count - 1;
+
+                // Build compact text: "FirstItem (+X more)" or just "FirstItem" if only one
+                let compactText = firstItemText;
+                if (remainingCount > 0) {
+                    const moreText = this.options.getCountPillCallback
+                        ? this.options.getCountPillCallback(count, remainingCount)
+                        : `+${remainingCount} more`;
+                    compactText = `${firstItemText} (${moreText})`;
+                }
+
+                this.pillsContainer.innerHTML = `
+                    <div class="ml__pill ml__pill--indicator" data-action="show-selected">
+                        <span class="ml__pill-text">${compactText}</span>
+                        <button type="button" class="ml__pill-remove" data-action="clear-count" aria-label="Clear all selections"></button>
+                    </div>
+                `;
+            } else {
+                this.pillsContainer.innerHTML = '';
+            }
         } else {
             // Count mode
-            this.pillsContainer.className = `ml__count-display ml__count-display--${this.effectivePillsPosition}`;
+            this.pillsContainer.className = `ml__pills ml__pills--${this.effectivePillsPosition}`;
             if (count > 0) {
                 const countText = this.options.getCountPillCallback ? this.options.getCountPillCallback(count) : `${count} selected`;
                 this.pillsContainer.innerHTML = `
-                    <div class="ml__count-badge-wrapper">
-                        <button type="button" class="ml__count-text" data-action="show-selected">
-                            ${countText}
-                        </button>
-                        <button type="button" class="ml__count-clear" data-action="clear-count" aria-label="Clear all selections"></button>
+                    <div class="ml__pill ml__pill--indicator" data-action="show-selected">
+                        <span class="ml__pill-text">${countText}</span>
+                        <button type="button" class="ml__pill-remove" data-action="clear-count" aria-label="Clear all selections"></button>
                     </div>
                 `;
             } else {
@@ -793,10 +826,10 @@ export class PureMultiSelect<T = any> {
             e.stopPropagation();
         }, { passive: false });
 
-        // Prevent click propagation for count text button (in pills container)
+        // Prevent click propagation for show-selected action (in pills container)
         this.pillsContainer.addEventListener('mousedown', (e) => {
-            const countTextBtn = (e.target as HTMLElement).closest('.ml__count-text');
-            if (countTextBtn && !this.showSelectedPopover) {
+            const showSelectedBtn = (e.target as HTMLElement).closest('[data-action="show-selected"]');
+            if (showSelectedBtn && !this.showSelectedPopover) {
                 e.stopPropagation();
             }
         });
@@ -1059,17 +1092,17 @@ export class PureMultiSelect<T = any> {
     }
 
     private handlePillClick(e: MouseEvent): void {
-        const countClearBtn = (e.target as HTMLElement).closest('.ml__count-clear');
-        if (countClearBtn) {
+        const clearCountBtn = (e.target as HTMLElement).closest('[data-action="clear-count"]');
+        if (clearCountBtn) {
             e.preventDefault();
             e.stopPropagation();
-            interactionLogger.debug(`[${this.instanceId}] Count clear button clicked`);
+            interactionLogger.debug(`[${this.instanceId}] Clear count button clicked`);
             this.clearAll();
             return;
         }
 
-        const countTextBtn = (e.target as HTMLElement).closest('.ml__count-text');
-        if (countTextBtn) {
+        const showSelectedBtn = (e.target as HTMLElement).closest('[data-action="show-selected"]');
+        if (showSelectedBtn) {
             e.preventDefault();
             e.stopPropagation();
             this.toggleSelectedPopover();
@@ -1122,7 +1155,7 @@ export class PureMultiSelect<T = any> {
                 el instanceof Node && (
                     this.selectedPopover.contains(el) ||
                     this.countBadge.contains(el) ||
-                    (el.closest && el.closest('.ml__count-text'))
+                    (el.closest && el.closest('[data-action="show-selected"]'))
                 )
             );
 
@@ -1593,6 +1626,13 @@ export class PureMultiSelect<T = any> {
         this.showSelectedPopover = true;
         this.renderSelectedPopover();
         this.selectedPopover.classList.add('ml__selected-popover--visible');
+
+        // Add virtual class if using virtual scroll (matches dropdown pattern)
+        const threshold = 100;
+        if (this.selectedValues.size >= threshold) {
+            this.selectedPopover.classList.add('ml__selected-popover--virtual');
+        }
+
         this.positionSelectedPopover();
     }
 
@@ -1600,7 +1640,15 @@ export class PureMultiSelect<T = any> {
         uiLogger.debug(`[${this.instanceId}] hideSelectedPopover() called`);
         this.showSelectedPopover = false;
         this.selectedPopover.classList.remove('ml__selected-popover--visible');
+        this.selectedPopover.classList.remove('ml__selected-popover--virtual');
         this.selectedPopoverPlacement = null;
+
+        // Cleanup virtual scroll
+        if (this.selectedPopoverVirtualScroll) {
+            this.selectedPopoverVirtualScroll.destroy();
+            this.selectedPopoverVirtualScroll = null;
+            this.selectedPopoverContainer = null;
+        }
 
         if (this.selectedPopoverCleanup) {
             this.selectedPopoverCleanup();
@@ -1612,6 +1660,14 @@ export class PureMultiSelect<T = any> {
         const selectedOptions = Array.from(this.selectedOptions.values());
         const count = this.selectedValues.size;
 
+        // Use virtual scroll for large selections
+        const threshold = 100;
+        if (count >= threshold) {
+            this.renderSelectedPopoverVirtual(selectedOptions, count);
+            return;
+        }
+
+        // Standard rendering for small selections
         this.selectedPopover.innerHTML = `
             <div class="ml__selected-popover-header">
                 <span>Selected Items (${count})</span>
@@ -1628,6 +1684,64 @@ export class PureMultiSelect<T = any> {
                     </div>
                 `;
                 }).join('')}
+            </div>
+        `;
+    }
+
+    private renderSelectedPopoverVirtual(selectedOptions: T[], count: number): void {
+        // Only create HTML structure if virtual scroll doesn't exist yet
+        if (!this.selectedPopoverVirtualScroll) {
+            const html = `
+                <div class="ml__selected-popover-header">
+                    <span>Selected Items (${count})</span>
+                    <button type="button" class="ml__selected-popover-close" aria-label="Close">&times;</button>
+                </div>
+                <div class="ml__selected-popover-body ml__selected-popover-body--virtual" style="height: 18rem; overflow-y: auto; position: relative;"></div>
+            `;
+            this.selectedPopover.innerHTML = html;
+            this.selectedPopoverContainer = this.selectedPopover.querySelector('.ml__selected-popover-body') as HTMLDivElement;
+        } else {
+            // Just update the count in header
+            const header = this.selectedPopover.querySelector('.ml__selected-popover-header span');
+            if (header) {
+                header.textContent = `Selected Items (${count})`;
+            }
+        }
+
+        if (!this.selectedPopoverContainer) return;
+
+        // Initialize or update virtual scroll (same pattern as dropdown)
+        // Add gap to itemHeight (4px default gap between pills)
+        const pillHeight = this.options.pillHeight ?? 36;
+        const gap = 4; // 0.25rem default gap
+        const itemHeight = pillHeight + gap;
+        const bufferSize = this.options.virtualScrollBuffer ?? 10;
+
+        // Defer initialization until container has dimensions
+        requestAnimationFrame(() => {
+            if (!this.selectedPopoverContainer) return;
+
+            if (!this.selectedPopoverVirtualScroll) {
+                this.selectedPopoverVirtualScroll = new VirtualScroll<T>({
+                    container: this.selectedPopoverContainer,
+                    itemHeight,
+                    items: selectedOptions,
+                    renderItem: (item) => this.renderPillForPopover(item),
+                    bufferSize
+                });
+            } else {
+                this.selectedPopoverVirtualScroll.setItems(selectedOptions);
+            }
+        });
+    }
+
+    private renderPillForPopover(item: T): string {
+        const value = this.getItemValue(item);
+        const displayValue = this.getItemPillDisplayValue(item);
+        return `
+            <div class="ml__pill">
+                <span class="ml__pill-text">${displayValue}</span>
+                <button type="button" class="ml__pill-remove" data-value="${value}" aria-label="Remove ${displayValue}"></button>
             </div>
         `;
     }

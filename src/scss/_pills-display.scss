@@ -196,23 +196,33 @@
 }
 
 // ==============================================================================
+// INDICATOR PILL VARIANT (for "+ X more", "3 selected", compact mode)
+// ==============================================================================
+// Gray/neutral styling to distinguish from regular blue pills
+.ml__pill--indicator {
+  border: var(--ml-pill-indicator-border, $ml-pill-indicator-border);
+
+  .ml__pill-text {
+    background: var(--ml-pill-indicator-text-bg, $ml-pill-indicator-text-bg);
+    color: var(--ml-pill-indicator-text-color, $ml-pill-indicator-text-color);
+  }
+
+  .ml__pill-remove {
+    background: var(--ml-pill-indicator-remove-bg, $ml-pill-indicator-remove-bg);
+    color: var(--ml-pill-indicator-remove-color, $ml-pill-indicator-remove-color);
+
+    &:hover {
+      background: var(--ml-pill-indicator-remove-bg-hover, $ml-pill-indicator-remove-bg-hover);
+    }
+  }
+}
+
+// ==============================================================================
 // "+X MORE" PILL VARIANT
 // ==============================================================================
 
 // "+X more" pill variant (partial mode)
+// Now uses .ml__pill--indicator for styling, this just adds cursor
 .ml__pill--more {
   cursor: pointer;
-
-  .ml__pill-text {
-    background: var(--ml-more-badge-bg, $ml-more-badge-bg);
-    font-weight: var(--ml-pill-font-weight, $ml-pill-font-weight);
-  }
-
-  &:hover .ml__pill-text {
-    background: var(--ml-more-badge-hover-bg, $ml-more-badge-hover-bg);
-  }
-
-  &:active .ml__pill-text {
-    background: var(--ml-more-badge-active-bg, $ml-more-badge-active-bg);
-  }
 }

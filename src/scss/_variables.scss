@@ -394,6 +394,17 @@ $ml-pill-remove-bg-hover: $ml-accent-color-hover !default;
 $ml-pill-remove-box-shadow-focus: 0 0 0 $ml-focus-outline-width
   rgba($ml-accent-color, $ml-opacity-focus-shadow) !default;
 
+// Pill Indicator (for "+ X more", "3 selected", compact mode display)
+// ==============================================================================
+$ml-pill-indicator-bg: transparent !default;
+$ml-pill-indicator-border: $ml-border-width-base solid $ml-border-color !default;
+$ml-pill-indicator-border-radius: $ml-border-radius-sm !default;
+$ml-pill-indicator-text-color: $ml-text-secondary !default;
+$ml-pill-indicator-text-bg: $ml-color-neutral-base !default;
+$ml-pill-indicator-remove-bg: $ml-color-neutral-dark !default;
+$ml-pill-indicator-remove-color: $ml-color-white !default;
+$ml-pill-indicator-remove-bg-hover: $ml-color-neutral-darkest !default;
+
 // "+X more" badge (partial mode)
 // ==============================================================================
 $ml-more-badge-bg: $ml-pill-text-bg !default;
