@@ -7,6 +7,83 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0-rc08] - 2025-11-12
+
+### Added
+- **Virtual Scrolling** - Efficient rendering for large datasets (1,000+ items)
+  - Renders only visible items (~30) instead of entire dataset for instant performance
+  - Auto-activates at 100+ items (configurable via `virtual-scroll-threshold`)
+  - Opt-in feature via `enable-virtual-scroll="true"` attribute
+  - Fixed item height (50px default, configurable via `option-height`)
+  - Configurable buffer size for smooth scrolling (default: 10 items above/below viewport)
+  - Performance improvements: 25× faster dropdown opening (750ms → 30ms), 13-33× faster search (200-500ms → 15ms)
+  - Memory reduction: 99.8% less DOM (7.5 MB → 15 KB for 15,000 items)
+  - Full keyboard navigation support (arrows, Page Up/Down, Home/End)
+  - Full mouse wheel scrolling support
+  - New dedicated VirtualScroll class in `src/virtual-scroll.ts`
+  - New performance demo: `examples-performance.html` with 15,000 random options
+  - Limitation: Groups disabled in virtual scroll mode (falls back to standard rendering)
+
+### Fixed
+- **Mouse Wheel Scrolling in Virtual Scroll** - Fixed wheel events not triggering scroll
+  - Root cause: Dropdown's wheel event handler was calling `stopPropagation()` on all wheel events
+  - Solution: Skip dropdown's wheel handler when virtual scroll is active
+  - Mouse wheel now works smoothly alongside drag scrollbar and keyboard navigation
+
+## [1.0.0-rc07] - 2025-11-12
+
+### Documentation
+- Updated README with hybrid search documentation and API reference
+- Added `beforeSearchCallback` to Properties section
+- Added `keep-options-on-search` to Attributes table
+- Fixed import path for logging utilities - import from main package instead of `/logger` subpath
+
+## [1.0.0-rc06] - 2025-11-11
+
+### Added
+- **Hybrid Static + Dynamic Search** - Display initial "popular" items while supporting async database search
+  - New `isKeepOptionsOnSearch` option (default: `true`) - Keeps initial options visible when searchCallback is active
+  - Shows initial options when dropdown opens, below min search length, or search is cleared
+  - Perfect for showing top 10 popular items, then switching to full database search
+  - Works seamlessly with existing `searchCallback` - no breaking changes
+- **Search Pre-Processing** - New `beforeSearchCallback` to transform or block search requests
+  - Transform search terms (e.g., accent removal: "café" → "cafe")
+  - Validate/sanitize user input before calling API
+  - Block search by returning `null` (useful for preventing searches below certain criteria)
+  - Use cases: accent removal, trimming whitespace, blocking profanity, custom validation
+- **Categorized Logging System** - Professional logging infrastructure using loglevel library
+  - 4 log categories: INIT (initialization), DATA (async loading), UI (rendering), INTERACTION (user events)
+  - Color-coded console output with millisecond-precision timestamps
+  - Runtime enable/disable controls - silent by default for production
+  - Category-specific filtering (e.g., debug only UI operations)
+  - Exported utilities: `enableLogging()`, `setLogLevel()`, `enableCategory()`, `disableLogging()`
+  - New examples page: `examples-logging.html` with interactive logging demos
+- **CSS Custom Properties at :host** - All 150+ SCSS variables now exposed as CSS custom properties
+  - Inspectable in browser DevTools at the `:host` level
+  - Easy runtime customization via JavaScript or CSS
+  - Full Shadow DOM compatibility with proper inheritance
+  - New file: `src/scss/_css-variables.scss` (360 lines)
+  - Added "Inspecting Variables in DevTools" section to README
+
+### Fixed
+- **Pill Close Button Icon** - Fixed missing "×" symbol in pill remove buttons
+  - Root cause: CSS `content` property requires quoted strings, SCSS interpolation was stripping quotes
+  - Fixed `--ml-icon-remove` and `--ml-icon-clear` to preserve quotes: `"#{$variable}"`
+  - Close buttons now display properly with visible "×" symbol
+
+### Changed
+- **Logging Implementation** - Migrated from inline custom logger to loglevel library (~1KB)
+  - Vendored loglevel and loglevel-plugin-prefix for bundler compatibility
+  - Converted UMD modules to pure ESM to work with Vite/Rollup tree-shaking
+  - All ~45 log calls categorized and updated with structured logging
+  - Backward compatible - logging is silent by default
+
+### Documentation
+- Added `LOGGING_MIGRATION.md` documenting the logging system migration
+- Updated `README.md` with CSS variables inspection guide
+- Added comprehensive examples in `examples-logging.html` demonstrating all logging features
+- Added Example 3: Hybrid Search with accent removal demonstration
+
 ## [1.0.0-rc05] - 2025-11-10
 
 ### Added

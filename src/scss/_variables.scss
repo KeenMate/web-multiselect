@@ -283,6 +283,8 @@ $ml-option-bg: transparent !default;
 $ml-option-bg-hover: $ml-option-hover-bg !default;
 $ml-option-bg-focused: $ml-option-hover-bg !default;
 $ml-option-outline-focused: $ml-focus-outline-width solid $ml-accent-color !default;
+$ml-option-bg-matched: rgba($ml-accent-color, 0.08) !default;
+$ml-option-border-matched: 3px solid rgba($ml-accent-color, 0.4) !default;
 $ml-option-bg-selected: rgba($ml-accent-color, $ml-opacity-option-selected-bg) !default;
 
 // Option Content

@@ -11,7 +11,19 @@ export { MultiSelectElement };
 export { PureMultiSelect } from './multiselect';
 
 // Export types
-export type { MultiSelectOption, MultiSelectOptions, MultiSelectEventDetail, PillsDisplayMode, PillsPosition, PillsThresholdMode, SearchInputMode, ValueFormat } from './types';
+export type { MultiSelectOption, MultiSelectOptions, MultiSelectEventDetail, PillsDisplayMode, PillsPosition, PillsThresholdMode, SearchInputMode, SearchMode, ValueFormat } from './types';
+
+// Export logging utilities for runtime control
+export {
+    setLogLevel,
+    enableLogging,
+    disableLogging,
+    enableCategory,
+    initLogger,
+    dataLogger,
+    uiLogger,
+    interactionLogger
+} from './logger';
 
 // Auto-register the custom element
 import './web-component';
@@ -62,8 +74,8 @@ if (typeof window !== 'undefined') {
             homepage: __HOMEPAGE__
         },
         register: () => {
-            if (typeof customElements !== 'undefined' && !customElements.get('multi-select')) {
-                customElements.define('multi-select', MultiSelectElement);
+            if (typeof customElements !== 'undefined' && !customElements.get('web-multiselect')) {
+                customElements.define('web-multiselect', MultiSelectElement);
             }
         },
         getInstances: () => getAllInstances()

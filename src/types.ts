@@ -31,6 +31,13 @@ export type PillsThresholdMode = 'count' | 'partial';
 export type PillsDisplayMode = 'pills' | 'count' | 'compact' | 'partial';
 
 /**
+ * Search behavior mode
+ * - 'filter': Hide non-matching options (default)
+ * - 'navigate': Keep all options visible, jump to matches
+ */
+export type SearchMode = 'filter' | 'navigate';
+
+/**
  * Support both object arrays and [key, value] tuples
  */
 export type MultiSelectDataItem<T> = T | [string | number, string];
@@ -125,6 +132,10 @@ export interface MultiSelectConfig<T = any> {
     isAddNewAllowed?: boolean;
     /** Show count badge next to toggle icon (internal: isCountBadgeShown) */
     isCountBadgeShown?: boolean;
+    /** Keep initial options visible when searchCallback is active and search term is empty/short (internal: isKeepOptionsOnSearch) */
+    isKeepOptionsOnSearch?: boolean;
+    /** Enable virtual scrolling for large datasets (internal: isVirtualScrollEnabled) */
+    isVirtualScrollEnabled?: boolean;
 
     // ========================================================================
     // STRING OPTIONS
@@ -150,6 +161,8 @@ export interface MultiSelectConfig<T = any> {
     loadingMessage?: string;
     /** Search input display mode */
     searchInputMode?: SearchInputMode;
+    /** Search behavior mode: 'filter' (hide non-matches) or 'navigate' (jump to matches, keep all visible) */
+    searchMode?: SearchMode;
 
     // ========================================================================
     // NUMBER OPTIONS
@@ -161,11 +174,19 @@ export interface MultiSelectConfig<T = any> {
     pillsMaxVisible?: number | null;
     /** Minimum search length before loading data */
     minSearchLength?: number;
+    /** Minimum items before virtual scroll activates (default: 100) */
+    virtualScrollThreshold?: number;
+    /** Fixed height for each option in pixels (required for virtual scroll, default: 50) */
+    optionHeight?: number;
+    /** Buffer size for virtual scroll - items above/below viewport (default: 10) */
+    virtualScrollBuffer?: number;
 
     // ========================================================================
     // CALLBACK FUNCTIONS
     // ========================================================================
 
+    /** Pre-process search term before calling searchCallback. Return null to prevent search. Use for accent removal, validation, etc. */
+    beforeSearchCallback?: ((searchTerm: string) => string | null) | null;
     /** Async function to load data: (searchTerm) => Promise<options[]> */
     searchCallback?: ((searchTerm: string) => Promise<T[]>) | null;
     /** Callback to add a new option when isAddNewAllowed is true */

@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MultiSelect Performance Test - 15,000 Options</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            padding: 2rem;
+            background: #f5f5f5;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: white;
+            text-decoration: none;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .back-link:hover {
+            opacity: 1;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            margin-bottom: 1rem;
+            color: #333;
+            font-size: 1.5rem;
+        }
+
+        .card p {
+            margin-bottom: 1rem;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .form-text {
+            display: block;
+            margin-top: 0.25rem;
+            font-size: 0.875rem;
+            color: #666;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #666;
+            margin-top: 0.25rem;
+        }
+
+        .performance-tips {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 4px;
+        }
+
+        .performance-tips h3 {
+            color: #856404;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+        }
+
+        .performance-tips ul {
+            margin-left: 1.5rem;
+            color: #856404;
+        }
+
+        .performance-tips li {
+            margin-bottom: 0.25rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="index.html" class="back-link">← Back to Examples</a>
+            <h1>Performance Test</h1>
+            <p class="subtitle">Testing with 15,000 random options</p>
+        </header>
+
+        <div class="card">
+            <h2>🚀 Large Dataset Performance</h2>
+            <p>This demo tests the component with 15,000 randomly generated options to evaluate performance under heavy load.</p>
+
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value" id="total-options">15,000</div>
+                    <div class="stat-label">Total Options</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="init-time">—</div>
+                    <div class="stat-label">Init Time (ms)</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="render-time">—</div>
+                    <div class="stat-label">Render Time (ms)</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-value" id="search-time">—</div>
+                    <div class="stat-label">Search Time (ms)</div>
+                </div>
+            </div>
+
+            <div class="form-group" style="margin-top: 2rem;">
+                <label for="performance-test">Filter Mode - Type to search (try "item", "test", or any number)</label>
+                <web-multiselect
+                    id="performance-test"
+                    placeholder="Search 15,000 options..."
+                    search-mode="filter"
+                    show-select-all="true"
+                    max-height="400px"
+                    value-member="value"
+                    display-value-member="label"
+                    enable-virtual-scroll="true"
+                    virtual-scroll-threshold="100"
+                    option-height="50"
+                    virtual-scroll-buffer="10">
+                </web-multiselect>
+                <span class="form-text">Filter mode hides non-matching options for better performance</span>
+            </div>
+
+            <!-- Temporarily hidden to reduce console log noise
+            <div class="form-group">
+                <label for="performance-test-navigate">Navigate Mode - Type to search</label>
+                <web-multiselect
+                    id="performance-test-navigate"
+                    placeholder="Search 15,000 options..."
+                    search-mode="navigate"
+                    show-select-all="true"
+                    max-height="400px"
+                    value-member="value"
+                    display-value-member="label"
+                    enable-virtual-scroll="true"
+                    virtual-scroll-threshold="100"
+                    option-height="50"
+                    virtual-scroll-buffer="10">
+                </web-multiselect>
+                <span class="form-text">Navigate mode keeps all options visible, use Ctrl+↑/↓ to jump between matches</span>
+            </div>
+            -->
+
+            <div class="performance-tips">
+                <h3>💡 Performance Tips</h3>
+                <ul>
+                    <li>Type to search - the component uses efficient string matching</li>
+                    <li>Filter mode performs better with large datasets (hides non-matches)</li>
+                    <li>Navigate mode shows all items but uses Ctrl+arrows for match navigation</li>
+                    <li>Virtual scrolling keeps rendering fast even with 15,000 options</li>
+                    <li>Try selecting multiple items and using "Clear All"</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Generate 15,000 random options
+        function generateLargeDataset() {
+            const adjectives = ['Amazing', 'Beautiful', 'Creative', 'Dynamic', 'Elegant', 'Fantastic', 'Gorgeous', 'Incredible', 'Magnificent', 'Outstanding', 'Perfect', 'Remarkable', 'Stunning', 'Wonderful', 'Brilliant'];
+            const nouns = ['Apple', 'Banana', 'Cherry', 'Dragon', 'Eagle', 'Forest', 'Galaxy', 'Harbor', 'Island', 'Journey', 'Kingdom', 'Lighthouse', 'Mountain', 'Ocean', 'Paradise', 'River', 'Sunset', 'Temple', 'Universe', 'Valley'];
+            const suffixes = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta', 'Eta', 'Theta', 'Iota', 'Kappa'];
+
+            const options = [];
+            for (let i = 0; i < 15000; i++) {
+                const adj = adjectives[Math.floor(Math.random() * adjectives.length)];
+                const noun = nouns[Math.floor(Math.random() * nouns.length)];
+                const suffix = suffixes[Math.floor(Math.random() * suffixes.length)];
+                const num = String(i).padStart(5, '0');
+
+                options.push({
+                    id: i,
+                    name: `${adj} ${noun} ${suffix} #${num}`
+                });
+            }
+            return options;
+        }
+
+        // Measure initialization time
+        const startInit = performance.now();
+        const largeDataset = generateLargeDataset();
+        const endInit = performance.now();
+
+        document.getElementById('init-time').textContent = Math.round(endInit - startInit);
+
+        // Initialize components after DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize both multiselect instances
+            const filterMultiselect = document.getElementById('performance-test');
+            const navigateMultiselect = document.getElementById('performance-test-navigate');
+
+            if (filterMultiselect) {
+                // Measure render time for filter mode
+                const startRender = performance.now();
+                filterMultiselect.options = largeDataset.map(item => ({
+                    value: item.id,
+                    label: item.name
+                }));
+                requestAnimationFrame(() => {
+                    const endRender = performance.now();
+                    document.getElementById('render-time').textContent = Math.round(endRender - startRender);
+                });
+
+                // Measure search performance
+                let searchTimeout;
+                filterMultiselect.addEventListener('search', (e) => {
+                    clearTimeout(searchTimeout);
+                    searchTimeout = setTimeout(() => {
+                        const startSearch = performance.now();
+                        // Give it a tick to complete the search
+                        requestAnimationFrame(() => {
+                            const endSearch = performance.now();
+                            document.getElementById('search-time').textContent = Math.round(endSearch - startSearch);
+                        });
+                    }, 50);
+                });
+
+                // Log selection changes
+                filterMultiselect.addEventListener('change', (e) => {
+                    console.log('[Filter Mode] Selected:', e.detail.length, 'items');
+                });
+            }
+
+            if (navigateMultiselect) {
+                // Set options for navigate mode
+                navigateMultiselect.options = largeDataset.map(item => ({
+                    value: item.id,
+                    label: item.name
+                }));
+
+                // Log selection changes
+                navigateMultiselect.addEventListener('change', (e) => {
+                    console.log('[Navigate Mode] Selected:', e.detail.length, 'items');
+                });
+            }
+        });
+    </script>
+
+    <script type="module" src="/src/index.ts"></script>
+</body>
+</html>

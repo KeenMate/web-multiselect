@@ -1,6 +1,7 @@
 import { PureMultiSelect } from './multiselect';
 import type { MultiSelectConfig, MultiSelectEventDetail } from './types';
 import styles from './scss/main.scss?inline';
+import { dataLogger } from './logger';
 
 // SSR compatibility: provide stub HTMLElement if not in browser
 const BaseElement = (typeof HTMLElement !== 'undefined' ? HTMLElement : class {}) as typeof HTMLElement;
@@ -51,6 +52,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
     private _getCountPillCallback?: (count: number, moreCount?: number) => string;
 
     // Event callbacks
+    private _beforeSearchCallback?: (searchTerm: string) => string | null;
     private _searchCallback?: (searchTerm: string) => Promise<T[]>;
     private _addNewCallback?: (value: string) => T | Promise<T>;
     private _selectCallback?: (option: T) => void;
@@ -63,9 +65,12 @@ export class MultiSelectElement<T = any> extends BaseElement {
             'search-hint', 'search-placeholder', 'multiple', 'allow-groups',
             'allow-select-all', 'allow-clear-all', 'show-checkboxes', 'sticky-actions', 'close-on-select',
             'lock-placement', 'dropdown-min-width', 'pills-display-mode', 'pills-threshold', 'pills-max-visible',
-            'pills-threshold-mode', 'pills-position', 'show-count-badge', 'max-height', 'empty-message',
-            'loading-message', 'min-search-length', 'enable-search', 'search-input-mode', 'allow-add-new',
+            'pills-threshold-mode', 'pills-position', 'show-count-badge', 'keep-options-on-search', 'max-height', 'empty-message',
+            'loading-message', 'min-search-length', 'enable-search', 'search-input-mode', 'search-mode', 'allow-add-new',
             'initial-values',
+
+            // Virtual scroll options
+            'enable-virtual-scroll', 'virtual-scroll-threshold', 'option-height', 'virtual-scroll-buffer',
 
             // New member properties
             'value-member', 'display-value-member', 'search-value-member',
@@ -100,6 +105,17 @@ export class MultiSelectElement<T = any> extends BaseElement {
     connectedCallback() {
         instances.add(this);
         this.render();
+
+        // Parse declarative options before initializing picker
+        const declarativeOptions = this.parseDeclarativeOptions();
+        if (declarativeOptions) {
+            // Declarative options take priority over programmatically set options
+            if (this._options && this._options.length > 0) {
+                dataLogger.warn('[MultiSelectElement] Both declarative <option> elements and programmatic .options detected. Using declarative options.');
+            }
+            this._options = declarativeOptions as T[];
+        }
+
         this.initializePicker();
     }
 
@@ -202,17 +218,134 @@ export class MultiSelectElement<T = any> extends BaseElement {
         }, 500);
     }
 
+    /**
+     * Parse declarative <option> and <optgroup> elements from Light DOM
+     * Returns array of options in the format expected by the picker
+     */
+    private parseDeclarativeOptions(): any[] | null {
+        const options: any[] = [];
+
+        // Get all direct children (option and optgroup elements)
+        const children = Array.from(this.children);
+
+        if (children.length === 0) {
+            return null; // No declarative options
+        }
+
+        let hasValidOptions = false;
+
+        for (const child of children) {
+            if (child.tagName === 'OPTION') {
+                const option = child as HTMLOptionElement;
+                const parsed: any = {
+                    value: option.value || option.textContent?.trim() || '',
+                    label: option.textContent?.trim() || option.value || ''
+                };
+
+                // Handle selected attribute
+                if (option.hasAttribute('selected')) {
+                    if (!this._declarativeSelectedValues) {
+                        this._declarativeSelectedValues = [];
+                    }
+                    this._declarativeSelectedValues.push(parsed.value);
+                }
+
+                // Handle disabled attribute
+                if (option.hasAttribute('disabled')) {
+                    parsed.disabled = true;
+                }
+
+                // Handle data-icon attribute for icons
+                if (option.hasAttribute('data-icon')) {
+                    parsed.icon = option.getAttribute('data-icon');
+                }
+
+                // Handle data-subtitle attribute for subtitles
+                if (option.hasAttribute('data-subtitle')) {
+                    parsed.subtitle = option.getAttribute('data-subtitle');
+                }
+
+                options.push(parsed);
+                hasValidOptions = true;
+            } else if (child.tagName === 'OPTGROUP') {
+                const optgroup = child as HTMLOptGroupElement;
+                const groupLabel = optgroup.label || optgroup.getAttribute('label') || 'Group';
+
+                // Parse options within the optgroup
+                const groupOptions = Array.from(optgroup.querySelectorAll('option'));
+                for (const option of groupOptions) {
+                    const parsed: any = {
+                        value: option.value || option.textContent?.trim() || '',
+                        label: option.textContent?.trim() || option.value || '',
+                        group: groupLabel
+                    };
+
+                    // Handle selected attribute
+                    if (option.hasAttribute('selected')) {
+                        if (!this._declarativeSelectedValues) {
+                            this._declarativeSelectedValues = [];
+                        }
+                        this._declarativeSelectedValues.push(parsed.value);
+                    }
+
+                    // Handle disabled attribute
+                    if (option.hasAttribute('disabled')) {
+                        parsed.disabled = true;
+                    }
+
+                    // Handle data-icon attribute
+                    if (option.hasAttribute('data-icon')) {
+                        parsed.icon = option.getAttribute('data-icon');
+                    }
+
+                    // Handle data-subtitle attribute
+                    if (option.hasAttribute('data-subtitle')) {
+                        parsed.subtitle = option.getAttribute('data-subtitle');
+                    }
+
+                    options.push(parsed);
+                    hasValidOptions = true;
+                }
+            }
+        }
+
+        if (hasValidOptions) {
+            dataLogger.debug(`[MultiSelectElement] Parsed ${options.length} declarative options from Light DOM`);
+
+            // Remove parsed elements from DOM (clean up)
+            children.forEach(child => {
+                if (child.tagName === 'OPTION' || child.tagName === 'OPTGROUP') {
+                    child.remove();
+                }
+            });
+
+            return options;
+        }
+
+        return null;
+    }
+
+    private _declarativeSelectedValues?: (string | number)[];
+
     private initializePicker() {
         if (!this.containerElement) return;
 
-        // Parse initial values
+        // Parse initial values - prioritize declarative selected options
         let initialValues: (string | number)[] | undefined;
-        const initialValuesAttr = this.getAttribute('initial-values');
-        if (initialValuesAttr) {
-            try {
-                initialValues = JSON.parse(initialValuesAttr);
-            } catch (e) {
-                console.error('[MultiSelectElement] Failed to parse initial-values:', e);
+
+        // Check for declarative selected values first (from <option selected>)
+        if (this._declarativeSelectedValues && this._declarativeSelectedValues.length > 0) {
+            initialValues = this._declarativeSelectedValues;
+            dataLogger.debug(`[MultiSelectElement] Using ${initialValues.length} declaratively selected values`);
+        } else {
+            // Fall back to initial-values attribute
+            const initialValuesAttr = this.getAttribute('initial-values');
+            if (initialValuesAttr) {
+                try {
+                    initialValues = JSON.parse(initialValuesAttr);
+                } catch (e) {
+                    dataLogger.error('[MultiSelectElement] Failed to parse initial-values:', e);
+                }
             }
         }
 
@@ -229,6 +362,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
             emptyMessage: this.getAttribute('empty-message') || 'No results found',
             loadingMessage: this.getAttribute('loading-message') || 'Loading...',
             searchInputMode: (this.getAttribute('search-input-mode') as any) || 'normal',
+            searchMode: (this.getAttribute('search-mode') as any) || 'filter',
 
             // Number options
             pillsThreshold: this.getAttribute('pills-threshold') ? parseInt(this.getAttribute('pills-threshold')!) : undefined,
@@ -247,6 +381,13 @@ export class MultiSelectElement<T = any> extends BaseElement {
             isSearchEnabled: this.getAttribute('enable-search') !== 'false',
             isAddNewAllowed: this.getAttribute('allow-add-new') === 'true',
             isCountBadgeShown: this.getAttribute('show-count-badge') === 'true',
+            isKeepOptionsOnSearch: this.getAttribute('keep-options-on-search') !== 'false',
+            isVirtualScrollEnabled: this.getAttribute('enable-virtual-scroll') === 'true',
+
+            // Virtual scroll options
+            virtualScrollThreshold: this.getAttribute('virtual-scroll-threshold') ? parseInt(this.getAttribute('virtual-scroll-threshold')!) : 100,
+            optionHeight: this.getAttribute('option-height') ? parseInt(this.getAttribute('option-height')!) : 50,
+            virtualScrollBuffer: this.getAttribute('virtual-scroll-buffer') ? parseInt(this.getAttribute('virtual-scroll-buffer')!) : 10,
 
             // Member properties
             valueMember: this.getAttribute('value-member') || this._valueMember,
@@ -289,6 +430,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
             // Data and callbacks
             options: this._options,
+            beforeSearchCallback: this._beforeSearchCallback,
             searchCallback: this._searchCallback,
             addNewCallback: this._addNewCallback,
             selectCallback: (option) => {
@@ -585,6 +727,15 @@ export class MultiSelectElement<T = any> extends BaseElement {
     }
 
     // Event callbacks
+    get beforeSearchCallback(): ((searchTerm: string) => string | null) | undefined {
+        return this._beforeSearchCallback;
+    }
+
+    set beforeSearchCallback(callback: ((searchTerm: string) => string | null) | undefined) {
+        this._beforeSearchCallback = callback;
+        this.reinitialize();
+    }
+
     get searchCallback(): ((searchTerm: string) => Promise<T[]>) | undefined {
         return this._searchCallback;
     }
@@ -663,7 +814,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
 // Auto-register the custom element (browser only)
 if (typeof window !== 'undefined' && typeof customElements !== 'undefined') {
-    if (!customElements.get('multi-select')) {
-        customElements.define('multi-select', MultiSelectElement);
+    if (!customElements.get('web-multiselect')) {
+        customElements.define('web-multiselect', MultiSelectElement);
     }
 }

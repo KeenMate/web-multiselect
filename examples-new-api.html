@@ -251,7 +251,7 @@ multiselect.options = users;</pre></div>
 
             <div class="demo-area">
                 <label class="demo-label">Select Users:</label>
-                <multi-select id="custom-objects" value-member="userId" display-value-member="fullName" subtitle-member="email"></multi-select>
+                <web-multiselect id="custom-objects" value-member="userId" display-value-member="fullName" subtitle-member="email"></web-multiselect>
 
                 <div class="output">
                     <div class="output-label">Selected Values:</div>
@@ -285,7 +285,7 @@ multiselect.options = languages; // Auto-detected as tuples</pre></div>
 
             <div class="demo-area">
                 <label class="demo-label">Select Programming Languages:</label>
-                <multi-select id="tuples"></multi-select>
+                <web-multiselect id="tuples"></web-multiselect>
 
                 <div class="output">
                     <div class="output-label">getValue() → </div>
@@ -320,7 +320,7 @@ multiselect.options = products;</pre></div>
 
             <div class="demo-area">
                 <label class="demo-label">Select Products (out of stock disabled):</label>
-                <multi-select id="callbacks"></multi-select>
+                <web-multiselect id="callbacks"></web-multiselect>
 
                 <div class="output">
                     <div class="output-label">Selected SKUs:</div>
@@ -353,7 +353,7 @@ multiselect.options = products;</pre></div>
 
             <form id="form-json" onsubmit="handleFormSubmit(event, 'form-json')">
                 <label class="demo-label">Select Your Skills:</label>
-                <multi-select id="form-json-select" name="skills" value-format="json"></multi-select>
+                <web-multiselect id="form-json-select" name="skills" value-format="json"></web-multiselect>
 
                 <div class="form-actions">
                     <button type="submit">Submit Form</button>
@@ -386,7 +386,7 @@ multiselect.options = products;</pre></div>
 
             <form id="form-csv" onsubmit="handleFormSubmit(event, 'form-csv')">
                 <label class="demo-label">Select Categories:</label>
-                <multi-select id="form-csv-select" name="categories" value-format="csv"></multi-select>
+                <web-multiselect id="form-csv-select" name="categories" value-format="csv"></web-multiselect>
 
                 <div class="form-actions">
                     <button type="submit">Submit Form</button>
@@ -422,7 +422,7 @@ multiselect.options = products;</pre></div>
 
             <form id="form-array" onsubmit="handleFormSubmit(event, 'form-array')">
                 <label class="demo-label">Select Tags:</label>
-                <multi-select id="form-array-select" name="tags" value-format="array"></multi-select>
+                <web-multiselect id="form-array-select" name="tags" value-format="array"></web-multiselect>
 
                 <div class="form-actions">
                     <button type="submit">Submit Form</button>
@@ -457,7 +457,7 @@ multiselect.options = products;</pre></div>
                 <div>
                     <div class="demo-area">
                         <label class="demo-label">Single Select:</label>
-                        <multi-select id="single-mode" multiple="false"></multi-select>
+                        <web-multiselect id="single-mode" multiple="false"></web-multiselect>
 
                         <div class="output">
                             <div class="output-label">getValue() returns single value:</div>
@@ -471,7 +471,7 @@ multiselect.options = products;</pre></div>
                 <div>
                     <div class="demo-area">
                         <label class="demo-label">Multi Select:</label>
-                        <multi-select id="multi-mode"></multi-select>
+                        <web-multiselect id="multi-mode"></web-multiselect>
 
                         <div class="output">
                             <div class="output-label">getValue() returns array:</div>
@@ -505,7 +505,7 @@ multiselect.searchCallback = async (searchTerm) => {
             <h3>User Search (GitHub API with Fallback)</h3>
             <div class="demo-area">
                 <label class="demo-label">Search GitHub Users (tries API, falls back to mock data if rate-limited):</label>
-                <multi-select
+                <web-multiselect
                     id="async-search"
                     min-search-length="2"
                     value-member="value"
@@ -513,7 +513,7 @@ multiselect.searchCallback = async (searchTerm) => {
                     subtitle-member="subtitle"
                     icon-member="icon"
                     search-placeholder="Type to search GitHub users..."
-                    search-hint="💡 Type at least 2 characters to search"></multi-select>
+                    search-hint="💡 Type at least 2 characters to search"></web-multiselect>
 
                 <div class="output">
                     <div class="output-label">Selected Users:</div>
@@ -526,13 +526,13 @@ multiselect.searchCallback = async (searchTerm) => {
             <h3>Product Search (Simulated API)</h3>
             <div class="demo-area">
                 <label class="demo-label">Search Products:</label>
-                <multi-select
+                <web-multiselect
                     id="product-search"
                     min-search-length="1"
                     search-placeholder="Search products..."
                     display-value-member="name"
                     subtitle-member="category"
-                    value-member="id"></multi-select>
+                    value-member="id"></web-multiselect>
 
                 <div class="output">
                     <div class="output-label">Selected Product IDs:</div>
@@ -545,13 +545,13 @@ multiselect.searchCallback = async (searchTerm) => {
             <h3>Country Lookup with Icons</h3>
             <div class="demo-area">
                 <label class="demo-label">Search Countries:</label>
-                <multi-select
+                <web-multiselect
                     id="country-search"
                     min-search-length="2"
                     search-placeholder="Search countries..."
                     value-member="code"
                     display-value-member="name"
-                    icon-member="flag"></multi-select>
+                    icon-member="flag"></web-multiselect>
 
                 <div class="output">
                     <div class="output-label">Selected Country Codes:</div>
@@ -568,7 +568,7 @@ multiselect.searchCallback = async (searchTerm) => {
 
             <h3>Basic Tooltips</h3>
             <div class="demo-area">
-                <multi-select
+                <web-multiselect
                     id="tooltips-basic"
                     value-member="value"
                     display-value-member="label"
@@ -576,7 +576,7 @@ multiselect.searchCallback = async (searchTerm) => {
                     enable-pill-tooltips="true"
                     pill-tooltip-placement="top"
                     search-placeholder="Select items (hover pills to see tooltips)..."
-                ></multi-select>
+                ></web-multiselect>
             </div>
             <p class="code-label">Configuration:</p>
             <pre><code>&lt;multi-select
@@ -588,11 +588,11 @@ multiselect.searchCallback = async (searchTerm) => {
 
             <h3>Custom Tooltip Callback</h3>
             <div class="demo-area">
-                <multi-select
+                <web-multiselect
                     id="tooltips-custom"
                     enable-pill-tooltips="true"
                     search-placeholder="Select users (custom tooltip content)..."
-                ></multi-select>
+                ></web-multiselect>
             </div>
             <p class="code-label">JavaScript:</p>
             <pre><code>const select = document.querySelector('#tooltips-custom');
@@ -623,10 +623,10 @@ ${user.role}`;
 
             <div class="demo-area">
                 <label class="demo-label">Select Team Members:</label>
-                <multi-select
+                <web-multiselect
                     id="custom-pill-display"
                     search-placeholder="Search team members (see the difference!)..."
-                ></multi-select>
+                ></web-multiselect>
 
                 <div class="output">
                     <div class="output-label">Selected:</div>

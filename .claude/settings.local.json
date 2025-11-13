@@ -15,7 +15,8 @@
       "Bash(md5sum:*)",
       "Bash(curl:*)",
       "Bash(npm publish:*)",
-      "Bash(gzip:*)"
+      "Bash(gzip:*)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []

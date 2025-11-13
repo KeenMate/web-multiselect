@@ -32,7 +32,7 @@ publish-dry: build ## Publish to npm (dry run)
 publish: build ## Publish to npm
 	@echo "WARNING: This will publish to npm registry"
 	@echo "Press Ctrl+C to cancel, or Enter to continue..."
-	@read -r
+	@powershell -Command "$$null = Read-Host"
 	@echo "Publishing to npm..."
 	npm publish
 	@echo "Published successfully"

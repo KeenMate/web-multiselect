@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MultiSelect - Logging Examples</title>
+    <link rel="stylesheet" href="/dist/style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            padding: 2rem;
+            background: #f5f5f5;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .back-link {
+            display: inline-block;
+            color: white;
+            text-decoration: none;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+
+        .back-link:hover {
+            opacity: 1;
+        }
+
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            margin-bottom: 1rem;
+            color: #333;
+            font-size: 1.5rem;
+        }
+
+        .card p {
+            margin-bottom: 1rem;
+            color: #666;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .code-block {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 1rem;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            margin: 1rem 0;
+        }
+
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 0.25rem;
+        }
+
+        button:hover {
+            background: #2563eb;
+        }
+
+        button.secondary {
+            background: #6b7280;
+        }
+
+        button.secondary:hover {
+            background: #4b5563;
+        }
+
+        .controls {
+            margin: 1rem 0;
+        }
+
+        .note {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="index.html" class="back-link">← Back to Examples</a>
+            <h1>🔍 Logging & Debugging</h1>
+            <p class="subtitle">Explore the categorized logging system with runtime controls</p>
+        </header>
+
+        <div class="note">
+            <strong>Note:</strong> Open your browser's Developer Console (F12) to see the log messages.
+            By default, all logging is disabled in production.
+        </div>
+
+        <div class="card">
+            <h2>Example 1: Basic Logging Control</h2>
+            <p>Enable and disable logging at runtime. Watch the console as you interact with the multiselect.</p>
+
+            <div class="controls">
+                <button onclick="enableAllLogging()">Enable All Logging</button>
+                <button onclick="disableAllLogging()" class="secondary">Disable All Logging</button>
+                <button onclick="setInfoLevel()">Set to INFO level</button>
+            </div>
+
+            <div class="form-group">
+                <web-multiselect
+                    id="basic-example"
+                    search-placeholder="Search fruits..."
+                    is-multiple-enabled="true"
+                ></web-multiselect>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Example 2: Category-Specific Logging</h2>
+            <p>Enable logging for specific categories only. This example has async search enabled - type to see DATA logs.
+            Try enabling different categories to see different types of logs.</p>
+
+            <div class="controls">
+                <button onclick="enableInitLogging()">INIT Logs Only</button>
+                <button onclick="enableDataLogging()">DATA Logs Only</button>
+                <button onclick="enableUILogging()">UI Logs Only</button>
+                <button onclick="enableInteractionLogging()">INTERACTION Logs Only</button>
+            </div>
+
+            <div class="form-group">
+                <web-multiselect
+                    id="category-example"
+                    search-placeholder="Search colors..."
+                    is-multiple-enabled="true"
+                    is-close-on-select="false"
+                ></web-multiselect>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Example 3: Hybrid Static + Dynamic Search</h2>
+            <p>Show popular items initially, then switch to web service search. Demonstrates beforeSearchCallback for accent removal.</p>
+
+            <div class="controls">
+                <button onclick="enableDataLogging()">Enable DATA Logs</button>
+                <button onclick="enableAllLogging()">Enable All Logs</button>
+                <button onclick="disableAllLogging()" class="secondary">Disable All</button>
+            </div>
+
+            <div class="form-group">
+                <web-multiselect
+                    id="hybrid-example"
+                    search-placeholder="Search fruits (try 'açaí' or 'acai')..."
+                    is-multiple-enabled="true"
+                    min-search-length="3"
+                ></web-multiselect>
+                <small style="color: #6b7280; margin-top: 0.5rem; display: block;">
+                    Opens with 5 popular fruits. Type 3+ characters to search "database". Try "açaí" or "acai" to see accent removal working.
+                </small>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>📝 Available Log Categories</h2>
+            <ul>
+                <li><strong>INIT</strong> - Component initialization, configuration parsing, RTL detection, destruction</li>
+                <li><strong>DATA</strong> - Async data loading, option parsing, adding new options, errors</li>
+                <li><strong>UI</strong> - Dropdown/popover/tooltip rendering, positioning, pills display</li>
+                <li><strong>INTERACTION</strong> - Clicks, selections, keyboard events, closeOnSelect behavior</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>💡 Usage in Your Code</h2>
+            <p>Here's how to control logging programmatically:</p>
+
+        <div class="code-block">
+// Import logging utilities
+import { enableLogging, setLogLevel, enableCategory, disableLogging }
+    from '@keenmate/web-multiselect';
+
+// Enable all logging at debug level
+enableLogging();
+
+// Set specific log level
+setLogLevel('info');  // 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'silent'
+
+// Enable only specific categories
+disableLogging();
+enableCategory('UI', 'debug');  // Debug only UI operations
+enableCategory('DATA', 'info');  // Info level for data operations
+
+// Disable all logging (default for production)
+disableLogging();
+        </div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { PureMultiSelect } from '/dist/multiselect.js';
+        // Import logging controls
+        import { enableLogging, setLogLevel, enableCategory, disableLogging } from '/dist/multiselect.js';
+
+        // Sample data
+        const fruits = [
+            { id: 1, name: 'Apple', emoji: '🍎' },
+            { id: 2, name: 'Banana', emoji: '🍌' },
+            { id: 3, name: 'Cherry', emoji: '🍒' },
+            { id: 4, name: 'Grape', emoji: '🍇' },
+            { id: 5, name: 'Orange', emoji: '🍊' },
+            { id: 6, name: 'Strawberry', emoji: '🍓' },
+            { id: 7, name: 'Watermelon', emoji: '🍉' }
+        ];
+
+        const colors = [
+            { id: 1, name: 'Red', hex: '#ef4444' },
+            { id: 2, name: 'Blue', hex: '#3b82f6' },
+            { id: 3, name: 'Green', hex: '#10b981' },
+            { id: 4, name: 'Yellow', hex: '#f59e0b' },
+            { id: 5, name: 'Purple', hex: '#8b5cf6' },
+            { id: 6, name: 'Pink', hex: '#ec4899' }
+        ];
+
+        // Wait for custom element to be defined, then initialize
+        customElements.whenDefined('web-multiselect').then(() => {
+            // Initialize Example 1 - Basic multiselect with fruits
+            const basicElement = document.getElementById('basic-example');
+            if (basicElement) {
+                basicElement.options = fruits;
+                basicElement.getValueCallback = (item) => item.id;
+                basicElement.getDisplayValueCallback = (item) => `${item.emoji} ${item.name}`;
+            }
+
+            // Initialize Example 2 - Async search with colors
+            const categoryElement = document.getElementById('category-example');
+            if (categoryElement) {
+                categoryElement.options = colors;
+                categoryElement.getValueCallback = (item) => item.id;
+                categoryElement.getDisplayValueCallback = (item) => item.name;
+                categoryElement.getSubtitleCallback = (item) => item.hex;
+
+                // Add search callback to demonstrate DATA logging
+                categoryElement.searchCallback = async (searchTerm) => {
+                    // Simulate async search with delay
+                    await new Promise(resolve => setTimeout(resolve, 300));
+
+                    // Filter colors based on search term
+                    if (!searchTerm) return colors;
+
+                    const lowerSearch = searchTerm.toLowerCase();
+                    return colors.filter(color =>
+                        color.name.toLowerCase().includes(lowerSearch) ||
+                        color.hex.includes(lowerSearch)
+                    );
+                };
+            }
+
+            // Initialize Example 3 - Hybrid static + dynamic search
+            const hybridElement = document.getElementById('hybrid-example');
+            if (hybridElement) {
+                // 5 popular fruits shown initially
+                const popularFruits = [
+                    { id: 1, name: 'Apple', emoji: '🍎' },
+                    { id: 2, name: 'Banana', emoji: '🍌' },
+                    { id: 3, name: 'Orange', emoji: '🍊' },
+                    { id: 4, name: 'Strawberry', emoji: '🍓' },
+                    { id: 5, name: 'Watermelon', emoji: '🍉' }
+                ];
+
+                // Helper function to normalize names for searching
+                const normalizeForSearch = (text) => {
+                    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+                };
+
+                // "Database" with all fruits for search (including accented names)
+                const allFruitsRaw = [
+                    ...popularFruits,
+                    { id: 6, name: 'Cherry', emoji: '🍒' },
+                    { id: 7, name: 'Grape', emoji: '🍇' },
+                    { id: 8, name: 'Lemon', emoji: '🍋' },
+                    { id: 9, name: 'Peach', emoji: '🍑' },
+                    { id: 10, name: 'Pear', emoji: '🍐' },
+                    { id: 11, name: 'Pineapple', emoji: '🍍' },
+                    { id: 12, name: 'Mango', emoji: '🥭' },
+                    { id: 13, name: 'Kiwi', emoji: '🥝' },
+                    { id: 14, name: 'Coconut', emoji: '🥥' },
+                    { id: 15, name: 'Avocado', emoji: '🥑' },
+                    { id: 16, name: 'Açaí', emoji: '🫐' },
+                    { id: 17, name: 'Açerola', emoji: '🍒' },
+                    { id: 18, name: 'Papaya', emoji: '🟠' }
+                ];
+
+                // Add normalized search values to all fruits
+                const allFruits = allFruitsRaw.map(fruit => ({
+                    ...fruit,
+                    searchValue: normalizeForSearch(fruit.name)
+                }));
+
+                // Log the database contents
+                console.log('%c📊 Example 3: Fruit Database Contents', 'color: #3b82f6; font-size: 1.2rem; font-weight: bold;');
+                console.log('%cPopular fruits (shown initially):', 'color: #10b981; font-weight: bold;');
+                console.table(popularFruits);
+                console.log('%cAll fruits (searchable via database):', 'color: #10b981; font-weight: bold;');
+                console.table(allFruits);
+
+                // Set initial popular fruits
+                hybridElement.options = popularFruits;
+                hybridElement.getValueCallback = (item) => item.id;
+                hybridElement.getDisplayValueCallback = (item) => `${item.emoji} ${item.name}`;
+
+                // beforeSearchCallback: Remove accents and validate
+                hybridElement.beforeSearchCallback = (searchTerm) => {
+                    // Remove accents (e.g., café → cafe)
+                    const normalized = searchTerm.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+                    // If different, log the transformation
+                    if (normalized !== searchTerm) {
+                        console.log(`%c🔄 beforeSearchCallback: "${searchTerm}" → "${normalized}"`,
+                            'color: #8b5cf6; font-weight: bold;');
+                    }
+
+                    return normalized;
+                };
+
+                // searchCallback: Simulate database search
+                hybridElement.searchCallback = async (searchTerm) => {
+                    console.log(`%c🔍 Searching database for: "${searchTerm}"`,
+                        'color: #3b82f6; font-weight: bold;');
+
+                    // Simulate network delay
+                    await new Promise(resolve => setTimeout(resolve, 500));
+
+                    // Search in "database" using normalized searchValue field
+                    const lowerSearch = searchTerm.toLowerCase();
+                    console.log(`%c   Searching for "${lowerSearch}" in searchValues:`, 'color: #6b7280;',
+                        allFruits.map(f => `${f.name} (${f.searchValue})`));
+
+                    const results = allFruits.filter(fruit => {
+                        const matches = fruit.searchValue.includes(lowerSearch);
+                        if (matches) {
+                            console.log(`%c   ✓ Match: "${fruit.name}" (searchValue: "${fruit.searchValue}")`, 'color: #10b981;');
+                        }
+                        return matches;
+                    });
+
+                    console.log(`%c✅ Database returned ${results.length} results`,
+                        'color: #10b981; font-weight: bold;', results);
+
+                    return results;
+                };
+            }
+        });
+
+        // Make logging functions globally available
+        window.enableAllLogging = () => {
+            enableLogging();
+            console.log('%c✅ All logging enabled at DEBUG level', 'color: #10b981; font-weight: bold;');
+        };
+
+        window.disableAllLogging = () => {
+            disableLogging();
+            console.log('%c❌ All logging disabled', 'color: #ef4444; font-weight: bold;');
+        };
+
+        window.setInfoLevel = () => {
+            setLogLevel('info');
+            console.log('%cℹ️ Log level set to INFO', 'color: #3b82f6; font-weight: bold;');
+        };
+
+        window.enableInitLogging = () => {
+            disableLogging();
+            enableCategory('INIT', 'debug');
+            console.log('%c🚀 INIT logging enabled', 'color: #8b5cf6; font-weight: bold;');
+        };
+
+        window.enableDataLogging = () => {
+            disableLogging();
+            enableCategory('DATA', 'debug');
+            console.log('%c📦 DATA logging enabled', 'color: #8b5cf6; font-weight: bold;');
+        };
+
+        window.enableUILogging = () => {
+            disableLogging();
+            enableCategory('UI', 'debug');
+            console.log('%c🎨 UI logging enabled', 'color: #8b5cf6; font-weight: bold;');
+        };
+
+        window.enableInteractionLogging = () => {
+            disableLogging();
+            enableCategory('INTERACTION', 'debug');
+            console.log('%c👆 INTERACTION logging enabled', 'color: #8b5cf6; font-weight: bold;');
+        };
+
+        console.log('%c📊 MultiSelect Logging Examples', 'color: #3b82f6; font-size: 1.5rem; font-weight: bold;');
+        console.log('%cBy default, logging is DISABLED. Use the buttons above to enable specific categories.', 'color: #6b7280;');
+    </script>
+</body>
+</html>

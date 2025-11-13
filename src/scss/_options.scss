@@ -14,6 +14,19 @@
   padding: var(--ml-options-padding, $ml-options-padding);
 }
 
+// Virtual scroll - enforce consistent heights
+.ml__options--virtual {
+  // overflow and position are set inline for proper dimensions
+
+  .ml__option {
+    height: var(--ml-option-height, 50px);
+    min-height: var(--ml-option-height, 50px);
+    max-height: var(--ml-option-height, 50px);
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+}
+
 // ==============================================================================
 // GROUPS
 // ==============================================================================
@@ -60,8 +73,17 @@
     outline-offset: var(--ml-option-focus-outline-offset, $ml-option-focus-outline-offset);
   }
 
+  &--matched {
+    background: var(--ml-option-bg-matched, $ml-option-bg-matched);
+    border-left: var(--ml-option-border-matched, $ml-option-border-matched);
+  }
+
   &--selected {
     background: var(--ml-option-bg-selected, $ml-option-bg-selected);
+
+    &:hover {
+      background: var(--ml-option-bg-selected-hover, var(--ml-option-bg-selected, $ml-option-bg-selected));
+    }
   }
 
   &--disabled {

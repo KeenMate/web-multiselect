@@ -116,6 +116,82 @@
             <p class="subtitle">Traditional multiselect demos showing basic functionality and common use cases</p>
         </header>
 
+        <!-- Declarative Usage (No JavaScript Required) -->
+        <div class="card">
+            <h2>✨ Declarative Usage (No JavaScript Required!)</h2>
+            <p>Use standard HTML <code>&lt;option&gt;</code> elements - no JavaScript needed for simple cases!</p>
+            <div class="grid">
+                <div class="form-group">
+                    <label>Simple Choice</label>
+                    <web-multiselect
+                        multiple="false"
+                        search-placeholder="Select your answer..."
+                        value-member="value"
+                        display-value-member="label">
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                        <option value="maybe" selected>Maybe / I don't know</option>
+                    </web-multiselect>
+                    <small class="form-text">No JavaScript required - pure HTML!</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Multiple Fruits</label>
+                    <web-multiselect
+                        search-placeholder="Select fruits..."
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon">
+                        <option value="apple" data-icon="🍎">Apple</option>
+                        <option value="banana" data-icon="🍌" selected>Banana</option>
+                        <option value="orange" data-icon="🍊">Orange</option>
+                        <option value="grape" data-icon="🍇" selected>Grape</option>
+                        <option value="strawberry" data-icon="🍓">Strawberry</option>
+                    </web-multiselect>
+                    <small class="form-text">Icons via <code>data-icon</code> attribute</small>
+                </div>
+            </div>
+
+            <div class="grid" style="margin-top: 1.5rem;">
+                <div class="form-group">
+                    <label>Grouped Options</label>
+                    <web-multiselect
+                        search-placeholder="Select programming languages..."
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        group-member="group">
+                        <optgroup label="Frontend">
+                            <option value="js" data-icon="🟨">JavaScript</option>
+                            <option value="ts" data-icon="🔷">TypeScript</option>
+                            <option value="html" data-icon="📄">HTML</option>
+                        </optgroup>
+                        <optgroup label="Backend">
+                            <option value="python" data-icon="🐍" selected>Python</option>
+                            <option value="java" data-icon="☕">Java</option>
+                            <option value="go" data-icon="🐹">Go</option>
+                        </optgroup>
+                    </web-multiselect>
+                    <small class="form-text">Use <code>&lt;optgroup&gt;</code> for grouping</small>
+                </div>
+
+                <div class="form-group">
+                    <label>With Subtitles</label>
+                    <web-multiselect
+                        search-placeholder="Select framework..."
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        subtitle-member="subtitle">
+                        <option value="react" data-icon="⚛️" data-subtitle="A JavaScript library for building UIs">React</option>
+                        <option value="vue" data-icon="🖖" data-subtitle="The Progressive JavaScript Framework">Vue.js</option>
+                        <option value="svelte" data-icon="🔥" data-subtitle="Cybernetically enhanced web apps" selected>Svelte</option>
+                    </web-multiselect>
+                    <small class="form-text">Use <code>data-subtitle</code> for descriptions</small>
+                </div>
+            </div>
+        </div>
+
         <!-- Single Select Mode -->
         <div class="card">
             <h2>Single-Select Mode</h2>
@@ -123,14 +199,14 @@
             <div class="grid">
                 <div class="form-group">
                     <label>Select Programming Language</label>
-                    <multi-select
+                    <web-multiselect
                         id="single-select"
                         multiple="false"
                         value-member="value"
                         display-value-member="label"
                         icon-member="icon"
                         search-placeholder="Select language...">
-                    </multi-select>
+                    </web-multiselect>
                     <small class="form-text">Only one language can be selected</small>
                 </div>
             </div>
@@ -143,7 +219,7 @@
             <div class="grid">
                 <div class="form-group">
                     <label>Select Country (No Search)</label>
-                    <multi-select
+                    <web-multiselect
                         id="keyboard-nav-select"
                         multiple="false"
                         enable-search="false"
@@ -151,7 +227,7 @@
                         value-member="value"
                         display-value-member="label"
                         search-placeholder="Use arrow keys to navigate...">
-                    </multi-select>
+                    </web-multiselect>
                     <small class="form-text">
                         Try: ↑/↓ arrows, PageUp/Down (10 items), Home/End, Enter to select
                     </small>
@@ -166,23 +242,23 @@
             <div class="grid">
                 <div class="form-group">
                     <label>Select Technologies</label>
-                    <multi-select
+                    <web-multiselect
                         id="basic-select"
                         value-member="value"
                         display-value-member="label"
                         search-placeholder="Search technologies...">
-                    </multi-select>
+                    </web-multiselect>
                     <small class="form-text">Select multiple programming languages</small>
                 </div>
 
                 <div class="form-group">
                     <label>Select Countries</label>
-                    <multi-select
+                    <web-multiselect
                         id="countries-select"
                         value-member="value"
                         display-value-member="label"
                         search-placeholder="Search countries...">
-                    </multi-select>
+                    </web-multiselect>
                     <small class="form-text">Start typing to filter options</small>
                 </div>
             </div>
@@ -195,14 +271,14 @@
             <div class="grid">
                 <div class="form-group">
                     <label>Select Frameworks</label>
-                    <multi-select
+                    <web-multiselect
                         id="frameworks-select"
                         value-member="value"
                         display-value-member="label"
                         icon-member="icon"
                         subtitle-member="subtitle"
                         search-placeholder="Search frameworks...">
-                    </multi-select>
+                    </web-multiselect>
                     <small class="form-text">Options with icons and descriptions</small>
                 </div>
             </div>
@@ -215,14 +291,14 @@
             <div class="grid">
                 <div class="form-group">
                     <label>With Search Hint</label>
-                    <multi-select
+                    <web-multiselect
                         id="hint-select"
                         value-member="value"
                         display-value-member="label"
                         icon-member="icon"
                         search-hint="💡 Start typing to filter options"
                         search-placeholder="Search cities...">
-                    </multi-select>
+                    </web-multiselect>
                     <small class="form-text">Open the dropdown to see the hint above the input</small>
                 </div>
             </div>
@@ -235,7 +311,7 @@
             <div class="grid">
                 <div class="form-group">
                     <label>Count Display</label>
-                    <multi-select
+                    <web-multiselect
                         id="count-select"
                         value-member="value"
                         display-value-member="label"
@@ -244,13 +320,13 @@
                         show-count-badge="true"
                         search-placeholder="Select..."
                         style="max-width: 12rem;">
-                    </multi-select>
+                    </web-multiselect>
                     <small class="form-text">Shows count instead of pills. Click count to view selected items.</small>
                 </div>
 
                 <div class="form-group">
                     <label>Auto-Switch at Threshold (Count Mode)</label>
-                    <multi-select
+                    <web-multiselect
                         id="threshold-select"
                         value-member="value"
                         display-value-member="label"
@@ -260,13 +336,13 @@
                         show-count-badge="true"
                         search-placeholder="Select..."
                         style="max-width: 12rem;">
-                    </multi-select>
+                    </web-multiselect>
                     <small class="form-text">Shows pills when ≤3 selected, switches to count when >3</small>
                 </div>
 
                 <div class="form-group">
                     <label>Auto-Switch at Threshold (Partial Mode)</label>
-                    <multi-select
+                    <web-multiselect
                         id="partial-pills"
                         value-member="value"
                         display-value-member="label"
@@ -275,13 +351,13 @@
                         pills-threshold-mode="partial"
                         pills-max-visible="3"
                         search-placeholder="Select technologies...">
-                    </multi-select>
+                    </web-multiselect>
                     <small class="form-text">Shows limited pills + "+X more" badge when >5 selected (max 3 visible pills)</small>
                 </div>
 
                 <div class="form-group">
                     <label>Custom Count Text (English Pluralization)</label>
-                    <multi-select
+                    <web-multiselect
                         id="i18n-english"
                         value-member="value"
                         display-value-member="label"
@@ -289,13 +365,13 @@
                         show-count-badge="true"
                         search-placeholder="Select..."
                         style="max-width: 12rem;">
-                    </multi-select>
+                    </web-multiselect>
                     <small class="form-text">Uses callback: "1 item selected" vs "3 items selected"</small>
                 </div>
 
                 <div class="form-group">
                     <label>Czech Pluralization (Complex Rules)</label>
-                    <multi-select
+                    <web-multiselect
                         id="i18n-czech"
                         value-member="value"
                         display-value-member="label"
@@ -303,13 +379,13 @@
                         show-count-badge="true"
                         search-placeholder="Vyberte..."
                         style="max-width: 12rem;">
-                    </multi-select>
+                    </web-multiselect>
                     <small class="form-text">1 položka | 2-4 položky | 5+ položek (Czech pluralization rules)</small>
                 </div>
 
                 <div class="form-group">
                     <label>Partial Mode with i18n (Spanish)</label>
-                    <multi-select
+                    <web-multiselect
                         id="i18n-partial"
                         value-member="value"
                         display-value-member="label"
@@ -317,7 +393,7 @@
                         pills-threshold-mode="partial"
                         pills-max-visible="3"
                         search-placeholder="Seleccionar...">
-                    </multi-select>
+                    </web-multiselect>
                     <small class="form-text">Shows "+X más" badge in Spanish when threshold exceeded</small>
                 </div>
             </div>
@@ -330,7 +406,7 @@
             <div class="grid">
                 <div class="form-group">
                     <label>Basic Tooltips</label>
-                    <multi-select
+                    <web-multiselect
                         id="tooltip-basic"
                         value-member="value"
                         display-value-member="label"
@@ -338,13 +414,13 @@
                         enable-pill-tooltips="true"
                         pill-tooltip-placement="top"
                         search-placeholder="Select frameworks...">
-                    </multi-select>
+                    </web-multiselect>
                     <small class="form-text">Hover over pills to see default tooltip</small>
                 </div>
 
                 <div class="form-group">
                     <label>Custom Tooltip Content</label>
-                    <multi-select
+                    <web-multiselect
                         id="tooltip-custom"
                         value-member="value"
                         display-value-member="label"
@@ -353,13 +429,13 @@
                         enable-pill-tooltips="true"
                         pill-tooltip-placement="top"
                         search-placeholder="Select frameworks...">
-                    </multi-select>
+                    </web-multiselect>
                     <small class="form-text">Shows custom tooltip with description</small>
                 </div>
 
                 <div class="form-group">
                     <label>Tooltip Placement: Bottom</label>
-                    <multi-select
+                    <web-multiselect
                         id="tooltip-bottom"
                         value-member="value"
                         display-value-member="label"
@@ -367,13 +443,13 @@
                         enable-pill-tooltips="true"
                         pill-tooltip-placement="bottom"
                         search-placeholder="Select technologies...">
-                    </multi-select>
+                    </web-multiselect>
                     <small class="form-text">Tooltip appears below the pill</small>
                 </div>
 
                 <div class="form-group">
                     <label>Custom Delay (100ms)</label>
-                    <multi-select
+                    <web-multiselect
                         id="tooltip-fast"
                         value-member="value"
                         display-value-member="label"
@@ -381,7 +457,7 @@
                         enable-pill-tooltips="true"
                         pill-tooltip-delay="100"
                         search-placeholder="Select frameworks...">
-                    </multi-select>
+                    </web-multiselect>
                     <small class="form-text">Faster tooltip appearance (default is 300ms)</small>
                 </div>
             </div>
@@ -394,53 +470,53 @@
             <div class="grid">
                 <div class="form-group">
                     <label>Pills Position: Bottom (Default)</label>
-                    <multi-select
+                    <web-multiselect
                         id="pills-bottom"
                         value-member="value"
                         display-value-member="label"
                         icon-member="icon"
                         pills-position="bottom"
                         search-placeholder="Select technologies...">
-                    </multi-select>
+                    </web-multiselect>
                     <small class="form-text">Pills appear below the input (default)</small>
                 </div>
 
                 <div class="form-group">
                     <label>Pills Position: Top</label>
-                    <multi-select
+                    <web-multiselect
                         id="pills-top"
                         value-member="value"
                         display-value-member="label"
                         icon-member="icon"
                         pills-position="top"
                         search-placeholder="Select technologies...">
-                    </multi-select>
+                    </web-multiselect>
                     <small class="form-text">Pills appear above the input</small>
                 </div>
 
                 <div class="form-group">
                     <label>Pills Position: Left</label>
-                    <multi-select
+                    <web-multiselect
                         id="pills-left"
                         value-member="value"
                         display-value-member="label"
                         icon-member="icon"
                         pills-position="left"
                         search-placeholder="Select technologies...">
-                    </multi-select>
+                    </web-multiselect>
                     <small class="form-text">Pills appear inline to the left of input</small>
                 </div>
 
                 <div class="form-group">
                     <label>Pills Position: Right</label>
-                    <multi-select
+                    <web-multiselect
                         id="pills-right"
                         value-member="value"
                         display-value-member="label"
                         icon-member="icon"
                         pills-position="right"
                         search-placeholder="Select technologies...">
-                    </multi-select>
+                    </web-multiselect>
                     <small class="form-text">Pills appear inline to the right of input</small>
                 </div>
             </div>
@@ -453,33 +529,33 @@
             <div class="grid">
                 <div class="form-group">
                     <label>Basic RTL Example</label>
-                    <multi-select
+                    <web-multiselect
                         id="rtl-basic"
                         dir="rtl"
                         value-member="value"
                         display-value-member="label"
                         icon-member="icon"
                         search-placeholder="...بحث">
-                    </multi-select>
+                    </web-multiselect>
                     <small class="form-text">Toggle on left, text right-aligned, pills flow right-to-left</small>
                 </div>
 
                 <div class="form-group">
                     <label>RTL with Arabic Text</label>
-                    <multi-select
+                    <web-multiselect
                         id="rtl-arabic"
                         dir="rtl"
                         value-member="value"
                         display-value-member="label"
                         icon-member="icon"
                         search-placeholder="البحث عن التقنيات...">
-                    </multi-select>
+                    </web-multiselect>
                     <small class="form-text">Real Arabic technology terms</small>
                 </div>
 
                 <div class="form-group">
                     <label>RTL Count Mode</label>
-                    <multi-select
+                    <web-multiselect
                         id="rtl-count"
                         dir="rtl"
                         value-member="value"
@@ -488,7 +564,7 @@
                         pills-display-mode="count"
                         show-count-badge="true"
                         search-placeholder="...بحث">
-                    </multi-select>
+                    </web-multiselect>
                     <small class="form-text">Count badge on left side in RTL mode</small>
                 </div>
 
@@ -497,24 +573,24 @@
                     <div style="display: flex; gap: 1rem; flex-direction: column;">
                         <div>
                             <small style="display: block; margin-bottom: 0.25rem;">LTR (Left-to-Right)</small>
-                            <multi-select
+                            <web-multiselect
                                 id="rtl-comparison-ltr"
                                 value-member="value"
                                 display-value-member="label"
                                 icon-member="icon"
                                 search-placeholder="Search...">
-                            </multi-select>
+                            </web-multiselect>
                         </div>
                         <div>
                             <small style="display: block; margin-bottom: 0.25rem;">RTL (Right-to-Left)</small>
-                            <multi-select
+                            <web-multiselect
                                 id="rtl-comparison-rtl"
                                 dir="rtl"
                                 value-member="value"
                                 display-value-member="label"
                                 icon-member="icon"
                                 search-placeholder="...بحث">
-                            </multi-select>
+                            </web-multiselect>
                         </div>
                     </div>
                     <small class="form-text">Notice toggle position, text alignment, and pill layout differences</small>
@@ -529,7 +605,7 @@
             <div class="grid">
                 <div class="form-group">
                     <label>Search GitHub Users</label>
-                    <multi-select
+                    <web-multiselect
                         id="github-search"
                         min-search-length="2"
                         value-member="value"
@@ -538,22 +614,62 @@
                         icon-member="icon"
                         search-placeholder="Type to search GitHub users..."
                         search-hint="💡 Type at least 2 characters to search">
-                    </multi-select>
+                    </web-multiselect>
                     <small class="form-text">Tries GitHub API, uses mock data if rate-limited</small>
                 </div>
 
                 <div class="form-group">
                     <label>Search Products</label>
-                    <multi-select
+                    <web-multiselect
                         id="product-search-classic"
                         min-search-length="1"
                         value-member="value"
                         display-value-member="label"
                         subtitle-member="subtitle"
                         search-placeholder="Search products...">
-                    </multi-select>
+                    </web-multiselect>
                     <small class="form-text">Simulated product database search</small>
                 </div>
+            </div>
+        </div>
+
+        <!-- Search Modes -->
+        <div class="card">
+            <h2>Search Modes: Filter vs Navigate</h2>
+            <p>Choose between <strong>filter</strong> mode (hide non-matches) or <strong>navigate</strong> mode (jump to matches while keeping all visible)</p>
+            <div class="grid">
+                <div class="form-group">
+                    <label>Filter Mode (Default)</label>
+                    <web-multiselect
+                        id="filter-mode-example"
+                        search-mode="filter"
+                        value-member="id"
+                        display-value-member="name"
+                        icon-member="flag"
+                        search-placeholder="Type to filter countries...">
+                    </web-multiselect>
+                    <small class="form-text">Hides non-matching options (standard behavior)</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Navigate Mode</label>
+                    <web-multiselect
+                        id="navigate-mode-example"
+                        search-mode="navigate"
+                        value-member="id"
+                        display-value-member="name"
+                        icon-member="flag"
+                        search-placeholder="Type to jump to country...">
+                    </web-multiselect>
+                    <small class="form-text">Keeps all options visible, jumps to matches (highlighted with left border)</small>
+                </div>
+            </div>
+            <div class="note">
+                <p><strong>When to use each mode:</strong></p>
+                <ul>
+                    <li><strong>Filter Mode</strong>: Large lists where you want to narrow down options (e.g., product catalogs, user lists)</li>
+                    <li><strong>Navigate Mode</strong>: Quick selection from known lists (e.g., country/state selectors, keyboard shortcuts)</li>
+                </ul>
             </div>
         </div>
 
@@ -563,12 +679,12 @@
             <p>Listen to <code>select</code>, <code>deselect</code>, and <code>change</code> events</p>
             <div class="form-group">
                 <label>Select Options (Check Console)</label>
-                <multi-select
+                <web-multiselect
                     id="events-select"
                     value-member="value"
                     display-value-member="label"
                     search-placeholder="Select options...">
-                </multi-select>
+                </web-multiselect>
                 <small class="form-text">Open browser console to see events</small>
             </div>
             <div id="event-log" style="background: #f9f9f9; padding: 1rem; border-radius: 4px; margin-top: 1rem; font-family: monospace; font-size: 0.875rem; max-height: 200px; overflow-y: auto;">
@@ -1110,6 +1226,70 @@
                         product.subtitle.toLowerCase().includes(term)
                     );
                 };
+            }
+
+            // Search Modes: Filter vs Navigate
+            const countriesWithFlags = [
+                { id: 1, name: 'Canada', flag: '🇨🇦' },
+                { id: 2, name: 'United States', flag: '🇺🇸' },
+                { id: 3, name: 'Mexico', flag: '🇲🇽' },
+                { id: 4, name: 'United Kingdom', flag: '🇬🇧' },
+                { id: 5, name: 'France', flag: '🇫🇷' },
+                { id: 6, name: 'Germany', flag: '🇩🇪' },
+                { id: 7, name: 'Italy', flag: '🇮🇹' },
+                { id: 8, name: 'Spain', flag: '🇪🇸' },
+                { id: 9, name: 'Japan', flag: '🇯🇵' },
+                { id: 10, name: 'China', flag: '🇨🇳' },
+                { id: 11, name: 'India', flag: '🇮🇳' },
+                { id: 12, name: 'Brazil', flag: '🇧🇷' },
+                { id: 13, name: 'Argentina', flag: '🇦🇷' },
+                { id: 14, name: 'Australia', flag: '🇦🇺' },
+                { id: 15, name: 'New Zealand', flag: '🇳🇿' },
+                { id: 16, name: 'South Africa', flag: '🇿🇦' },
+                { id: 17, name: 'Egypt', flag: '🇪🇬' },
+                { id: 18, name: 'Nigeria', flag: '🇳🇬' },
+                { id: 19, name: 'Russia', flag: '🇷🇺' },
+                { id: 20, name: 'Poland', flag: '🇵🇱' },
+                { id: 21, name: 'Sweden', flag: '🇸🇪' },
+                { id: 22, name: 'Norway', flag: '🇳🇴' },
+                { id: 23, name: 'Denmark', flag: '🇩🇰' },
+                { id: 24, name: 'Finland', flag: '🇫🇮' },
+                { id: 25, name: 'Netherlands', flag: '🇳🇱' },
+                { id: 26, name: 'Belgium', flag: '🇧🇪' },
+                { id: 27, name: 'Switzerland', flag: '🇨🇭' },
+                { id: 28, name: 'Austria', flag: '🇦🇹' },
+                { id: 29, name: 'Portugal', flag: '🇵🇹' },
+                { id: 30, name: 'Greece', flag: '🇬🇷' },
+                { id: 31, name: 'Turkey', flag: '🇹🇷' },
+                { id: 32, name: 'South Korea', flag: '🇰🇷' },
+                { id: 33, name: 'Thailand', flag: '🇹🇭' },
+                { id: 34, name: 'Vietnam', flag: '🇻🇳' },
+                { id: 35, name: 'Indonesia', flag: '🇮🇩' },
+                { id: 36, name: 'Philippines', flag: '🇵🇭' },
+                { id: 37, name: 'Singapore', flag: '🇸🇬' },
+                { id: 38, name: 'Malaysia', flag: '🇲🇾' },
+                { id: 39, name: 'Pakistan', flag: '🇵🇰' },
+                { id: 40, name: 'Bangladesh', flag: '🇧🇩' },
+                { id: 41, name: 'Colombia', flag: '🇨🇴' },
+                { id: 42, name: 'Chile', flag: '🇨🇱' },
+                { id: 43, name: 'Peru', flag: '🇵🇪' },
+                { id: 44, name: 'Venezuela', flag: '🇻🇪' },
+                { id: 45, name: 'Saudi Arabia', flag: '🇸🇦' },
+                { id: 46, name: 'United Arab Emirates', flag: '🇦🇪' },
+                { id: 47, name: 'Israel', flag: '🇮🇱' },
+                { id: 48, name: 'Iran', flag: '🇮🇷' },
+                { id: 49, name: 'Iraq', flag: '🇮🇶' },
+                { id: 50, name: 'Ukraine', flag: '🇺🇦' }
+            ];
+
+            const filterModeExample = document.getElementById('filter-mode-example');
+            if (filterModeExample) {
+                filterModeExample.options = countriesWithFlags;
+            }
+
+            const navigateModeExample = document.getElementById('navigate-mode-example');
+            if (navigateModeExample) {
+                navigateModeExample.options = countriesWithFlags;
             }
 
             // Events select

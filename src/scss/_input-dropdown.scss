@@ -130,10 +130,19 @@
   box-shadow: var(--ml-dropdown-box-shadow, $ml-dropdown-box-shadow);
   max-height: var(--ml-dropdown-max-height, $ml-dropdown-max-height);
   overflow-y: auto;
+  overscroll-behavior: contain;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
   color: var(--ml-dropdown-color, $ml-dropdown-color);
 
   &--visible {
     display: block;
+  }
+
+  &--virtual {
+    // In virtual scroll mode, let the options container handle scrolling
+    overflow-y: visible;
+    max-height: none;
   }
 }
 

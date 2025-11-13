@@ -4,57 +4,9 @@
  */
 
 import { computePosition, flip, offset, autoUpdate, shift, type Placement } from '@floating-ui/dom';
-import type { MultiSelectOption, MultiSelectOptions, MultiSelectConfig, PillsDisplayMode, PillsPosition, SearchInputMode, PillsThresholdMode } from './types';
-
-// Simple inline logger for debugging
-const LOG_ENABLED = true; // Set to false to disable all logs
-let logCounter = 0;
-const log = {
-    debug: (message: string, ...args: any[]) => {
-        if (LOG_ENABLED) {
-            logCounter++;
-            console.log(
-                `%c[MultiSelect ${logCounter}]%c ${message}`,
-                'color: #0ea5e9; font-weight: bold;',
-                'color: inherit;',
-                ...args
-            );
-        }
-    },
-    info: (message: string, ...args: any[]) => {
-        if (LOG_ENABLED) {
-            logCounter++;
-            console.info(
-                `%c[MultiSelect ${logCounter}]%c ${message}`,
-                'color: #10b981; font-weight: bold;',
-                'color: inherit;',
-                ...args
-            );
-        }
-    },
-    warn: (message: string, ...args: any[]) => {
-        if (LOG_ENABLED) {
-            logCounter++;
-            console.warn(
-                `%c[MultiSelect ${logCounter}]%c ${message}`,
-                'color: #f59e0b; font-weight: bold;',
-                'color: inherit;',
-                ...args
-            );
-        }
-    },
-    error: (message: string, ...args: any[]) => {
-        if (LOG_ENABLED) {
-            logCounter++;
-            console.error(
-                `%c[MultiSelect ${logCounter}]%c ${message}`,
-                'color: #ef4444; font-weight: bold;',
-                'color: inherit;',
-                ...args
-            );
-        }
-    }
-};
+import type { MultiSelectOption, MultiSelectOptions, MultiSelectConfig, PillsDisplayMode, PillsPosition, SearchInputMode, PillsThresholdMode, SearchMode } from './types';
+import { initLogger, dataLogger, uiLogger, interactionLogger } from './logger';
+import { VirtualScroll } from './virtual-scroll';
 
 export class PureMultiSelect<T = any> {
     private element: HTMLElement;
@@ -68,6 +20,7 @@ export class PureMultiSelect<T = any> {
     private filteredOptions: T[] = [];
     private hiddenInputs: HTMLInputElement[] = [];
     private focusedIndex = -1;
+    private matchingIndices: Set<number> = new Set();
     private searchTerm = '';
     private isLoading = false;
     private showSelectedPopover = false;
@@ -85,6 +38,10 @@ export class PureMultiSelect<T = any> {
     // Pill tooltip storage
     private pillTooltips = new Map<string, HTMLDivElement>();
     private pillTooltipCleanups = new Map<string, () => void>();
+
+    // Virtual scroll instance
+    private virtualScroll: VirtualScroll<T> | null = null;
+    private optionsContainer: HTMLDivElement | null = null;
 
     // DOM elements
     private input!: HTMLInputElement;
@@ -265,6 +222,7 @@ export class PureMultiSelect<T = any> {
             emptyMessage: element.dataset.emptyMessage || 'No results found',
             loadingMessage: element.dataset.loadingMessage || 'Loading...',
             searchInputMode: (element.dataset.searchInputMode as SearchInputMode) || 'normal',
+            searchMode: (element.dataset.searchMode as SearchMode) || 'filter',
 
             // Number options
             pillsThreshold: element.dataset.pillsThreshold ? parseInt(element.dataset.pillsThreshold) : undefined,
@@ -282,6 +240,7 @@ export class PureMultiSelect<T = any> {
             isSearchEnabled: element.dataset.enableSearch !== 'false',
             isAddNewAllowed: element.dataset.allowAddNew === 'true',
             isCountBadgeShown: element.dataset.showCountBadge === 'true',
+            isKeepOptionsOnSearch: element.dataset.keepOptionsOnSearch !== 'false',
 
             // Data and callbacks
             options: [],
@@ -300,7 +259,7 @@ export class PureMultiSelect<T = any> {
         this.attachEvents();
         this.parseInitialSelection();
 
-        log.debug(`Initialized [${this.instanceId}] with options:`, {
+        initLogger.debug(`Initialized [${this.instanceId}] with options:`, {
             placeholder: this.options.searchPlaceholder,
             totalOptions: this.allOptions.length,
             isCloseOnSelect: this.options.isCloseOnSelect,
@@ -316,7 +275,7 @@ export class PureMultiSelect<T = any> {
             try {
                 this.allOptions = JSON.parse(dataOptions);
             } catch (e) {
-                console.error('[MultiSelect] Failed to parse data-options:', e);
+                dataLogger.error(`[${this.instanceId}] Failed to parse data-options:`, e);
                 this.allOptions = [];
             }
         } else if (this.options.options) {
@@ -341,7 +300,7 @@ export class PureMultiSelect<T = any> {
         const hasAncestorDir = hostElement.closest('[dir="rtl"]') !== null;
         this.isRTL = hasElementDir || hasAncestorDir;
 
-        console.log('[MultiSelect RTL Debug]', {
+        initLogger.debug(`[${this.instanceId}] RTL Debug:`, {
             isShadowRoot: rootNode instanceof ShadowRoot,
             hostElement,
             elementDir: hostElement.getAttribute('dir'),
@@ -365,7 +324,7 @@ export class PureMultiSelect<T = any> {
 
         if (this.isRTL) {
             this.element.classList.add('ml--rtl');
-            console.log('[MultiSelect RTL] Added ml--rtl class to element');
+            initLogger.debug(`[${this.instanceId}] Added ml--rtl class to element`);
         }
 
         if (!this.options.isCheckboxesShown || !this.options.isMultipleEnabled) {
@@ -440,7 +399,39 @@ export class PureMultiSelect<T = any> {
         this.renderDropdown();
     }
 
+    /**
+     * Check if virtual scroll should be used
+     */
+    private shouldUseVirtualScroll(): boolean {
+        if (!this.options.isVirtualScrollEnabled) return false;
+        if (this.options.isGroupsAllowed && this.hasGroups()) return false; // Disable for groups (v1 limitation)
+
+        const threshold = this.options.virtualScrollThreshold ?? 100;
+        return this.filteredOptions.length >= threshold;
+    }
+
+    /**
+     * Check if any options have groups
+     */
+    private hasGroups(): boolean {
+        return this.filteredOptions.some(option => {
+            const group = this.getItemGroup(option);
+            return group && group.trim() !== '';
+        });
+    }
+
     private renderDropdown(): void {
+        // Check if we should use virtual scrolling
+        if (this.shouldUseVirtualScroll()) {
+            // Add virtual scroll class to dropdown for CSS adjustments
+            this.dropdown.classList.add('ml__dropdown--virtual');
+            this.renderDropdownVirtual();
+            return;
+        }
+        // Remove virtual scroll class if not using it
+        this.dropdown.classList.remove('ml__dropdown--virtual');
+
+        // Normal rendering (existing code)
         let html = '';
 
         if (this.isLoading) {
@@ -492,6 +483,64 @@ export class PureMultiSelect<T = any> {
         this.dropdown.innerHTML = html;
     }
 
+    /**
+     * Render dropdown with virtual scrolling
+     */
+    private renderDropdownVirtual(): void {
+        // Only create HTML structure if virtual scroll doesn't exist yet
+        if (!this.virtualScroll) {
+            let html = '';
+
+            // Render actions (Select All/Clear All) outside virtual scroll
+            if (this.options.isMultipleEnabled && (this.options.isSelectAllAllowed || this.options.isClearAllAllowed)) {
+                const stickyClass = this.options.isActionsSticky ? ' ml__actions--sticky' : '';
+                html += `<div class="ml__actions${stickyClass}">`;
+                if (this.options.isSelectAllAllowed) {
+                    html += '<button type="button" class="ml__action-btn" data-action="select-all">Select All</button>';
+                }
+                if (this.options.isClearAllAllowed) {
+                    html += '<button type="button" class="ml__action-btn" data-action="clear-all">Clear All</button>';
+                }
+                html += '</div>';
+            }
+
+            // Create options container for virtual scroll
+            // Add inline styles to ensure proper height constraint and scrolling
+            const maxHeight = this.options.maxHeight || '20rem';
+            html += `<div class="ml__options ml__options--virtual" style="height: ${maxHeight}; max-height: ${maxHeight}; overflow-y: auto; position: relative;"></div>`;
+            this.dropdown.innerHTML = html;
+
+            // Get options container
+            this.optionsContainer = this.dropdown.querySelector('.ml__options') as HTMLDivElement;
+        }
+
+        if (this.filteredOptions.length === 0) {
+            this.optionsContainer.innerHTML = `<div class="ml__empty">${this.options.emptyMessage}</div>`;
+            return;
+        }
+
+        // Initialize or update virtual scroll
+        const itemHeight = this.options.optionHeight ?? 50;
+        const bufferSize = this.options.virtualScrollBuffer ?? 10;
+
+        // Defer initialization until container has dimensions
+        requestAnimationFrame(() => {
+            if (!this.optionsContainer) return;
+
+            if (!this.virtualScroll) {
+                this.virtualScroll = new VirtualScroll<T>({
+                    container: this.optionsContainer,
+                    itemHeight,
+                    items: this.filteredOptions,
+                    renderItem: (item, index) => this.renderOption(item, index),
+                    bufferSize
+                });
+            } else {
+                this.virtualScroll.setItems(this.filteredOptions);
+            }
+        });
+    }
+
     private renderOption(option: T, index: number): string {
         const value = this.getItemValue(option);
         const displayValue = this.getItemDisplayValue(option);
@@ -501,10 +550,12 @@ export class PureMultiSelect<T = any> {
 
         const isSelected = this.selectedValues.has(String(value));
         const isFocused = index === this.focusedIndex;
+        const isMatched = this.matchingIndices.has(index);
 
         const classes = ['ml__option'];
         if (isSelected) classes.push('ml__option--selected');
         if (isFocused) classes.push('ml__option--focused');
+        if (isMatched) classes.push('ml__option--matched');
         if (disabled) classes.push('ml__option--disabled');
 
         let html = `<div class="${classes.join(' ')}" data-value="${value}" data-index="${index}">`;
@@ -567,7 +618,7 @@ export class PureMultiSelect<T = any> {
 
             const selectedLabel = selectedOptions[0] ? this.getItemDisplayValue(selectedOptions[0]) : undefined;
 
-            log.warn(`[${this.instanceId}] renderPills() single-select mode`, {
+            uiLogger.warn(`[${this.instanceId}] renderPills() single-select mode`, {
                 isOpen: this.isOpen,
                 count,
                 selectedOptionsLength: selectedOptions.length,
@@ -576,14 +627,14 @@ export class PureMultiSelect<T = any> {
             });
 
             if (!this.isOpen && count > 0 && selectedOptions.length > 0) {
-                log.info(`[${this.instanceId}] ✅ SETTING input.value = "${selectedLabel}"`);
+                uiLogger.info(`[${this.instanceId}] ✅ SETTING input.value = "${selectedLabel}"`);
                 this.input.value = selectedLabel!;
-                log.info(`[${this.instanceId}] 🔍 VERIFY input.value = "${this.input.value}"`);
+                uiLogger.info(`[${this.instanceId}] 🔍 VERIFY input.value = "${this.input.value}"`);
             } else if (!this.isOpen) {
-                log.info(`[${this.instanceId}] ❌ CLEARING input.value (no selection)`);
+                uiLogger.info(`[${this.instanceId}] ❌ CLEARING input.value (no selection)`);
                 this.input.value = '';
             } else {
-                log.info(`[${this.instanceId}] ⏭️ SKIPPING input update (dropdown is open)`);
+                uiLogger.info(`[${this.instanceId}] ⏭️ SKIPPING input update (dropdown is open)`);
             }
             return;
         }
@@ -723,6 +774,25 @@ export class PureMultiSelect<T = any> {
 
         this.dropdown.addEventListener('click', (e) => this.handleDropdownClick(e));
 
+        // Prevent page scroll when scrolling dropdown at boundaries
+        this.dropdown.addEventListener('wheel', (e: WheelEvent) => {
+            // In virtual scroll mode, the .ml__options container handles scrolling, not the dropdown
+            // Skip this handler to let wheel events reach the virtual scroll container
+            if (this.virtualScroll) {
+                return;
+            }
+
+            const target = e.currentTarget as HTMLElement;
+            const atTop = target.scrollTop === 0;
+            const atBottom = target.scrollTop + target.clientHeight >= target.scrollHeight;
+
+            // Prevent scroll propagation at boundaries
+            if ((e.deltaY < 0 && atTop) || (e.deltaY > 0 && atBottom)) {
+                e.preventDefault();
+            }
+            e.stopPropagation();
+        }, { passive: false });
+
         // Prevent click propagation for count text button (in pills container)
         this.pillsContainer.addEventListener('mousedown', (e) => {
             const countTextBtn = (e.target as HTMLElement).closest('.ml__count-text');
@@ -754,50 +824,127 @@ export class PureMultiSelect<T = any> {
             return;
         }
 
+        // Apply beforeSearchCallback if provided (for BOTH async and local search)
+        let processedValue = value;
+        if (this.options.beforeSearchCallback) {
+            const result = this.options.beforeSearchCallback(value);
+            if (result === null) {
+                // beforeSearchCallback returned null - don't search, show all options
+                dataLogger.debug(`[${this.instanceId}] beforeSearchCallback blocked search for term:`, value);
+                this.filteredOptions = [...this.allOptions];
+                this.matchingIndices.clear();
+                this.renderDropdown();
+                return;
+            }
+            processedValue = result;
+            if (processedValue !== value) {
+                dataLogger.debug(`[${this.instanceId}] beforeSearchCallback transformed: "${value}" -> "${processedValue}"`);
+            }
+        }
+
         if (this.options.searchCallback) {
-            if (value.length < this.options.minSearchLength) {
-                this.filteredOptions = [];
-                this.allOptions = [];
+            // ASYNC SEARCH PATH
+            // Check minimum search length
+            if (processedValue.length < this.options.minSearchLength) {
+                this.isLoading = false; // Stop loading state
+                if (this.options.isKeepOptionsOnSearch) {
+                    // Keep showing initial options
+                    this.filteredOptions = [...this.allOptions];
+                    dataLogger.debug(`[${this.instanceId}] Search term below minimum, showing ${this.allOptions.length} initial options`);
+                } else {
+                    // Clear options (old behavior)
+                    this.filteredOptions = [];
+                }
+                this.matchingIndices.clear();
                 this.renderDropdown();
                 return;
             }
 
             this.isLoading = true;
             this.renderDropdown();
-            log.debug(`[${this.instanceId}] Loading data for search term:`, value);
+            dataLogger.debug(`[${this.instanceId}] Loading data for search term:`, processedValue);
 
             try {
-                const results = await this.options.searchCallback(value);
+                const results = await this.options.searchCallback(processedValue);
 
                 if (this.searchTerm === value) {
-                    this.allOptions = results || [];
-                    this.filteredOptions = [...this.allOptions];
+                    const searchResults = results || [];
+
+                    // Always show the search results in filtered options
+                    this.filteredOptions = [...searchResults];
                     this.isLoading = false;
+                    this.matchingIndices.clear(); // Async search doesn't use matching indices
+
                     // Auto-focus first option if search is enabled and there are results
                     this.focusedIndex = (this.options.isSearchEnabled && this.filteredOptions.length > 0) ? 0 : -1;
                     this.renderDropdown();
-                    log.debug(`[${this.instanceId}] Loaded ${this.allOptions.length} results`);
+                    dataLogger.debug(`[${this.instanceId}] Loaded ${searchResults.length} results`);
                 }
             } catch (error) {
-                log.error(`[${this.instanceId}] Error loading data:`, error);
+                dataLogger.error(`[${this.instanceId}] Error loading data:`, error);
                 this.isLoading = false;
-                this.filteredOptions = [];
-                this.allOptions = [];
+                if (this.options.isKeepOptionsOnSearch) {
+                    // Show initial options on error
+                    this.filteredOptions = [...this.allOptions];
+                } else {
+                    this.filteredOptions = [];
+                }
+                this.matchingIndices.clear();
                 this.renderDropdown();
             }
         } else {
-            if (!value) {
+            // LOCAL SEARCH PATH
+            if (!processedValue) {
+                // Empty search - show all options
                 this.filteredOptions = [...this.allOptions];
+                this.matchingIndices.clear();
+                this.focusedIndex = this.filteredOptions.length > 0 ? 0 : -1;
             } else {
-                this.filteredOptions = this.allOptions.filter(option => {
-                    const searchValue = this.getItemSearchValue(option).toLowerCase();
-                    return searchValue.includes(value.toLowerCase());
-                });
-            }
+                const searchMode = this.options.searchMode || 'filter';
+                const lowerSearch = processedValue.toLowerCase();
 
-            // Auto-focus first option if search is enabled and there are results
-            this.focusedIndex = (this.options.isSearchEnabled && this.filteredOptions.length > 0) ? 0 : -1;
+                if (searchMode === 'filter') {
+                    // FILTER MODE: Hide non-matching options (current behavior)
+                    this.filteredOptions = this.allOptions.filter(option => {
+                        const searchValue = this.getItemSearchValue(option).toLowerCase();
+                        return searchValue.includes(lowerSearch);
+                    });
+                    this.matchingIndices.clear(); // Not used in filter mode
+                    // Auto-focus first result
+                    this.focusedIndex = this.filteredOptions.length > 0 ? 0 : -1;
+                    dataLogger.debug(`[${this.instanceId}] Filter mode: ${this.filteredOptions.length} matches for "${processedValue}"`);
+                } else {
+                    // NAVIGATE MODE: Keep all options visible, jump to first match, highlight all matches
+                    this.filteredOptions = [...this.allOptions];
+                    this.matchingIndices.clear();
+
+                    // Find all matching indices and first match
+                    let firstMatchIndex = -1;
+                    this.allOptions.forEach((option, index) => {
+                        const searchValue = this.getItemSearchValue(option).toLowerCase();
+                        if (searchValue.includes(lowerSearch)) {
+                            this.matchingIndices.add(index);
+                            if (firstMatchIndex === -1) {
+                                firstMatchIndex = index;
+                            }
+                        }
+                    });
+
+                    // Keep previous focus if no match found (requirement: "keep previous focus")
+                    if (firstMatchIndex >= 0) {
+                        this.focusedIndex = firstMatchIndex;
+                        dataLogger.debug(`[${this.instanceId}] Navigate mode: ${this.matchingIndices.size} matches, jumped to index ${firstMatchIndex}`);
+                    } else {
+                        // No match found - keep previous focusedIndex
+                        dataLogger.debug(`[${this.instanceId}] Navigate mode: No matches found, keeping previous focus`);
+                    }
+                }
+            }
             this.renderDropdown();
+            // Scroll to focused item in navigate mode
+            if (this.options.searchMode === 'navigate' && this.focusedIndex >= 0) {
+                this.scrollToFocused();
+            }
         }
     }
 
@@ -824,11 +971,23 @@ export class PureMultiSelect<T = any> {
         switch (e.key) {
             case 'ArrowDown':
                 e.preventDefault();
-                this.focusNext();
+                if (e.ctrlKey || e.metaKey) {
+                    // Ctrl/Cmd+Down: Jump to next match (navigate mode only)
+                    this.focusNextMatch();
+                } else {
+                    // Down: Next option
+                    this.focusNext();
+                }
                 break;
             case 'ArrowUp':
                 e.preventDefault();
-                this.focusPrevious();
+                if (e.ctrlKey || e.metaKey) {
+                    // Ctrl/Cmd+Up: Jump to previous match (navigate mode only)
+                    this.focusPreviousMatch();
+                } else {
+                    // Up: Previous option
+                    this.focusPrevious();
+                }
                 break;
             case 'Enter':
                 e.preventDefault();
@@ -866,7 +1025,7 @@ export class PureMultiSelect<T = any> {
     }
 
     private handleDropdownClick(e: MouseEvent): void {
-        log.debug(`[${this.instanceId}] Dropdown clicked`, { target: (e.target as HTMLElement).className });
+        interactionLogger.debug(`[${this.instanceId}] Dropdown clicked`, { target: (e.target as HTMLElement).className });
 
         e.stopPropagation();
 
@@ -874,7 +1033,7 @@ export class PureMultiSelect<T = any> {
         if (actionBtn) {
             e.preventDefault();
             const action = actionBtn.dataset.action;
-            log.debug(`[${this.instanceId}] Action button clicked:`, action);
+            interactionLogger.debug(`[${this.instanceId}] Action button clicked:`, action);
             if (action === 'select-all') {
                 this.selectAll();
             } else if (action === 'clear-all') {
@@ -888,7 +1047,7 @@ export class PureMultiSelect<T = any> {
             e.preventDefault();
             const value = option.dataset.value!;
             const optionData = this.filteredOptions.find(opt => String(this.getItemValue(opt)) === value);
-            log.debug(`[${this.instanceId}] Option clicked:`, {
+            interactionLogger.debug(`[${this.instanceId}] Option clicked:`, {
                 value,
                 closeOnSelect: this.options.isCloseOnSelect,
                 placeholder: this.options.searchPlaceholder
@@ -904,7 +1063,7 @@ export class PureMultiSelect<T = any> {
         if (countClearBtn) {
             e.preventDefault();
             e.stopPropagation();
-            log.debug(`[${this.instanceId}] Count clear button clicked`);
+            interactionLogger.debug(`[${this.instanceId}] Count clear button clicked`);
             this.clearAll();
             return;
         }
@@ -924,7 +1083,7 @@ export class PureMultiSelect<T = any> {
 
             // Handle remove-hidden action (remove all hidden items in partial mode)
             if (removeBtn.dataset.action === 'remove-hidden') {
-                log.debug(`[${this.instanceId}] Remove hidden items button clicked`);
+                interactionLogger.debug(`[${this.instanceId}] Remove hidden items button clicked`);
                 const maxVisible = this.options.pillsMaxVisible || 3;
                 const selectedOptions = Array.from(this.selectedOptions.values());
                 const hiddenOptions = selectedOptions.slice(maxVisible);
@@ -948,7 +1107,7 @@ export class PureMultiSelect<T = any> {
         if (morePill && !(e.target as HTMLElement).closest('.ml__pill-remove')) {
             e.preventDefault();
             e.stopPropagation();
-            log.debug(`[${this.instanceId}] '+X more' badge clicked, showing popover`);
+            interactionLogger.debug(`[${this.instanceId}] '+X more' badge clicked, showing popover`);
             this.toggleSelectedPopover();
             return;
         }
@@ -968,7 +1127,7 @@ export class PureMultiSelect<T = any> {
             );
 
             if (!clickedInsidePopover) {
-                log.debug(`[${this.instanceId}] Closing selected popover due to click outside`);
+                uiLogger.debug(`[${this.instanceId}] Closing selected popover due to click outside`);
                 this.hideSelectedPopover();
                 return;
             }
@@ -986,7 +1145,7 @@ export class PureMultiSelect<T = any> {
             )
         );
 
-        log.debug(`[${this.instanceId}] handleClickOutside`, {
+        interactionLogger.debug(`[${this.instanceId}] handleClickOutside`, {
             target: (e.target as HTMLElement).className,
             targetTag: (e.target as HTMLElement).tagName,
             clickedInside,
@@ -998,7 +1157,7 @@ export class PureMultiSelect<T = any> {
         });
 
         if (!clickedInside) {
-            log.warn(`[${this.instanceId}] Closing dropdown due to click outside`);
+            interactionLogger.warn(`[${this.instanceId}] Closing dropdown due to click outside`);
             this.close();
         }
     }
@@ -1006,7 +1165,7 @@ export class PureMultiSelect<T = any> {
     private focusNext(): void {
         if (this.filteredOptions.length === 0) return;
 
-        this.focusedIndex = (this.focusedIndex + 1) % this.filteredOptions.length;
+        this.focusedIndex = Math.min(this.filteredOptions.length - 1, this.focusedIndex + 1);
         this.renderDropdown();
         this.scrollToFocused();
     }
@@ -1037,6 +1196,32 @@ export class PureMultiSelect<T = any> {
         this.scrollToFocused();
     }
 
+    private focusNextMatch(): void {
+        if (this.matchingIndices.size === 0) return;
+
+        const matchedArray = Array.from(this.matchingIndices).sort((a, b) => a - b);
+        const currentIndex = matchedArray.findIndex(idx => idx === this.focusedIndex);
+        const nextIndex = (currentIndex + 1) % matchedArray.length;
+
+        this.focusedIndex = matchedArray[nextIndex];
+        this.renderDropdown();
+        this.scrollToFocused();
+        interactionLogger.debug(`[${this.instanceId}] Jumped to next match: index ${this.focusedIndex} (${currentIndex + 1} of ${matchedArray.length})`);
+    }
+
+    private focusPreviousMatch(): void {
+        if (this.matchingIndices.size === 0) return;
+
+        const matchedArray = Array.from(this.matchingIndices).sort((a, b) => a - b);
+        const currentIndex = matchedArray.findIndex(idx => idx === this.focusedIndex);
+        const prevIndex = currentIndex <= 0 ? matchedArray.length - 1 : currentIndex - 1;
+
+        this.focusedIndex = matchedArray[prevIndex];
+        this.renderDropdown();
+        this.scrollToFocused();
+        interactionLogger.debug(`[${this.instanceId}] Jumped to previous match: index ${this.focusedIndex} (${currentIndex + 1} of ${matchedArray.length})`);
+    }
+
     private focusPageUp(): void {
         if (this.filteredOptions.length === 0) return;
 
@@ -1056,51 +1241,57 @@ export class PureMultiSelect<T = any> {
     }
 
     private scrollToFocused(): void {
-        const focusedElement = this.dropdown.querySelector('.ml__option--focused');
-        if (focusedElement) {
-            focusedElement.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        if (this.virtualScroll && this.focusedIndex >= 0) {
+            // Use virtual scroll's scrollToIndex for smooth scrolling
+            this.virtualScroll.scrollToIndex(this.focusedIndex);
+        } else {
+            // Standard mode: use scrollIntoView
+            const focusedElement = this.dropdown.querySelector('.ml__option--focused');
+            if (focusedElement) {
+                focusedElement.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
         }
     }
 
     private toggleOption(option: T): void {
         const value = this.getItemValue(option);
         const valueKey = String(value);
-        log.debug(`[${this.instanceId}] toggleOption called`, { value, multiple: this.options.isMultipleEnabled });
+        interactionLogger.debug(`[${this.instanceId}] toggleOption called`, { value, multiple: this.options.isMultipleEnabled });
 
         if (!this.options.isMultipleEnabled) {
             if (this.selectedValues.has(valueKey)) {
-                log.debug(`[${this.instanceId}] Deselecting option in single-select mode`, { value });
+                interactionLogger.debug(`[${this.instanceId}] Deselecting option in single-select mode`, { value });
                 this.deselectOption(option);
             } else {
-                log.debug(`[${this.instanceId}] Clearing previous selections and selecting new option`, { value });
+                interactionLogger.debug(`[${this.instanceId}] Clearing previous selections and selecting new option`, { value });
                 this.selectedValues.clear();
                 this.selectedOptions.clear();
                 this.selectOption(option);
             }
 
-            log.info(`[${this.instanceId}] ❌ Closing dropdown (single-select mode)`);
+            uiLogger.info(`[${this.instanceId}] ❌ Closing dropdown (single-select mode)`);
             this.close();
             return;
         }
 
         if (this.selectedValues.has(valueKey)) {
-            log.debug(`[${this.instanceId}] Deselecting option`, { value });
+            interactionLogger.debug(`[${this.instanceId}] Deselecting option`, { value });
             this.deselectOption(option);
         } else {
-            log.debug(`[${this.instanceId}] Selecting option`, { value });
+            interactionLogger.debug(`[${this.instanceId}] Selecting option`, { value });
             this.selectOption(option);
         }
 
-        log.debug(`[${this.instanceId}] Checking closeOnSelect`, {
+        interactionLogger.debug(`[${this.instanceId}] Checking closeOnSelect`, {
             closeOnSelect: this.options.isCloseOnSelect,
             willClose: this.options.isCloseOnSelect === true,
             placeholder: this.options.searchPlaceholder
         });
         if (this.options.isCloseOnSelect) {
-            log.info(`[${this.instanceId}] ❌ Closing dropdown (closeOnSelect=true)`);
+            uiLogger.info(`[${this.instanceId}] ❌ Closing dropdown (closeOnSelect=true)`);
             this.close();
         } else {
-            log.info(`[${this.instanceId}] ✅ Keeping dropdown open (closeOnSelect=false)`);
+            uiLogger.info(`[${this.instanceId}] ✅ Keeping dropdown open (closeOnSelect=false)`);
         }
     }
 
@@ -1108,7 +1299,7 @@ export class PureMultiSelect<T = any> {
         if (!this.options.addNewCallback) return;
 
         try {
-            log.debug(`[${this.instanceId}] Adding new option:`, value);
+            dataLogger.debug(`[${this.instanceId}] Adding new option:`, value);
             const newOption = await this.options.addNewCallback(value);
 
             // Add to options list
@@ -1127,7 +1318,7 @@ export class PureMultiSelect<T = any> {
                 this.close();
             }
         } catch (error) {
-            log.error(`[${this.instanceId}] Error adding new option:`, error);
+            dataLogger.error(`[${this.instanceId}] Error adding new option:`, error);
         }
     }
 
@@ -1196,19 +1387,25 @@ export class PureMultiSelect<T = any> {
     }
 
     private open(): void {
-        log.debug(`[${this.instanceId}] open() called`, { isOpen: this.isOpen });
+        uiLogger.debug(`[${this.instanceId}] open() called`, { isOpen: this.isOpen });
         if (this.isOpen) return;
 
         this.isOpen = true;
         this.element.classList.add('ml--open');
         this.dropdown.classList.add('ml__dropdown--visible');
-        log.info(`[${this.instanceId}] Dropdown opened`);
+        uiLogger.info(`[${this.instanceId}] Dropdown opened`);
 
         this.input.placeholder = this.options.searchPlaceholder;
 
         // Only clear input if search is enabled
         if (!this.options.isMultipleEnabled && this.options.isSearchEnabled) {
             this.input.value = '';
+        }
+
+        // If using searchCallback with keepOptionsOnSearch, ensure initial options are shown
+        if (this.options.searchCallback && this.options.isKeepOptionsOnSearch && !this.searchTerm) {
+            this.filteredOptions = [...this.allOptions];
+            uiLogger.debug(`[${this.instanceId}] Showing ${this.allOptions.length} initial options on open`);
         }
 
         this.renderDropdown();
@@ -1221,7 +1418,7 @@ export class PureMultiSelect<T = any> {
     }
 
     private close(): void {
-        log.debug(`[${this.instanceId}] close() called`, { isOpen: this.isOpen });
+        uiLogger.debug(`[${this.instanceId}] close() called`, { isOpen: this.isOpen });
         if (!this.isOpen) return;
 
         this.isOpen = false;
@@ -1233,7 +1430,7 @@ export class PureMultiSelect<T = any> {
         this.searchTerm = '';
         // Only clear input in multi-select mode or when search is enabled
         const willClearInput = this.options.isMultipleEnabled || this.options.isSearchEnabled;
-        log.warn(`[${this.instanceId}] close() - input clearing decision`, {
+        uiLogger.warn(`[${this.instanceId}] close() - input clearing decision`, {
             multiple: this.options.isMultipleEnabled,
             enableSearch: this.options.isSearchEnabled,
             willClearInput,
@@ -1241,18 +1438,18 @@ export class PureMultiSelect<T = any> {
         });
 
         if (willClearInput) {
-            log.info(`[${this.instanceId}] 🧹 close() CLEARING input.value`);
+            uiLogger.info(`[${this.instanceId}] 🧹 close() CLEARING input.value`);
             this.input.value = '';
         } else {
-            log.info(`[${this.instanceId}] 🔒 close() KEEPING input.value = "${this.input.value}"`);
+            uiLogger.info(`[${this.instanceId}] 🔒 close() KEEPING input.value = "${this.input.value}"`);
         }
 
         this.filteredOptions = [...this.allOptions];
         this.focusedIndex = -1;
 
-        log.info(`[${this.instanceId}] 📞 close() CALLING renderPills()`);
+        uiLogger.info(`[${this.instanceId}] 📞 close() CALLING renderPills()`);
         this.renderPills();
-        log.info(`[${this.instanceId}] ✅ close() AFTER renderPills(), input.value = "${this.input.value}"`);
+        uiLogger.info(`[${this.instanceId}] ✅ close() AFTER renderPills(), input.value = "${this.input.value}"`);
 
         if (this.dropdownCleanup) {
             this.dropdownCleanup();
@@ -1266,8 +1463,8 @@ export class PureMultiSelect<T = any> {
         // Reset placement tracking
         this.dropdownPlacement = null;
 
-        log.info(`[${this.instanceId}] Dropdown closed. Stack trace:`);
-        console.trace();
+        uiLogger.info(`[${this.instanceId}] Dropdown closed. Stack trace:`);
+        uiLogger.trace();
     }
 
     private positionDropdown(): void {
@@ -1294,7 +1491,7 @@ export class PureMultiSelect<T = any> {
                     // Lock placement after first computation if lockPlacement is enabled
                     if (this.options.isPlacementLocked && !this.dropdownPlacement) {
                         this.dropdownPlacement = finalPlacement;
-                        log.debug(`[${this.instanceId}] Locked dropdown placement:`, finalPlacement);
+                        uiLogger.debug(`[${this.instanceId}] Locked dropdown placement:`, finalPlacement);
                     }
 
                     const styles: Record<string, string> = {
@@ -1373,7 +1570,7 @@ export class PureMultiSelect<T = any> {
                 });
                 this.renderPills();
             } catch (e) {
-                console.error('[MultiSelect] Failed to parse initial values:', e);
+                dataLogger.error(`[${this.instanceId}] Failed to parse initial values:`, e);
             }
         }
     }
@@ -1387,7 +1584,7 @@ export class PureMultiSelect<T = any> {
     }
 
     private showPopover(): void {
-        log.debug(`[${this.instanceId}] showPopover() called`);
+        uiLogger.debug(`[${this.instanceId}] showPopover() called`);
 
         if (this.isOpen) {
             this.close();
@@ -1400,7 +1597,7 @@ export class PureMultiSelect<T = any> {
     }
 
     private hideSelectedPopover(): void {
-        log.debug(`[${this.instanceId}] hideSelectedPopover() called`);
+        uiLogger.debug(`[${this.instanceId}] hideSelectedPopover() called`);
         this.showSelectedPopover = false;
         this.selectedPopover.classList.remove('ml__selected-popover--visible');
         this.selectedPopoverPlacement = null;
@@ -1477,7 +1674,7 @@ export class PureMultiSelect<T = any> {
                 }).then(({ x, y, placement: finalPlacement }) => {
                     if (!this.selectedPopoverPlacement) {
                         this.selectedPopoverPlacement = finalPlacement;
-                        log.debug(`[${this.instanceId}] Locked popover placement:`, finalPlacement);
+                        uiLogger.debug(`[${this.instanceId}] Locked popover placement:`, finalPlacement);
                     }
 
                     const styles: Record<string, string> = {
@@ -1614,12 +1811,12 @@ export class PureMultiSelect<T = any> {
 
     private attachPillTooltips(): void {
         if (!this.options.isPillTooltipsEnabled) {
-            console.log('[Tooltips] Disabled - isPillTooltipsEnabled is false');
+            uiLogger.debug(`[${this.instanceId}] Tooltips disabled - isPillTooltipsEnabled is false`);
             return;
         }
 
         const pills = this.pillsContainer.querySelectorAll('.ml__pill:not(.ml__pill--more)');
-        console.log(`[Tooltips] Found ${pills.length} pills to attach tooltips to`);
+        uiLogger.debug(`[${this.instanceId}] Found ${pills.length} pills to attach tooltips to`);
         pills.forEach((pill: Element) => {
             const pillElement = pill as HTMLElement;
             const removeBtn = pillElement.querySelector('.ml__pill-remove') as HTMLElement;
@@ -1661,12 +1858,12 @@ export class PureMultiSelect<T = any> {
         let content: string | HTMLElement;
         if (this.options.getPillTooltipCallback) {
             content = this.options.getPillTooltipCallback(option);
-            console.log('[Tooltips] Using custom callback for tooltip content');
+            uiLogger.debug(`[${this.instanceId}] Using custom callback for tooltip content`);
         } else {
             const displayValue = this.getItemPillDisplayValue(option);
             const subtitle = this.getItemSubtitle(option);
             content = subtitle ? `${displayValue}\n${subtitle}` : displayValue;
-            console.log(`[Tooltips] Using default content: "${content}"`);
+            uiLogger.debug(`[${this.instanceId}] Using default content: "${content}"`);
         }
 
         if (typeof content === 'string') {
@@ -1677,7 +1874,7 @@ export class PureMultiSelect<T = any> {
 
         const container = this.options.container || document.body;
         container.appendChild(tooltip);
-        console.log(`[Tooltips] Tooltip element created and appended for "${uniqueId}"`);
+        uiLogger.debug(`[${this.instanceId}] Tooltip element created and appended for "${uniqueId}"`);
 
         this.pillTooltips.set(uniqueId, tooltip);
 
@@ -1687,9 +1884,9 @@ export class PureMultiSelect<T = any> {
 
         const showTooltip = () => {
             clearTimeout(hideTimeout);
-            console.log(`[Tooltips] Mouse entered pill "${uniqueId}", will show tooltip in ${this.options.pillTooltipDelay || 300}ms`);
+            uiLogger.debug(`[${this.instanceId}] Mouse entered pill "${uniqueId}", will show tooltip in ${this.options.pillTooltipDelay || 300}ms`);
             showTimeout = window.setTimeout(() => {
-                console.log(`[Tooltips] Showing tooltip for "${uniqueId}"`);
+                uiLogger.debug(`[${this.instanceId}] Showing tooltip for "${uniqueId}"`);
                 tooltip.classList.add('ml__pill-tooltip--visible');
                 this.positionPillTooltip(element, tooltip, uniqueId);
             }, this.options.pillTooltipDelay || 300);
@@ -1763,7 +1960,7 @@ export class PureMultiSelect<T = any> {
                     left: `${x}px`,
                     top: `${y}px`
                 });
-                console.log(`[Tooltips] Positioned tooltip "${uniqueId}" at x:${x}, y:${y}`, {
+                uiLogger.debug(`[${this.instanceId}] Positioned tooltip "${uniqueId}" at x:${x}, y:${y}`, {
                     placement: this.options.pillTooltipPlacement || 'top',
                     tooltipClasses: tooltip.className,
                     tooltipDisplay: window.getComputedStyle(tooltip).display,
@@ -1807,6 +2004,12 @@ export class PureMultiSelect<T = any> {
         if (this.hintCleanup) this.hintCleanup();
         if (this.selectedPopoverCleanup) this.selectedPopoverCleanup();
 
+        // Clean up virtual scroll
+        if (this.virtualScroll) {
+            this.virtualScroll.destroy();
+            this.virtualScroll = null;
+        }
+
         if (this.dropdown) this.dropdown.remove();
         if (this.hint) this.hint.remove();
         if (this.selectedPopover) this.selectedPopover.remove();
@@ -1815,6 +2018,6 @@ export class PureMultiSelect<T = any> {
         this.element.innerHTML = '';
         this.element.classList.remove('ml', 'ml--open', 'ml--no-checkboxes');
 
-        console.log('[MultiSelect] Destroyed');
+        initLogger.info(`[${this.instanceId}] Component destroyed`);
     }
 }
