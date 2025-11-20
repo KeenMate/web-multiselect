@@ -187,7 +187,7 @@ class MultiSelect {
 
         // Create count badge (initially hidden)
         this.countBadge = document.createElement('span');
-        this.countBadge.className = 'ml__count-badge';
+        this.countBadge.className = 'ml__counter';
         this.countBadge.style.display = 'none';
 
         inputWrapper.appendChild(this.input);
@@ -423,7 +423,7 @@ class MultiSelect {
             if (count > 0) {
                 const countText = this.options.countFormat.replace('{count}', count);
                 this.pillsContainer.innerHTML = `
-                    <div class="ml__count-badge-wrapper">
+                    <div class="ml__counter-wrapper">
                         <button type="button" class="ml__count-text" data-action="show-selected">
                             ${countText}
                         </button>

@@ -12,8 +12,8 @@ A lightweight, accessible multiselect web component with typeahead search, RTL l
 - 🔍 **Flexible Search Modes** - Filter (hide non-matches) or navigate (jump to matches, keep all visible)
 - ⌨️ **Keyboard Navigation** - Full keyboard support (arrows, Enter, Esc, Tab)
 - 🎨 **Rich Content** - Icons, subtitles, and multiline text support
-- 📊 **Multiple Display Modes** - Pills, count, compact, partial, or none (minimal UI)
-- 💬 **Pill Tooltips** - Customizable tooltips on selected items with placement control
+- 📊 **Multiple Display Modes** - Badges, count, compact, partial, or none (minimal UI)
+- 💬 **Badge Tooltips** - Customizable tooltips on selected items with placement control
 - 🎯 **Single & Multi-Select** - Switch between single and multiple selection modes
 - 🔄 **Async Data Loading** - On-demand data fetching support
 - 📦 **Grouped Options** - Organize options into collapsible groups
@@ -111,27 +111,26 @@ multiselect.setSelected(['js', 'ts']);
 | `search-placeholder` | `string` | `'Search...'` | Placeholder text for search input |
 | `search-hint` | `string` | - | Hint text shown above input when focused |
 | `allow-groups` | `boolean` | `true` | Enable option grouping |
-| `allow-select-all` | `boolean` | `true` | Show "Select All" button |
-| `allow-clear-all` | `boolean` | `true` | Show "Clear All" button |
 | `show-checkboxes` | `boolean` | `true` | Show checkboxes next to options |
 | `close-on-select` | `boolean` | `false` | Close dropdown after selecting |
 | `dropdown-min-width` | `string` | - | Min width for dropdown (e.g., '20rem') |
-| `pills-display-mode` | `'pills' \| 'count' \| 'compact' \| 'partial' \| 'none'` | `'pills'` | How to display selected items. `compact`: first item + count. `none`: no display |
-| `pills-threshold` | `number` | - | Auto-switch mode when exceeded (see pills-threshold-mode) |
-| `pills-threshold-mode` | `'count' \| 'partial'` | `'count'` | Mode after threshold: 'count' shows badge, 'partial' shows limited pills + more badge |
-| `pills-max-visible` | `number` | `3` | Max pills shown in partial mode |
-| `pills-position` | `'top' \| 'bottom' \| 'left' \| 'right'` | `'bottom'` | Position of pills container |
-| `show-count-badge` | `boolean` | `false` | Show [3] badge next to toggle icon |
-| `enable-pill-tooltips` | `boolean` | `false` | Enable tooltips on selected pills |
-| `pill-tooltip-placement` | `'top' \| 'bottom' \| 'left' \| 'right'` | `'top'` | Tooltip placement relative to pill |
-| `pill-tooltip-delay` | `number` | `300` | Delay in ms before showing tooltip |
-| `pill-tooltip-offset` | `number` | `8` | Distance in pixels between pill and tooltip |
+| `badges-display-mode` | `'pills' \| 'count' \| 'compact' \| 'partial' \| 'none'` | `'pills'` | How to display selected items. `compact`: first item + count. `none`: no display |
+| `badges-threshold` | `number` | - | Auto-switch mode when exceeded (see badges-threshold-mode) |
+| `badges-threshold-mode` | `'count' \| 'partial'` | `'count'` | Mode after threshold: 'count' shows badge, 'partial' shows limited badges + more badge |
+| `badges-max-visible` | `number` | `3` | Max badges shown in partial mode |
+| `badges-position` | `'top' \| 'bottom' \| 'left' \| 'right'` | `'bottom'` | Position of badges container |
+| `show-counter` | `boolean` | `false` | Show [3] badge next to toggle icon |
+| `enable-badge-tooltips` | `boolean` | `false` | Enable tooltips on selected badges |
+| `badge-tooltip-placement` | `'top' \| 'bottom' \| 'left' \| 'right'` | `'top'` | Tooltip placement relative to badge |
+| `badge-tooltip-delay` | `number` | `300` | Delay in ms before showing tooltip |
+| `badge-tooltip-offset` | `number` | `8` | Distance in pixels between badge and tooltip |
 | `max-height` | `string` | `'20rem'` | Maximum height of dropdown |
 | `empty-message` | `string` | `'No results found'` | Message when no options found |
 | `loading-message` | `string` | `'Loading...'` | Message while loading async data |
 | `min-search-length` | `number` | `0` | Minimum search length for async |
 | `keep-options-on-search` | `boolean` | `true` | Keep initial options visible when searchCallback is active (hybrid search) |
-| `sticky-actions` | `boolean` | `true` | Keep Select All/Clear All buttons fixed at top while scrolling |
+| `sticky-actions` | `boolean` | `true` | Keep action buttons fixed at top while scrolling |
+| `actions-layout` | `'nowrap' \| 'wrap'` | `'nowrap'` | Layout mode for action buttons: 'nowrap' (single row) or 'wrap' (multi-row) |
 | `lock-placement` | `boolean` | `true` | Lock dropdown placement after first open to prevent flipping |
 | `enable-search` | `boolean` | `true` | Enable/disable search functionality |
 | `search-input-mode` | `'normal' \| 'readonly' \| 'hidden'` | `'normal'` | Search input display mode |
@@ -191,19 +190,53 @@ multiselect.onChange = (selectedOptions) => {
   console.log('Changed:', selectedOptions);
 };
 
-// Pill display customization (show different text in pills vs dropdown)
-multiselect.getPillDisplayCallback = (item) => {
-  // Show shorter text in pills (e.g., just name instead of "name (email)")
+// Badge display customization (show different text in badges vs dropdown)
+multiselect.getBadgeDisplayCallback = (item) => {
+  // Show shorter text in badges (e.g., just name instead of "name (email)")
   return item.name; // Dropdown might show "John Doe (john@example.com)"
 };
 
-// Pill tooltip customization
-multiselect.getPillTooltipCallback = (item) => {
+// Badge tooltip customization
+multiselect.getBadgeTooltipCallback = (item) => {
   return `${item.label} - ${item.subtitle}`;
 };
 
-// Count pill i18n/pluralization
-multiselect.getCountPillCallback = (count, moreCount) => {
+// Action buttons (Select All, Clear All, custom actions)
+multiselect.actionButtons = [
+  {
+    action: 'select-all',
+    text: 'Select All',
+    tooltip: 'Select all items',
+    cssClass: 'my-custom-class',
+    isVisibleCallback: (multiselect) => multiselect.getSelected().length < 5  // Hide if 5+ selected
+  },
+  {
+    action: 'clear-all',
+    text: 'Clear All',
+    tooltip: 'Clear selection',
+    isVisible: true,  // Static visibility
+    isDisabled: false  // Static disabled state
+  },
+  {
+    action: 'custom',
+    text: 'Invert',
+    tooltip: 'Invert selection',
+    onClick: (multiselect) => {
+      // Custom action - invert selection
+      const allValues = multiselect.options.map(opt => opt.value);
+      const selectedValues = multiselect.getValue();
+      const inverted = allValues.filter(v => !selectedValues.includes(v));
+      multiselect.setSelected(inverted);
+    },
+    // Dynamic callbacks (take priority over static properties)
+    isDisabledCallback: (multiselect) => multiselect.getSelected().length === 0,
+    getTextCallback: (multiselect) => multiselect.getSelected().length > 0 ? 'Invert' : 'Select Items First',
+    getClassCallback: (multiselect) => multiselect.getSelected().length > 0 ? 'active' : 'inactive'
+  }
+];
+
+// Counter i18n/pluralization
+multiselect.getCounterCallback = (count, moreCount) => {
   if (moreCount !== undefined) {
     return `+${moreCount} more`; // Partial mode badge
   }
@@ -226,6 +259,24 @@ multiselect.getIconCallback = (item) => item.icon || '📄';
 multiselect.getSubtitleCallback = (item) => `${item.price} - ${item.stock} in stock`;
 multiselect.getGroupCallback = (item) => item.category;
 multiselect.getDisabledCallback = (item) => item.stock === 0;
+
+// Custom rendering - Full HTML control
+multiselect.renderOptionContentCallback = (item, context) => {
+  // Customize option content (HTML string or HTMLElement)
+  return `<strong>${item.name}</strong> <span class="badge">${item.status}</span>`;
+};
+
+multiselect.renderBadgeContentCallback = (item, context) => {
+  // Customize badge content (HTML string or HTMLElement)
+  return context.isInPopover
+    ? `${item.icon} ${item.name} - ${item.description}`
+    : `${item.icon} ${item.name}`;
+};
+
+multiselect.renderSelectedContentCallback = (item) => {
+  // Customize selected item text in single-select mode (plain text only)
+  return item.firstName; // Show just first name when closed
+};
 
 // Form integration
 multiselect.name = 'selected_items';
@@ -560,91 +611,91 @@ Choose between two search behaviors:
 Perfect for different use cases and space constraints:
 
 ```html
-<!-- Pills mode (default) - Show all selections as removable pills -->
-<web-multiselect pills-display-mode="pills"></web-multiselect>
+<!-- Badges mode (default) - Show all selections as removable badges -->
+<web-multiselect badges-display-mode="pills"></web-multiselect>
 
 <!-- Count mode - Show "X selected" text with clear button -->
-<web-multiselect pills-display-mode="count" show-count-badge="true"></web-multiselect>
+<web-multiselect badges-display-mode="count" show-counter="true"></web-multiselect>
 
-<!-- Compact mode - Show first item + count in a single removable pill -->
-<web-multiselect pills-display-mode="compact"></web-multiselect>
+<!-- Compact mode - Show first item + count in a single removable badge -->
+<web-multiselect badges-display-mode="compact"></web-multiselect>
 <!-- Example output: [JavaScript (+2 more) | x] -->
 
-<!-- None mode - No display in pills area (minimal UI) -->
-<web-multiselect pills-display-mode="none" show-count-badge="true"></web-multiselect>
+<!-- None mode - No display in badges area (minimal UI) -->
+<web-multiselect badges-display-mode="none" show-counter="true"></web-multiselect>
 <!-- Only shows [X] badge next to toggle icon -->
 
-<!-- Auto-switch from pills to count at threshold -->
+<!-- Auto-switch from badges to count at threshold -->
 <web-multiselect
-  pills-threshold="3"
-  pills-threshold-mode="count"
-  show-count-badge="true">
+  badges-threshold="3"
+  badges-threshold-mode="count"
+  show-counter="true">
 </web-multiselect>
 
-<!-- Partial mode - Show limited pills + "+X more" badge -->
+<!-- Partial mode - Show limited badges + "+X more" badge -->
 <web-multiselect
-  pills-threshold="5"
-  pills-threshold-mode="partial"
-  pills-max-visible="3">
+  badges-threshold="5"
+  badges-threshold-mode="partial"
+  badges-max-visible="3">
 </web-multiselect>
 ```
 
 **Display Mode Behavior:**
-- **`pills`**: Individual removable pills for each selected item. Calls `getPillDisplayCallback` for each item.
-- **`count`**: Shows "X selected" text with clear button. Calls `getCountPillCallback(count)`.
-- **`compact`**: Shows first item + count in single pill (e.g., "JavaScript (+2 more)"). Calls `getPillDisplayCallback(firstItem)` and `getCountPillCallback(count, remainingCount)`.
-- **`partial`**: Shows first N pills + "+X more" badge. Calls `getPillDisplayCallback` for visible items and `getCountPillCallback(count, remainingCount)` for badge.
-- **`none`**: No display in pills area. No callbacks invoked. Use with `show-count-badge="true"` for minimal UI.
+- **`pills`**: Individual removable badges for each selected item. Calls `getBadgeDisplayCallback` for each item.
+- **`count`**: Shows "X selected" text with clear button. Calls `getCounterCallback(count)`.
+- **`compact`**: Shows first item + count in single badge (e.g., "JavaScript (+2 more)"). Calls `getBadgeDisplayCallback(firstItem)` and `getCounterCallback(count, remainingCount)`.
+- **`partial`**: Shows first N badges + "+X more" badge. Calls `getBadgeDisplayCallback` for visible items and `getCounterCallback(count, remainingCount)` for badge.
+- **`none`**: No display in badges area. No callbacks invoked. Use with `show-counter="true"` for minimal UI.
 
-**Pill Styling:**
-- **Data pills** (selected items like "JavaScript", "Python"): Blue styling by default
-- **Indicator pills** ("+3 more", "5 selected", compact mode display): Gray styling to distinguish from data
-- Both can be customized via CSS variables (see `--ml-pill-*` and `--ml-pill-indicator-*`)
+**Badge Styling:**
+- **Data badges** (selected items like "JavaScript", "Python"): Blue styling by default
+- **BadgeCounters** ("+3 more", "5 selected", compact mode display): Gray styling to distinguish from data
+- Both can be customized via CSS variables (see `--ml-badge-*` and `--ml-badge-counter-*`)
 
-**Count Badge (`show-count-badge="true"`)**: Independent feature showing `[X]` next to toggle icon. Works with all display modes. Not affected by callbacks.
+**Counter (`show-counter="true"`)**: Independent feature showing `[X]` next to toggle icon. Works with all display modes. Not affected by callbacks.
 
-### Pills Positioning
+### Badge Positioning
 
 Control where selected item badges appear relative to the input:
 
 ```html
-<!-- Pills below input (default) -->
-<web-multiselect pills-position="bottom"></web-multiselect>
+<!-- Badges below input (default) -->
+<web-multiselect badges-position="bottom"></web-multiselect>
 
-<!-- Pills above input -->
-<web-multiselect pills-position="top"></web-multiselect>
+<!-- Badges above input -->
+<web-multiselect badges-position="top"></web-multiselect>
 
-<!-- Pills to the left of input -->
-<web-multiselect pills-position="left"></web-multiselect>
+<!-- Badges to the left of input -->
+<web-multiselect badges-position="left"></web-multiselect>
 
-<!-- Pills to the right of input -->
-<web-multiselect pills-position="right"></web-multiselect>
+<!-- Badges to the right of input -->
+<web-multiselect badges-position="right"></web-multiselect>
 ```
 
-**Note:** In RTL mode, left/right positions are automatically mirrored - `pills-position="left"` will appear on the physical right side in RTL languages.
+**Note:** In RTL mode, left/right positions are automatically mirrored - `badges-position="left"` will appear on the physical right side in RTL languages.
 
-### Pill Tooltips
+### Badge Tooltips
 
-Enable tooltips on selected item pills with customizable placement and delay:
+Enable tooltips on selected item badges with customizable placement and delay:
 
 ```html
 <!-- Basic tooltips -->
 <web-multiselect
-  enable-pill-tooltips="true"
-  pill-tooltip-placement="top">
+  enable-badge-tooltips="true"
+  badge-tooltip-placement="top">
 </web-multiselect>
 
 <!-- Fast tooltips with custom delay -->
 <web-multiselect
-  enable-pill-tooltips="true"
-  pill-tooltip-delay="100">
+  enable-badge-tooltips="true"
+  badge-tooltip-delay="100">
 </web-multiselect>
 
 <script type="module">
   const select = document.querySelector('web-multiselect');
 
   // Custom tooltip content
-  select.getPillTooltipCallback = (item) => {
+  select.getBadgeTooltipCallback = (item) => {
     return `${item.label} - ${item.subtitle}`;
   };
 </script>
@@ -652,21 +703,21 @@ Enable tooltips on selected item pills with customizable placement and delay:
 
 ### Internationalization (i18n)
 
-Customize count pill text for proper pluralization and localization:
+Customize counter text for proper pluralization and localization:
 
 ```html
 <web-multiselect
   id="i18n-select"
-  pills-threshold="5"
-  pills-threshold-mode="partial"
-  pills-max-visible="3">
+  badges-threshold="5"
+  badges-threshold-mode="partial"
+  badges-max-visible="3">
 </web-multiselect>
 
 <script type="module">
   const select = document.getElementById('i18n-select');
 
   // Spanish pluralization example
-  select.getCountPillCallback = (count, moreCount) => {
+  select.getCounterCallback = (count, moreCount) => {
     if (moreCount !== undefined) {
       // Partial mode: "+X more" badge
       return moreCount === 1 ? '+1 más' : `+${moreCount} más`;
@@ -698,11 +749,418 @@ Full RTL support for Arabic, Hebrew, Persian, Urdu, and other right-to-left lang
 
 **RTL Features:**
 - ✅ **Auto-detection** - Detects `dir="rtl"` on component or any ancestor element
-- ✅ **Complete UI mirroring** - Toggle icon, text alignment, pills, dropdown, badges
-- ✅ **Logical positioning** - `pills-position="left"` becomes physically right in RTL
-- ✅ **Pills remove buttons** - Flip to left side in RTL mode
+- ✅ **Complete UI mirroring** - Toggle icon, text alignment, badges, dropdown, badges
+- ✅ **Logical positioning** - `badges-position="left"` becomes physically right in RTL
+- ✅ **Badge remove buttons** - Flip to left side in RTL mode
 - ✅ **Text direction** - All text content properly right-aligned
 - ✅ **No configuration needed** - Just set `dir="rtl"` attribute
+
+### Custom Rendering
+
+The component provides powerful custom rendering callbacks that allow you to fully customize how options, badges, and selected items are displayed while maintaining the component's structure and functionality.
+
+#### Overview
+
+Three rendering callbacks are available:
+- **`renderOptionContentCallback`** - Customize dropdown option content
+- **`renderBadgeContentCallback`** - Customize badge (selected item) content
+- **`renderSelectedContentCallback`** - Customize selected value text (single-select mode)
+
+All callbacks can return either **HTML strings** or **HTMLElement** objects (except `renderSelectedContentCallback` which returns plain text).
+
+#### Custom Option Rendering
+
+Customize how options appear in the dropdown:
+
+```html
+<web-multiselect id="custom-options"></web-multiselect>
+
+<script type="module">
+  import '@keenmate/web-multiselect';
+
+  const select = document.getElementById('custom-options');
+
+  select.options = [
+    { id: 1, name: 'React', stars: 220000, trending: true },
+    { id: 2, name: 'Vue', stars: 207000, trending: false },
+    { id: 3, name: 'Angular', stars: 94000, trending: false },
+    { id: 4, name: 'Svelte', stars: 76000, trending: true }
+  ];
+
+  // Custom renderer with full HTML control
+  select.renderOptionContentCallback = (item, context) => {
+    // Context provides: { index, isSelected, isFocused, isMatched, isDisabled }
+
+    return `
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <strong>${item.name}</strong>
+        <span style="color: #666; font-size: 0.875rem;">⭐ ${(item.stars / 1000).toFixed(0)}k</span>
+        ${item.trending ? '<span style="background: #10b981; color: white; padding: 0.125rem 0.375rem; border-radius: 0.25rem; font-size: 0.75rem;">🔥 Trending</span>' : ''}
+      </div>
+    `;
+  };
+</script>
+```
+
+**Context object** (`OptionContentRenderContext`):
+- `index: number` - Index of the option in the filtered list
+- `isSelected: boolean` - Whether the option is currently selected
+- `isFocused: boolean` - Whether the option is currently focused (keyboard navigation)
+- `isMatched: boolean` - Whether the option matches the current search term (navigate mode only)
+- `isDisabled: boolean` - Whether the option is disabled
+
+#### Custom Badge Rendering
+
+Customize how selected items appear as badges:
+
+```javascript
+const select = document.querySelector('web-multiselect');
+
+select.options = [
+  { id: 1, name: 'John Doe', role: 'Admin', avatar: '👨‍💼' },
+  { id: 2, name: 'Jane Smith', role: 'Developer', avatar: '👩‍💻' },
+  { id: 3, name: 'Bob Johnson', role: 'Designer', avatar: '🎨' }
+];
+
+// Custom badge rendering in main badges area
+select.renderBadgeContentCallback = (item, context) => {
+  // Compact view in badges area
+  return `${item.avatar} ${item.name}`;
+};
+
+// Custom rendering for selected items popover (separate callback)
+select.renderSelectionBadgeContentCallback = (item) => {
+  // Full details in popover - has more space
+  return `
+    <div style="display: flex; align-items: center; gap: 0.5rem;">
+      <span>${item.avatar}</span>
+      <div>
+        <div><strong>${item.name}</strong></div>
+        <div style="font-size: 0.75rem; color: #666;">${item.role}</div>
+      </div>
+    </div>
+  `;
+};
+```
+
+**Separate Callbacks for Badges vs. Popover:**
+- `renderBadgeContentCallback` - Renders badges in the main badges area (compact display)
+- `renderSelectionBadgeContentCallback` - Renders items in the selected items popover (can be more detailed)
+- If `renderSelectionBadgeContentCallback` is not defined, falls back to `renderBadgeContentCallback`
+- Users can assign the same function to both if identical rendering is desired
+
+**Context object** (`BadgeContentRenderContext` for `renderBadgeContentCallback`):
+- `displayMode: BadgesDisplayMode` - Current badges display mode ('pills', 'count', 'compact', 'partial', 'none')
+- `isInPopover: boolean` - Whether the badge is being rendered in the selected items popover (always false for this callback)
+
+#### Custom Badge Styling with CSS Classes
+
+Add custom CSS classes to badges based on item data for semantic styling:
+
+```javascript
+const select = document.querySelector('web-multiselect');
+
+select.options = [
+  { id: 1, task: 'Fix security bug', priority: 'urgent' },
+  { id: 2, task: 'Update docs', priority: 'normal' },
+  { id: 3, task: 'Refactor code', priority: 'low' }
+];
+
+// Add CSS class based on priority
+select.getBadgeClassCallback = (item) => {
+  return `badge-${item.priority}`; // Returns 'badge-urgent', 'badge-normal', etc.
+};
+
+// Can also return array of classes
+select.getBadgeClassCallback = (item) => {
+  const classes = [`badge-${item.priority}`];
+  if (item.urgent) classes.push('badge-blink');
+  return classes;
+};
+```
+
+Then style with CSS:
+
+```css
+/* Target specific badges with custom classes */
+.badge-urgent {
+  --ml-badge-text-bg: #fee2e2;
+  --ml-badge-text-color: #dc2626;
+  --ml-badge-remove-bg: #dc2626;
+}
+
+.badge-normal {
+  --ml-badge-text-bg: #dbeafe;
+  --ml-badge-text-color: #2563eb;
+  --ml-badge-remove-bg: #2563eb;
+}
+
+.badge-low {
+  --ml-badge-text-bg: #d1fae5;
+  --ml-badge-text-color: #059669;
+  --ml-badge-remove-bg: #059669;
+}
+```
+
+The callback:
+- Takes the item as a parameter
+- Returns a string (single class) or array of strings (multiple classes)
+- Classes are added to the badge's base `.ml__badge` element
+- Works across all rendering locations (main badges, partial mode, popover)
+
+**Separate Class Callbacks for Badges vs. Popover:**
+
+Similar to rendering callbacks, you can use different class callbacks for badges and selected items:
+
+```javascript
+// Add classes to badges in main area
+select.getBadgeClassCallback = (item) => {
+  return `badge-${item.priority}`;
+};
+
+// Add different/additional classes to selected items in popover
+select.getSelectionBadgeClassCallback = (item) => {
+  // Could add more detailed classes for popover items
+  return [`badge-${item.priority}`, 'badge-detailed'];
+};
+```
+
+- `getBadgeClassCallback` - Adds classes to badges in the main badges area
+- `getSelectionBadgeClassCallback` - Adds classes to items in the selected items popover
+- If `getSelectionBadgeClassCallback` is not defined, falls back to `getBadgeClassCallback`
+- Users can assign the same function to both if identical styling is desired
+
+**Shadow DOM CSS Injection:**
+
+Since the component uses Shadow DOM, regular page CSS cannot style shadow elements. Use `customStylesCallback` to inject CSS directly into the Shadow DOM:
+
+```javascript
+const select = document.querySelector('web-multiselect');
+
+// Add CSS classes to badges based on item data
+select.getBadgeClassCallback = (item) => {
+  return `badge-${item.priority}`;
+};
+
+// Inject CSS into Shadow DOM to style those classes
+select.customStylesCallback = () => `
+  .badge-urgent {
+    --ml-badge-text-bg: #fee2e2;
+    --ml-badge-text-color: #dc2626;
+    --ml-badge-remove-bg: #dc2626;
+  }
+
+  .badge-normal {
+    --ml-badge-text-bg: #dbeafe;
+    --ml-badge-text-color: #2563eb;
+    --ml-badge-remove-bg: #2563eb;
+  }
+
+  .badge-low {
+    --ml-badge-text-bg: #d1fae5;
+    --ml-badge-text-color: #059669;
+    --ml-badge-remove-bg: #059669;
+  }
+`;
+```
+
+The `customStylesCallback`:
+- Returns a CSS string (not HTML)
+- Styles are injected into the Shadow DOM on initialization
+- Can be updated dynamically - new styles replace old ones
+- Works with all custom classes (from `getBadgeClassCallback`, `renderOptionContentCallback`, etc.)
+
+#### Custom Selected Item Rendering (Single-Select)
+
+Customize the text shown in the input field when in single-select mode:
+
+```javascript
+const select = document.querySelector('web-multiselect[multiple="false"]');
+
+select.options = [
+  { id: 1, firstName: 'John', lastName: 'Doe', email: 'john@example.com' },
+  { id: 2, firstName: 'Jane', lastName: 'Smith', email: 'jane@example.com' }
+];
+
+// Show just first name when closed
+select.renderSelectedContentCallback = (item) => {
+  return item.firstName; // Returns plain text (not HTML)
+};
+
+// While dropdown shows full details
+select.getDisplayValueCallback = (item) => {
+  return `${item.firstName} ${item.lastName} (${item.email})`;
+};
+```
+
+#### Conditional Rendering Example
+
+Use JavaScript logic for conditional rendering:
+
+```javascript
+select.renderOptionContentCallback = (item, context) => {
+  const classes = [];
+  if (context.isSelected) classes.push('selected');
+  if (context.isFocused) classes.push('focused');
+
+  return `
+    <div class="${classes.join(' ')}">
+      ${item.isNew ? '<span class="badge-new">NEW</span>' : ''}
+      <strong>${item.name}</strong>
+      ${item.description ? `<p style="font-size: 0.875rem; color: #666;">${item.description}</p>` : ''}
+      ${item.tags ? `<div class="tags">${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}</div>` : ''}
+    </div>
+  `;
+};
+```
+
+#### Returning HTMLElement
+
+You can also return DOM elements for more complex rendering:
+
+```javascript
+select.renderOptionContentCallback = (item, context) => {
+  const div = document.createElement('div');
+  div.style.display = 'flex';
+  div.style.alignItems = 'center';
+  div.style.gap = '0.5rem';
+
+  const img = document.createElement('img');
+  img.src = item.avatarUrl;
+  img.style.width = '32px';
+  img.style.height = '32px';
+  img.style.borderRadius = '50%';
+
+  const span = document.createElement('span');
+  span.textContent = item.name;
+
+  div.appendChild(img);
+  div.appendChild(span);
+
+  return div; // Return HTMLElement instead of string
+};
+```
+
+#### Virtual Scroll Compatibility
+
+When using `renderOptionContentCallback` with virtual scroll enabled:
+
+⚠️ **Important**: Custom option content **must fit within** the configured `optionHeight` (default: 50px)
+
+```html
+<web-multiselect
+  id="large-dataset"
+  enable-virtual-scroll="true"
+  option-height="60">
+</web-multiselect>
+
+<script type="module">
+  const select = document.getElementById('large-dataset');
+
+  select.renderOptionContentCallback = (item) => {
+    // Content must fit in 60px height
+    return `
+      <div style="height: 60px; display: flex; align-items: center;">
+        <strong>${item.name}</strong>
+      </div>
+    `;
+  };
+</script>
+```
+
+**Virtual scroll requirements:**
+- Content height must be **fixed** and match `optionHeight`
+- Overflow will be clipped
+- Variable-height content only works in non-virtual mode
+
+#### Callback Priority
+
+The component uses a fallback chain when callbacks are not provided:
+
+**For options:**
+1. `renderOptionContentCallback` (full HTML control)
+2. Default: icon + `getDisplayValueCallback` + subtitle
+
+**For badges:**
+1. `renderBadgeContentCallback` (full HTML control)
+2. `getBadgeDisplayCallback` (text only)
+3. `getDisplayValueCallback` (text only)
+
+**For selected item (single-select):**
+1. `renderSelectedContentCallback` (text only)
+2. `getDisplayValueCallback` (text only)
+
+#### Checkbox Control
+
+Control checkbox appearance and alignment with CSS variables and attributes:
+
+**Checkbox Alignment (via attribute):**
+```html
+<web-multiselect checkbox-align="top"></web-multiselect>    <!-- Default -->
+<web-multiselect checkbox-align="center"></web-multiselect> <!-- Middle aligned -->
+<web-multiselect checkbox-align="bottom"></web-multiselect> <!-- Bottom aligned -->
+```
+
+**Checkbox Size/Scale (via CSS):**
+```html
+<style>
+  /* Change checkbox size */
+  web-multiselect {
+    --ml-checkbox-size: 20px;  /* Width and height (default: 16px) */
+  }
+
+  /* Scale checkbox */
+  web-multiselect {
+    --ml-checkbox-scale: 1.5;  /* Scale multiplier (default: 1) */
+  }
+
+  /* Fine-tune vertical position */
+  web-multiselect {
+    --ml-checkbox-margin-top: 0.5rem; /* Offset from top (default: 0.125rem) */
+  }
+</style>
+```
+
+**CSS Grid/Flexbox in Custom Content:**
+
+Custom rendering callbacks support full CSS layout control:
+
+```javascript
+// CSS Grid example
+multiselect.renderOptionContentCallback = (item, context) => {
+  return `
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">
+      <div><strong>Name:</strong> ${item.name}</div>
+      <div><strong>Price:</strong> ${item.price}</div>
+      <div><strong>Stock:</strong> ${item.stock}</div>
+      <div><strong>Rating:</strong> ${item.rating}</div>
+    </div>
+  `;
+};
+
+// Flexbox example
+multiselect.renderOptionContentCallback = (item, context) => {
+  return `
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <div style="display: flex; flex-direction: column;">
+        <strong>${item.name}</strong>
+        <span style="font-size: 0.875rem; color: #666;">${item.description}</span>
+      </div>
+      <div style="text-align: right;">
+        <div>${item.price}</div>
+        <div style="font-size: 0.875rem;">${item.stock} in stock</div>
+      </div>
+    </div>
+  `;
+};
+```
+
+**Available CSS Variables:**
+- `--ml-checkbox-size`: Checkbox width/height (default: `16px`)
+- `--ml-checkbox-scale`: Scale multiplier (default: `1`)
+- `--ml-checkbox-margin-top`: Vertical offset (default: `0.125rem`)
+- `--ml-checkbox-align`: Alignment value (default: `flex-start`)
+- `--ml-option-gap`: Gap between checkbox and content (default: `0.5rem`)
 
 ### Flexible Data Handling
 
@@ -778,9 +1236,9 @@ select.getDisabledCallback = (item) => {
   return item.stock === 0 || item.discontinued;
 };
 
-// Customize pill display (show different text in pills vs dropdown)
-select.getPillDisplayCallback = (item) => {
-  // Pills show just the name for space efficiency
+// Customize badge display (show different text in badges vs dropdown)
+select.getBadgeDisplayCallback = (item) => {
+  // Badges show just the name for space efficiency
   return item.name;
   // While dropdown can show full details: "Laptop - $999 - Electronics"
 };
@@ -1090,32 +1548,32 @@ For the complete list of all available CSS variables, see:
 | `--ml-option-hover-bg` | `#f9fafb` | Option background on hover |
 | `--ml-option-bg-selected` | (rgba accent) | Selected option background |
 
-#### Pills & Badges
+#### Badges
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--ml-pill-bg` | `#eff6ff` | Pill background color (data pills) |
-| `--ml-pill-text-color` | `#3b82f6` | Pill text color (data pills) |
-| `--ml-pill-gap` | `0.5rem` | Gap between pills |
-| `--ml-pill-height` | `1.5rem` | Height of pills |
-| `--ml-pill-font-size` | `0.75rem` | Pill font size |
-| `--ml-pill-border-radius` | `0.375rem` | Pill border radius |
-| `--ml-pill-remove-bg` | `#3b82f6` | Remove button background (data pills) |
-| `--ml-pill-remove-color` | `#ffffff` | Remove button color (data pills) |
-| `--ml-pill-indicator-text-bg` | `#d1d5db` | Indicator pill text background (gray) |
-| `--ml-pill-indicator-text-color` | `#6b7280` | Indicator pill text color (gray) |
-| `--ml-pill-indicator-remove-bg` | `#6b7280` | Indicator pill remove button bg (gray) |
-| `--ml-pill-indicator-remove-color` | `#ffffff` | Indicator pill remove button color |
-| `--ml-pill-indicator-border` | `1px solid #e5e7eb` | Indicator pill border |
+| `--ml-badge-text-bg` | `#eff6ff` | Badge background color |
+| `--ml-badge-text-color` | `#3b82f6` | Badge text color |
+| `--ml-badge-gap` | `0.5rem` | Gap between badges |
+| `--ml-badge-height` | `1.5rem` | Height of badges |
+| `--ml-badge-font-size` | `0.75rem` | Badge font size |
+| `--ml-badge-border-radius` | `0.375rem` | Badge border radius |
+| `--ml-badge-remove-bg` | `#3b82f6` | Remove button background |
+| `--ml-badge-remove-color` | `#ffffff` | Remove button color |
+| `--ml-badge-counter-text-bg` | `#d1d5db` | BadgeCounter text background ("+X more") |
+| `--ml-badge-counter-text-color` | `#6b7280` | BadgeCounter text color |
+| `--ml-badge-counter-remove-bg` | `#6b7280` | BadgeCounter remove button background |
+| `--ml-badge-counter-remove-color` | `#ffffff` | BadgeCounter remove button color |
+| `--ml-badge-counter-border` | `1px solid #e5e7eb` | BadgeCounter border |
 
-#### Count Badge (in input)
+#### Counter (in input)
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--ml-count-badge-bg` | `#3b82f6` | Count badge background |
-| `--ml-count-badge-color` | `#ffffff` | Count badge text color |
-| `--ml-count-badge-font-size` | `0.75rem` | Count badge font size |
-| `--ml-count-badge-bg-hover` | `#2563eb` | Hover background color |
+| `--ml-counter-bg` | `#3b82f6` | Counter background |
+| `--ml-counter-color` | `#ffffff` | Counter text color |
+| `--ml-counter-font-size` | `0.75rem` | Counter font size |
+| `--ml-counter-bg-hover` | `#2563eb` | Hover background color |
 
 #### Tooltips
 

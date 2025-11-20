@@ -1,5 +1,5 @@
-import { PureMultiSelect } from './multiselect';
-import type { MultiSelectConfig, MultiSelectEventDetail } from './types';
+import { WebMultiSelect } from './multiselect';
+import type { MultiSelectConfig, MultiSelectEventDetail, OptionContentRenderContext, BadgeContentRenderContext } from './types';
 import styles from './scss/main.scss?inline';
 import { dataLogger } from './logger';
 
@@ -18,7 +18,7 @@ export function getAllInstances(): MultiSelectElement[] {
 }
 
 export class MultiSelectElement<T = any> extends BaseElement {
-    private picker?: PureMultiSelect<T>;
+    private picker?: WebMultiSelect<T>;
     private containerElement?: HTMLDivElement;
     private shadow: ShadowRoot;
 
@@ -30,7 +30,9 @@ export class MultiSelectElement<T = any> extends BaseElement {
     private _getValueCallback?: (item: T) => string | number;
     private _displayValueMember?: string;
     private _getDisplayValueCallback?: (item: T) => string;
-    private _getPillDisplayCallback?: (item: T) => string;
+    private _getBadgeDisplayCallback?: (item: T) => string;
+    private _getBadgeClassCallback?: (item: T) => string | string[];
+    private _customStylesCallback?: () => string;
     private _searchValueMember?: string;
     private _getSearchValueCallback?: (item: T) => string;
     private _iconMember?: string;
@@ -46,10 +48,20 @@ export class MultiSelectElement<T = any> extends BaseElement {
     private _getValueFormatCallback?: (selectedValues: (string | number)[]) => string;
 
     // Tooltip callbacks
-    private _getPillTooltipCallback?: (item: T) => string | HTMLElement;
+    private _getBadgeTooltipCallback?: (item: T) => string | HTMLElement;
 
-    // Count pill callback
-    private _getCountPillCallback?: (count: number, moreCount?: number) => string;
+    // Custom rendering callbacks
+    private _renderOptionContentCallback?: (item: T, context: OptionContentRenderContext) => string | HTMLElement;
+    private _renderBadgeContentCallback?: (item: T, context: BadgeContentRenderContext) => string | HTMLElement;
+    private _renderSelectedItemContentCallback?: (item: T) => string | HTMLElement;
+    private _getSelectedItemClassCallback?: (item: T) => string | string[];
+    private _renderSelectedContentCallback?: (item: T) => string;
+
+    // Count badge callback
+    private _getCounterCallback?: (count: number, moreCount?: number) => string;
+
+    // Action buttons
+    private _actionButtons?: any[];
 
     // Event callbacks
     private _beforeSearchCallback?: (searchTerm: string) => string | null;
@@ -63,14 +75,14 @@ export class MultiSelectElement<T = any> extends BaseElement {
         return [
             // Existing attributes (external names - standard/familiar)
             'search-hint', 'search-placeholder', 'multiple', 'allow-groups',
-            'allow-select-all', 'allow-clear-all', 'show-checkboxes', 'sticky-actions', 'close-on-select',
-            'lock-placement', 'dropdown-min-width', 'pills-display-mode', 'pills-threshold', 'pills-max-visible',
-            'pills-threshold-mode', 'pills-position', 'show-count-badge', 'keep-options-on-search', 'max-height', 'empty-message',
-            'loading-message', 'min-search-length', 'enable-search', 'search-input-mode', 'search-mode', 'allow-add-new',
+            'show-checkboxes', 'sticky-actions', 'close-on-select',
+            'lock-placement', 'dropdown-min-width', 'badges-display-mode', 'badges-threshold', 'badges-max-visible',
+            'badges-threshold-mode', 'badges-position', 'show-counter', 'keep-options-on-search', 'max-height', 'empty-message',
+            'loading-message', 'min-search-length', 'enable-search', 'search-input-mode', 'search-mode', 'actions-layout', 'allow-add-new',
             'initial-values',
 
             // Virtual scroll options
-            'enable-virtual-scroll', 'virtual-scroll-threshold', 'option-height', 'pill-height', 'virtual-scroll-buffer',
+            'enable-virtual-scroll', 'virtual-scroll-threshold', 'option-height', 'badge-height', 'virtual-scroll-buffer',
 
             // New member properties
             'value-member', 'display-value-member', 'search-value-member',
@@ -80,7 +92,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
             'name', 'value-format',
 
             // Tooltip options
-            'enable-pill-tooltips', 'pill-tooltip-placement',
+            'enable-badge-tooltips', 'badge-tooltip-placement',
 
             // Debug
             'show-debug-info'
@@ -355,39 +367,44 @@ export class MultiSelectElement<T = any> extends BaseElement {
             searchHint: this.getAttribute('search-hint') || undefined,
             searchPlaceholder: this.getAttribute('search-placeholder') || 'Search...',
             dropdownMinWidth: this.getAttribute('dropdown-min-width') || undefined,
-            pillsDisplayMode: (this.getAttribute('pills-display-mode') as any) || 'pills',
-            pillsPosition: (this.getAttribute('pills-position') as any) || 'bottom',
-            pillsThresholdMode: (this.getAttribute('pills-threshold-mode') as any) || 'count',
+            badgesDisplayMode: (this.getAttribute('badges-display-mode') as any) || 'badges',
+            badgesPosition: (this.getAttribute('badges-position') as any) || 'bottom',
+            badgesThresholdMode: (this.getAttribute('badges-threshold-mode') as any) || 'count',
             maxHeight: this.getAttribute('max-height') || '20rem',
             emptyMessage: this.getAttribute('empty-message') || 'No results found',
             loadingMessage: this.getAttribute('loading-message') || 'Loading...',
             searchInputMode: (this.getAttribute('search-input-mode') as any) || 'normal',
             searchMode: (this.getAttribute('search-mode') as any) || 'filter',
+            actionsLayout: (this.getAttribute('actions-layout') as any) || 'nowrap',
 
             // Number options
-            pillsThreshold: this.getAttribute('pills-threshold') ? parseInt(this.getAttribute('pills-threshold')!) : undefined,
-            pillsMaxVisible: this.getAttribute('pills-max-visible') ? parseInt(this.getAttribute('pills-max-visible')!) : undefined,
+            badgesThreshold: this.getAttribute('badges-threshold') ? parseInt(this.getAttribute('badges-threshold')!) : undefined,
+            badgesMaxVisible: this.getAttribute('badges-max-visible') ? parseInt(this.getAttribute('badges-max-visible')!) : undefined,
             minSearchLength: this.getAttribute('min-search-length') ? parseInt(this.getAttribute('min-search-length')!) : 0,
 
             // Boolean options (map external to internal with 'is' prefix)
             isMultipleEnabled: this.getAttribute('multiple') !== 'false',
             isGroupsAllowed: this.getAttribute('allow-groups') !== 'false',
-            isSelectAllAllowed: this.getAttribute('allow-select-all') !== 'false',
-            isClearAllAllowed: this.getAttribute('allow-clear-all') !== 'false',
             isCheckboxesShown: this.getAttribute('show-checkboxes') !== 'false',
             isActionsSticky: this.getAttribute('sticky-actions') !== 'false',
             isCloseOnSelect: this.getAttribute('close-on-select') === 'true',
             isPlacementLocked: this.getAttribute('lock-placement') !== 'false',
             isSearchEnabled: this.getAttribute('enable-search') !== 'false',
             isAddNewAllowed: this.getAttribute('allow-add-new') === 'true',
-            isCountBadgeShown: this.getAttribute('show-count-badge') === 'true',
+            isCounterShown: this.getAttribute('show-counter') === 'true',
             isKeepOptionsOnSearch: this.getAttribute('keep-options-on-search') !== 'false',
             isVirtualScrollEnabled: this.getAttribute('enable-virtual-scroll') === 'true',
+
+            // Action buttons
+            actionButtons: this._actionButtons,
+
+            // Checkbox options
+            checkboxAlign: (this.getAttribute('checkbox-align') as 'top' | 'center' | 'bottom') || 'center',
 
             // Virtual scroll options
             virtualScrollThreshold: this.getAttribute('virtual-scroll-threshold') ? parseInt(this.getAttribute('virtual-scroll-threshold')!) : 100,
             optionHeight: this.getAttribute('option-height') ? parseInt(this.getAttribute('option-height')!) : 50,
-            pillHeight: this.getAttribute('pill-height') ? parseInt(this.getAttribute('pill-height')!) : 36,
+            badgeHeight: this.getAttribute('badge-height') ? parseInt(this.getAttribute('badge-height')!) : 36,
             virtualScrollBuffer: this.getAttribute('virtual-scroll-buffer') ? parseInt(this.getAttribute('virtual-scroll-buffer')!) : 10,
 
             // Member properties
@@ -402,12 +419,21 @@ export class MultiSelectElement<T = any> extends BaseElement {
             // Callback properties (JavaScript only)
             getValueCallback: this._getValueCallback,
             getDisplayValueCallback: this._getDisplayValueCallback,
-            getPillDisplayCallback: this._getPillDisplayCallback,
+            getBadgeDisplayCallback: this._getBadgeDisplayCallback,
+            getBadgeClassCallback: this._getBadgeClassCallback,
+            customStylesCallback: this._customStylesCallback,
             getSearchValueCallback: this._getSearchValueCallback,
             getIconCallback: this._getIconCallback,
             getSubtitleCallback: this._getSubtitleCallback,
             getGroupCallback: this._getGroupCallback,
             getDisabledCallback: this._getDisabledCallback,
+
+            // Custom rendering callbacks
+            renderOptionContentCallback: this._renderOptionContentCallback,
+            renderBadgeContentCallback: this._renderBadgeContentCallback,
+            renderSelectedItemContentCallback: this._renderSelectedItemContentCallback,
+            getSelectedItemClassCallback: this._getSelectedItemClassCallback,
+            renderSelectedContentCallback: this._renderSelectedContentCallback,
 
             // Form integration & value formatting
             formFieldId: this.getAttribute('name') || undefined,
@@ -415,14 +441,14 @@ export class MultiSelectElement<T = any> extends BaseElement {
             getValueFormatCallback: this._getValueFormatCallback,
 
             // Tooltip options
-            isPillTooltipsEnabled: this.getAttribute('enable-pill-tooltips') === 'true',
-            getPillTooltipCallback: this._getPillTooltipCallback,
-            pillTooltipPlacement: (this.getAttribute('pill-tooltip-placement') as any) || 'top',
-            pillTooltipDelay: parseInt(this.getAttribute('pill-tooltip-delay') || '300'),
-            pillTooltipOffset: parseInt(this.getAttribute('pill-tooltip-offset') || '8'),
+            isBadgeTooltipsEnabled: this.getAttribute('enable-badge-tooltips') === 'true',
+            getBadgeTooltipCallback: this._getBadgeTooltipCallback,
+            badgeTooltipPlacement: (this.getAttribute('badge-tooltip-placement') as any) || 'top',
+            badgeTooltipDelay: parseInt(this.getAttribute('badge-tooltip-delay') || '300'),
+            badgeTooltipOffset: parseInt(this.getAttribute('badge-tooltip-offset') || '8'),
 
-            // Count pill callback
-            getCountPillCallback: this._getCountPillCallback || ((count: number, moreCount?: number) => {
+            // Count badge callback
+            getCounterCallback: this._getCounterCallback || ((count: number, moreCount?: number) => {
                 if (moreCount !== undefined) {
                     return `+${moreCount} more`;
                 }
@@ -474,7 +500,18 @@ export class MultiSelectElement<T = any> extends BaseElement {
             this.containerElement.dataset.initialValues = JSON.stringify(initialValues);
         }
 
-        this.picker = new PureMultiSelect<T>(this.containerElement, options);
+        this.picker = new WebMultiSelect<T>(this.containerElement, options);
+
+        // Inject custom styles if callback provided
+        if (this._customStylesCallback) {
+            const customStyles = this._customStylesCallback();
+            if (customStyles) {
+                const customStyleSheet = document.createElement('style');
+                customStyleSheet.className = 'ml-custom-styles';
+                customStyleSheet.textContent = customStyles;
+                this.shadow.appendChild(customStyleSheet);
+            }
+        }
     }
 
     private reinitialize() {
@@ -588,13 +625,49 @@ export class MultiSelectElement<T = any> extends BaseElement {
         return this._getDisplayValueCallback;
     }
 
-    set getPillDisplayCallback(callback: ((item: T) => string) | undefined) {
-        this._getPillDisplayCallback = callback;
+    set getBadgeDisplayCallback(callback: ((item: T) => string) | undefined) {
+        this._getBadgeDisplayCallback = callback;
         this.reinitialize();
     }
 
-    get getPillDisplayCallback() {
-        return this._getPillDisplayCallback;
+    get getBadgeDisplayCallback() {
+        return this._getBadgeDisplayCallback;
+    }
+
+    set getBadgeClassCallback(callback: ((item: T) => string | string[]) | undefined) {
+        this._getBadgeClassCallback = callback;
+        this.reinitialize();
+    }
+
+    get getBadgeClassCallback() {
+        return this._getBadgeClassCallback;
+    }
+
+    set customStylesCallback(value: (() => string) | undefined) {
+        this._customStylesCallback = value;
+        // If picker already exists, we need to reinject styles
+        // Remove old custom styles and inject new ones
+        if (this.picker && value) {
+            const customStyles = value();
+            if (customStyles) {
+                // Remove old custom stylesheet if exists
+                const oldCustomStyle = this.shadow.querySelector('style.ml-custom-styles');
+                if (oldCustomStyle) {
+                    oldCustomStyle.remove();
+                }
+                // Inject new custom styles
+                const customStyleSheet = document.createElement('style');
+                customStyleSheet.className = 'ml-custom-styles';
+                customStyleSheet.textContent = customStyles;
+                this.shadow.appendChild(customStyleSheet);
+                // Trigger re-render to apply new styles
+                (this.picker as any).renderBadges();
+            }
+        }
+    }
+
+    get customStylesCallback(): (() => string) | undefined {
+        return this._customStylesCallback;
     }
 
     set getSearchValueCallback(callback: ((item: T) => string) | undefined) {
@@ -642,6 +715,52 @@ export class MultiSelectElement<T = any> extends BaseElement {
         return this._getDisabledCallback;
     }
 
+    // Custom rendering callbacks
+    set renderOptionContentCallback(callback: ((item: T, context: OptionContentRenderContext) => string | HTMLElement) | undefined) {
+        this._renderOptionContentCallback = callback;
+        this.reinitialize();
+    }
+
+    get renderOptionContentCallback() {
+        return this._renderOptionContentCallback;
+    }
+
+    set renderBadgeContentCallback(callback: ((item: T, context: BadgeContentRenderContext) => string | HTMLElement) | undefined) {
+        this._renderBadgeContentCallback = callback;
+        this.reinitialize();
+    }
+
+    get renderBadgeContentCallback() {
+        return this._renderBadgeContentCallback;
+    }
+
+    set renderSelectedItemContentCallback(callback: ((item: T) => string | HTMLElement) | undefined) {
+        this._renderSelectedItemContentCallback = callback;
+        this.reinitialize();
+    }
+
+    get renderSelectedItemContentCallback() {
+        return this._renderSelectedItemContentCallback;
+    }
+
+    set getSelectedItemClassCallback(callback: ((item: T) => string | string[]) | undefined) {
+        this._getSelectedItemClassCallback = callback;
+        this.reinitialize();
+    }
+
+    get getSelectedItemClassCallback() {
+        return this._getSelectedItemClassCallback;
+    }
+
+    set renderSelectedContentCallback(callback: ((item: T) => string) | undefined) {
+        this._renderSelectedContentCallback = callback;
+        this.reinitialize();
+    }
+
+    get renderSelectedContentCallback() {
+        return this._renderSelectedContentCallback;
+    }
+
     // Form integration
     set name(value: string | null) {
         if (value) this.setAttribute('name', value);
@@ -670,7 +789,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
         return this._getValueFormatCallback;
     }
 
-    // Pills display options
+    // Badges display options
     set thresholdMode(value: 'count' | 'partial' | null) {
         if (value) this.setAttribute('threshold-mode', value);
         else this.removeAttribute('threshold-mode');
@@ -680,51 +799,61 @@ export class MultiSelectElement<T = any> extends BaseElement {
         return this.getAttribute('threshold-mode');
     }
 
-    set pillsMaxVisible(value: number | null) {
-        if (value !== null) this.setAttribute('pills-max-visible', String(value));
-        else this.removeAttribute('pills-max-visible');
+    set badgesMaxVisible(value: number | null) {
+        if (value !== null) this.setAttribute('badges-max-visible', String(value));
+        else this.removeAttribute('badges-max-visible');
     }
 
-    get pillsMaxVisible(): number | null {
-        const value = this.getAttribute('pills-max-visible');
+    get badgesMaxVisible(): number | null {
+        const value = this.getAttribute('badges-max-visible');
         return value ? parseInt(value) : null;
     }
 
+    // Checkbox options
+    set checkboxAlign(value: 'top' | 'center' | 'bottom' | null) {
+        if (value) this.setAttribute('checkbox-align', value);
+        else this.removeAttribute('checkbox-align');
+    }
+
+    get checkboxAlign(): string | null {
+        return this.getAttribute('checkbox-align');
+    }
+
     // Tooltip options
-    set enablePillTooltips(value: boolean) {
-        if (value) this.setAttribute('enable-pill-tooltips', 'true');
-        else this.removeAttribute('enable-pill-tooltips');
+    set enableBadgeTooltips(value: boolean) {
+        if (value) this.setAttribute('enable-badge-tooltips', 'true');
+        else this.removeAttribute('enable-badge-tooltips');
     }
 
-    get enablePillTooltips(): boolean {
-        return this.getAttribute('enable-pill-tooltips') === 'true';
+    get enableBadgeTooltips(): boolean {
+        return this.getAttribute('enable-badge-tooltips') === 'true';
     }
 
-    set pillTooltipPlacement(value: string | null) {
-        if (value) this.setAttribute('pill-tooltip-placement', value);
-        else this.removeAttribute('pill-tooltip-placement');
+    set badgeTooltipPlacement(value: string | null) {
+        if (value) this.setAttribute('badge-tooltip-placement', value);
+        else this.removeAttribute('badge-tooltip-placement');
     }
 
-    get pillTooltipPlacement(): string | null {
-        return this.getAttribute('pill-tooltip-placement');
+    get badgeTooltipPlacement(): string | null {
+        return this.getAttribute('badge-tooltip-placement');
     }
 
-    set getPillTooltipCallback(callback: ((item: T) => string | HTMLElement) | undefined) {
-        this._getPillTooltipCallback = callback;
+    set getBadgeTooltipCallback(callback: ((item: T) => string | HTMLElement) | undefined) {
+        this._getBadgeTooltipCallback = callback;
         this.reinitialize();
     }
 
-    get getPillTooltipCallback() {
-        return this._getPillTooltipCallback;
+    get getBadgeTooltipCallback() {
+        return this._getBadgeTooltipCallback;
     }
 
-    set getCountPillCallback(callback: ((count: number, moreCount?: number) => string) | undefined) {
-        this._getCountPillCallback = callback;
+    set getCounterCallback(callback: ((count: number, moreCount?: number) => string) | undefined) {
+        this._getCounterCallback = callback;
         this.reinitialize();
     }
 
-    get getCountPillCallback() {
-        return this._getCountPillCallback;
+    get getCounterCallback() {
+        return this._getCounterCallback;
     }
 
     // Event callbacks
@@ -777,6 +906,16 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     set changeCallback(callback: ((selectedOptions: T[]) => void) | undefined) {
         this._changeCallback = callback;
+    }
+
+    // Action buttons
+    get actionButtons(): any[] | undefined {
+        return this._actionButtons;
+    }
+
+    set actionButtons(value: any[] | undefined) {
+        this._actionButtons = value;
+        this.reinitialize();
     }
 
     // New public properties

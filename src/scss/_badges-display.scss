@@ -1,19 +1,19 @@
 // ==============================================================================
-// PILLS & DISPLAY MODES
+// BADGES & DISPLAY MODES
 // ==============================================================================
-// Pills container, count display, individual pills, and remove buttons
+// Badges container, count display, individual badges, and remove buttons
 
 @use 'variables' as *;
 
 // ==============================================================================
-// PILLS CONTAINER
+// BADGES CONTAINER
 // ==============================================================================
 
-// Selected pills container
-.ml__pills {
+// Selected badges container
+.ml__badges {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--ml-pills-gap, $ml-pills-gap);
+  gap: var(--ml-badges-gap, $ml-badges-gap);
   padding: 0;
 
   &:empty {
@@ -22,23 +22,23 @@
 
   // Position variants
   &--bottom {
-    margin-top: var(--ml-pills-margin-bottom, $ml-pills-margin-bottom);
+    margin-top: var(--ml-badges-margin-bottom, $ml-badges-margin-bottom);
   }
 
   &--top {
-    margin-bottom: var(--ml-pills-margin-top, $ml-pills-margin-top);
+    margin-bottom: var(--ml-badges-margin-top, $ml-badges-margin-top);
     order: var(--ml-order-first, $ml-order-first); // Place before multiselect in flex container
   }
 
   &--left {
     order: var(--ml-order-first, $ml-order-first); // Place before multiselect
-    margin-right: var(--ml-pills-margin-left, $ml-pills-margin-left);
-    justify-content: flex-end; // Pills at right edge of container, close to input
+    margin-right: var(--ml-badges-margin-left, $ml-badges-margin-left);
+    justify-content: flex-end; // Badges at right edge of container, close to input
   }
 
   &--right {
-    margin-left: var(--ml-pills-margin-right, $ml-pills-margin-right);
-    justify-content: flex-start; // Pills at left edge of container, close to input
+    margin-left: var(--ml-badges-margin-right, $ml-badges-margin-right);
+    justify-content: flex-start; // Badges at left edge of container, close to input
   }
 }
 
@@ -46,7 +46,7 @@
 // COUNT DISPLAY MODE
 // ==============================================================================
 
-// Count display (alternative to pills)
+// Count display (alternative to badges)
 .ml__count-display {
   display: flex;
   align-items: center;
@@ -78,19 +78,19 @@
 }
 
 // Wrapper containing count text and clear button
-.ml__count-badge-wrapper {
+.ml__counter-wrapper {
   display: inline-flex;
   align-items: center;
-  gap: var(--ml-count-badge-wrapper-gap, $ml-count-badge-wrapper-gap);
-  background: var(--ml-count-badge-wrapper-bg, $ml-count-badge-wrapper-bg);
-  border: var(--ml-count-badge-wrapper-border, $ml-count-badge-wrapper-border);
-  border-radius: var(--ml-count-badge-wrapper-border-radius, $ml-count-badge-wrapper-border-radius);
-  padding: var(--ml-count-badge-wrapper-padding, $ml-count-badge-wrapper-padding);
+  gap: var(--ml-counter-wrapper-gap, $ml-counter-wrapper-gap);
+  background: var(--ml-counter-wrapper-bg, $ml-counter-wrapper-bg);
+  border: var(--ml-counter-wrapper-border, $ml-counter-wrapper-border);
+  border-radius: var(--ml-counter-wrapper-border-radius, $ml-counter-wrapper-border-radius);
+  padding: var(--ml-counter-wrapper-padding, $ml-counter-wrapper-padding);
   transition: all var(--ml-transition-fast, $ml-transition-fast) var(--ml-easing-snappy, $ml-easing-snappy);
 
   &:hover {
-    background: var(--ml-count-badge-wrapper-bg-hover, $ml-count-badge-wrapper-bg-hover);
-    border-color: var(--ml-count-badge-wrapper-border-color-hover, $ml-count-badge-wrapper-border-color-hover);
+    background: var(--ml-counter-wrapper-bg-hover, $ml-counter-wrapper-bg-hover);
+    border-color: var(--ml-counter-wrapper-border-color-hover, $ml-counter-wrapper-border-color-hover);
   }
 }
 
@@ -134,58 +134,58 @@
 }
 
 // ==============================================================================
-// INDIVIDUAL PILLS
+// INDIVIDUAL BADGES
 // ==============================================================================
 
-// Individual pill (styled like Pure Admin composite badge)
-.ml__pill {
+// Individual badge (styled like Pure Admin composite badge)
+.ml__badge {
   display: inline-flex;
   align-items: center;
-  height: var(--ml-pill-height, $ml-pill-height); // Match composite badge height
-  font-size: var(--ml-pill-font-size, $ml-pill-font-size);
-  font-weight: var(--ml-pill-font-weight, $ml-pill-font-weight);
+  height: var(--ml-badge-height, $ml-badge-height); // Match composite badge height
+  font-size: var(--ml-badge-font-size, $ml-badge-font-size);
+  font-weight: var(--ml-badge-font-weight, $ml-badge-font-weight);
   line-height: var(--ml-line-height-none, $ml-line-height-none);
-  border-radius: var(--ml-pill-border-radius, $ml-pill-border-radius);
+  border-radius: var(--ml-badge-border-radius, $ml-badge-border-radius);
   overflow: hidden;
   max-width: 100%;
 }
 
-// Pill text (like composite badge label)
-.ml__pill-text {
+// Badge text (like composite badge label)
+.ml__badge-text {
   display: flex;
   align-items: center;
   height: 100%;
-  padding: var(--ml-pill-text-padding, $ml-pill-text-padding);
-  background: var(--ml-pill-text-bg, $ml-pill-text-bg);
-  color: var(--ml-pill-text-color, $ml-pill-text-color);
+  padding: var(--ml-badge-text-padding, $ml-badge-text-padding);
+  background: var(--ml-badge-text-bg, $ml-badge-text-bg);
+  color: var(--ml-badge-text-color, $ml-badge-text-color);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
   transition: background-color var(--ml-transition-normal, $ml-transition-normal) ease;
 }
 
-// Pill remove button (like composite badge button)
-.ml__pill-remove {
+// Badge remove button (like composite badge button)
+.ml__badge-remove {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--ml-pill-remove-width, $ml-pill-remove-width);
+  width: var(--ml-badge-remove-width, $ml-badge-remove-width);
   height: 100%;
   flex-shrink: 0;
-  background: var(--ml-pill-remove-bg, $ml-pill-remove-bg);
-  color: var(--ml-pill-remove-color, $ml-pill-remove-color);
-  border: var(--ml-pill-remove-border, $ml-pill-remove-border);
+  background: var(--ml-badge-remove-bg, $ml-badge-remove-bg);
+  color: var(--ml-badge-remove-color, $ml-badge-remove-color);
+  border: var(--ml-badge-remove-border, $ml-badge-remove-border);
   cursor: pointer;
   transition: background-color var(--ml-transition-normal, $ml-transition-normal) ease;
-  font-size: var(--ml-pill-remove-font-size, $ml-pill-remove-font-size);
+  font-size: var(--ml-badge-remove-font-size, $ml-badge-remove-font-size);
 
   &:hover {
-    background: var(--ml-pill-remove-bg-hover, $ml-pill-remove-bg-hover);
+    background: var(--ml-badge-remove-bg-hover, $ml-badge-remove-bg-hover);
   }
 
   &:focus {
     outline: none;
-    box-shadow: var(--ml-pill-remove-box-shadow-focus, $ml-pill-remove-box-shadow-focus);
+    box-shadow: var(--ml-badge-remove-box-shadow-focus, $ml-badge-remove-box-shadow-focus);
   }
 
   &::before {
@@ -196,33 +196,34 @@
 }
 
 // ==============================================================================
-// INDICATOR PILL VARIANT (for "+ X more", "3 selected", compact mode)
+// INDICATOR BADGE VARIANT (for "+ X more", "3 selected", compact mode)
 // ==============================================================================
-// Gray/neutral styling to distinguish from regular blue pills
-.ml__pill--indicator {
-  border: var(--ml-pill-indicator-border, $ml-pill-indicator-border);
+// Gray/neutral styling to distinguish from regular blue badges
+.ml__badge--counter {
+  border: var(--ml-badge-counter-border, $ml-badge-counter-border);
+  cursor: pointer;
 
-  .ml__pill-text {
-    background: var(--ml-pill-indicator-text-bg, $ml-pill-indicator-text-bg);
-    color: var(--ml-pill-indicator-text-color, $ml-pill-indicator-text-color);
+  .ml__badge-text {
+    background: var(--ml-badge-counter-text-bg, $ml-badge-counter-text-bg);
+    color: var(--ml-badge-counter-text-color, $ml-badge-counter-text-color);
   }
 
-  .ml__pill-remove {
-    background: var(--ml-pill-indicator-remove-bg, $ml-pill-indicator-remove-bg);
-    color: var(--ml-pill-indicator-remove-color, $ml-pill-indicator-remove-color);
+  .ml__badge-remove {
+    background: var(--ml-badge-counter-remove-bg, $ml-badge-counter-remove-bg);
+    color: var(--ml-badge-counter-remove-color, $ml-badge-counter-remove-color);
 
     &:hover {
-      background: var(--ml-pill-indicator-remove-bg-hover, $ml-pill-indicator-remove-bg-hover);
+      background: var(--ml-badge-counter-remove-bg-hover, $ml-badge-counter-remove-bg-hover);
     }
   }
 }
 
 // ==============================================================================
-// "+X MORE" PILL VARIANT
+// "+X MORE" BADGE VARIANT
 // ==============================================================================
 
-// "+X more" pill variant (partial mode)
-// Now uses .ml__pill--indicator for styling, this just adds cursor
-.ml__pill--more {
+// "+X more" badge variant (partial mode)
+// Now uses .ml__badge--counter for styling, this just adds cursor
+.ml__badge--more {
   cursor: pointer;
 }

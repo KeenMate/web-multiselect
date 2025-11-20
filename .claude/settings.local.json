@@ -16,7 +16,8 @@
       "Bash(curl:*)",
       "Bash(npm publish:*)",
       "Bash(gzip:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

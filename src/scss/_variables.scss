@@ -111,14 +111,14 @@ $ml-z-index-popover: 10000 !default;
 // 8. LAYOUT & DIMENSIONS
 // ==============================================================================
 $ml-input-icon-spacing: 2.5rem !default;
-$ml-count-badge-offset: 2rem !default;
+$ml-counter-offset: 2rem !default;
 $ml-option-icon-size: 1.25rem !default;
 $ml-count-clear-size: 1rem !default;
-$ml-pill-height: 1.5rem !default;
-$ml-pill-remove-width: 1.5rem !default;
+$ml-badge-height: 1.5rem !default;
+$ml-badge-remove-width: 1.5rem !default;
 $ml-popover-close-size: 1.5rem !default;
 
-$ml-dropdown-max-height: 20rem !default;
+$ml-options-max-height: 20rem !default;
 $ml-selected-popover-width: 20rem !default;
 $ml-selected-popover-max-height: 20rem !default;
 $ml-selected-popover-body-max-height: 18rem !default;
@@ -203,13 +203,13 @@ $ml-toggle-right: $ml-input-padding-h !default;
 
 // Count Badge (in input)
 // ==============================================================================
-$ml-count-badge-padding: 0.125rem 0.25rem !default;
-$ml-count-badge-bg: $ml-accent-color !default;
-$ml-count-badge-color: $ml-text-white !default;
-$ml-count-badge-font-size: $ml-font-size-xs !default;
-$ml-count-badge-font-weight: $ml-font-weight-semibold !default;
-$ml-count-badge-border-radius: $ml-border-radius-sm !default;
-$ml-count-badge-bg-hover: $ml-accent-color-hover !default;
+$ml-counter-padding: 0.125rem 0.25rem !default;
+$ml-counter-bg: $ml-accent-color !default;
+$ml-counter-color: $ml-text-white !default;
+$ml-counter-font-size: $ml-font-size-xs !default;
+$ml-counter-font-weight: $ml-font-weight-semibold !default;
+$ml-counter-border-radius: $ml-border-radius-sm !default;
+$ml-counter-bg-hover: $ml-accent-color-hover !default;
 
 // Floating Hint
 // ==============================================================================
@@ -232,7 +232,7 @@ $ml-dropdown-text: $ml-color-neutral-darkest !default;
 $ml-dropdown-border: $ml-border-width-base solid $ml-dropdown-border-color !default;
 $ml-dropdown-border-radius: $ml-border-radius !default;
 $ml-dropdown-box-shadow: $ml-dropdown-shadow !default;
-$ml-dropdown-color: $ml-dropdown-text !default;
+$ml-option-color: $ml-dropdown-text !default;
 
 // Dropdown Actions
 // ==============================================================================
@@ -326,14 +326,14 @@ $ml-loader-gap: $ml-spacing-sm !default;
 $ml-loading-text-font-size: $ml-font-size-sm !default;
 $ml-loading-text-color: $ml-text-secondary !default;
 
-// Pills Container
+// Badges Container
 // ==============================================================================
-$ml-pill-gap: $ml-spacing-sm !default;
-$ml-pills-gap: $ml-pill-gap !default;
-$ml-pills-margin-bottom: $ml-spacing-sm !default;
-$ml-pills-margin-top: $ml-spacing-sm !default;
-$ml-pills-margin-left: $ml-spacing-xs !default;
-$ml-pills-margin-right: $ml-spacing-xs !default;
+$ml-badge-gap: $ml-spacing-sm !default;
+$ml-badges-gap: $ml-badge-gap !default;
+$ml-badges-margin-bottom: $ml-spacing-sm !default;
+$ml-badges-margin-top: $ml-spacing-sm !default;
+$ml-badges-margin-left: $ml-spacing-xs !default;
+$ml-badges-margin-right: $ml-spacing-xs !default;
 
 // Count Display
 // ==============================================================================
@@ -344,13 +344,13 @@ $ml-count-display-margin-right: $ml-spacing-sm !default;
 
 // Count Badge Wrapper
 // ==============================================================================
-$ml-count-badge-wrapper-bg: transparent !default;
-$ml-count-badge-wrapper-border: $ml-border-width-base solid $ml-border-color !default;
-$ml-count-badge-wrapper-border-radius: $ml-border-radius-sm !default;
-$ml-count-badge-wrapper-padding: $ml-spacing-xs $ml-spacing-sm !default;
-$ml-count-badge-wrapper-gap: $ml-spacing-xs !default;
-$ml-count-badge-wrapper-bg-hover: $ml-option-hover-bg !default;
-$ml-count-badge-wrapper-border-color-hover: $ml-accent-color !default;
+$ml-counter-wrapper-bg: transparent !default;
+$ml-counter-wrapper-border: $ml-border-width-base solid $ml-border-color !default;
+$ml-counter-wrapper-border-radius: $ml-border-radius-sm !default;
+$ml-counter-wrapper-padding: $ml-spacing-xs $ml-spacing-sm !default;
+$ml-counter-wrapper-gap: $ml-spacing-xs !default;
+$ml-counter-wrapper-bg-hover: $ml-option-hover-bg !default;
+$ml-counter-wrapper-border-color-hover: $ml-accent-color !default;
 
 // Count Text
 // ==============================================================================
@@ -368,48 +368,48 @@ $ml-count-clear-border-radius: $ml-border-radius-full !default;
 $ml-count-clear-bg-hover: rgba($ml-accent-color, $ml-opacity-highlight-bg) !default;
 $ml-count-clear-color-hover: $ml-accent-color !default;
 
-// Pill
+// Badge
 // ==============================================================================
-$ml-pill-bg: $ml-color-accent-lightest !default;
-$ml-pill-bg-hover: $ml-color-white !default;
-$ml-pill-bg-active: $ml-color-accent-lighter !default;
+$ml-badge-bg: $ml-color-accent-lightest !default;
+$ml-badge-bg-hover: $ml-color-white !default;
+$ml-badge-bg-active: $ml-color-accent-lighter !default;
 
-$ml-pill-font-size: $ml-font-size-xs !default;
-$ml-pill-font-weight: $ml-font-weight-semibold !default;
-$ml-pill-border-radius: $ml-border-radius !default;
+$ml-badge-font-size: $ml-font-size-xs !default;
+$ml-badge-font-weight: $ml-font-weight-semibold !default;
+$ml-badge-border-radius: $ml-border-radius !default;
 
-// Pill Text
+// Badge Text
 // ==============================================================================
-$ml-pill-text-padding: 0 $ml-spacing-sm !default;
-$ml-pill-text-bg: $ml-pill-bg !default;
-$ml-pill-text-color: $ml-accent-color !default;
+$ml-badge-text-padding: 0 $ml-spacing-sm !default;
+$ml-badge-text-bg: $ml-badge-bg !default;
+$ml-badge-text-color: $ml-accent-color !default;
 
-// Pill Remove Button
+// Badge Remove Button
 // ==============================================================================
-$ml-pill-remove-bg: $ml-accent-color !default;
-$ml-pill-remove-color: $ml-text-white !default;
-$ml-pill-remove-border: none !default;
-$ml-pill-remove-font-size: $ml-font-size-xs !default;
-$ml-pill-remove-bg-hover: $ml-accent-color-hover !default;
-$ml-pill-remove-box-shadow-focus: 0 0 0 $ml-focus-outline-width
+$ml-badge-remove-bg: $ml-accent-color !default;
+$ml-badge-remove-color: $ml-text-white !default;
+$ml-badge-remove-border: none !default;
+$ml-badge-remove-font-size: $ml-font-size-xs !default;
+$ml-badge-remove-bg-hover: $ml-accent-color-hover !default;
+$ml-badge-remove-box-shadow-focus: 0 0 0 $ml-focus-outline-width
   rgba($ml-accent-color, $ml-opacity-focus-shadow) !default;
 
-// Pill Indicator (for "+ X more", "3 selected", compact mode display)
+// Badge Indicator (for "+ X more", "3 selected", compact mode display)
 // ==============================================================================
-$ml-pill-indicator-bg: transparent !default;
-$ml-pill-indicator-border: $ml-border-width-base solid $ml-border-color !default;
-$ml-pill-indicator-border-radius: $ml-border-radius-sm !default;
-$ml-pill-indicator-text-color: $ml-text-secondary !default;
-$ml-pill-indicator-text-bg: $ml-color-neutral-base !default;
-$ml-pill-indicator-remove-bg: $ml-color-neutral-dark !default;
-$ml-pill-indicator-remove-color: $ml-color-white !default;
-$ml-pill-indicator-remove-bg-hover: $ml-color-neutral-darkest !default;
+$ml-badge-counter-bg: transparent !default;
+$ml-badge-counter-border: $ml-border-width-base solid $ml-border-color !default;
+$ml-badge-counter-border-radius: $ml-border-radius-sm !default;
+$ml-badge-counter-text-color: $ml-text-secondary !default;
+$ml-badge-counter-text-bg: $ml-color-neutral-base !default;
+$ml-badge-counter-remove-bg: $ml-color-neutral-dark !default;
+$ml-badge-counter-remove-color: $ml-color-white !default;
+$ml-badge-counter-remove-bg-hover: $ml-color-neutral-darkest !default;
 
 // "+X more" badge (partial mode)
 // ==============================================================================
-$ml-more-badge-bg: $ml-pill-text-bg !default;
-$ml-more-badge-hover-bg: $ml-pill-bg-hover !default;
-$ml-more-badge-active-bg: $ml-pill-bg-active !default;
+$ml-more-badge-bg: $ml-badge-text-bg !default;
+$ml-more-badge-hover-bg: $ml-badge-bg-hover !default;
+$ml-more-badge-active-bg: $ml-badge-bg-active !default;
 
 // Tooltip
 // ==============================================================================
@@ -455,6 +455,8 @@ $ml-selected-popover-body-padding: $ml-spacing-sm !default;
 // ==============================================================================
 $ml-checkbox-offset: 0.125rem !default;
 $ml-checkbox-margin-top: $ml-checkbox-offset !default;
+$ml-checkbox-size: 16px !default; // Width and height of checkbox
+$ml-checkbox-scale: 1 !default; // Scale multiplier for checkbox size
 
 // Placeholder
 // ==============================================================================

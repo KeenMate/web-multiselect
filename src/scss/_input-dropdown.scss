@@ -70,22 +70,22 @@
 // ==============================================================================
 
 // Count badge (appears next to toggle icon)
-.ml__count-badge {
+.ml__counter {
   position: absolute;
-  right: var(--ml-count-badge-offset, $ml-count-badge-offset); // Space for toggle icon
+  right: var(--ml-counter-offset, $ml-counter-offset); // Space for toggle icon
   top: 50%;
   transform: var(--ml-transform-center-y, $ml-transform-center-y);
-  padding: var(--ml-count-badge-padding, $ml-count-badge-padding);
-  background: var(--ml-count-badge-bg, $ml-count-badge-bg);
-  color: var(--ml-count-badge-color, $ml-count-badge-color);
-  font-size: var(--ml-count-badge-font-size, $ml-count-badge-font-size);
-  font-weight: var(--ml-count-badge-font-weight, $ml-count-badge-font-weight);
-  border-radius: var(--ml-count-badge-border-radius, $ml-count-badge-border-radius);
+  padding: var(--ml-counter-padding, $ml-counter-padding);
+  background: var(--ml-counter-bg, $ml-counter-bg);
+  color: var(--ml-counter-color, $ml-counter-color);
+  font-size: var(--ml-counter-font-size, $ml-counter-font-size);
+  font-weight: var(--ml-counter-font-weight, $ml-counter-font-weight);
+  border-radius: var(--ml-counter-border-radius, $ml-counter-border-radius);
   cursor: pointer;
   transition: all var(--ml-transition-fast, $ml-transition-fast) var(--ml-easing-snappy, $ml-easing-snappy);
 
   &:hover {
-    background: var(--ml-count-badge-bg-hover, $ml-count-badge-bg-hover);
+    background: var(--ml-counter-bg-hover, $ml-counter-bg-hover);
     transform: var(--ml-transform-center-y, $ml-transform-center-y)
       scale(var(--ml-transform-scale-hover, $ml-transform-scale-hover));
   }
@@ -128,12 +128,12 @@
   border: var(--ml-dropdown-border, $ml-dropdown-border);
   border-radius: var(--ml-dropdown-border-radius, $ml-dropdown-border-radius);
   box-shadow: var(--ml-dropdown-box-shadow, $ml-dropdown-box-shadow);
-  max-height: var(--ml-dropdown-max-height, $ml-dropdown-max-height);
+  max-height: var(--ml-options-max-height, $ml-options-max-height);
   overflow-y: auto;
   overscroll-behavior: contain;
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
-  color: var(--ml-dropdown-color, $ml-dropdown-color);
+  color: var(--ml-option-color, $ml-option-color);
 
   &--visible {
     display: block;
@@ -153,9 +153,14 @@
 // Dropdown actions (Select All / Clear All)
 .ml__actions {
   display: flex;
+  flex-wrap: nowrap;
   gap: var(--ml-actions-gap, $ml-actions-gap);
   padding: var(--ml-actions-padding, $ml-actions-padding);
   border-bottom: var(--ml-actions-border-bottom, $ml-actions-border-bottom);
+
+  &--wrap {
+    flex-wrap: wrap;
+  }
 
   &--sticky {
     position: sticky;
@@ -183,5 +188,12 @@
 
   &:active {
     transform: scale(var(--ml-transform-scale-active, $ml-transform-scale-active));
+  }
+
+  &:disabled,
+  &[disabled] {
+    opacity: var(--ml-disabled-opacity, $ml-disabled-opacity);
+    cursor: not-allowed;
+    pointer-events: none;
   }
 }

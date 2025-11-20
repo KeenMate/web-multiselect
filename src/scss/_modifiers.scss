@@ -22,7 +22,7 @@
     font-size: var(--ml-font-size-xs, $ml-font-size-xs);
   }
 
-  .ml__pill {
+  .ml__badge {
     font-size: var(--ml-font-size-2xs, $ml-font-size-2xs);
   }
 }
@@ -46,7 +46,7 @@
     font-size: var(--ml-font-size-base, $ml-font-size-base);
   }
 
-  .ml__pill {
+  .ml__badge {
     font-size: var(--ml-font-size-sm, $ml-font-size-sm);
   }
 }
@@ -60,7 +60,7 @@
     font-size: var(--ml-font-size-lg, $ml-font-size-lg);
   }
 
-  .ml__pill {
+  .ml__badge {
     font-size: var(--ml-font-size-base, $ml-font-size-base);
   }
 }

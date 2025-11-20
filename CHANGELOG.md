@@ -7,27 +7,114 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - PUBLISHED - 2025-11-20
+
+### Changed
+- **Window API Migration** - Switched to standard `window.components` pattern
+  - Changed from `window.keenmate.multiselect` to `window.components['web-multiselect']`
+  - Added `logging` object with all logging methods (enableLogging, disableLogging, setLogLevel, setCategoryLevel)
+  - Added `getCategories()` method to list available logging categories
+  - Migration: Replace `window.keenmate.multiselect` with `window.components['web-multiselect']`
+  - This is a **breaking change** for code using the global window API
+
+- **Logging System Refactored** - Simplified to match standard pattern from svelte-spa-router
+  - Category names now hierarchical: `MULTISELECT:INIT`, `MULTISELECT:DATA`, `MULTISELECT:UI`, `MULTISELECT:INTERACTION`
+  - `setCategoryLevel()` now accepts any string (not hardcoded enum) for dynamic category control
+  - Simplified internal implementation - removed unnecessary complexity
+  - Migration: Update category names: `'UI'` → `'MULTISELECT:UI'`, `'DATA'` → `'MULTISELECT:DATA'`, etc.
+  - This is a **breaking change** - existing `setCategoryLevel()` calls must use new category names
+
+- **Class Renaming** - Renamed base class for better branding alignment
+  - Renamed `PureMultiSelect` to `WebMultiSelect` to align with package name `@keenmate/web-multiselect`
+  - Updated all imports, exports, and documentation
+  - Migration: Replace `import { PureMultiSelect }` with `import { WebMultiSelect }`
+  - This is a **breaking change** - existing code using `PureMultiSelect` must be updated
+
+### Added
+- **Custom Rendering Callbacks** - Full control over how options, badges, and selected items are displayed
+  - `renderOptionContentCallback(item, context)` - Customize dropdown option content with HTML or HTMLElement
+    - Context provides: `{ index, isSelected, isFocused, isMatched, isDisabled }`
+    - Replaces default icon + title + subtitle rendering while keeping wrapper structure
+    - Virtual scroll compatible (content must fit within `optionHeight`)
+  - `renderBadgeContentCallback(item, context)` - Customize badge (selected item) content with HTML or HTMLElement
+    - Context provides: `{ displayMode, isInPopover }`
+    - Can render different content based on where badge appears (main area vs popover)
+    - Works across all display modes (pills, partial, compact) and popover
+  - `renderSelectedContentCallback(item)` - Customize selected value text in single-select mode (plain text)
+    - Determines what text shows in input field when closed
+    - Separate from dropdown display text for maximum flexibility
+  - All callbacks can return HTML strings (for performance) or HTMLElement objects (for convenience)
+  - Maintains component structure and functionality (event handling, tooltips, remove buttons)
+  - Falls back to existing callbacks (`getBadgeDisplayCallback`, `getDisplayValueCallback`) when not provided
+  - Full TypeScript support with `OptionContentRenderContext` and `BadgeContentRenderContext` interfaces
+- **Checkbox Control and Advanced Layouts** - Fine-grained control over checkbox appearance and positioning
+  - `checkbox-align` attribute - Control checkbox vertical alignment: `'top'` (default), `'center'`, or `'bottom'`
+    - Useful when custom content varies in height or uses multi-line layouts
+    - CSS custom property: `--ml-checkbox-align` (flex-start, center, flex-end)
+  - `--ml-checkbox-size` CSS variable - Control checkbox width/height (default: 16px)
+  - `--ml-checkbox-scale` CSS variable - Scale checkbox larger/smaller while maintaining proportions (default: 1)
+    - Example: `--ml-checkbox-scale: 1.5` for 50% larger checkbox
+    - Scaled from top-left origin to prevent layout shifts
+  - SCSS variables: `$ml-checkbox-size` and `$ml-checkbox-scale` for build-time customization
+  - Works seamlessly with custom rendering callbacks for advanced layouts
+  - Full support for CSS Grid and Flexbox layouts in custom option content
+  - Added 3 advanced layout examples in `examples-templating.html`:
+    - CSS Grid layout with center-aligned checkboxes
+    - Flexbox multi-column layout with top-aligned checkboxes
+    - Large checkbox scale (1.5×) demonstration
+- **Custom Badge CSS Classes** - Add semantic styling to badges based on item data
+  - `getBadgeClassCallback(item)` - Return custom CSS class(es) to apply to badges
+    - Returns string (single class) or array of strings (multiple classes)
+    - Classes added to badge's base `.ml__badge` element
+    - Enables semantic color-coding (priority levels, status, categories, etc.)
+  - Works across all badge rendering locations (main area, partial mode, popover)
+  - Style badges using CSS variables (e.g., `--ml-badge-text-bg`, `--ml-badge-text-color`, `--ml-badge-remove-bg`)
+  - Example use case: Color-code tasks by priority (red for urgent, yellow for important, green for low)
+  - Added priority-based badge styling example in `examples-templating.html`
+- **Shadow DOM CSS Injection** - Solve Shadow DOM CSS isolation for custom styling
+  - `customStylesCallback()` - Inject custom CSS directly into Shadow DOM
+    - Returns CSS string (not HTML) with style rules
+    - Styles injected on component initialization
+    - Can be updated dynamically - new styles replace old ones
+    - Required for styling custom classes from `getBadgeClassCallback` or custom rendering callbacks
+  - Solves Shadow DOM barrier: page CSS cannot reach shadow elements
+  - Pattern follows `web-daterangepicker` implementation for consistency across Keenmate components
+  - Works with all custom classes (pills, options, any shadow DOM elements)
+  - Example: Inject `.badge-urgent { --ml-badge-text-bg: #fee2e2; }` to style priority-based badges
+- **Separate Callbacks for Badges vs. Selected Items Popover** - Dedicated callbacks for different rendering contexts
+  - `renderSelectedItemContentCallback(item)` - Custom renderer for selected items in the popover
+    - Separate from `renderBadgeContentCallback` which renders badges in main area
+    - Enables different rendering: compact badges in main area, detailed content in popover
+    - Falls back to `renderBadgeContentCallback` if not defined
+  - `getSelectedItemClassCallback(item)` - Add custom CSS classes to selected items in popover
+    - Separate from `getBadgeClassCallback` which adds classes to badges in main area
+    - Returns string (single class) or array of strings (multiple classes)
+    - Falls back to `getBadgeClassCallback` if not defined
+  - Design rationale: Selection box popover has more space for grandiose/detailed styling
+  - Users can assign the same function to both callbacks if identical rendering is desired
+  - Updated Example #11 to demonstrate separate callbacks for compact badges vs. detailed popover items
+
 ## [1.0.0-rc11] - 2025-11-13
 
 ### Added
-- **Unified Indicator Pill Styling** - Created `.ml__pill--indicator` modifier class for consistent gray styling across all informational pills
-  - Applies to "+ X more" pills (partial mode), "X selected" pills (count mode), and compact mode display pills
-  - Deep gray appearance (`$ml-color-neutral-base` background, `$ml-color-neutral-dark` remove button) to distinguish from blue data pills
-  - New SCSS variables: `$ml-pill-indicator-bg`, `$ml-pill-indicator-text-bg`, `$ml-pill-indicator-text-color`, `$ml-pill-indicator-remove-bg`, `$ml-pill-indicator-remove-color`, `$ml-pill-indicator-remove-bg-hover`
-  - New CSS custom properties for runtime customization: `--ml-pill-indicator-*`
-  - Consistent pill structure (`.ml__pill > .ml__pill-text + .ml__pill-remove`) across all display modes
+- **Unified BadgeCounter Styling** - Created `.ml__badge--indicator` modifier class for consistent gray styling across all informational badges
+  - Applies to "+ X more" badges (partial mode), "X selected" badges (count mode), and compact mode display badges
+  - Deep gray appearance (`$ml-color-neutral-base` background, `$ml-color-neutral-dark` remove button) to distinguish from blue data badges
+  - New SCSS variables: `$ml-badge-counter-bg`, `$ml-badge-counter-text-bg`, `$ml-badge-counter-text-color`, `$ml-badge-counter-remove-bg`, `$ml-badge-counter-remove-color`, `$ml-badge-counter-remove-bg-hover`
+  - New CSS custom properties for runtime customization: `--ml-badge-indicator-*`
+  - Consistent badge structure (`.ml__badge > .ml__badge-text + .ml__badge-remove`) across all display modes
 
 ### Changed
-- **Refactored Compact/Count Mode HTML Structure** - Migrated from custom `.ml__count-badge-wrapper` to standard `.ml__pill--indicator` structure
-  - Compact mode now uses `.ml__pill.ml__pill--indicator` instead of `.ml__count-badge-wrapper > .ml__count-text + .ml__count-clear`
-  - Count mode now uses `.ml__pill.ml__pill--indicator` instead of `.ml__count-badge-wrapper > .ml__count-text + .ml__count-clear`
+- **Refactored Compact/Count Mode HTML Structure** - Migrated from custom `.ml__count-badge-wrapper` to standard `.ml__badge--indicator` structure
+  - Compact mode now uses `.ml__badge.ml__badge--indicator` instead of `.ml__count-badge-wrapper > .ml__count-text + .ml__count-clear`
+  - Count mode now uses `.ml__badge.ml__badge--indicator` instead of `.ml__count-badge-wrapper > .ml__count-text + .ml__count-clear`
   - Updated event handlers to use `data-action` attributes (`show-selected`, `clear-count`) instead of old CSS class selectors
-  - Container class changed from `.ml__count-display` to `.ml__pills` for consistency
-- **Simplified `.ml__pill--more` Styling** - Removed duplicate background/hover styles, now inherits from `.ml__pill--indicator`
-  - `.ml__pill--more` now only adds `cursor: pointer`, all visual styling comes from `.ml__pill--indicator`
+  - Container class changed from `.ml__count-display` to `.ml__badges` for consistency
+- **Simplified `.ml__badge--more` Styling** - Removed duplicate background/hover styles, now inherits from `.ml__badge--indicator`
+  - `.ml__badge--more` now only adds `cursor: pointer`, all visual styling comes from `.ml__badge--indicator`
 
 ### Fixed
-- **Visual Inconsistency Between Display Modes** - Indicator pills ("+3 more", "5 selected", etc.) now have consistent gray styling across all modes instead of varying appearances
+- **Visual Inconsistency Between Display Modes** - Indicator badges ("+3 more", "5 selected", etc.) now have consistent gray styling across all modes instead of varying appearances
 
 ## [1.0.0-rc10] - 2025-11-13
 
@@ -42,27 +129,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - **Virtual Scrolling for Selected Items Popover** - Handle massive selections (15,000+ items) with instant performance
   - Automatically activates when 100+ items are selected
-  - Requires count badge setup: `pills-threshold="4"` + `pills-threshold-mode="count"` + `show-count-badge="true"`
+  - Requires count badge setup: `badges-threshold="4"` + `badges-threshold-mode="count"` + `show-count-badge="true"`
   - Click the count badge to open popover with virtual scrolling
-  - New `pill-height` attribute (default: 36px) - configurable height for pills in virtual scroll mode
-  - Consistent 4px gap between pills (matches standard mode)
+  - New `badge-height` attribute (default: 36px) - configurable height for badges in virtual scroll mode
+  - Consistent 4px gap between badges (matches standard mode)
   - Same VirtualScroll implementation as dropdown for consistency
-  - Performance: Renders only ~20-30 visible pills instead of all 15,000
-- **`pills-display-mode="none"`** - New minimal display mode showing no pills/count in input area
+  - Performance: Renders only ~20-30 visible badges instead of all 15,000
+- **`badges-display-mode="none"`** - New minimal display mode showing no badges/count in input area
   - Perfect for extremely space-constrained layouts
   - Typically combined with `show-count-badge="true"` to show only `[X]` indicator
   - No callbacks invoked (no display to render)
-  - Pills container is empty and hidden via CSS
-- **Proper `pills-display-mode="compact"` Implementation** - Shows first selected item + count in a single removable pill
+  - Badges container is empty and hidden via CSS
+- **Proper `badges-display-mode="compact"` Implementation** - Shows first selected item + count in a single removable badge
   - Format: `[JavaScript (+2 more) | x]`
-  - Uses `getPillDisplayCallback` for first item text (respects pill callback)
-  - Uses `getCountPillCallback(count, remainingCount)` for count text
+  - Uses `getBadgeDisplayCallback` for first item text (respects badge callback)
+  - Uses `getCounterCallback(count, remainingCount)` for count text
   - Single X button clears ALL selections
-  - Entire pill clickable to show selected items popover
+  - Entire badge clickable to show selected items popover
   - Automatically shows next item when selections change
 - **Comprehensive Callback Behavior Documentation** - Added detailed showcase documentation
-  - When `getPillDisplayCallback` is invoked for each display mode
-  - When `getCountPillCallback` is invoked with `moreCount` parameter vs without
+  - When `getBadgeDisplayCallback` is invoked for each display mode
+  - When `getCounterCallback` is invoked with `moreCount` parameter vs without
   - Clarified that count badge `[X]` is independent and works with all modes
   - Added quick reference tables showing what's displayed and which callbacks are used
 
@@ -73,17 +160,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Solution: Apply `display: block` and `max-height: none` on both parent and body in virtual mode
   - Removed `max-height` from inline styles to allow 540,000px wrapper height
   - Now matches dropdown pattern exactly: parent doesn't constrain, child handles scrolling
-- **Consistent Pill Heights** - Pills now have same height (36px) and spacing (4px) in virtual mode
+- **Consistent Badge Heights** - Badges now have same height (36px) and spacing (4px) in virtual mode
   - Initially had mismatch: standard mode 24px, virtual mode was inconsistent
-  - Now uses configurable `pill-height` attribute with 36px default
-  - Gap properly included in itemHeight calculation (36px pill + 4px gap = 40px total)
-- **`pills-display-mode="compact"` Implementation** - Was previously identical to 'count' mode (now properly implemented)
+  - Now uses configurable `badge-height` attribute with 36px default
+  - Gap properly included in itemHeight calculation (36px badge + 4px gap = 40px total)
+- **`badges-display-mode="compact"` Implementation** - Was previously identical to 'count' mode (now properly implemented)
   - Previously fell through to count mode rendering
-  - Now shows first item + count in a single pill as intended
+  - Now shows first item + count in a single badge as intended
 
 ### Changed
 - **Count Badge Independence** - Clarified that `show-count-badge="true"` works independently with ALL display modes
-  - Can be combined with any mode: pills, count, compact, partial, or none
+  - Can be combined with any mode: badges, count, compact, partial, or none
   - Not affected by any callbacks - always shows just the number `[X]`
 - **Classic Examples Reorganization** - Reorganized "Display Modes" section in `examples-classic.html`
   - Split into 4 clear categories: Basic Modes, Mode + Badge Combinations, Threshold Auto-Switching, and i18n
@@ -140,7 +227,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Color-coded console output with millisecond-precision timestamps
   - Runtime enable/disable controls - silent by default for production
   - Category-specific filtering (e.g., debug only UI operations)
-  - Exported utilities: `enableLogging()`, `setLogLevel()`, `enableCategory()`, `disableLogging()`
+  - Exported utilities: `enableLogging()`, `setLogLevel()`, `setCategoryLevel()`, `disableLogging()`
   - New examples page: `examples-logging.html` with interactive logging demos
 - **CSS Custom Properties at :host** - All 150+ SCSS variables now exposed as CSS custom properties
   - Inspectable in browser DevTools at the `:host` level
@@ -150,7 +237,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Added "Inspecting Variables in DevTools" section to README
 
 ### Fixed
-- **Pill Close Button Icon** - Fixed missing "×" symbol in pill remove buttons
+- **Badge Close Button Icon** - Fixed missing "×" symbol in badge remove buttons
   - Root cause: CSS `content` property requires quoted strings, SCSS interpolation was stripping quotes
   - Fixed `--ml-icon-remove` and `--ml-icon-clear` to preserve quotes: `"#{$variable}"`
   - Close buttons now display properly with visible "×" symbol
@@ -171,11 +258,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [1.0.0-rc05] - 2025-11-10
 
 ### Added
-- **Pill Display Customization** - New `getPillDisplayCallback` property to customize pill text independently from dropdown display
-  - Allows showing different text in pills vs dropdown (e.g., "John Doe" in pill, "John Doe (john@example.com)" in dropdown)
+- **Badge Display Customization** - New `getBadgeDisplayCallback` property to customize badge text independently from dropdown display
+  - Allows showing different text in badges vs dropdown (e.g., "John Doe" in badge, "John Doe (john@example.com)" in dropdown)
   - Falls back to standard display value if not provided
-  - Useful for showing concise text in pills while keeping detailed information in dropdown
-  - Applied to all pill rendering locations: pills mode, partial mode, selected popover, and tooltips
+  - Useful for showing concise text in badges while keeping detailed information in dropdown
+  - Applied to all badge rendering locations: badges mode, partial mode, selected popover, and tooltips
 
 ### Fixed
 - **RTL Detection in Shadow DOM** - Fixed RTL mode not being detected when using web components
@@ -187,28 +274,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Fixed issue where dropdown couldn't be reopened after first close (focus event conflict)
   - Dropdown now properly toggles: open → close → open → close indefinitely
 - **Input Cursor** - Added `cursor: pointer` to input field for better UX indication
-- **Left Pills Alignment** - Fixed left-positioned pills appearing at far left edge instead of close to input
-  - Changed from `justify-content: flex-start` to `flex-end` so pills appear immediately before input
+- **Left Badges Alignment** - Fixed left-positioned badges appearing at far left edge instead of close to input
+  - Changed from `justify-content: flex-start` to `flex-end` so badges appear immediately before input
 
 ## [1.0.0-rc04] - 2025-11-09
 
 ### Added
 - **RTL (Right-to-Left) Language Support** - Full support for Arabic, Hebrew, Persian, Urdu, and other RTL languages
   - Auto-detection from `dir="rtl"` attribute on component or any ancestor element
-  - Complete UI mirroring: toggle icon, text alignment, pills, dropdown, badges
-  - Logical position mirroring: `pills-position="left"` becomes physically right in RTL (and vice versa)
-  - Pills remove buttons flip to left side in RTL mode
+  - Complete UI mirroring: toggle icon, text alignment, badges, dropdown, badges
+  - Logical position mirroring: `badges-position="left"` becomes physically right in RTL (and vice versa)
+  - Badges remove buttons flip to left side in RTL mode
   - All text content properly right-aligned with correct text direction
   - New RTL showcase page in `/examples/rtl` with Arabic and Hebrew examples
   - New SCSS file `_rtl.scss` with comprehensive RTL styles
 
 ### Fixed
-- **Pills Positioning** - Fixed `pills-position` attribute not working (pills were always below input)
+- **Badges Positioning** - Fixed `badges-position` attribute not working (pills were always below input)
   - Root cause: Missing `ml-wrapper` flex container in DOM structure
   - Added wrapper div with `ml-wrapper` class and `--inline` modifier for left/right positioning
-  - Pills now correctly position based on `pills-position` attribute (top, bottom, left, right)
-  - Fixed right-positioned pills alignment: changed from `flex-end` to `flex-start` so pills appear immediately after input instead of at far right edge
-- **Pills Spacing** - Reduced left/right pills margin from 0.5rem to 0.25rem for better spacing next to input
+  - Badges now correctly position based on `badges-position` attribute (top, bottom, left, right)
+  - Fixed right-positioned badges alignment: changed from `flex-end` to `flex-start` so badges appear immediately after input instead of at far right edge
+- **Badges Spacing** - Reduced left/right badges margin from 0.5rem to 0.25rem for better spacing next to input
 
 ## [1.0.0-rc03] - 2025-11-09
 
@@ -223,24 +310,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-#### Pill Tooltips
-- **`enable-pill-tooltips` attribute** - Enable tooltips on selected item pills
-- **`pill-tooltip-placement` attribute** - Control tooltip position ('top', 'bottom', 'left', 'right')
-- **`pill-tooltip-delay` attribute** - Customize tooltip show delay (default: 300ms, previously 500ms)
-- **`pill-tooltip-offset` attribute** - Control distance between pill and tooltip (default: 8px)
-- **`getPillTooltipCallback` property** - Custom callback for tooltip content
-- **Separate tooltips** for pill text vs remove button to prevent overlap
+#### Badge Tooltips
+- **`enable-badge-tooltips` attribute** - Enable tooltips on selected item badges
+- **`badge-tooltip-placement` attribute** - Control tooltip position ('top', 'bottom', 'left', 'right')
+- **`badge-tooltip-delay` attribute** - Customize tooltip show delay (default: 300ms, previously 500ms)
+- **`badge-tooltip-offset` attribute** - Control distance between badge and tooltip (default: 8px)
+- **`getBadgeTooltipCallback` property** - Custom callback for tooltip content
+- **Separate tooltips** for badge text vs remove button to prevent overlap
 - **Floating UI integration** with `strategy: 'fixed'` for proper Shadow DOM positioning
 - Tooltips automatically clean up on component updates
 
 #### Display Mode Enhancements
-- **Enhanced `getCountPillCallback`** - Now supports optional `moreCount` parameter for i18n/pluralization
+- **Enhanced `getCounterCallback`** - Now supports optional `moreCount` parameter for i18n/pluralization
   - When `moreCount` is provided: Used for "+X more" badge in partial mode
   - When `moreCount` is undefined: Used for total count display in count mode
   - Enables unified i18n handling: `(count: number, moreCount?: number) => string`
 
 #### Flexible Data Handling (Major Feature)
-- **Generic Type Support**: Component now supports `PureMultiSelect<T>` and `MultiSelectElement<T>` for any data structure
+- **Generic Type Support**: Component now supports `WebMultiSelect<T>` and `MultiSelectElement<T>` for any data structure
 - **Member/Callback Pattern** (following svelte-treeview):
   - `valueMember` / `getValueCallback` - Extract unique ID from items
   - `displayValueMember` / `getDisplayValueCallback` - Extract display text
@@ -272,14 +359,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Component-Specific Semantic Variables**: Added 125+ SCSS semantic variables
   - Input component, toggle icon, count badge, hint, dropdown
   - Actions, buttons, options, groups, empty states
-  - Pills, count display, pill elements, selected popover
+  - Badges, count display, badge elements, selected popover
 - Comprehensive API documentation for all semantic variables
 
 ### Changed
 
 #### Tooltip Improvements
 - **Default tooltip delay reduced** from 500ms to 300ms for faster response
-- **Tooltip attachment** now targets pill text element instead of entire pill to prevent overlap with remove button
+- **Tooltip attachment** now targets badge text element instead of entire badge to prevent overlap with remove button
 
 #### Breaking Changes - Data Handling
 - **Internal property names** now use `is` prefix for booleans:

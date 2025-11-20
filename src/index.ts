@@ -8,17 +8,18 @@ import { getAllInstances, MultiSelectElement } from './web-component';
 export { MultiSelectElement };
 
 // Export the base class if users want direct access
-export { PureMultiSelect } from './multiselect';
+export { WebMultiSelect } from './multiselect';
 
 // Export types
-export type { MultiSelectOption, MultiSelectOptions, MultiSelectEventDetail, PillsDisplayMode, PillsPosition, PillsThresholdMode, SearchInputMode, SearchMode, ValueFormat } from './types';
+export type { MultiSelectOption, MultiSelectOptions, MultiSelectEventDetail, BadgesDisplayMode, BadgesPosition, BadgesThresholdMode, SearchInputMode, SearchMode, ValueFormat } from './types';
 
 // Export logging utilities for runtime control
 export {
     setLogLevel,
     enableLogging,
     disableLogging,
-    enableCategory,
+    setCategoryLevel,
+    LOGGING_CATEGORIES,
     initLogger,
     dataLogger,
     uiLogger,
@@ -47,6 +48,13 @@ export interface GlobalMultiSelectAPI {
         repository: string;
         homepage: string;
     };
+    logging: {
+        enableLogging: () => void;
+        disableLogging: () => void;
+        setLogLevel: (level: string) => void;
+        setCategoryLevel: (category: string, level: string) => void;
+        getCategories: () => string[];
+    };
     register: () => void;
     getInstances: () => HTMLElement[];
 }
@@ -54,16 +62,25 @@ export interface GlobalMultiSelectAPI {
 // Declare global namespace
 declare global {
     interface Window {
-        keenmate?: {
-            multiselect?: GlobalMultiSelectAPI;
+        components?: {
+            'web-multiselect'?: GlobalMultiSelectAPI;
         };
     }
 }
 
+// Import logging functions for global API
+import {
+    setLogLevel,
+    enableLogging,
+    disableLogging,
+    setCategoryLevel,
+    LOGGING_CATEGORIES
+} from './logger';
+
 // Initialize global API
 if (typeof window !== 'undefined') {
-    window.keenmate = window.keenmate || {};
-    window.keenmate.multiselect = {
+    window.components = window.components || {};
+    window.components['web-multiselect'] = {
         version: () => __VERSION__,
         config: {
             name: __PACKAGE_NAME__,
@@ -72,6 +89,13 @@ if (typeof window !== 'undefined') {
             license: __LICENSE__,
             repository: __REPOSITORY__,
             homepage: __HOMEPAGE__
+        },
+        logging: {
+            enableLogging,
+            disableLogging,
+            setLogLevel,
+            setCategoryLevel,
+            getCategories: () => [...LOGGING_CATEGORIES]
         },
         register: () => {
             if (typeof customElements !== 'undefined' && !customElements.get('web-multiselect')) {

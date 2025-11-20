@@ -57,7 +57,7 @@
 // Individual option
 .ml__option {
   display: flex;
-  align-items: flex-start;
+  align-items: var(--ml-checkbox-align, flex-start); // Support checkbox alignment
   gap: var(--ml-option-gap, $ml-option-gap);
   padding: var(--ml-option-padding, $ml-option-padding);
   cursor: pointer;
@@ -94,6 +94,15 @@
       background: var(--ml-option-bg, $ml-option-bg);
     }
   }
+
+  // Checkbox alignment variants
+  &[data-checkbox-align="center"] {
+    --ml-checkbox-align: center;
+  }
+
+  &[data-checkbox-align="bottom"] {
+    --ml-checkbox-align: flex-end;
+  }
 }
 
 // ==============================================================================
@@ -104,6 +113,10 @@
 .ml__checkbox {
   flex-shrink: 0;
   margin-top: var(--ml-checkbox-margin-top, $ml-checkbox-margin-top); // Align with first line of text
+  width: var(--ml-checkbox-size, $ml-checkbox-size);
+  height: var(--ml-checkbox-size, $ml-checkbox-size);
+  transform: scale(var(--ml-checkbox-scale, $ml-checkbox-scale));
+  transform-origin: top left;
   cursor: pointer;
 
   .ml__option--disabled & {

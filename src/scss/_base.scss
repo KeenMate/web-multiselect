@@ -21,10 +21,10 @@ multi-select:not(:defined) {
 // LAYOUT CONTAINERS
 // ==============================================================================
 
-// Wrapper (contains multiselect + pills)
+// Wrapper (contains multiselect + badges)
 .ml-wrapper {
   display: flex;
-  flex-direction: column; // Default: pills above/below input
+  flex-direction: column; // Default: badges above/below input
   align-items: stretch;
 
   // Inline layout for left/right positioning

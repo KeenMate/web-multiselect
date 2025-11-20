@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theming Examples - MultiSelect</title>
+
+    <!-- Shared example styles -->
+    <link rel="stylesheet" href="examples-shared.css">
+
+    <!-- Page-specific styles -->
+    <style>
+        /* Override container width for theming page */
+        .container {
+            max-width: 1400px;
+        }
+
+        /* Theme grid layout */
+        .theme-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Theme-specific card styling overrides */
+        .theme-card p {
+            font-size: 0.875rem;
+        }
+
+        /* Dark Mode Theme */
+        .dark-theme {
+            background: #1a1a1a;
+        }
+
+        .dark-theme h2,
+        .dark-theme p,
+        .dark-theme label {
+            color: #e5e5e5;
+        }
+
+        #dark-mode {
+            /* Input */
+            --ml-input-bg: #2a2a2a;
+            --ml-input-text: #e5e5e5;
+            --ml-input-border: #404040;
+            --ml-input-border-focus: #667eea;
+            --ml-input-placeholder: #808080;
+
+            /* Dropdown */
+            --ml-dropdown-bg: #2a2a2a;
+            --ml-option-color: #e5e5e5;
+            --ml-dropdown-border: #404040;
+            --ml-dropdown-box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
+
+            /* Options */
+            --ml-option-hover-bg: #3a3a3a;
+            --ml-option-selected-bg: #667eea;
+            --ml-option-title-color: #e5e5e5;
+
+            /* Badges (selection badges) */
+            --ml-badge-bg: #3a3a3a;
+            --ml-badge-text: #e5e5e5;
+            --ml-badge-text-color: #e5e5e5;
+            --ml-badge-border: #404040;
+            --ml-badge-remove-bg: #667eea;
+            --ml-badge-remove-color: #ffffff;
+
+            /* Actions (Select All/Clear All) */
+            --ml-actions-bg: #2a2a2a;
+            --ml-action-btn-color: #e5e5e5;
+            --ml-action-btn-bg-hover: #3a3a3a;
+
+            /* Borders */
+            --ml-border-color: #404040;
+
+            /* Selected popover */
+            --ml-selected-popover-bg: #2a2a2a;
+            --ml-selected-popover-border: 1px solid #404040;
+            --ml-selected-popover-header-bg: rgba(102, 126, 234, 0.1);
+            --ml-selected-popover-header-color: #e5e5e5;
+            --ml-selected-popover-close-color: #999999;
+            --ml-selected-popover-close-bg-hover: #3a3a3a;
+        }
+
+        /* Neon/Cyberpunk Theme */
+        .neon-theme {
+            background: #0a0a0a;
+            position: relative;
+        }
+
+        .neon-theme::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(45deg, rgba(255,0,255,0.1), rgba(0,255,255,0.1));
+            pointer-events: none;
+        }
+
+        .neon-theme h2,
+        .neon-theme p,
+        .neon-theme label {
+            color: #00ffff;
+            text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+        }
+
+        #neon-mode {
+            /* Input */
+            --ml-input-bg: #1a0a1a;
+            --ml-input-text: #00ffff;
+            --ml-input-border: #ff00ff;
+            --ml-input-border-focus: #00ffff;
+            --ml-input-box-shadow-focus: 0 0 10px rgba(0, 255, 255, 0.5);
+
+            /* Dropdown */
+            --ml-dropdown-bg: #1a0a1a;
+            --ml-option-color: #00ffff;
+            --ml-dropdown-border: #ff00ff;
+            --ml-dropdown-box-shadow: 0 0 20px rgba(255, 0, 255, 0.5);
+
+            /* Options */
+            --ml-option-hover-bg: rgba(255, 0, 255, 0.3);
+            --ml-option-selected-bg: #ff00ff;
+            --ml-option-title-color: #00ffff;
+
+            /* Badges */
+            --ml-badge-bg: rgba(255, 0, 255, 0.3);
+            --ml-badge-text: #00ffff;
+            --ml-badge-text-color: #00ffff;
+            --ml-badge-border: #ff00ff;
+            --ml-badge-remove-bg: #00ffff;
+            --ml-badge-remove-color: #1a0a1a;
+
+            /* Actions */
+            --ml-actions-bg: rgba(255, 0, 255, 0.3);
+            --ml-action-btn-color: #00ffff;
+            --ml-action-btn-bg-hover: rgba(255, 0, 255, 0.3);
+
+            /* Borders */
+            --ml-border-color: #ff00ff;
+
+            /* Selected popover */
+            --ml-selected-popover-bg: #1a0a1a;
+            --ml-selected-popover-border: 1px solid #ff00ff;
+            --ml-selected-popover-header-bg: rgba(255, 0, 255, 0.2);
+            --ml-selected-popover-header-color: #00ffff;
+            --ml-selected-popover-close-color: #ff00ff;
+            --ml-selected-popover-close-bg-hover: rgba(255, 0, 255, 0.3);
+        }
+
+        /* Audi Corporate Theme */
+        .audi-theme {
+            background: #f7f7f7;
+        }
+
+        .audi-theme h2 {
+            color: #bb0a30;
+            font-weight: 300;
+            letter-spacing: 0.05em;
+        }
+
+        .audi-theme p,
+        .audi-theme label {
+            color: #555;
+        }
+
+        #audi-mode {
+            --ml-input-bg: #ffffff;
+            --ml-input-text: #333333;
+            --ml-input-border: #d0d0d0;
+            --ml-input-border-focus: #bb0a30;
+            --ml-input-border-radius: 2px;
+
+            --ml-dropdown-bg: #ffffff;
+            --ml-dropdown-border: #d0d0d0;
+            --ml-dropdown-border-radius: 2px;
+            --ml-dropdown-box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+            --ml-option-text: #333333;
+            --ml-option-hover-bg: #f5f5f5;
+            --ml-option-selected-bg: #bb0a30;
+            --ml-option-selected-text: #ffffff;
+
+            --ml-badge-bg: #f5f5f5;
+            --ml-badge-text: #333333;
+            --ml-badge-border: #d0d0d0;
+            --ml-badge-border-radius: 2px;
+            --ml-badge-remove-bg: #bb0a30;
+            --ml-badge-remove-color: #ffffff;
+
+            --ml-checkbox-border-radius: 2px;
+            --ml-checkbox-checked-bg: #bb0a30;
+            --ml-checkbox-checked-border: #bb0a30;
+        }
+
+        /* Rounded/Soft Theme */
+        .rounded-theme {
+            background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        }
+
+        #rounded-mode {
+            --ml-input-bg: #ffffff;
+            --ml-input-text: #5a3e36;
+            --ml-input-border: #f0d0c0;
+            --ml-input-border-focus: #ff6b9d;
+            --ml-input-border-radius: 24px;
+            --ml-input-box-shadow-focus: 0 4px 12px rgba(255, 107, 157, 0.3);
+
+            --ml-dropdown-bg: #ffffff;
+            --ml-dropdown-border: #f0d0c0;
+            --ml-dropdown-border-radius: 16px;
+            --ml-dropdown-box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+            --ml-option-text: #5a3e36;
+            --ml-option-hover-bg: #fff5f0;
+            --ml-option-selected-bg: #ff6b9d;
+            --ml-option-selected-text: #ffffff;
+            --ml-option-border-radius: 12px;
+
+            --ml-badge-bg: #ffe5f0;
+            --ml-badge-text: #ff6b9d;
+            --ml-badge-border: #ffc0dd;
+            --ml-badge-border-radius: 20px;
+            --ml-badge-remove-bg: #ff6b9d;
+            --ml-badge-remove-color: #ffffff;
+
+            --ml-checkbox-border-radius: 8px;
+            --ml-checkbox-checked-bg: #ff6b9d;
+            --ml-checkbox-checked-border: #ff6b9d;
+        }
+
+        /* Sharp/Minimal Theme */
+        .sharp-theme {
+            background: #ffffff;
+            border: 2px solid #000000;
+        }
+
+        #sharp-mode {
+            --ml-input-bg: #ffffff;
+            --ml-input-text: #000000;
+            --ml-input-border: #000000;
+            --ml-input-border-focus: #000000;
+            --ml-input-border-radius: 0;
+            --ml-input-box-shadow-focus: none;
+
+            --ml-dropdown-bg: #ffffff;
+            --ml-dropdown-border: #000000;
+            --ml-dropdown-border-radius: 0;
+            --ml-dropdown-box-shadow: none;
+
+            --ml-option-text: #000000;
+            --ml-option-hover-bg: #f0f0f0;
+            --ml-option-selected-bg: #000000;
+            --ml-option-selected-text: #ffffff;
+            --ml-option-border-radius: 0;
+
+            --ml-badge-bg: #000000;
+            --ml-badge-text: #ffffff;
+            --ml-badge-border: #000000;
+            --ml-badge-border-radius: 0;
+            --ml-badge-remove-bg: #ffffff;
+            --ml-badge-remove-color: #000000;
+
+            --ml-checkbox-border-radius: 0;
+            --ml-checkbox-border: #000000;
+            --ml-checkbox-checked-bg: #000000;
+            --ml-checkbox-checked-border: #000000;
+        }
+
+        /* Material Design Theme */
+        .material-theme {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+        }
+
+        #material-mode {
+            --ml-input-bg: #ffffff;
+            --ml-input-text: #212121;
+            --ml-input-border: transparent;
+            --ml-input-border-focus: #1976d2;
+            --ml-input-border-radius: 4px;
+            --ml-input-box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+            --ml-input-box-shadow-focus: 0 2px 8px rgba(25, 118, 210, 0.25);
+
+            --ml-dropdown-bg: #ffffff;
+            --ml-dropdown-border: transparent;
+            --ml-dropdown-border-radius: 4px;
+            --ml-dropdown-box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+
+            --ml-option-text: #212121;
+            --ml-option-hover-bg: #f5f5f5;
+            --ml-option-selected-bg: #1976d2;
+            --ml-option-selected-text: #ffffff;
+
+            --ml-badge-bg: #e3f2fd;
+            --ml-badge-text: #1976d2;
+            --ml-badge-border: transparent;
+            --ml-badge-border-radius: 16px;
+            --ml-badge-remove-bg: #1976d2;
+            --ml-badge-remove-color: #ffffff;
+
+            --ml-checkbox-border-radius: 2px;
+            --ml-checkbox-checked-bg: #1976d2;
+            --ml-checkbox-checked-border: #1976d2;
+        }
+
+        /* Glassmorphism Theme */
+        .glass-theme {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            position: relative;
+            overflow: visible;
+        }
+
+        .glass-theme::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="15" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="20" fill="rgba(255,255,255,0.05)"/><circle cx="50" cy="80" r="25" fill="rgba(255,255,255,0.08)"/></svg>');
+            background-size: 200px 200px;
+            pointer-events: none;
+        }
+
+        .glass-theme h2,
+        .glass-theme p,
+        .glass-theme label {
+            color: #ffffff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+
+        #glass-mode {
+            --ml-input-bg: rgba(255, 255, 255, 0.15);
+            --ml-input-text: #ffffff;
+            --ml-input-border: rgba(255, 255, 255, 0.3);
+            --ml-input-border-focus: rgba(255, 255, 255, 0.5);
+            --ml-input-border-radius: 12px;
+            --ml-input-box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            --ml-input-placeholder: rgba(255, 255, 255, 0.5);
+
+            --ml-dropdown-bg: rgba(255, 255, 255, 0.15);
+            --ml-dropdown-border: rgba(255, 255, 255, 0.3);
+            --ml-dropdown-border-radius: 12px;
+            --ml-dropdown-box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+
+            --ml-option-text: #ffffff;
+            --ml-option-hover-bg: rgba(255, 255, 255, 0.25);
+            --ml-option-selected-bg: rgba(255, 255, 255, 0.4);
+            --ml-option-selected-text: #ffffff;
+
+            --ml-badge-bg: rgba(255, 255, 255, 0.25);
+            --ml-badge-text: #ffffff;
+            --ml-badge-border: rgba(255, 255, 255, 0.3);
+            --ml-badge-border-radius: 16px;
+            --ml-badge-remove-bg: rgba(255, 255, 255, 0.4);
+            --ml-badge-remove-color: #667eea;
+
+            --ml-actions-bg: rgba(255, 255, 255, 0.15);
+            --ml-action-btn-color: #ffffff;
+            --ml-action-btn-bg-hover: rgba(255, 255, 255, 0.25);
+
+            --ml-checkbox-bg: rgba(255, 255, 255, 0.15);
+            --ml-checkbox-border: rgba(255, 255, 255, 0.4);
+            --ml-checkbox-border-radius: 4px;
+            --ml-checkbox-checked-bg: rgba(255, 255, 255, 0.4);
+            --ml-checkbox-checked-border: rgba(255, 255, 255, 0.6);
+        }
+
+        /* Add backdrop blur for glass effect */
+        #glass-mode::part(input),
+        #glass-mode::part(dropdown),
+        #glass-mode::part(actions) {
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .form-text {
+            display: block;
+            margin-top: 0.25rem;
+            font-size: 0.75rem;
+            opacity: 0.7;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="index.html" class="back-link">← Back to Examples</a>
+            <h1>🎨 Theming Examples</h1>
+            <p class="subtitle">Explore different visual themes and styling options using CSS variables</p>
+        </header>
+
+        <div class="theme-grid">
+            <!-- Dark Mode Theme -->
+            <div class="theme-card dark-theme">
+                <h2>🌙 Dark Mode</h2>
+                <p>High contrast dark theme for low-light environments</p>
+                <div class="form-group">
+                    <label for="dark-mode">Select Technologies</label>
+                    <web-multiselect
+                        id="dark-mode"
+                        placeholder="Choose your stack..."
+                        show-checkboxes="true"
+                        show-select-all="true">
+                    </web-multiselect>
+                    <span class="form-text">Dark backgrounds with light text and purple accents</span>
+                </div>
+            </div>
+
+            <!-- Neon/Cyberpunk Theme -->
+            <div class="theme-card neon-theme">
+                <h2>⚡ Neon/Cyberpunk</h2>
+                <p>Bright neon colors with glowing effects</p>
+                <div class="form-group">
+                    <label for="neon-mode">Select Technologies</label>
+                    <web-multiselect
+                        id="neon-mode"
+                        placeholder="Choose your stack..."
+                        show-checkboxes="true"
+                        show-select-all="true">
+                    </web-multiselect>
+                    <span class="form-text">Cyan and magenta with glowing shadows</span>
+                </div>
+            </div>
+
+            <!-- Audi Corporate Theme -->
+            <div class="theme-card audi-theme">
+                <h2>🚗 Audi Corporate</h2>
+                <p>Clean, minimal corporate styling with subtle borders</p>
+                <div class="form-group">
+                    <label for="audi-mode">Select Technologies</label>
+                    <web-multiselect
+                        id="audi-mode"
+                        placeholder="Choose your stack..."
+                        show-checkboxes="true"
+                        show-select-all="true">
+                    </web-multiselect>
+                    <span class="form-text">Professional gray with Audi red accents</span>
+                </div>
+            </div>
+
+            <!-- Rounded/Soft Theme -->
+            <div class="theme-card rounded-theme">
+                <h2>🌸 Rounded/Soft</h2>
+                <p>Large border-radius with soft shadows and pastel colors</p>
+                <div class="form-group">
+                    <label for="rounded-mode">Select Technologies</label>
+                    <web-multiselect
+                        id="rounded-mode"
+                        placeholder="Choose your stack..."
+                        show-checkboxes="true"
+                        show-select-all="true">
+                    </web-multiselect>
+                    <span class="form-text">Warm gradient background with pink accents</span>
+                </div>
+            </div>
+
+            <!-- Sharp/Minimal Theme -->
+            <div class="theme-card sharp-theme">
+                <h2>▪️ Sharp/Minimal</h2>
+                <p>No border-radius, flat design, pure black and white</p>
+                <div class="form-group">
+                    <label for="sharp-mode">Select Technologies</label>
+                    <web-multiselect
+                        id="sharp-mode"
+                        placeholder="Choose your stack..."
+                        show-checkboxes="true"
+                        show-select-all="true">
+                    </web-multiselect>
+                    <span class="form-text">Brutalist design with sharp edges</span>
+                </div>
+            </div>
+
+            <!-- Material Design Theme -->
+            <div class="theme-card material-theme">
+                <h2>📐 Material Design</h2>
+                <p>Elevation shadows, vibrant colors, standard radius</p>
+                <div class="form-group">
+                    <label for="material-mode">Select Technologies</label>
+                    <web-multiselect
+                        id="material-mode"
+                        placeholder="Choose your stack..."
+                        show-checkboxes="true"
+                        show-select-all="true">
+                    </web-multiselect>
+                    <span class="form-text">Google Material Design principles</span>
+                </div>
+            </div>
+
+            <!-- Glassmorphism Theme -->
+            <div class="theme-card glass-theme">
+                <h2>🔮 Glassmorphism</h2>
+                <p>Frosted glass effect with backdrop blur and transparency</p>
+                <div class="form-group">
+                    <label for="glass-mode">Select Technologies</label>
+                    <web-multiselect
+                        id="glass-mode"
+                        placeholder="Choose your stack..."
+                        show-checkboxes="true"
+                        show-select-all="true">
+                    </web-multiselect>
+                    <span class="form-text">Translucent with blur effect (requires modern browser)</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Sample data for all examples
+        const technologies = [
+            { value: 'react', label: 'React' },
+            { value: 'vue', label: 'Vue.js' },
+            { value: 'angular', label: 'Angular' },
+            { value: 'svelte', label: 'Svelte' },
+            { value: 'typescript', label: 'TypeScript' },
+            { value: 'javascript', label: 'JavaScript' },
+            { value: 'python', label: 'Python' },
+            { value: 'nodejs', label: 'Node.js' },
+            { value: 'deno', label: 'Deno' },
+            { value: 'rust', label: 'Rust' },
+            { value: 'go', label: 'Go' },
+            { value: 'java', label: 'Java' },
+            { value: 'csharp', label: 'C#' },
+            { value: 'php', label: 'PHP' },
+            { value: 'ruby', label: 'Ruby' }
+        ];
+
+        // Initialize all multiselects
+        window.addEventListener('DOMContentLoaded', () => {
+            const ids = ['dark-mode', 'neon-mode', 'audi-mode', 'rounded-mode', 'sharp-mode', 'material-mode', 'glass-mode'];
+
+            ids.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.options = technologies;
+                    element.valueMember = 'value';
+                    element.displayValueMember = 'label';
+                }
+            });
+        });
+    </script>
+
+    <script type="module" src="/src/index.ts"></script>
+</body>
+</html>

@@ -21,8 +21,7 @@ build: ## Build for production
 package: build ## Create npm package (tarball)
 	@echo "Creating package..."
 	npm pack
-	@echo "Package created"
-	@ls -lh *.tgz
+	@echo "Package created - see above for details"
 
 publish-dry: ## Publish to npm (dry run) - cleans dist first
 	@echo "Running publish dry-run..."
@@ -76,7 +75,7 @@ install-dev: ## Install as local dev dependency (for testing)
 	@echo "Installing package locally..."
 	npm pack
 	@echo "You can now install this in another project with:"
-	@echo "npm install $(shell ls -t *.tgz | head -1)"
+	@echo "npm install <path-to-tgz-file>"
 
 # Default target
 .DEFAULT_GOAL := help

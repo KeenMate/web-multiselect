@@ -1,15 +1,15 @@
 // ==============================================================================
 // TOOLTIPS & POPOVER
 // ==============================================================================
-// Pill tooltips and selected items popover
+// Badge tooltips and selected items popover
 
 @use 'variables' as *;
 
 // ==============================================================================
-// PILL TOOLTIPS
+// BADGE TOOLTIPS
 // ==============================================================================
 
-.ml__pill-tooltip {
+.ml__badge-tooltip {
   position: fixed;
   z-index: var(--ml-tooltip-z-index, $ml-tooltip-z-index);
   opacity: 0;
@@ -106,17 +106,22 @@
   overflow-y: auto;
   max-height: var(--ml-selected-popover-body-max-height, $ml-selected-popover-body-max-height);
 
-  // Pills inside popover
-  .ml__pill {
+  // Badges inside popover (non-virtual mode)
+  .ml__badge {
     width: 100%;
+    min-height: fit-content; // Allow badges to expand based on content
+    line-height: var(--ml-line-height-relaxed, $ml-line-height-relaxed); // Override line-height: 1 to allow multi-line content
   }
 
-  .ml__pill-text {
+  .ml__badge-text {
     flex: 1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    min-width: 0; // Allow text truncation
+    min-width: 0; // Allow proper flex sizing
+    white-space: normal; // Explicitly allow wrapping
+    word-wrap: break-word; // Break long words
+    // Remove overflow constraints to allow multi-line content
+    // overflow: hidden;
+    // text-overflow: ellipsis;
+    // white-space: nowrap;
   }
 
   // Virtual scroll mode
@@ -126,14 +131,21 @@
     max-height: none;      // Remove max-height constraint
     padding: 0;            // Remove padding as virtual scroll has its own spacing
 
-    .ml__pill {
-      // Fixed height for virtual scroll (default: 36px, configurable via pill-height attribute)
-      height: var(--ml-pill-height-virtual, 36px);
-      min-height: var(--ml-pill-height-virtual, 36px);
-      max-height: var(--ml-pill-height-virtual, 36px);
-      margin-bottom: var(--ml-selected-popover-body-gap, $ml-selected-popover-body-gap); // Add gap between pills
+    .ml__badge {
+      // Fixed height for virtual scroll (default: 36px, configurable via badge-height attribute)
+      height: var(--ml-badge-height-virtual, 36px);
+      min-height: var(--ml-badge-height-virtual, 36px);
+      max-height: var(--ml-badge-height-virtual, 36px);
+      margin-bottom: var(--ml-selected-popover-body-gap, $ml-selected-popover-body-gap); // Add gap between badges
       overflow: hidden;
       box-sizing: border-box;
+    }
+
+    .ml__badge-text {
+      // Enforce single-line truncation for virtual scroll fixed heights
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 }

@@ -4,79 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>New Flexible API Examples - MultiSelect</title>
+
+    <!-- Shared example styles -->
+    <link rel="stylesheet" href="examples-shared.css">
+
+    <!-- Page-specific styles -->
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #f7fafc;
-            padding: 2rem;
-            line-height: 1.6;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 2rem;
-            border-radius: 12px;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-
-        h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .subtitle {
-            opacity: 0.9;
-            font-size: 1.1rem;
-        }
-
-        .back-link {
-            display: inline-block;
-            color: white;
-            text-decoration: none;
-            margin-bottom: 1rem;
-            opacity: 0.8;
-            transition: opacity 0.2s;
-        }
-
-        .back-link:hover {
-            opacity: 1;
-        }
-
-        .example-section {
-            background: white;
-            border-radius: 12px;
-            padding: 2rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-
-        .example-section h2 {
-            color: #2d3748;
-            margin-bottom: 0.5rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .example-section h3 {
-            color: #4a5568;
-            margin: 1.5rem 0 1rem;
-            font-size: 1.1rem;
-        }
-
+        /* Custom badge styling */
         .badge {
             background: #667eea;
             color: white;
@@ -90,11 +24,7 @@
             background: #f56565;
         }
 
-        .description {
-            color: #718096;
-            margin-bottom: 1.5rem;
-        }
-
+        /* Enhanced demo area styling */
         .demo-area {
             background: #f7fafc;
             padding: 1.5rem;
@@ -109,6 +39,7 @@
             display: block;
         }
 
+        /* Custom output styling */
         .output {
             background: #2d3748;
             color: #a0aec0;
@@ -132,30 +63,12 @@
             word-wrap: break-word;
         }
 
+        /* Inline code color override */
         code {
-            background: #edf2f7;
-            padding: 0.125rem 0.375rem;
-            border-radius: 4px;
-            font-family: 'Courier New', monospace;
-            font-size: 0.875rem;
             color: #d53f8c;
         }
 
-        .code-block {
-            background: #2d3748;
-            color: #e2e8f0;
-            padding: 1rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-            overflow-x: auto;
-            font-family: 'Courier New', monospace;
-            font-size: 0.875rem;
-        }
-
-        .code-block pre {
-            margin: 0;
-        }
-
+        /* Custom button styling */
         button {
             background: #667eea;
             color: white;
@@ -178,6 +91,7 @@
             transform: scale(0.98);
         }
 
+        /* Form styling */
         form {
             background: #edf2f7;
             padding: 1.5rem;
@@ -189,6 +103,13 @@
             margin-top: 1rem;
             padding-top: 1rem;
             border-top: 1px solid #cbd5e0;
+        }
+
+        /* H2 flex layout for badges */
+        .example-section h2 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
         }
 
         .grid-2 {
@@ -561,9 +482,9 @@ multiselect.searchCallback = async (searchTerm) => {
         </section>
 
         <section class="example-section">
-            <h2>💬 Pill Tooltips <span class="badge new">NEW</span></h2>
+            <h2>💬 Badge Tooltips <span class="badge new">NEW</span></h2>
             <p class="description">
-                Show informative tooltips when hovering over pills and remove buttons. Perfect for truncated text or additional context.
+                Show informative tooltips when hovering over badges and remove buttons. Perfect for truncated text or additional context.
             </p>
 
             <h3>Basic Tooltips</h3>
@@ -573,15 +494,15 @@ multiselect.searchCallback = async (searchTerm) => {
                     value-member="value"
                     display-value-member="label"
                     subtitle-member="subtitle"
-                    enable-pill-tooltips="true"
-                    pill-tooltip-placement="top"
-                    search-placeholder="Select items (hover pills to see tooltips)..."
+                    enable-badge-tooltips="true"
+                    badge-tooltip-placement="top"
+                    search-placeholder="Select items (hover badges to see tooltips)..."
                 ></web-multiselect>
             </div>
             <p class="code-label">Configuration:</p>
             <pre><code>&lt;multi-select
-    enable-pill-tooltips="true"      <!-- Enable tooltips -->
-    pill-tooltip-placement="top"     <!-- Placement: top, bottom, left, right -->
+    enable-badge-tooltips="true"      <!-- Enable tooltips -->
+    badge-tooltip-placement="top"     <!-- Placement: top, bottom, left, right -->
     subtitle-member="subtitle"       <!-- Tooltips show display + subtitle -->
 &gt;
 &lt;/multi-select&gt;</code></pre>
@@ -590,7 +511,7 @@ multiselect.searchCallback = async (searchTerm) => {
             <div class="demo-area">
                 <web-multiselect
                     id="tooltips-custom"
-                    enable-pill-tooltips="true"
+                    enable-badge-tooltips="true"
                     search-placeholder="Select users (custom tooltip content)..."
                 ></web-multiselect>
             </div>
@@ -599,7 +520,7 @@ multiselect.searchCallback = async (searchTerm) => {
 select.options = users; // Your data
 
 // Custom tooltip content
-select.getPillTooltipCallback = (user) => {
+select.getBadgeTooltipCallback = (user) => {
     return `${user.name}
 ${user.email}
 ${user.role}`;
@@ -608,7 +529,7 @@ ${user.role}`;
             <p class="code-label">Features:</p>
             <ul class="feature-list">
                 <li><strong>Default content:</strong> Display value + subtitle</li>
-                <li><strong>Custom content:</strong> Use <code>getPillTooltipCallback</code> for rich content</li>
+                <li><strong>Custom content:</strong> Use <code>getBadgeTooltipCallback</code> for rich content</li>
                 <li><strong>Remove button tooltips:</strong> Shows "Remove [item name]"</li>
                 <li><strong>Configurable placement:</strong> top, bottom, left, right</li>
                 <li><strong>CSS customization:</strong> Use CSS variables for styling</li>
@@ -616,26 +537,26 @@ ${user.role}`;
         </section>
 
         <section class="example-section">
-            <h2>🎨 Custom Pill Display <span class="badge new">NEW</span></h2>
+            <h2>🎨 Custom Badge Display <span class="badge new">NEW</span></h2>
             <p class="description">
-                Show different text in pills vs dropdown options. This example shows <strong>full details in dropdown</strong> ("John Doe - Senior Developer") with subtitle showing email, but <strong>just first names in pills</strong> ("John") for maximum space efficiency!
+                Show different text in badges vs dropdown options. This example shows <strong>full details in dropdown</strong> ("John Doe - Senior Developer") with subtitle showing email, but <strong>just first names in badges</strong> ("John") for maximum space efficiency!
             </p>
 
             <div class="demo-area">
                 <label class="demo-label">Select Team Members:</label>
                 <web-multiselect
-                    id="custom-pill-display"
+                    id="custom-badge-display"
                     search-placeholder="Search team members (see the difference!)..."
                 ></web-multiselect>
 
                 <div class="output">
                     <div class="output-label">Selected:</div>
-                    <pre id="output-custom-pill">[]</pre>
+                    <pre id="output-custom-badge">[]</pre>
                 </div>
             </div>
 
             <p class="code-label">Notice the dramatic difference:</p>
-            <div class="code-block"><pre>const select = document.getElementById('custom-pill-display');
+            <div class="code-block"><pre>const select = document.getElementById('custom-badge-display');
 
 // Dropdown shows FULL details with role
 select.getDisplayValueCallback = (user) => {
@@ -643,18 +564,217 @@ select.getDisplayValueCallback = (user) => {
     // Shows: "John Doe - Senior Developer"
 };
 
-// Pills show JUST first name: "John" (much more compact!)
-select.getPillDisplayCallback = (user) => {
+// Badges show JUST first name: "John" (much more compact!)
+select.getBadgeDisplayCallback = (user) => {
     return user.firstName;
     // Shows: "John" (saves tons of space!)
 };</pre></div>
 
             <p class="code-label">Use Cases:</p>
             <ul class="feature-list">
-                <li><strong>Space efficiency:</strong> Show abbreviated text in pills</li>
-                <li><strong>Different context:</strong> Pills show names, dropdown shows full details</li>
+                <li><strong>Space efficiency:</strong> Show abbreviated text in badges</li>
+                <li><strong>Different context:</strong> Badges show names, dropdown shows full details</li>
                 <li><strong>Cleaner UI:</strong> Reduce clutter in selected items display</li>
                 <li><strong>Optional:</strong> Falls back to standard display value if not provided</li>
+            </ul>
+        </section>
+
+        <section class="example-section">
+            <h2>🎛️ Custom Action Buttons <span class="badge new">NEW</span></h2>
+            <p class="description">
+                Full control over dropdown action buttons! Add Select All, Clear All, and custom actions with dynamic visibility, tooltips, and custom handlers.
+            </p>
+
+            <div class="demo-area">
+                <label class="demo-label">Select Programming Languages:</label>
+                <web-multiselect
+                    id="action-buttons-demo"
+                    search-placeholder="See custom action buttons in dropdown..."
+                ></web-multiselect>
+
+                <div class="output">
+                    <div class="output-label">Selected:</div>
+                    <pre id="output-action-buttons">[]</pre>
+                </div>
+            </div>
+
+            <p class="code-label">Configuration:</p>
+            <div class="code-block"><pre>const select = document.getElementById('action-buttons-demo');
+
+select.actionButtons = [
+  {
+    action: 'select-all',
+    text: 'Select All',
+    tooltip: 'Select all items',
+    isVisibleCallback: (picker) =&gt; {
+      const allCount = picker.options.options?.length || 0;
+      return picker.getSelected().length &lt; allCount;
+    }
+  },
+  {
+    action: 'clear-all',
+    text: 'Clear All',
+    tooltip: 'Clear selection',
+    isVisibleCallback: (picker) =&gt; picker.getSelected().length &gt; 0
+  },
+  {
+    action: 'custom',
+    text: 'Invert Selection',
+    tooltip: 'Invert current selection',
+    cssClass: 'custom-invert-btn',
+    onClick: (picker) =&gt; {
+      // Custom action - invert selection
+      const allOptions = picker.options.options || [];
+      const allValues = allOptions.map(opt =&gt; opt.value || opt[0]);
+      const selectedValues = picker.getValue();
+      const inverted = allValues.filter(v =&gt; !selectedValues.includes(v));
+      picker.setSelected(inverted);
+    }
+  },
+  {
+    action: 'custom',
+    text: 'Select Popular',
+    tooltip: 'Select most popular languages',
+    onClick: (picker) =&gt; {
+      picker.setSelected(['js', 'ts', 'py']);
+    }
+  }
+];</pre></div>
+
+            <p class="code-label">Features:</p>
+            <ul class="feature-list">
+                <li><strong>Built-in actions:</strong> 'select-all', 'clear-all' with standard behavior</li>
+                <li><strong>Custom actions:</strong> Add any action with custom onClick handler</li>
+                <li><strong>Dynamic visibility:</strong> Use <code>isVisibleCallback</code> or static <code>isVisible</code> to show/hide buttons based on state</li>
+                <li><strong>Disabled state:</strong> Use <code>isDisabledCallback</code> or static <code>isDisabled</code> to disable buttons</li>
+                <li><strong>Dynamic text:</strong> Use <code>getTextCallback</code> to change button text based on state</li>
+                <li><strong>Dynamic tooltips:</strong> Use <code>getTooltipCallback</code> or static <code>tooltip</code></li>
+                <li><strong>Dynamic styling:</strong> Use <code>getClassCallback</code> or static <code>cssClass</code> to add CSS classes</li>
+                <li><strong>Callback priority:</strong> Callbacks take priority over static properties when both are defined</li>
+                <li><strong>No limits:</strong> Add as many buttons as you need</li>
+            </ul>
+        </section>
+
+        <section class="example-section">
+            <h2>🔗 Cascading Selects (Reactive Options) <span class="badge new">NEW</span></h2>
+            <p class="description">
+                Create dependent dropdowns that automatically update! The <code>options</code> property is reactive - setting <code>element.options = newArray</code> triggers automatic re-rendering. Perfect for Organization → Business Unit → Department flows.
+            </p>
+
+            <div class="demo-area">
+                <label class="demo-label">Organization → Business Unit → Department Cascade:</label>
+
+                <div style="display: grid; gap: 1rem; margin: 1rem 0;">
+                    <div>
+                        <label style="display: block; margin-bottom: 0.5rem; color: #4a5568; font-weight: 600;">
+                            1️⃣ Select Organization
+                        </label>
+                        <web-multiselect
+                            id="cascade-org"
+                            multiple="false"
+                            search-placeholder="Select organization..."
+                        ></web-multiselect>
+                    </div>
+
+                    <div style="padding-left: 1.5rem; border-left: 3px solid #e2e8f0;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: #4a5568; font-weight: 600;">
+                            2️⃣ Select Business Unit
+                            <span id="bu-status" style="color: #a0aec0; font-weight: normal; font-size: 0.875rem;">(select organization first)</span>
+                        </label>
+                        <web-multiselect
+                            id="cascade-bu"
+                            multiple="false"
+                            search-placeholder="Select business unit..."
+                        ></web-multiselect>
+                    </div>
+
+                    <div style="padding-left: 3rem; border-left: 3px solid #e2e8f0;">
+                        <label style="display: block; margin-bottom: 0.5rem; color: #4a5568; font-weight: 600;">
+                            3️⃣ Select Department
+                            <span id="dept-status" style="color: #a0aec0; font-weight: normal; font-size: 0.875rem;">(select business unit first)</span>
+                        </label>
+                        <web-multiselect
+                            id="cascade-dept"
+                            multiple="false"
+                            search-placeholder="Select department..."
+                        ></web-multiselect>
+                    </div>
+                </div>
+
+                <div class="output">
+                    <div class="output-label">Selected Path:</div>
+                    <pre id="output-cascade">{
+  "organization": null,
+  "businessUnit": null,
+  "department": null
+}</pre>
+                </div>
+
+                <button onclick="resetCascade()">Reset Cascade</button>
+            </div>
+
+            <p class="code-label">Implementation:</p>
+            <div class="code-block"><pre>const orgSelect = document.querySelector('#cascade-org');
+const buSelect = document.querySelector('#cascade-bu');
+const deptSelect = document.querySelector('#cascade-dept');
+
+// Initialize first level
+orgSelect.options = organizations;
+
+// When organization changes, update business units
+orgSelect.addEventListener('change', async (e) =&gt; {
+    const orgId = e.detail.selectedValues[0];
+
+    if (orgId) {
+        // Fetch business units (simulated async)
+        const buOptions = await fetchBusinessUnits(orgId);
+
+        // REACTIVE UPDATE - automatically re-renders!
+        buSelect.options = buOptions;
+        buSelect.setSelected([]);  // Clear previous selection
+
+        // Clear departments
+        deptSelect.options = [];
+        deptSelect.setSelected([]);
+    } else {
+        // Organization cleared - reset cascade
+        buSelect.options = [];
+        deptSelect.options = [];
+    }
+});
+
+// When business unit changes, update departments
+buSelect.addEventListener('change', async (e) =&gt; {
+    const buId = e.detail.selectedValues[0];
+
+    if (buId) {
+        // Fetch departments (simulated async)
+        const deptOptions = await fetchDepartments(buId);
+
+        // REACTIVE UPDATE - automatically re-renders!
+        deptSelect.options = deptOptions;
+        deptSelect.setSelected([]);
+    } else {
+        deptSelect.options = [];
+    }
+});</pre></div>
+
+            <p class="code-label">Key Reactive Behaviors:</p>
+            <ul class="feature-list">
+                <li><strong>Automatic re-rendering:</strong> Setting <code>element.options = newArray</code> triggers UI update</li>
+                <li><strong>Clear dependent selections:</strong> Use <code>setSelected([])</code> to reset child selects</li>
+                <li><strong>Works with async data:</strong> Fetch options from API and assign reactively</li>
+                <li><strong>Proper cleanup:</strong> Component destroys/recreates picker for clean state</li>
+                <li><strong>Event-driven:</strong> Use 'change' events to chain dependencies</li>
+            </ul>
+
+            <p class="code-label">Common Use Cases:</p>
+            <ul class="feature-list">
+                <li>Country → State → City selection</li>
+                <li>Category → Subcategory → Product filtering</li>
+                <li>Organization → Department → Team hierarchy</li>
+                <li>Master-detail relationships</li>
+                <li>Conditional option loading</li>
             </ul>
         </section>
 
@@ -1160,12 +1280,12 @@ select.getPillDisplayCallback = (user) => {
         tooltipsCustomSelect.options = users;
 
         // Custom tooltip showing full user info
-        tooltipsCustomSelect.getPillTooltipCallback = (user) => {
+        tooltipsCustomSelect.getBadgeTooltipCallback = (user) => {
             return `${user.name}\n${user.email}\n${user.role}`;
         };
 
-        // New Feature: Custom Pill Display (show different text in pills vs dropdown)
-        const customPillDisplaySelect = document.querySelector('#custom-pill-display');
+        // New Feature: Custom Badge Display (show different text in badges vs dropdown)
+        const customBadgeDisplaySelect = document.querySelector('#custom-badge-display');
         const teamMembers = [
             { id: 1, fullName: 'John Doe', firstName: 'John', email: 'john.doe@company.com', role: 'Senior Developer', avatar: '👨‍💻' },
             { id: 2, fullName: 'Jane Smith', firstName: 'Jane', email: 'jane.smith@company.com', role: 'Product Manager', avatar: '👩‍💼' },
@@ -1176,25 +1296,25 @@ select.getPillDisplayCallback = (user) => {
         ];
 
         // Set up data extraction
-        customPillDisplaySelect.getValueCallback = (user) => user.id;
-        customPillDisplaySelect.getIconCallback = (user) => user.avatar;
-        customPillDisplaySelect.getSubtitleCallback = (user) => user.email;
+        customBadgeDisplaySelect.getValueCallback = (user) => user.id;
+        customBadgeDisplaySelect.getIconCallback = (user) => user.avatar;
+        customBadgeDisplaySelect.getSubtitleCallback = (user) => user.email;
 
         // Dropdown shows FULL details: "Name - Role (email)"
-        customPillDisplaySelect.getDisplayValueCallback = (user) => {
+        customBadgeDisplaySelect.getDisplayValueCallback = (user) => {
             return `${user.fullName} - ${user.role}`;
         };
 
-        // Pills show JUST first name (very compact!)
-        customPillDisplaySelect.getPillDisplayCallback = (user) => {
+        // Badges show JUST first name (very compact!)
+        customBadgeDisplaySelect.getBadgeDisplayCallback = (user) => {
             return user.firstName; // Much shorter: "John" instead of full details
         };
 
-        customPillDisplaySelect.options = teamMembers;
+        customBadgeDisplaySelect.options = teamMembers;
 
         // Update output on change
-        customPillDisplaySelect.addEventListener('change', (e) => {
-            const output = document.getElementById('output-custom-pill');
+        customBadgeDisplaySelect.addEventListener('change', (e) => {
+            const output = document.getElementById('output-custom-badge');
             output.textContent = JSON.stringify({
                 selectedValues: e.detail.selectedValues,
                 selectedItems: e.detail.selectedOptions.map(user => ({
@@ -1204,6 +1324,306 @@ select.getPillDisplayCallback = (user) => {
                 }))
             }, null, 2);
         });
+
+        // New Feature: Custom Action Buttons
+        const actionButtonsDemo = document.querySelector('#action-buttons-demo');
+        actionButtonsDemo.options = [
+            ['js', 'JavaScript'],
+            ['ts', 'TypeScript'],
+            ['py', 'Python'],
+            ['java', 'Java'],
+            ['go', 'Go'],
+            ['rust', 'Rust'],
+            ['cpp', 'C++'],
+            ['ruby', 'Ruby'],
+            ['php', 'PHP'],
+            ['swift', 'Swift']
+        ];
+
+        actionButtonsDemo.actionButtons = [
+            {
+                action: 'select-all',
+                text: 'Select All',
+                tooltip: 'Select all items',
+                isVisibleCallback: (picker) => {
+                    const allCount = picker.options.options?.length || 0;
+                    return picker.getSelected().length < allCount;
+                }
+            },
+            {
+                action: 'clear-all',
+                text: 'Clear All',
+                tooltip: 'Clear selection',
+                isVisibleCallback: (picker) => picker.getSelected().length > 0
+            },
+            {
+                action: 'custom',
+                text: 'Invert Selection',
+                tooltip: 'Invert current selection',
+                cssClass: 'custom-invert-btn',
+                onClick: (picker) => {
+                    // Custom action - invert selection
+                    const allOptions = picker.options.options || [];
+                    const allValues = allOptions.map(opt => opt.value || opt[0]);
+                    const selectedValues = picker.getValue();
+                    const inverted = allValues.filter(v => !selectedValues.includes(v));
+                    picker.setSelected(inverted);
+                }
+            },
+            {
+                action: 'custom',
+                text: 'Select Popular',
+                tooltip: 'Select most popular languages',
+                onClick: (picker) => {
+                    picker.setSelected(['js', 'ts', 'py']);
+                }
+            }
+        ];
+
+        // Update output on change
+        actionButtonsDemo.addEventListener('change', (e) => {
+            const output = document.getElementById('output-action-buttons');
+            output.textContent = JSON.stringify(e.detail.selectedValues, null, 2);
+        });
+
+        // New Feature: Cascading Selects (Reactive Options)
+        const cascadeOrgSelect = document.querySelector('#cascade-org');
+        const cascadeBuSelect = document.querySelector('#cascade-bu');
+        const cascadeDeptSelect = document.querySelector('#cascade-dept');
+
+        // Mock data structure
+        const mockData = {
+            organizations: [
+                { value: 'acme', label: 'ACME Corporation' },
+                { value: 'globex', label: 'Globex Corporation' },
+                { value: 'initech', label: 'Initech' }
+            ],
+            businessUnits: {
+                acme: [
+                    { value: 'acme-eng', label: 'Engineering' },
+                    { value: 'acme-sales', label: 'Sales' },
+                    { value: 'acme-ops', label: 'Operations' }
+                ],
+                globex: [
+                    { value: 'globex-rd', label: 'Research & Development' },
+                    { value: 'globex-mkt', label: 'Marketing' },
+                    { value: 'globex-hr', label: 'Human Resources' }
+                ],
+                initech: [
+                    { value: 'initech-it', label: 'IT Services' },
+                    { value: 'initech-fin', label: 'Finance' }
+                ]
+            },
+            departments: {
+                'acme-eng': [
+                    { value: 'acme-eng-fe', label: 'Frontend Team' },
+                    { value: 'acme-eng-be', label: 'Backend Team' },
+                    { value: 'acme-eng-qa', label: 'QA Team' }
+                ],
+                'acme-sales': [
+                    { value: 'acme-sales-na', label: 'North America' },
+                    { value: 'acme-sales-eu', label: 'Europe' }
+                ],
+                'acme-ops': [
+                    { value: 'acme-ops-dc', label: 'Data Center' },
+                    { value: 'acme-ops-cloud', label: 'Cloud Operations' }
+                ],
+                'globex-rd': [
+                    { value: 'globex-rd-adv', label: 'Advanced Research' },
+                    { value: 'globex-rd-prod', label: 'Product Development' }
+                ],
+                'globex-mkt': [
+                    { value: 'globex-mkt-digital', label: 'Digital Marketing' },
+                    { value: 'globex-mkt-brand', label: 'Brand Management' }
+                ],
+                'globex-hr': [
+                    { value: 'globex-hr-recruit', label: 'Recruitment' },
+                    { value: 'globex-hr-learning', label: 'Learning & Development' }
+                ],
+                'initech-it': [
+                    { value: 'initech-it-infra', label: 'Infrastructure' },
+                    { value: 'initech-it-sec', label: 'Security' }
+                ],
+                'initech-fin': [
+                    { value: 'initech-fin-acc', label: 'Accounting' },
+                    { value: 'initech-fin-audit', label: 'Audit' }
+                ]
+            }
+        };
+
+        // Simulate async data fetching
+        const fetchBusinessUnits = (orgId) => {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve(mockData.businessUnits[orgId] || []);
+                }, 300); // Simulate network delay
+            });
+        };
+
+        const fetchDepartments = (buId) => {
+            return new Promise((resolve) => {
+                setTimeout(() => {
+                    resolve(mockData.departments[buId] || []);
+                }, 300); // Simulate network delay
+            });
+        };
+
+        // Track current selections
+        let currentSelection = {
+            organization: null,
+            organizationLabel: null,
+            businessUnit: null,
+            businessUnitLabel: null,
+            department: null,
+            departmentLabel: null
+        };
+
+        // Update output display
+        const updateCascadeOutput = () => {
+            const output = document.getElementById('output-cascade');
+            output.textContent = JSON.stringify({
+                organization: currentSelection.organizationLabel,
+                organizationId: currentSelection.organization,
+                businessUnit: currentSelection.businessUnitLabel,
+                businessUnitId: currentSelection.businessUnit,
+                department: currentSelection.departmentLabel,
+                departmentId: currentSelection.department
+            }, null, 2);
+        };
+
+        // Initialize organization select
+        cascadeOrgSelect.valueMember = 'value';
+        cascadeOrgSelect.displayValueMember = 'label';
+        cascadeOrgSelect.options = mockData.organizations;
+
+        // Set up business unit select
+        cascadeBuSelect.valueMember = 'value';
+        cascadeBuSelect.displayValueMember = 'label';
+
+        // Set up department select
+        cascadeDeptSelect.valueMember = 'value';
+        cascadeDeptSelect.displayValueMember = 'label';
+
+        // Organization change handler
+        cascadeOrgSelect.addEventListener('change', async (e) => {
+            const orgId = e.detail.selectedValues[0];
+            const orgItem = e.detail.selectedOptions[0];
+
+            if (orgId) {
+                // Update selection
+                currentSelection.organization = orgId;
+                currentSelection.organizationLabel = orgItem ? orgItem.label : null;
+                currentSelection.businessUnit = null;
+                currentSelection.businessUnitLabel = null;
+                currentSelection.department = null;
+                currentSelection.departmentLabel = null;
+
+                // Update status
+                document.getElementById('bu-status').textContent = '(loading...)';
+
+                // Fetch business units
+                const buOptions = await fetchBusinessUnits(orgId);
+
+                // REACTIVE UPDATE - automatically re-renders!
+                cascadeBuSelect.options = buOptions;
+                cascadeBuSelect.setSelected([]);
+
+                // Update status
+                document.getElementById('bu-status').textContent = `(${buOptions.length} available)`;
+
+                // Clear departments
+                cascadeDeptSelect.options = [];
+                cascadeDeptSelect.setSelected([]);
+                document.getElementById('dept-status').textContent = '(select business unit first)';
+            } else {
+                // Organization cleared - reset everything
+                currentSelection.organization = null;
+                currentSelection.organizationLabel = null;
+                currentSelection.businessUnit = null;
+                currentSelection.businessUnitLabel = null;
+                currentSelection.department = null;
+                currentSelection.departmentLabel = null;
+
+                cascadeBuSelect.options = [];
+                cascadeDeptSelect.options = [];
+                document.getElementById('bu-status').textContent = '(select organization first)';
+                document.getElementById('dept-status').textContent = '(select business unit first)';
+            }
+
+            updateCascadeOutput();
+        });
+
+        // Business unit change handler
+        cascadeBuSelect.addEventListener('change', async (e) => {
+            const buId = e.detail.selectedValues[0];
+            const buItem = e.detail.selectedOptions[0];
+
+            if (buId) {
+                // Update selection
+                currentSelection.businessUnit = buId;
+                currentSelection.businessUnitLabel = buItem ? buItem.label : null;
+                currentSelection.department = null;
+                currentSelection.departmentLabel = null;
+
+                // Update status
+                document.getElementById('dept-status').textContent = '(loading...)';
+
+                // Fetch departments
+                const deptOptions = await fetchDepartments(buId);
+
+                // REACTIVE UPDATE - automatically re-renders!
+                cascadeDeptSelect.options = deptOptions;
+                cascadeDeptSelect.setSelected([]);
+
+                // Update status
+                document.getElementById('dept-status').textContent = `(${deptOptions.length} available)`;
+            } else {
+                // Business unit cleared
+                currentSelection.businessUnit = null;
+                currentSelection.businessUnitLabel = null;
+                currentSelection.department = null;
+                currentSelection.departmentLabel = null;
+
+                cascadeDeptSelect.options = [];
+                document.getElementById('dept-status').textContent = '(select business unit first)';
+            }
+
+            updateCascadeOutput();
+        });
+
+        // Department change handler
+        cascadeDeptSelect.addEventListener('change', (e) => {
+            const deptId = e.detail.selectedValues[0];
+            const deptItem = e.detail.selectedOptions[0];
+
+            if (deptId) {
+                currentSelection.department = deptId;
+                currentSelection.departmentLabel = deptItem ? deptItem.label : null;
+            } else {
+                currentSelection.department = null;
+                currentSelection.departmentLabel = null;
+            }
+
+            updateCascadeOutput();
+        });
+
+        // Reset function
+        window.resetCascade = () => {
+            cascadeOrgSelect.setSelected([]);
+            cascadeBuSelect.options = [];
+            cascadeDeptSelect.options = [];
+            currentSelection = {
+                organization: null,
+                organizationLabel: null,
+                businessUnit: null,
+                businessUnitLabel: null,
+                department: null,
+                departmentLabel: null
+            };
+            document.getElementById('bu-status').textContent = '(select organization first)';
+            document.getElementById('dept-status').textContent = '(select business unit first)';
+            updateCascadeOutput();
+        };
     </script>
 </body>
 </html>

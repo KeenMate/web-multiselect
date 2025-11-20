@@ -6,9 +6,9 @@ import type { Placement } from '@floating-ui/dom';
 
 
 /**
- * Position of the pills container relative to the input
+ * Position of the badges container relative to the input
  */
-export type PillsPosition = 'top' | 'bottom' | 'left' | 'right';
+export type BadgesPosition = 'top' | 'bottom' | 'left' | 'right';
 
 /**
  * Search input display mode
@@ -21,14 +21,14 @@ export type SearchInputMode = 'normal' | 'readonly' | 'hidden';
 export type ValueFormat = 'json' | 'csv' | 'array';
 
 /**
- * Threshold behavior mode when pills exceed threshold
+ * Threshold behavior mode when badges exceed threshold
  */
-export type PillsThresholdMode = 'count' | 'partial';
+export type BadgesThresholdMode = 'count' | 'partial';
 
 /**
- * Display mode for selected items (pills area)
+ * Display mode for selected items (badges area)
  */
-export type PillsDisplayMode = 'pills' | 'count' | 'compact' | 'partial' | 'none';
+export type BadgesDisplayMode = 'badges' | 'count' | 'compact' | 'partial' | 'none';
 
 /**
  * Search behavior mode
@@ -38,9 +38,73 @@ export type PillsDisplayMode = 'pills' | 'count' | 'compact' | 'partial' | 'none
 export type SearchMode = 'filter' | 'navigate';
 
 /**
+ * Layout mode for action buttons container
+ * - 'nowrap': Buttons stay in single row (default)
+ * - 'wrap': Buttons wrap to multiple rows when needed
+ */
+export type ActionsLayout = 'nowrap' | 'wrap';
+
+/**
  * Support both object arrays and [key, value] tuples
  */
 export type MultiSelectDataItem<T> = T | [string | number, string];
+
+/**
+ * Context provided to renderOptionContentCallback
+ */
+export interface OptionContentRenderContext {
+    /** Index of the option in the filtered list */
+    index: number;
+    /** Whether the option is currently selected */
+    isSelected: boolean;
+    /** Whether the option is currently focused (keyboard navigation) */
+    isFocused: boolean;
+    /** Whether the option matches the current search term (navigate mode only) */
+    isMatched: boolean;
+    /** Whether the option is disabled */
+    isDisabled: boolean;
+}
+
+/**
+ * Context provided to renderBadgeContentCallback
+ */
+export interface BadgeContentRenderContext {
+    /** Current badges display mode */
+    displayMode: BadgesDisplayMode;
+    /** Whether the badge is being rendered in the selected items popover */
+    isInPopover: boolean;
+}
+
+/**
+ * Action button configuration for dropdown actions (Select All, Clear All, custom actions)
+ * @template T The type of data items
+ */
+export interface ActionButton<T = any> {
+    /** Action identifier ('select-all', 'clear-all', or 'custom' for custom actions) */
+    action: 'select-all' | 'clear-all' | 'custom';
+    /** Button text label */
+    text: string;
+    /** Optional CSS class(es) to add to the button */
+    cssClass?: string;
+    /** Optional tooltip text */
+    tooltip?: string;
+    /** Static visibility - set to false to hide button */
+    isVisible?: boolean;
+    /** Static disabled state - set to true to disable button */
+    isDisabled?: boolean;
+    /** Custom click handler (required for 'custom' action) */
+    onClick?: (multiselect: any) => void | Promise<void>;
+    /** Dynamic visibility callback - return false to hide button (takes priority over isVisible) */
+    isVisibleCallback?: (multiselect: any) => boolean;
+    /** Dynamic disabled state callback - return true to disable button (takes priority over isDisabled) */
+    isDisabledCallback?: (multiselect: any) => boolean;
+    /** Dynamic text callback - return button text (takes priority over text) */
+    getTextCallback?: (multiselect: any) => string;
+    /** Dynamic CSS class callback - return class name(s) (takes priority over cssClass) */
+    getClassCallback?: (multiselect: any) => string | string[];
+    /** Dynamic tooltip callback - return tooltip text (takes priority over tooltip) */
+    getTooltipCallback?: (multiselect: any) => string;
+}
 
 /**
  * Generic configuration options for the MultiSelect component
@@ -67,8 +131,12 @@ export interface MultiSelectConfig<T = any> {
     displayValueMember?: string;
     /** Callback to extract display value from item */
     getDisplayValueCallback?: (item: T) => string;
-    /** Callback to customize pill display text (defaults to display value if not provided) */
-    getPillDisplayCallback?: (item: T) => string;
+    /** Callback to customize badge display text (defaults to display value if not provided) */
+    getBadgeDisplayCallback?: (item: T) => string;
+    /** Callback to add custom CSS classes to badges - return string or array of class names */
+    getBadgeClassCallback?: (item: T) => string | string[];
+    /** Callback to inject custom CSS into Shadow DOM - return CSS string for styling custom classes */
+    customStylesCallback?: () => string;
 
     /** Member property name for search value extraction */
     searchValueMember?: string;
@@ -96,6 +164,21 @@ export interface MultiSelectConfig<T = any> {
     getDisabledCallback?: (item: T) => boolean;
 
     // ========================================================================
+    // CUSTOM RENDERING CALLBACKS
+    // ========================================================================
+
+    /** Custom renderer for dropdown option content - return HTML string or HTMLElement */
+    renderOptionContentCallback?: (item: T, context: OptionContentRenderContext) => string | HTMLElement;
+    /** Custom renderer for badge content (main badges area) - return HTML string or HTMLElement */
+    renderBadgeContentCallback?: (item: T, context: BadgeContentRenderContext) => string | HTMLElement;
+    /** Custom renderer for selected item content in popover - return HTML string or HTMLElement */
+    renderSelectedItemContentCallback?: (item: T) => string | HTMLElement;
+    /** Callback to add custom CSS classes to selected items in popover - return string or array of class names */
+    getSelectedItemClassCallback?: (item: T) => string | string[];
+    /** Custom renderer for selected item display in single-select mode - return plain text */
+    renderSelectedContentCallback?: (item: T) => string;
+
+    // ========================================================================
     // FORM INTEGRATION & VALUE FORMATTING
     // ========================================================================
 
@@ -116,10 +199,8 @@ export interface MultiSelectConfig<T = any> {
     isSearchEnabled?: boolean;
     /** Allow grouping of options (internal: isGroupsAllowed) */
     isGroupsAllowed?: boolean;
-    /** Show 'Select All' button (internal: isSelectAllAllowed) */
-    isSelectAllAllowed?: boolean;
-    /** Show 'Clear All' button (internal: isClearAllAllowed) */
-    isClearAllAllowed?: boolean;
+    /** Action buttons configuration (Select All, Clear All, custom actions) */
+    actionButtons?: ActionButton<T>[];
     /** Show checkboxes next to options (internal: isCheckboxesShown) */
     isCheckboxesShown?: boolean;
     /** Keep Select All/Clear All buttons fixed at top while scrolling (internal: isActionsSticky) */
@@ -130,8 +211,8 @@ export interface MultiSelectConfig<T = any> {
     isPlacementLocked?: boolean;
     /** Allow adding new options not in the list (internal: isAddNewAllowed) */
     isAddNewAllowed?: boolean;
-    /** Show count badge next to toggle icon (internal: isCountBadgeShown) */
-    isCountBadgeShown?: boolean;
+    /** Show count badge next to toggle icon (internal: isCounterShown) */
+    isCounterShown?: boolean;
     /** Keep initial options visible when searchCallback is active and search term is empty/short (internal: isKeepOptionsOnSearch) */
     isKeepOptionsOnSearch?: boolean;
     /** Enable virtual scrolling for large datasets (internal: isVirtualScrollEnabled) */
@@ -141,18 +222,21 @@ export interface MultiSelectConfig<T = any> {
     // STRING OPTIONS
     // ========================================================================
 
+    /** Vertical alignment of checkboxes relative to option content */
+    checkboxAlign?: 'top' | 'center' | 'bottom';
+
     /** Hint text shown above the input when focused */
     searchHint?: string;
     /** Placeholder text for the search input */
     searchPlaceholder?: string;
     /** Minimum width for the dropdown (e.g., '20rem', '300px') */
     dropdownMinWidth?: string | null;
-    /** Display mode for selected items in pills area */
-    pillsDisplayMode?: PillsDisplayMode;
-    /** Position of pills container */
-    pillsPosition?: PillsPosition;
-    /** Threshold behavior mode: 'count' shows count badge, 'partial' shows limited pills + more badge */
-    pillsThresholdMode?: PillsThresholdMode;
+    /** Display mode for selected items in badges area */
+    badgesDisplayMode?: BadgesDisplayMode;
+    /** Position of badges container */
+    badgesPosition?: BadgesPosition;
+    /** Threshold behavior mode: 'count' shows count badge, 'partial' shows limited badges + more badge */
+    badgesThresholdMode?: BadgesThresholdMode;
     /** Maximum height for dropdown */
     maxHeight?: string;
     /** Message shown when no results found */
@@ -163,23 +247,25 @@ export interface MultiSelectConfig<T = any> {
     searchInputMode?: SearchInputMode;
     /** Search behavior mode: 'filter' (hide non-matches) or 'navigate' (jump to matches, keep all visible) */
     searchMode?: SearchMode;
+    /** Layout mode for action buttons: 'nowrap' (default) or 'wrap' for multi-row */
+    actionsLayout?: ActionsLayout;
 
     // ========================================================================
     // NUMBER OPTIONS
     // ========================================================================
 
-    /** Auto-switch from pills to count when threshold is exceeded */
-    pillsThreshold?: number | null;
-    /** Maximum number of pills to show in partial mode (used with thresholdMode='partial') */
-    pillsMaxVisible?: number | null;
+    /** Auto-switch from badges to count when threshold is exceeded */
+    badgesThreshold?: number | null;
+    /** Maximum number of badges to show in partial mode (used with thresholdMode='partial') */
+    badgesMaxVisible?: number | null;
     /** Minimum search length before loading data */
     minSearchLength?: number;
     /** Minimum items before virtual scroll activates (default: 100) */
     virtualScrollThreshold?: number;
     /** Fixed height for each option in pixels (required for virtual scroll, default: 50) */
     optionHeight?: number;
-    /** Fixed height for each pill in selected items popover in pixels (required for virtual scroll, default: 36) */
-    pillHeight?: number;
+    /** Fixed height for each badge in selected items popover in pixels (required for virtual scroll, default: 36) */
+    badgeHeight?: number;
     /** Buffer size for virtual scroll - items above/below viewport (default: 10) */
     virtualScrollBuffer?: number;
 
@@ -199,23 +285,23 @@ export interface MultiSelectConfig<T = any> {
     deselectCallback?: ((option: T) => void) | null;
     /** Callback when selection changes */
     changeCallback?: ((selectedOptions: T[]) => void) | null;
-    /** Callback to format count pill text (for i18n/pluralization). When moreCount is provided, it's for the "+X more" badge in partial mode. */
-    getCountPillCallback?: ((count: number, moreCount?: number) => string) | null;
+    /** Callback to format count badge text (for i18n/pluralization). When moreCount is provided, it's for the "+X more" badge in partial mode. */
+    getCounterCallback?: ((count: number, moreCount?: number) => string) | null;
 
     // ========================================================================
     // TOOLTIP OPTIONS
     // ========================================================================
 
-    /** Enable tooltips on selected item pills (internal: isPillTooltipsEnabled) */
-    isPillTooltipsEnabled?: boolean;
-    /** Callback to generate custom tooltip content for a pill */
-    getPillTooltipCallback?: ((item: T) => string | HTMLElement) | null;
-    /** Tooltip placement relative to pill */
-    pillTooltipPlacement?: Placement;
+    /** Enable tooltips on selected item badges (internal: isBadgeTooltipsEnabled) */
+    isBadgeTooltipsEnabled?: boolean;
+    /** Callback to generate custom tooltip content for a badge */
+    getBadgeTooltipCallback?: ((item: T) => string | HTMLElement) | null;
+    /** Tooltip placement relative to badge */
+    badgeTooltipPlacement?: Placement;
     /** Delay before showing tooltip in milliseconds */
-    pillTooltipDelay?: number;
+    badgeTooltipDelay?: number;
     /** Offset distance for tooltip in pixels */
-    pillTooltipOffset?: number;
+    badgeTooltipOffset?: number;
 
     // ========================================================================
     // OTHER OPTIONS

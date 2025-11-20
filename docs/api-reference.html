@@ -214,16 +214,16 @@
                     <td>Display mode for selected items: 'pills', 'count', or 'compact'.</td>
                 </tr>
                 <tr>
-                    <td><code>pills-position</code></td>
+                    <td><code>badges-position</code></td>
                     <td class="type">string</td>
                     <td class="default">'bottom'</td>
-                    <td>Position of pills container: 'top', 'bottom', 'left', or 'right'.</td>
+                    <td>Position of badges container: 'top', 'bottom', 'left', or 'right'.</td>
                 </tr>
                 <tr>
-                    <td><code>pills-threshold</code></td>
+                    <td><code>badges-threshold</code></td>
                     <td class="type">number</td>
                     <td class="default">null</td>
-                    <td>Auto-switch from pills to count when this number is exceeded.</td>
+                    <td>Auto-switch from badges to count when this number is exceeded.</td>
                 </tr>
                 <tr>
                     <td><code>count-format</code></td>
@@ -232,7 +232,7 @@
                     <td>Template for count display. Use {count} as placeholder.</td>
                 </tr>
                 <tr>
-                    <td><code>show-count-badge</code></td>
+                    <td><code>show-counter</code></td>
                     <td class="type">boolean</td>
                     <td class="default">false</td>
                     <td>Show count badge next to the toggle icon.</td>
@@ -271,8 +271,8 @@
         </table>
 
         <!-- JAVASCRIPT OPTIONS -->
-        <h2>JavaScript Options (PureMultiSelect)</h2>
-        <p class="section-intro">These options can be passed when instantiating <code>new PureMultiSelect(element, options)</code>.</p>
+        <h2>JavaScript Options (WebMultiSelect)</h2>
+        <p class="section-intro">These options can be passed when instantiating <code>new WebMultiSelect(element, options)</code>.</p>
         <table>
             <thead>
                 <tr>
@@ -375,7 +375,7 @@
 
         <!-- PUBLIC METHODS -->
         <h2>Public Methods</h2>
-        <p class="section-intro">Methods available on the MultiSelectElement or PureMultiSelect instance.</p>
+        <p class="section-intro">Methods available on the MultiSelectElement or WebMultiSelect instance.</p>
         <table>
             <thead>
                 <tr>
@@ -503,7 +503,7 @@
                     <td class="type">'pills' | 'count'</td>
                 </tr>
                 <tr>
-                    <td><code>PillsPosition</code></td>
+                    <td><code>BadgesPosition</code></td>
                     <td class="type">'top' | 'bottom' | 'left' | 'right'</td>
                 </tr>
                 <tr>
@@ -552,9 +552,9 @@
                     <td>Horizontal padding for dropdown options</td>
                 </tr>
                 <tr>
-                    <td><code>$multiselect-pill-gap</code></td>
+                    <td><code>$multiselect-badge-gap</code></td>
                     <td class="default">0.5rem</td>
-                    <td>Gap between pills</td>
+                    <td>Gap between badges</td>
                 </tr>
                 <tr>
                     <td><code>$ml-spacing-xs</code></td>
@@ -597,14 +597,14 @@
                     <td>Width and height of count clear button</td>
                 </tr>
                 <tr>
-                    <td><code>$multiselect-pill-height</code></td>
+                    <td><code>$multiselect-badge-height</code></td>
                     <td class="default">1.5rem</td>
-                    <td>Height of pill badges</td>
+                    <td>Height of badge badges</td>
                 </tr>
                 <tr>
-                    <td><code>$multiselect-pill-remove-width</code></td>
+                    <td><code>$multiselect-badge-remove-width</code></td>
                     <td class="default">1.5rem</td>
-                    <td>Width of pill remove button</td>
+                    <td>Width of badge remove button</td>
                 </tr>
                 <tr>
                     <td><code>$multiselect-selected-popover-max-height</code></td>
@@ -730,9 +730,9 @@
                     <td>Option background on hover</td>
                 </tr>
                 <tr>
-                    <td><code>$multiselect-pill-bg</code></td>
+                    <td><code>$multiselect-badge-bg</code></td>
                     <td class="default">#eff6ff</td>
-                    <td>Pill background color</td>
+                    <td>Badge background color</td>
                 </tr>
                 <tr>
                     <td><code>$ml-text-white</code></td>
@@ -1531,7 +1531,7 @@
             </tbody>
         </table>
 
-        <h3 style="margin-top: 2rem; margin-bottom: 1rem; color: #34495e;">Pills & Count Display</h3>
+        <h3 style="margin-top: 2rem; margin-bottom: 1rem; color: #34495e;">Badges & Counter Display</h3>
         <table>
             <thead>
                 <tr>
@@ -1542,29 +1542,29 @@
             </thead>
             <tbody>
                 <tr>
-                    <td><code>$ml-pills-gap</code></td>
-                    <td class="default">$multiselect-pill-gap</td>
-                    <td>Gap between pills</td>
+                    <td><code>$ml-badges-gap</code></td>
+                    <td class="default">$multiselect-badge-gap</td>
+                    <td>Gap between badges</td>
                 </tr>
                 <tr>
-                    <td><code>$ml-pills-margin-bottom</code></td>
+                    <td><code>$ml-badges-margin-bottom</code></td>
                     <td class="default">$ml-spacing-sm</td>
-                    <td>Top margin when pills are below input</td>
+                    <td>Top margin when badges are below input</td>
                 </tr>
                 <tr>
-                    <td><code>$ml-pills-margin-top</code></td>
+                    <td><code>$ml-badges-margin-top</code></td>
                     <td class="default">$ml-spacing-sm</td>
-                    <td>Bottom margin when pills are above input</td>
+                    <td>Bottom margin when badges are above input</td>
                 </tr>
                 <tr>
-                    <td><code>$ml-pills-margin-left</code></td>
+                    <td><code>$ml-badges-margin-left</code></td>
                     <td class="default">$ml-spacing-sm</td>
-                    <td>Right margin when pills are left of input</td>
+                    <td>Right margin when badges are left of input</td>
                 </tr>
                 <tr>
-                    <td><code>$ml-pills-margin-right</code></td>
+                    <td><code>$ml-badges-margin-right</code></td>
                     <td class="default">$ml-spacing-sm</td>
-                    <td>Left margin when pills are right of input</td>
+                    <td>Left margin when badges are right of input</td>
                 </tr>
                 <tr>
                     <td><code>$ml-count-display-margin-bottom</code></td>
@@ -1674,7 +1674,7 @@
             </tbody>
         </table>
 
-        <h3 style="margin-top: 2rem; margin-bottom: 1rem; color: #34495e;">Pill Elements</h3>
+        <h3 style="margin-top: 2rem; margin-bottom: 1rem; color: #34495e;">Badge Elements</h3>
         <table>
             <thead>
                 <tr>
@@ -1685,62 +1685,62 @@
             </thead>
             <tbody>
                 <tr>
-                    <td><code>$ml-pill-font-size</code></td>
+                    <td><code>$ml-badge-font-size</code></td>
                     <td class="default">$ml-font-size-xs</td>
-                    <td>Font size for pill text</td>
+                    <td>Font size for badge text</td>
                 </tr>
                 <tr>
-                    <td><code>$ml-pill-font-weight</code></td>
+                    <td><code>$ml-badge-font-weight</code></td>
                     <td class="default">$ml-font-weight-semibold</td>
-                    <td>Font weight for pill text</td>
+                    <td>Font weight for badge text</td>
                 </tr>
                 <tr>
-                    <td><code>$ml-pill-border-radius</code></td>
+                    <td><code>$ml-badge-border-radius</code></td>
                     <td class="default">$ml-border-radius</td>
-                    <td>Border radius for pill</td>
+                    <td>Border radius for badge</td>
                 </tr>
                 <tr>
-                    <td><code>$ml-pill-text-padding</code></td>
+                    <td><code>$ml-badge-text-padding</code></td>
                     <td class="default">0 $ml-spacing-sm</td>
-                    <td>Padding for pill text label</td>
+                    <td>Padding for badge text label</td>
                 </tr>
                 <tr>
-                    <td><code>$ml-pill-text-bg</code></td>
-                    <td class="default">$multiselect-pill-bg</td>
-                    <td>Background for pill text</td>
+                    <td><code>$ml-badge-text-bg</code></td>
+                    <td class="default">$multiselect-badge-bg</td>
+                    <td>Background for badge text</td>
                 </tr>
                 <tr>
-                    <td><code>$ml-pill-text-color</code></td>
+                    <td><code>$ml-badge-text-color</code></td>
                     <td class="default">$ml-accent-color</td>
-                    <td>Text color for pill</td>
+                    <td>Text color for badge</td>
                 </tr>
                 <tr>
-                    <td><code>$ml-pill-remove-bg</code></td>
+                    <td><code>$ml-badge-remove-bg</code></td>
                     <td class="default">$ml-accent-color</td>
-                    <td>Background for pill remove button</td>
+                    <td>Background for badge remove button</td>
                 </tr>
                 <tr>
-                    <td><code>$ml-pill-remove-color</code></td>
+                    <td><code>$ml-badge-remove-color</code></td>
                     <td class="default">$ml-text-white</td>
                     <td>Text color for remove button</td>
                 </tr>
                 <tr>
-                    <td><code>$ml-pill-remove-border</code></td>
+                    <td><code>$ml-badge-remove-border</code></td>
                     <td class="default">none</td>
                     <td>Border for remove button</td>
                 </tr>
                 <tr>
-                    <td><code>$ml-pill-remove-font-size</code></td>
+                    <td><code>$ml-badge-remove-font-size</code></td>
                     <td class="default">$ml-font-size-xs</td>
                     <td>Font size for remove button</td>
                 </tr>
                 <tr>
-                    <td><code>$ml-pill-remove-bg-hover</code></td>
+                    <td><code>$ml-badge-remove-bg-hover</code></td>
                     <td class="default">color.adjust($ml-accent-color, -10%)</td>
                     <td>Background on hover</td>
                 </tr>
                 <tr>
-                    <td><code>$ml-pill-remove-box-shadow-focus</code></td>
+                    <td><code>$ml-badge-remove-box-shadow-focus</code></td>
                     <td class="default">0 0 0 $ml-focus-outline-width rgba($ml-accent-color, 0.5)</td>
                     <td>Focus box shadow</td>
                 </tr>
@@ -1840,7 +1840,7 @@
                 <tr>
                     <td><code>$ml-selected-popover-body-gap</code></td>
                     <td class="default">$ml-spacing-xs</td>
-                    <td>Gap between pills in popover</td>
+                    <td>Gap between badges in popover</td>
                 </tr>
                 <tr>
                     <td><code>$ml-selected-popover-body-padding</code></td>
@@ -1920,8 +1920,8 @@
                     <td>Dropdown toggle icon (arrow)</td>
                 </tr>
                 <tr>
-                    <td><code>.ml__count-badge</code></td>
-                    <td>Count badge next to toggle icon (when showCountBadge is true)</td>
+                    <td><code>.ml__counter</code></td>
+                    <td>Counter next to toggle icon (when showCounter is true)</td>
                 </tr>
             </tbody>
         </table>
@@ -2054,7 +2054,7 @@
             </tbody>
         </table>
 
-        <h3 style="margin-top: 2rem; margin-bottom: 1rem; color: #34495e;">Pills Display</h3>
+        <h3 style="margin-top: 2rem; margin-bottom: 1rem; color: #34495e;">Badges Display</h3>
         <table>
             <thead>
                 <tr>
@@ -2064,36 +2064,36 @@
             </thead>
             <tbody>
                 <tr>
-                    <td><code>.ml__pills</code></td>
-                    <td>Container for selected item pills</td>
+                    <td><code>.ml__badges</code></td>
+                    <td>Container for selected item badges</td>
                 </tr>
                 <tr>
-                    <td><code>.ml__pills--top</code></td>
-                    <td>Pills positioned above input</td>
+                    <td><code>.ml__badges--top</code></td>
+                    <td>Badges positioned above input</td>
                 </tr>
                 <tr>
-                    <td><code>.ml__pills--bottom</code></td>
-                    <td>Pills positioned below input (default)</td>
+                    <td><code>.ml__badges--bottom</code></td>
+                    <td>Badges positioned below input (default)</td>
                 </tr>
                 <tr>
-                    <td><code>.ml__pills--left</code></td>
-                    <td>Pills positioned to the left of input</td>
+                    <td><code>.ml__badges--left</code></td>
+                    <td>Badges positioned to the left of input</td>
                 </tr>
                 <tr>
-                    <td><code>.ml__pills--right</code></td>
-                    <td>Pills positioned to the right of input</td>
+                    <td><code>.ml__badges--right</code></td>
+                    <td>Badges positioned to the right of input</td>
                 </tr>
                 <tr>
-                    <td><code>.ml__pill</code></td>
-                    <td>Individual pill/badge element</td>
+                    <td><code>.ml__badge</code></td>
+                    <td>Individual badge element</td>
                 </tr>
                 <tr>
-                    <td><code>.ml__pill-text</code></td>
-                    <td>Pill label text</td>
+                    <td><code>.ml__badge-text</code></td>
+                    <td>Badge label text</td>
                 </tr>
                 <tr>
-                    <td><code>.ml__pill-remove</code></td>
-                    <td>Pill remove button (×)</td>
+                    <td><code>.ml__badge-remove</code></td>
+                    <td>Badge remove button (×)</td>
                 </tr>
             </tbody>
         </table>
@@ -2128,7 +2128,7 @@
                     <td>Count positioned to the right of input</td>
                 </tr>
                 <tr>
-                    <td><code>.ml__count-badge-wrapper</code></td>
+                    <td><code>.ml__counter-wrapper</code></td>
                     <td>Wrapper containing count text and clear button</td>
                 </tr>
                 <tr>
@@ -2169,7 +2169,7 @@
                 </tr>
                 <tr>
                     <td><code>.ml__selected-popover-body</code></td>
-                    <td>Scrollable body containing selected pills</td>
+                    <td>Scrollable body containing selected badges</td>
                 </tr>
             </tbody>
         </table>

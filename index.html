@@ -11,6 +11,11 @@
             box-sizing: border-box;
         }
 
+        /* Prevent FOAC (Flash of Unstyled Content) for options */
+        web-multiselect option {
+            display: none;
+        }
+
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -172,7 +177,7 @@
                     <li>Single-select & multi-select modes</li>
                     <li>Grouped options with collapsible groups</li>
                     <li>Icons & subtitles for rich display</li>
-                    <li>Pills, count & compact display modes</li>
+                    <li>Badges, count & compact display modes</li>
                     <li>Async search (GitHub API, products)</li>
                 </ul>
             </a>
@@ -231,6 +236,63 @@
                     <li>99.8% less memory (7.5MB → 15KB)</li>
                     <li>Full keyboard & mouse wheel support</li>
                     <li>Real-time performance metrics</li>
+                </ul>
+            </a>
+
+            <!-- Custom Rendering Examples -->
+            <a href="examples-templating.html" class="card">
+                <div class="card-icon">🎨</div>
+                <h2 class="card-title">
+                    Custom Rendering
+                    <span class="badge new">NEW</span>
+                </h2>
+                <p class="card-description">
+                    Fully customize how options, badges, and selected items are displayed using render callbacks. Build rich UIs with HTML or DOM elements.
+                </p>
+                <ul class="card-features">
+                    <li>Custom option content with badges & icons</li>
+                    <li>Rich badge rendering (avatars, details)</li>
+                    <li>Context-aware rendering (selected, focused)</li>
+                    <li>HTMLElement or HTML string returns</li>
+                    <li>All three callbacks demonstrated</li>
+                </ul>
+            </a>
+
+            <!-- Theming Examples -->
+            <a href="examples-theming.html" class="card">
+                <div class="card-icon">🎭</div>
+                <h2 class="card-title">
+                    Theming Showcase
+                    <span class="badge new">NEW</span>
+                </h2>
+                <p class="card-description">
+                    Explore different visual styles and themes using CSS variables. From dark mode to glassmorphism, see how to customize every aspect of the component.
+                </p>
+                <ul class="card-features">
+                    <li>7 complete theme examples</li>
+                    <li>Dark mode & neon/cyberpunk styles</li>
+                    <li>Corporate & minimal designs</li>
+                    <li>Material Design & glassmorphism</li>
+                    <li>Complete CSS variable reference</li>
+                </ul>
+            </a>
+
+            <!-- Action Buttons Examples -->
+            <a href="examples-action-buttons.html" class="card">
+                <div class="card-icon">🎛️</div>
+                <h2 class="card-title">
+                    Action Buttons
+                    <span class="badge new">NEW</span>
+                </h2>
+                <p class="card-description">
+                    Comprehensive guide to action button configuration. Static properties, dynamic callbacks, custom actions, wrapping modes, and Font Awesome icons.
+                </p>
+                <ul class="card-features">
+                    <li>Static & dynamic properties (visibility, disabled, text)</li>
+                    <li>Custom actions with onClick handlers</li>
+                    <li>Dynamic CSS classes & tooltips</li>
+                    <li>Wrap mode for multiple buttons</li>
+                    <li>Font Awesome icons & HTML content support</li>
                 </ul>
             </a>
         </div>

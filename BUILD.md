@@ -199,7 +199,7 @@ dist/
 ## Code Organization
 
 ### Core Class (multiselect.ts)
-The `PureMultiSelect` class contains all the logic:
+The `WebMultiSelect` class contains all the logic:
 - Option management
 - Search/filtering
 - Keyboard navigation

@@ -66,14 +66,14 @@
   // COUNT BADGE (in input)
   // ==========================================================================
 
-  --ml-count-badge-offset: #{$ml-count-badge-offset};
-  --ml-count-badge-padding: #{$ml-count-badge-padding};
-  --ml-count-badge-bg: #{$ml-count-badge-bg};
-  --ml-count-badge-color: #{$ml-count-badge-color};
-  --ml-count-badge-font-size: #{$ml-count-badge-font-size};
-  --ml-count-badge-font-weight: #{$ml-count-badge-font-weight};
-  --ml-count-badge-border-radius: #{$ml-count-badge-border-radius};
-  --ml-count-badge-bg-hover: #{$ml-count-badge-bg-hover};
+  --ml-counter-offset: #{$ml-counter-offset};
+  --ml-counter-padding: #{$ml-counter-padding};
+  --ml-counter-bg: #{$ml-counter-bg};
+  --ml-counter-color: #{$ml-counter-color};
+  --ml-counter-font-size: #{$ml-counter-font-size};
+  --ml-counter-font-weight: #{$ml-counter-font-weight};
+  --ml-counter-border-radius: #{$ml-counter-border-radius};
+  --ml-counter-bg-hover: #{$ml-counter-bg-hover};
   --ml-transform-scale-hover: #{$ml-transform-scale-hover};
 
   // ==========================================================================
@@ -97,8 +97,8 @@
   --ml-dropdown-border: #{$ml-dropdown-border};
   --ml-dropdown-border-radius: #{$ml-dropdown-border-radius};
   --ml-dropdown-box-shadow: #{$ml-dropdown-box-shadow};
-  --ml-dropdown-max-height: #{$ml-dropdown-max-height};
-  --ml-dropdown-color: #{$ml-dropdown-color};
+  --ml-options-max-height: #{$ml-options-max-height};
+  --ml-option-color: #{$ml-option-color};
   --ml-z-index-dropdown: #{$ml-z-index-dropdown};
   --ml-z-index-sticky: #{$ml-z-index-sticky};
 
@@ -183,6 +183,9 @@
 
   // Checkbox
   --ml-checkbox-margin-top: #{$ml-checkbox-margin-top};
+  --ml-checkbox-size: #{$ml-checkbox-size};
+  --ml-checkbox-scale: #{$ml-checkbox-scale};
+  --ml-checkbox-align: flex-start; // flex-start (top), center, flex-end (bottom)
 
   // ==========================================================================
   // EMPTY & LOADING STATES
@@ -202,54 +205,54 @@
   --ml-loading-text-color: #{$ml-loading-text-color};
 
   // ==========================================================================
-  // PILLS DISPLAY
+  // BADGES DISPLAY
   // ==========================================================================
 
-  --ml-pills-gap: #{$ml-pills-gap};
-  --ml-pills-margin-bottom: #{$ml-pills-margin-bottom};
-  --ml-pills-margin-top: #{$ml-pills-margin-top};
-  --ml-pills-margin-left: #{$ml-pills-margin-left};
-  --ml-pills-margin-right: #{$ml-pills-margin-right};
+  --ml-badges-gap: #{$ml-badges-gap};
+  --ml-badges-margin-bottom: #{$ml-badges-margin-bottom};
+  --ml-badges-margin-top: #{$ml-badges-margin-top};
+  --ml-badges-margin-left: #{$ml-badges-margin-left};
+  --ml-badges-margin-right: #{$ml-badges-margin-right};
 
-  // Individual Pill
-  --ml-pill-gap: #{$ml-pill-gap};
-  --ml-pill-height: #{$ml-pill-height};
-  --ml-pill-font-size: #{$ml-pill-font-size};
-  --ml-pill-font-weight: #{$ml-pill-font-weight};
-  --ml-pill-border-radius: #{$ml-pill-border-radius};
-  --ml-pill-bg: #{$ml-pill-bg};
-  --ml-pill-bg-hover: #{$ml-pill-bg-hover};
-  --ml-pill-bg-active: #{$ml-pill-bg-active};
+  // Individual Badge
+  --ml-badge-gap: #{$ml-badge-gap};
+  --ml-badge-height: #{$ml-badge-height};
+  --ml-badge-font-size: #{$ml-badge-font-size};
+  --ml-badge-font-weight: #{$ml-badge-font-weight};
+  --ml-badge-border-radius: #{$ml-badge-border-radius};
+  --ml-badge-bg: #{$ml-badge-bg};
+  --ml-badge-bg-hover: #{$ml-badge-bg-hover};
+  --ml-badge-bg-active: #{$ml-badge-bg-active};
   --ml-order-first: #{$ml-order-first};
 
   // ==========================================================================
-  // PILL TEXT & REMOVE BUTTON
+  // BADGE TEXT & REMOVE BUTTON
   // ==========================================================================
 
-  // Pill Text
-  --ml-pill-text-padding: #{$ml-pill-text-padding};
-  --ml-pill-text-bg: #{$ml-pill-text-bg};
-  --ml-pill-text-color: #{$ml-pill-text-color};
+  // Badge Text
+  --ml-badge-text-padding: #{$ml-badge-text-padding};
+  --ml-badge-text-bg: #{$ml-badge-text-bg};
+  --ml-badge-text-color: #{$ml-badge-text-color};
 
-  // Pill Remove Button
-  --ml-pill-remove-width: #{$ml-pill-remove-width};
-  --ml-pill-remove-bg: #{$ml-pill-remove-bg};
-  --ml-pill-remove-color: #{$ml-pill-remove-color};
-  --ml-pill-remove-border: #{$ml-pill-remove-border};
-  --ml-pill-remove-font-size: #{$ml-pill-remove-font-size};
-  --ml-pill-remove-bg-hover: #{$ml-pill-remove-bg-hover};
-  --ml-pill-remove-box-shadow-focus: #{$ml-pill-remove-box-shadow-focus};
+  // Badge Remove Button
+  --ml-badge-remove-width: #{$ml-badge-remove-width};
+  --ml-badge-remove-bg: #{$ml-badge-remove-bg};
+  --ml-badge-remove-color: #{$ml-badge-remove-color};
+  --ml-badge-remove-border: #{$ml-badge-remove-border};
+  --ml-badge-remove-font-size: #{$ml-badge-remove-font-size};
+  --ml-badge-remove-bg-hover: #{$ml-badge-remove-bg-hover};
+  --ml-badge-remove-box-shadow-focus: #{$ml-badge-remove-box-shadow-focus};
   --ml-icon-remove: "#{$ml-icon-remove}";
 
-  // Pill Indicator (for "+ X more", "3 selected", compact mode)
-  --ml-pill-indicator-bg: #{$ml-pill-indicator-bg};
-  --ml-pill-indicator-border: #{$ml-pill-indicator-border};
-  --ml-pill-indicator-border-radius: #{$ml-pill-indicator-border-radius};
-  --ml-pill-indicator-text-color: #{$ml-pill-indicator-text-color};
-  --ml-pill-indicator-text-bg: #{$ml-pill-indicator-text-bg};
-  --ml-pill-indicator-remove-bg: #{$ml-pill-indicator-remove-bg};
-  --ml-pill-indicator-remove-color: #{$ml-pill-indicator-remove-color};
-  --ml-pill-indicator-remove-bg-hover: #{$ml-pill-indicator-remove-bg-hover};
+  // Badge Indicator (for "+ X more", "3 selected", compact mode)
+  --ml-badge-counter-bg: #{$ml-badge-counter-bg};
+  --ml-badge-counter-border: #{$ml-badge-counter-border};
+  --ml-badge-counter-border-radius: #{$ml-badge-counter-border-radius};
+  --ml-badge-counter-text-color: #{$ml-badge-counter-text-color};
+  --ml-badge-counter-text-bg: #{$ml-badge-counter-text-bg};
+  --ml-badge-counter-remove-bg: #{$ml-badge-counter-remove-bg};
+  --ml-badge-counter-remove-color: #{$ml-badge-counter-remove-color};
+  --ml-badge-counter-remove-bg-hover: #{$ml-badge-counter-remove-bg-hover};
 
   // ==========================================================================
   // "+X MORE" BADGE
@@ -269,13 +272,13 @@
   --ml-count-display-margin-right: #{$ml-count-display-margin-right};
 
   // Count Badge Wrapper
-  --ml-count-badge-wrapper-bg: #{$ml-count-badge-wrapper-bg};
-  --ml-count-badge-wrapper-border: #{$ml-count-badge-wrapper-border};
-  --ml-count-badge-wrapper-border-radius: #{$ml-count-badge-wrapper-border-radius};
-  --ml-count-badge-wrapper-padding: #{$ml-count-badge-wrapper-padding};
-  --ml-count-badge-wrapper-gap: #{$ml-count-badge-wrapper-gap};
-  --ml-count-badge-wrapper-bg-hover: #{$ml-count-badge-wrapper-bg-hover};
-  --ml-count-badge-wrapper-border-color-hover: #{$ml-count-badge-wrapper-border-color-hover};
+  --ml-counter-wrapper-bg: #{$ml-counter-wrapper-bg};
+  --ml-counter-wrapper-border: #{$ml-counter-wrapper-border};
+  --ml-counter-wrapper-border-radius: #{$ml-counter-wrapper-border-radius};
+  --ml-counter-wrapper-padding: #{$ml-counter-wrapper-padding};
+  --ml-counter-wrapper-gap: #{$ml-counter-wrapper-gap};
+  --ml-counter-wrapper-bg-hover: #{$ml-counter-wrapper-bg-hover};
+  --ml-counter-wrapper-border-color-hover: #{$ml-counter-wrapper-border-color-hover};
 
   // ==========================================================================
   // COUNT TEXT & CLEAR BUTTON

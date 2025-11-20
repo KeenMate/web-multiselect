@@ -2,27 +2,28 @@
  * Logging configuration using loglevel with categorized loggers
  *
  * Categories:
- * - INIT: Component initialization and configuration
- * - DATA: Data loading, async operations, option parsing
- * - UI: UI updates, rendering, dropdown/popover/tooltip operations
- * - INTERACTION: User interactions, clicks, selections, keyboard events
+ * - MULTISELECT:INIT: Component initialization and configuration
+ * - MULTISELECT:DATA: Data loading, async operations, option parsing
+ * - MULTISELECT:UI: UI updates, rendering, dropdown/popover/tooltip operations
+ * - MULTISELECT:INTERACTION: User interactions, clicks, selections, keyboard events
  *
  * Usage:
  * - By default, all logging is disabled (silent mode) for production
  * - Enable logging in browser console:
  *   ```javascript
- *   import { enableLogging, setLogLevel, enableCategory } from './logger';
+ *   import { enableLogging, setLogLevel, setCategoryLevel } from './logger';
  *
  *   // Enable all logging at debug level
  *   enableLogging();
  *
- *   // Or set a specific log level
+ *   // Or set a specific log level for all categories
  *   setLogLevel('info');  // 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'silent'
  *
- *   // Or enable only specific categories
+ *   // Or enable/disable specific categories
  *   disableLogging();  // First disable all
- *   enableCategory('UI', 'debug');  // Enable only UI logs
- *   enableCategory('DATA', 'info');  // Enable only DATA logs at info level
+ *   setCategoryLevel('MULTISELECT:UI', 'debug');  // Enable only UI logs
+ *   setCategoryLevel('MULTISELECT:DATA', 'info');  // Enable only DATA logs at info level
+ *   setCategoryLevel('MULTISELECT:INTERACTION', 'silent');  // Disable interaction logs
  *   ```
  */
 
@@ -87,121 +88,54 @@ log.methodFactory = function(methodName: string, logLevel: number, loggerName: s
 };
 
 // Set default log level to silent (production mode)
-// Can be changed at runtime via setLogLevel()
 log.setLevel('silent');
 
-// Create category-specific loggers
-export const initLogger = log.getLogger('INIT');
-export const dataLogger = log.getLogger('DATA');
-export const uiLogger = log.getLogger('UI');
-export const interactionLogger = log.getLogger('INTERACTION');
-
-// Apply prefix and color styling to all category loggers
-[initLogger, dataLogger, uiLogger, interactionLogger].forEach(logger => {
-    prefix.apply(logger, {
-        format(level: string, name: string | undefined, timestamp: string) {
-            const color = COLORS[level.toLowerCase() as keyof typeof COLORS] || '#666';
-            return `%c[${timestamp}]%c %c[${level}]%c %c[${name}]%c `;
-        },
-        timestampFormatter(date: Date) {
-            return date.toTimeString().split(' ')[0] + '.' + date.getMilliseconds().toString().padStart(3, '0');
-        }
-    });
-
-    // Apply color-aware method factory to category loggers
-    const catOriginalFactory = logger.methodFactory;
-    logger.methodFactory = function(methodName: string, logLevel: number, loggerName: string) {
-        const rawMethod = catOriginalFactory(methodName, logLevel, loggerName);
-
-        return function(...args: any[]) {
-            if (args.length > 0 && typeof args[0] === 'string' && args[0].includes('%c')) {
-                const color = COLORS[methodName as keyof typeof COLORS] || '#666';
-                const coloredArgs = [
-                    args[0],
-                    `color: ${color}; font-weight: bold;`,  // timestamp
-                    'color: inherit;',
-                    `color: ${color}; font-weight: bold;`,  // level
-                    'color: inherit;',
-                    `color: ${color}; font-weight: bold;`,  // category name
-                    'color: inherit;',
-                    ...args.slice(1)
-                ];
-                rawMethod(...coloredArgs);
-            } else {
-                rawMethod(...args);
-            }
-        };
-    };
-
-    logger.setLevel('silent');
-});
+// Create category-specific loggers with hierarchical naming
+export const initLogger = log.getLogger('MULTISELECT:INIT');
+export const dataLogger = log.getLogger('MULTISELECT:DATA');
+export const uiLogger = log.getLogger('MULTISELECT:UI');
+export const interactionLogger = log.getLogger('MULTISELECT:INTERACTION');
 
 // Export the default logger
 export default log;
 
 /**
- * Enable logging for all loggers
- * @param level Log level to set ('trace' | 'debug' | 'info' | 'warn' | 'error' | 'silent')
+ * List of all logging categories for introspection
  */
-export const setLogLevel = (level: 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'silent') => {
-    log.setLevel(level);
-    initLogger.setLevel(level);
-    dataLogger.setLevel(level);
-    uiLogger.setLevel(level);
-    interactionLogger.setLevel(level);
-};
+export const LOGGING_CATEGORIES = [
+    'MULTISELECT:INIT',
+    'MULTISELECT:DATA',
+    'MULTISELECT:UI',
+    'MULTISELECT:INTERACTION'
+];
 
 /**
  * Enable all logging (set to debug level)
  */
-export const enableLogging = () => {
-    setLogLevel('debug');
-};
+export function enableLogging() {
+    log.setLevel('debug');
+}
 
 /**
  * Disable all logging (set to silent level)
  */
-export const disableLogging = () => {
-    setLogLevel('silent');
-};
+export function disableLogging() {
+    log.setLevel('silent');
+}
 
 /**
- * Enable logging for a specific category only
- * @param category Category logger to enable
- * @param level Log level to set (default: 'debug')
+ * Set log level for all loggers
+ * @param level Log level to set ('trace' | 'debug' | 'info' | 'warn' | 'error' | 'silent')
  */
-export const enableCategory = (
-    category: 'INIT' | 'DATA' | 'UI' | 'INTERACTION',
-    level: 'trace' | 'debug' | 'info' | 'warn' | 'error' = 'debug'
-) => {
-    const loggerMap = {
-        'INIT': initLogger,
-        'DATA': dataLogger,
-        'UI': uiLogger,
-        'INTERACTION': interactionLogger
-    };
-    loggerMap[category].setLevel(level);
-};
+export function setLogLevel(level: string) {
+    log.setLevel(level);
+}
 
 /**
- * Helper function to log structured data (objects/arrays)
- * Since loglevel doesn't natively support structured logging, this helper
- * ensures consistent formatting of complex data types.
- *
- * @param logger Logger instance to use
- * @param level Log level ('trace' | 'debug' | 'info' | 'warn' | 'error')
- * @param message Message string
- * @param data Optional data object to log
+ * Set log level for a specific category
+ * @param category Category logger to configure (e.g., 'MULTISELECT:UI')
+ * @param level Log level to set ('trace' | 'debug' | 'info' | 'warn' | 'error' | 'silent')
  */
-export const logStructured = (
-    logger: any,
-    level: 'trace' | 'debug' | 'info' | 'warn' | 'error',
-    message: string,
-    data?: any
-) => {
-    if (data !== undefined) {
-        logger[level](message, data);
-    } else {
-        logger[level](message);
-    }
-};
+export function setCategoryLevel(category: string, level: string) {
+    log.getLogger(category).setLevel(level);
+}

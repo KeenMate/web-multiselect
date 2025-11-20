@@ -28,8 +28,8 @@
   }
 
   // Move count badge to left side
-  .ml__count-badge {
-    left: var(--ml-count-badge-offset, $ml-count-badge-offset) !important;
+  .ml__counter {
+    left: var(--ml-counter-offset, $ml-counter-offset) !important;
     right: auto !important;
   }
 
@@ -62,28 +62,28 @@
   }
 
   // ==============================================================================
-  // PILLS LAYOUT
+  // BADGES LAYOUT
   // ==============================================================================
 
-  .ml__pills {
+  .ml__badges {
     direction: rtl;
   }
 
-  // Pills flow right-to-left
-  .ml__pill {
+  // Badges flow right-to-left
+  .ml__badge {
     flex-direction: row-reverse;
   }
 
-  // Remove button on left side of pill
-  .ml__pill-remove {
-    border-radius: var(--ml-pill-remove-border-radius-rtl, $ml-pill-border-radius) 0 0 var(--ml-pill-remove-border-radius-rtl, $ml-pill-border-radius);
-    border-left: var(--ml-pill-remove-border, $ml-pill-remove-border);
+  // Remove button on left side of badge
+  .ml__badge-remove {
+    border-radius: var(--ml-badge-remove-border-radius-rtl, $ml-badge-border-radius) 0 0 var(--ml-badge-remove-border-radius-rtl, $ml-badge-border-radius);
+    border-left: var(--ml-badge-remove-border, $ml-badge-remove-border);
     border-right: none;
   }
 
-  // Pill text rounded on right
-  .ml__pill-text {
-    border-radius: 0 var(--ml-pill-text-border-radius-rtl, $ml-pill-border-radius) var(--ml-pill-text-border-radius-rtl, $ml-pill-border-radius) 0;
+  // Badge text rounded on right
+  .ml__badge-text {
+    border-radius: 0 var(--ml-badge-text-border-radius-rtl, $ml-badge-border-radius) var(--ml-badge-text-border-radius-rtl, $ml-badge-border-radius) 0;
   }
 
   // ==============================================================================
@@ -94,7 +94,7 @@
     direction: rtl;
   }
 
-  .ml__count-badge-wrapper {
+  .ml__counter-wrapper {
     flex-direction: row-reverse;
   }
 
