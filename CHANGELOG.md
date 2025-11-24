@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- **Showcase Property Names** - Corrected all property names in showcase examples to match actual API
+  - **Display Modes page** (`display-modes/+page.svelte`):
+    - `pills-display-mode` → `badges-display-mode` (all instances)
+    - `pills-position` → `badges-position` (all instances)
+    - `pills-threshold` → `badges-threshold` (all instances)
+    - Updated documentation table to reflect correct property names
+  - **Advanced Features page** (`advanced-features/+page.svelte`):
+    - `pills-threshold` → `badges-threshold` (6 instances)
+    - `pills-threshold-mode` → `badges-threshold-mode` (6 instances)
+    - `pills-max-visible` → `badges-max-visible` (4 instances)
+    - `enable-pill-tooltips` → `enable-badge-tooltips` (5 instances)
+    - `pill-tooltip-placement` → `badge-tooltip-placement` (4 instances)
+    - `getPillTooltipCallback` → `getBadgeTooltipCallback` (4 instances)
+    - Updated all user-facing documentation text from "pill/pills" to "badge/badges" for consistency
+  - Fixed duplicate variable binding in Compare section causing first example to have no data
+  - Improved Compare section threshold: reduced from 4 to 2 items for easier demonstration
+  - Impact: All previously broken examples (Count Mode Only, Compact Mode, None Mode) now work correctly
+
 ## [1.0.0] - PUBLISHED - 2025-11-20
 
 ### Changed
