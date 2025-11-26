@@ -92,7 +92,7 @@ export class VirtualScroll<T> {
         this.wrapper.style.position = 'relative';
         this.wrapper.style.width = '100%';
         this.wrapper.style.height = `${this.items.length * this.itemHeight}px`;
-        this.wrapper.className = 'ml__virtual-scroll-wrapper';
+        this.wrapper.className = 'ms__virtual-scroll-wrapper';
 
         // Create viewport (holds visible items)
         this.viewport = document.createElement('div');
@@ -101,7 +101,7 @@ export class VirtualScroll<T> {
         this.viewport.style.left = '0';
         this.viewport.style.right = '0';
         this.viewport.style.width = '100%';
-        this.viewport.className = 'ml__virtual-scroll-viewport';
+        this.viewport.className = 'ms__virtual-scroll-viewport';
 
         // Assemble structure
         this.wrapper.appendChild(this.viewport);
@@ -188,7 +188,7 @@ export class VirtualScroll<T> {
 
             // Wrap with positioned container
             const top = i * this.itemHeight;
-            html += `<div class="ml__virtual-item" style="position: absolute; top: ${top}px; left: 0; right: 0; height: ${this.itemHeight}px;" data-index="${i}">`;
+            html += `<div class="ms__virtual-item" style="position: absolute; top: ${top}px; left: 0; right: 0; height: ${this.itemHeight}px;" data-index="${i}">`;
             html += itemHtml;
             html += '</div>';
         }

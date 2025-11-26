@@ -325,21 +325,21 @@ export class WebMultiSelect<T = any> {
         this.element.classList.add('ml');
 
         if (this.isRTL) {
-            this.element.classList.add('ml--rtl');
-            initLogger.debug(`[${this.instanceId}] Added ml--rtl class to element`);
+            this.element.classList.add('ms--rtl');
+            initLogger.debug(`[${this.instanceId}] Added ms--rtl class to element`);
         }
 
         if (!this.options.isCheckboxesShown || !this.options.isMultipleEnabled) {
-            this.element.classList.add('ml--no-checkboxes');
+            this.element.classList.add('ms--no-checkboxes');
         }
 
         // Create input wrapper
         const inputWrapper = document.createElement('div');
-        inputWrapper.className = 'ml__input-wrapper';
+        inputWrapper.className = 'ms__input-wrapper';
 
         this.input = document.createElement('input');
         this.input.type = 'text';
-        this.input.className = 'ml__input';
+        this.input.className = 'ms__input';
         this.input.placeholder = this.options.searchPlaceholder;
         this.input.autocomplete = 'off';
 
@@ -351,11 +351,11 @@ export class WebMultiSelect<T = any> {
         }
 
         const toggle = document.createElement('span');
-        toggle.className = 'ml__toggle';
+        toggle.className = 'ms__toggle';
         toggle.innerHTML = '▼';
 
         this.counter = document.createElement('span');
-        this.counter.className = 'ml__counter';
+        this.counter.className = 'ms__counter';
         this.counter.style.display = 'none';
 
         inputWrapper.appendChild(this.input);
@@ -364,7 +364,7 @@ export class WebMultiSelect<T = any> {
 
         // Create badges container
         this.badgesContainer = document.createElement('div');
-        this.badgesContainer.className = 'ml__badges';
+        this.badgesContainer.className = 'ms__badges';
 
         // Create wrapper for input and badges (needed for positioning)
         const wrapper = document.createElement('div');
@@ -382,20 +382,20 @@ export class WebMultiSelect<T = any> {
 
         // Create dropdown (attached to container)
         this.dropdown = document.createElement('div');
-        this.dropdown.className = 'ml__dropdown';
+        this.dropdown.className = 'ms__dropdown';
         container.appendChild(this.dropdown);
 
         // Create hint if provided (attached to container)
         if (this.options.searchHint) {
             this.hint = document.createElement('div');
-            this.hint.className = 'ml__hint';
+            this.hint.className = 'ms__hint';
             this.hint.textContent = this.options.searchHint;
             container.appendChild(this.hint);
         }
 
         // Create selected popover (attached to container)
         this.selectedPopover = document.createElement('div');
-        this.selectedPopover.className = 'ml__selected-popover';
+        this.selectedPopover.className = 'ms__selected-popover';
         container.appendChild(this.selectedPopover);
 
         this.renderDropdown();
@@ -429,86 +429,86 @@ export class WebMultiSelect<T = any> {
         // Check if we should use virtual scrolling
         if (this.shouldUseVirtualScroll()) {
             // Add virtual scroll class to dropdown for CSS adjustments
-            this.dropdown.classList.add('ml__dropdown--virtual');
+            this.dropdown.classList.add('ms__dropdown--virtual');
             this.renderDropdownVirtual();
             return;
         }
         // Remove virtual scroll class if not using it
-        this.dropdown.classList.remove('ml__dropdown--virtual');
+        this.dropdown.classList.remove('ms__dropdown--virtual');
 
         // Normal rendering (existing code)
         let html = '';
 
         if (this.isLoading) {
-            html += '<div class="ml__loader">';
+            html += '<div class="ms__loader">';
             html += '<div class="pa-loader pa-loader--sm"></div>';
-            html += `<div class="ml__loading-text">${this.options.loadingMessage}</div>`;
+            html += `<div class="ms__loading-text">${this.options.loadingMessage}</div>`;
             html += '</div>';
             this.dropdown.innerHTML = html;
             return;
         }
 
-        console.log('[DEBUG] renderDropdown() - isMultipleEnabled:', this.options.isMultipleEnabled);
-        console.log('[DEBUG] renderDropdown() - actionButtons:', this.options.actionButtons);
-        console.log('[DEBUG] renderDropdown() - actionButtons.length:', this.options.actionButtons?.length);
-
         if (this.options.isMultipleEnabled && this.options.actionButtons && this.options.actionButtons.length > 0) {
-            console.log('[DEBUG] About to render action buttons!');
-            const stickyClass = this.options.isActionsSticky ? ' ml__actions--sticky' : '';
-            const wrapClass = this.options.actionsLayout === 'wrap' ? ' ml__actions--wrap' : '';
-            html += `<div class="ml__actions${stickyClass}${wrapClass}">`;
+            const stickyClass = this.options.isActionsSticky ? ' ms__actions--sticky' : '';
+            const wrapClass = this.options.actionsLayout === 'wrap' ? ' ms__actions--wrap' : '';
+            html += `<div class="ms__actions${stickyClass}${wrapClass}">`;
             this.options.actionButtons.forEach(button => {
-                console.log('[ACTION BUTTON DEBUG] Processing button:', button.text, button);
-
                 // Check visibility condition (callback takes priority over static property)
-                console.log('[VISIBILITY] Checking isVisibleCallback:', !!button.isVisibleCallback);
                 const isVisible = button.isVisibleCallback ? button.isVisibleCallback(this) : (button.isVisible ?? true);
-                console.log('[VISIBILITY] Result:', isVisible);
                 if (!isVisible) {
                     return;
                 }
 
                 // Check disabled state (callback takes priority over static property)
-                console.log('[DISABLED] Checking isDisabledCallback:', !!button.isDisabledCallback);
                 const isDisabled = button.isDisabledCallback ? button.isDisabledCallback(this) : (button.isDisabled ?? false);
-                console.log('[DISABLED] Result:', isDisabled);
                 const disabledAttr = isDisabled ? ' disabled' : '';
 
                 // Get button text (callback takes priority over static property)
-                console.log('[TEXT] Checking getTextCallback:', !!button.getTextCallback);
                 const text = button.getTextCallback ? button.getTextCallback(this) : button.text;
-                console.log('[TEXT] Result:', text);
 
                 // Get CSS classes (callback takes priority over static property)
-                console.log('[CLASS] Checking getClassCallback:', !!button.getClassCallback);
                 let cssClass = '';
                 if (button.getClassCallback) {
                     const classes = button.getClassCallback(this);
-                    console.log('[CLASS] Callback returned:', classes);
                     cssClass = Array.isArray(classes) ? ` ${classes.join(' ')}` : (classes ? ` ${classes}` : '');
                 } else if (button.cssClass) {
                     cssClass = ` ${button.cssClass}`;
                 }
-                console.log('[CLASS] Final cssClass:', cssClass);
 
                 // Note: Tooltips are handled by Floating UI, not HTML title attribute
 
-                html += `<button type="button"${disabledAttr} class="ml__action-btn${cssClass}" data-action="${button.action}">${text}</button>`;
+                html += `<button type="button"${disabledAttr} class="ms__action-btn${cssClass}" data-action="${button.action}">${text}</button>`;
             });
             html += '</div>';
         }
 
-        html += '<div class="ml__options">';
+        html += '<div class="ms__options">';
 
         if (this.filteredOptions.length === 0) {
-            html += `<div class="ml__empty">${this.options.emptyMessage}</div>`;
+            html += `<div class="ms__empty">${this.options.emptyMessage}</div>`;
         } else {
             if (this.options.isGroupsAllowed) {
                 const groups = this.groupOptions(this.filteredOptions);
                 Object.keys(groups).forEach(groupName => {
-                    html += '<div class="ml__group">';
+                    html += '<div class="ms__group">';
                     if (groupName !== '__ungrouped__') {
-                        html += `<div class="ml__group-label">${groupName}</div>`;
+                        // Check if custom group label callback is provided
+                        if (this.options.renderGroupLabelContentCallback) {
+                            const customContent = this.options.renderGroupLabelContentCallback(groupName);
+                            if (customContent instanceof HTMLElement) {
+                                // HTMLElement - wrap in group-label div
+                                const wrapper = document.createElement('div');
+                                wrapper.className = 'ms__group-label';
+                                wrapper.appendChild(customContent);
+                                html += wrapper.outerHTML;
+                            } else {
+                                // String (HTML or plain text)
+                                html += `<div class="ms__group-label">${customContent}</div>`;
+                            }
+                        } else {
+                            // Default rendering
+                            html += `<div class="ms__group-label">${groupName}</div>`;
+                        }
                     }
                     groups[groupName].forEach((option, index) => {
                         html += this.renderOption(option, index);
@@ -542,46 +542,35 @@ export class WebMultiSelect<T = any> {
 
             // Render actions (Select All/Clear All) outside virtual scroll
             if (this.options.isMultipleEnabled && this.options.actionButtons && this.options.actionButtons.length > 0) {
-                const stickyClass = this.options.isActionsSticky ? ' ml__actions--sticky' : '';
-                const wrapClass = this.options.actionsLayout === 'wrap' ? ' ml__actions--wrap' : '';
-                html += `<div class="ml__actions${stickyClass}${wrapClass}">`;
+                const stickyClass = this.options.isActionsSticky ? ' ms__actions--sticky' : '';
+                const wrapClass = this.options.actionsLayout === 'wrap' ? ' ms__actions--wrap' : '';
+                html += `<div class="ms__actions${stickyClass}${wrapClass}">`;
                 this.options.actionButtons.forEach(button => {
-                    console.log('[ACTION BUTTON DEBUG - VIRTUAL] Processing button:', button.text, button);
-
                     // Check visibility condition (callback takes priority over static property)
-                    console.log('[VISIBILITY - VIRTUAL] Checking isVisibleCallback:', !!button.isVisibleCallback);
                     const isVisible = button.isVisibleCallback ? button.isVisibleCallback(this) : (button.isVisible ?? true);
-                    console.log('[VISIBILITY - VIRTUAL] Result:', isVisible);
                     if (!isVisible) {
                         return;
                     }
 
                     // Check disabled state (callback takes priority over static property)
-                    console.log('[DISABLED - VIRTUAL] Checking isDisabledCallback:', !!button.isDisabledCallback);
                     const isDisabled = button.isDisabledCallback ? button.isDisabledCallback(this) : (button.isDisabled ?? false);
-                    console.log('[DISABLED - VIRTUAL] Result:', isDisabled);
                     const disabledAttr = isDisabled ? ' disabled' : '';
 
                     // Get button text (callback takes priority over static property)
-                    console.log('[TEXT - VIRTUAL] Checking getTextCallback:', !!button.getTextCallback);
                     const text = button.getTextCallback ? button.getTextCallback(this) : button.text;
-                    console.log('[TEXT - VIRTUAL] Result:', text);
 
                     // Get CSS classes (callback takes priority over static property)
-                    console.log('[CLASS - VIRTUAL] Checking getClassCallback:', !!button.getClassCallback);
                     let cssClass = '';
                     if (button.getClassCallback) {
                         const classes = button.getClassCallback(this);
-                        console.log('[CLASS - VIRTUAL] Callback returned:', classes);
                         cssClass = Array.isArray(classes) ? ` ${classes.join(' ')}` : (classes ? ` ${classes}` : '');
                     } else if (button.cssClass) {
                         cssClass = ` ${button.cssClass}`;
                     }
-                    console.log('[CLASS - VIRTUAL] Final cssClass:', cssClass);
 
                     // Note: Tooltips are handled by Floating UI, not HTML title attribute
 
-                    html += `<button type="button"${disabledAttr} class="ml__action-btn${cssClass}" data-action="${button.action}">${text}</button>`;
+                    html += `<button type="button"${disabledAttr} class="ms__action-btn${cssClass}" data-action="${button.action}">${text}</button>`;
                 });
                 html += '</div>';
             }
@@ -590,15 +579,15 @@ export class WebMultiSelect<T = any> {
             // Add inline styles to ensure proper height constraint and scrolling
             const maxHeight = this.options.maxHeight || '20rem';
             const optionHeight = this.options.optionHeight ?? 50;
-            html += `<div class="ml__options ml__options--virtual" style="height: ${maxHeight}; max-height: ${maxHeight}; overflow-y: auto; position: relative; --ml-option-height: ${optionHeight}px;"></div>`;
+            html += `<div class="ms__options ms__options--virtual" style="height: ${maxHeight}; max-height: ${maxHeight}; overflow-y: auto; position: relative; --ml-option-height: ${optionHeight}px;"></div>`;
             this.dropdown.innerHTML = html;
 
             // Get options container
-            this.optionsContainer = this.dropdown.querySelector('.ml__options') as HTMLDivElement;
+            this.optionsContainer = this.dropdown.querySelector('.ms__options') as HTMLDivElement;
         }
 
         if (this.filteredOptions.length === 0) {
-            this.optionsContainer.innerHTML = `<div class="ml__empty">${this.options.emptyMessage}</div>`;
+            this.optionsContainer.innerHTML = `<div class="ms__empty">${this.options.emptyMessage}</div>`;
             return;
         }
 
@@ -638,11 +627,11 @@ export class WebMultiSelect<T = any> {
         const isFocused = index === this.focusedIndex;
         const isMatched = this.matchingIndices.has(index);
 
-        const classes = ['ml__option'];
-        if (isSelected) classes.push('ml__option--selected');
-        if (isFocused) classes.push('ml__option--focused');
-        if (isMatched) classes.push('ml__option--matched');
-        if (disabled) classes.push('ml__option--disabled');
+        const classes = ['ms__option'];
+        if (isSelected) classes.push('ms__option--selected');
+        if (isFocused) classes.push('ms__option--focused');
+        if (isMatched) classes.push('ms__option--matched');
+        if (disabled) classes.push('ms__option--disabled');
 
         const checkboxAlignAttr = this.options.checkboxAlign && this.options.checkboxAlign !== 'top'
             ? ` data-checkbox-align="${this.options.checkboxAlign}"`
@@ -651,10 +640,10 @@ export class WebMultiSelect<T = any> {
         let html = `<div class="${classes.join(' ')}" data-value="${value}" data-index="${index}"${checkboxAlignAttr}>`;
 
         if (this.options.isCheckboxesShown && this.options.isMultipleEnabled) {
-            html += `<input type="checkbox" class="ml__checkbox" ${isSelected ? 'checked' : ''} ${disabled ? 'disabled' : ''}>`;
+            html += `<input type="checkbox" class="ms__checkbox" ${isSelected ? 'checked' : ''} ${disabled ? 'disabled' : ''}>`;
         }
 
-        html += '<div class="ml__option-content">';
+        html += '<div class="ms__option-content">';
 
         // Check if custom render callback is provided
         if (this.options.renderOptionContentCallback) {
@@ -676,14 +665,14 @@ export class WebMultiSelect<T = any> {
         } else {
             // Default rendering
             if (icon) {
-                html += `<span class="ml__option-icon">${icon}</span>`;
+                html += `<span class="ms__option-icon">${icon}</span>`;
             }
 
-            html += '<div class="ml__option-text">';
-            html += `<div class="ml__option-title">${this.highlightMatch(displayValue, this.searchTerm)}</div>`;
+            html += '<div class="ms__option-text">';
+            html += `<div class="ms__option-title">${this.highlightMatch(displayValue, this.searchTerm)}</div>`;
 
             if (subtitle) {
-                html += `<div class="ml__option-subtitle">${subtitle}</div>`;
+                html += `<div class="ms__option-subtitle">${subtitle}</div>`;
             }
 
             html += '</div>';
@@ -789,7 +778,7 @@ export class WebMultiSelect<T = any> {
         }
 
         if (effectiveMode === 'badges') {
-            this.badgesContainer.className = `ml__badges ml__badges--${this.effectiveBadgesPosition}`;
+            this.badgesContainer.className = `ms__badges ms__badges--${this.effectiveBadgesPosition}`;
             this.badgesContainer.innerHTML = selectedOptions.map(option => {
                 const value = this.getItemValue(option);
                 let badgeContent: string;
@@ -809,7 +798,7 @@ export class WebMultiSelect<T = any> {
                 }
 
                 // Get custom CSS classes if callback provided
-                let badgeClasses = 'ml__badge';
+                let badgeClasses = 'ms__badge';
                 if (this.options.getBadgeClassCallback) {
                     const customClasses = this.options.getBadgeClassCallback(option);
                     const classArray = Array.isArray(customClasses) ? customClasses : [customClasses];
@@ -818,14 +807,14 @@ export class WebMultiSelect<T = any> {
 
                 return `
                 <div class="${badgeClasses}">
-                    <span class="ml__badge-text">${badgeContent}</span>
-                    <button type="button" class="ml__badge-remove" data-value="${value}" aria-label="Remove ${this.getItemBadgeDisplayValue(option)}"></button>
+                    <span class="ms__badge-text">${badgeContent}</span>
+                    <button type="button" class="ms__badge-remove" data-value="${value}" aria-label="Remove ${this.getItemBadgeDisplayValue(option)}"></button>
                 </div>
             `;
             }).join('');
         } else if (effectiveMode === 'partial') {
             // Partial mode: show limited badges + "+X more" badge
-            this.badgesContainer.className = `ml__badges ml__badges--${this.effectiveBadgesPosition}`;
+            this.badgesContainer.className = `ms__badges ms__badges--${this.effectiveBadgesPosition}`;
 
             const maxVisible = this.options.badgesMaxVisible || 3;
             const visibleOptions = selectedOptions.slice(0, maxVisible);
@@ -849,7 +838,7 @@ export class WebMultiSelect<T = any> {
                 }
 
                 // Get custom CSS classes if callback provided
-                let badgeClasses = 'ml__badge';
+                let badgeClasses = 'ms__badge';
                 if (this.options.getBadgeClassCallback) {
                     const customClasses = this.options.getBadgeClassCallback(option);
                     const classArray = Array.isArray(customClasses) ? customClasses : [customClasses];
@@ -858,8 +847,8 @@ export class WebMultiSelect<T = any> {
 
                 return `
                 <div class="${badgeClasses}">
-                    <span class="ml__badge-text">${badgeContent}</span>
-                    <button type="button" class="ml__badge-remove" data-value="${value}" aria-label="Remove ${this.getItemBadgeDisplayValue(option)}"></button>
+                    <span class="ms__badge-text">${badgeContent}</span>
+                    <button type="button" class="ms__badge-remove" data-value="${value}" aria-label="Remove ${this.getItemBadgeDisplayValue(option)}"></button>
                 </div>
             `;
             }).join('');
@@ -871,9 +860,9 @@ export class WebMultiSelect<T = any> {
                     : `+${remainingCount} more`;
 
                 moreBadgeHtml = `
-                    <div class="ml__badge ml__badge--counter ml__badge--more" data-action="show-selected">
-                        <span class="ml__badge-text">${moreText}</span>
-                        <button type="button" class="ml__badge-remove" data-action="remove-hidden" aria-label="Remove ${remainingCount} hidden items"></button>
+                    <div class="ms__badge ms__badge--counter ms__badge--more" data-action="show-selected">
+                        <span class="ms__badge-text">${moreText}</span>
+                        <button type="button" class="ms__badge-remove" data-action="remove-hidden" aria-label="Remove ${remainingCount} hidden items"></button>
                     </div>
                 `;
             }
@@ -881,7 +870,7 @@ export class WebMultiSelect<T = any> {
             this.badgesContainer.innerHTML = visibleBadgesHtml + moreBadgeHtml;
         } else if (effectiveMode === 'compact') {
             // Compact mode: show first item + count in a single removable badge
-            this.badgesContainer.className = `ml__badges ml__badges--${this.effectiveBadgesPosition}`;
+            this.badgesContainer.className = `ms__badges ms__badges--${this.effectiveBadgesPosition}`;
             if (count > 0) {
                 const firstItem = selectedOptions[0];
                 const firstItemText = this.getItemBadgeDisplayValue(firstItem);
@@ -897,9 +886,9 @@ export class WebMultiSelect<T = any> {
                 }
 
                 this.badgesContainer.innerHTML = `
-                    <div class="ml__badge ml__badge--counter" data-action="show-selected">
-                        <span class="ml__badge-text">${compactText}</span>
-                        <button type="button" class="ml__badge-remove" data-action="clear-count" aria-label="Clear all selections"></button>
+                    <div class="ms__badge ms__badge--counter" data-action="show-selected">
+                        <span class="ms__badge-text">${compactText}</span>
+                        <button type="button" class="ms__badge-remove" data-action="clear-count" aria-label="Clear all selections"></button>
                     </div>
                 `;
             } else {
@@ -907,13 +896,13 @@ export class WebMultiSelect<T = any> {
             }
         } else {
             // Count mode
-            this.badgesContainer.className = `ml__badges ml__badges--${this.effectiveBadgesPosition}`;
+            this.badgesContainer.className = `ms__badges ms__badges--${this.effectiveBadgesPosition}`;
             if (count > 0) {
                 const countText = this.options.getCounterCallback ? this.options.getCounterCallback(count) : `${count} selected`;
                 this.badgesContainer.innerHTML = `
-                    <div class="ml__badge ml__badge--counter" data-action="show-selected">
-                        <span class="ml__badge-text">${countText}</span>
-                        <button type="button" class="ml__badge-remove" data-action="clear-count" aria-label="Clear all selections"></button>
+                    <div class="ms__badge ms__badge--counter" data-action="show-selected">
+                        <span class="ms__badge-text">${countText}</span>
+                        <button type="button" class="ms__badge-remove" data-action="clear-count" aria-label="Clear all selections"></button>
                     </div>
                 `;
             } else {
@@ -971,7 +960,7 @@ export class WebMultiSelect<T = any> {
 
         // Prevent page scroll when scrolling dropdown at boundaries
         this.dropdown.addEventListener('wheel', (e: WheelEvent) => {
-            // In virtual scroll mode, the .ml__options container handles scrolling, not the dropdown
+            // In virtual scroll mode, the .ms__options container handles scrolling, not the dropdown
             // Skip this handler to let wheel events reach the virtual scroll container
             if (this.virtualScroll) {
                 return;
@@ -1245,8 +1234,8 @@ export class WebMultiSelect<T = any> {
             return;
         }
 
-        const option = (e.target as HTMLElement).closest('.ml__option') as HTMLElement;
-        if (option && !option.classList.contains('ml__option--disabled')) {
+        const option = (e.target as HTMLElement).closest('.ms__option') as HTMLElement;
+        if (option && !option.classList.contains('ms__option--disabled')) {
             e.preventDefault();
             const value = option.dataset.value!;
             const optionData = this.filteredOptions.find(opt => String(this.getItemValue(opt)) === value);
@@ -1279,7 +1268,7 @@ export class WebMultiSelect<T = any> {
             return;
         }
 
-        const removeBtn = (e.target as HTMLElement).closest('.ml__badge-remove') as HTMLElement;
+        const removeBtn = (e.target as HTMLElement).closest('.ms__badge-remove') as HTMLElement;
         if (removeBtn) {
             e.preventDefault();
             e.stopPropagation();
@@ -1306,8 +1295,8 @@ export class WebMultiSelect<T = any> {
         }
 
         // Handle clicking the "+X more" badge itself (not the remove button)
-        const moreBadge = (e.target as HTMLElement).closest('.ml__badge--more');
-        if (moreBadge && !(e.target as HTMLElement).closest('.ml__badge-remove')) {
+        const moreBadge = (e.target as HTMLElement).closest('.ms__badge--more');
+        if (moreBadge && !(e.target as HTMLElement).closest('.ms__badge-remove')) {
             e.preventDefault();
             e.stopPropagation();
             interactionLogger.debug(`[${this.instanceId}] '+X more' badge clicked, showing popover`);
@@ -1449,7 +1438,7 @@ export class WebMultiSelect<T = any> {
             this.virtualScroll.scrollToIndex(this.focusedIndex);
         } else {
             // Standard mode: use scrollIntoView
-            const focusedElement = this.dropdown.querySelector('.ml__option--focused');
+            const focusedElement = this.dropdown.querySelector('.ms__option--focused');
             if (focusedElement) {
                 focusedElement.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
             }
@@ -1594,8 +1583,8 @@ export class WebMultiSelect<T = any> {
         if (this.isOpen) return;
 
         this.isOpen = true;
-        this.element.classList.add('ml--open');
-        this.dropdown.classList.add('ml__dropdown--visible');
+        this.element.classList.add('ms--open');
+        this.dropdown.classList.add('ms__dropdown--visible');
         uiLogger.info(`[${this.instanceId}] Dropdown opened`);
 
         this.input.placeholder = this.options.searchPlaceholder;
@@ -1615,7 +1604,7 @@ export class WebMultiSelect<T = any> {
         this.positionDropdown();
 
         if (this.hint) {
-            this.hint.classList.add('ml__hint--visible');
+            this.hint.classList.add('ms__hint--visible');
             this.positionHint();
         }
     }
@@ -1625,10 +1614,10 @@ export class WebMultiSelect<T = any> {
         if (!this.isOpen) return;
 
         this.isOpen = false;
-        this.element.classList.remove('ml--open');
-        this.dropdown.classList.remove('ml__dropdown--visible');
+        this.element.classList.remove('ms--open');
+        this.dropdown.classList.remove('ms__dropdown--visible');
         if (this.hint) {
-            this.hint.classList.remove('ml__hint--visible');
+            this.hint.classList.remove('ms__hint--visible');
         }
         this.searchTerm = '';
         // Only clear input in multi-select mode or when search is enabled
@@ -1795,12 +1784,12 @@ export class WebMultiSelect<T = any> {
 
         this.showSelectedPopover = true;
         this.renderSelectedPopover();
-        this.selectedPopover.classList.add('ml__selected-popover--visible');
+        this.selectedPopover.classList.add('ms__selected-popover--visible');
 
         // Add virtual class if using virtual scroll (matches dropdown pattern)
         const threshold = 100;
         if (this.selectedValues.size >= threshold) {
-            this.selectedPopover.classList.add('ml__selected-popover--virtual');
+            this.selectedPopover.classList.add('ms__selected-popover--virtual');
         }
 
         this.positionSelectedPopover();
@@ -1809,8 +1798,8 @@ export class WebMultiSelect<T = any> {
     private hideSelectedPopover(): void {
         uiLogger.debug(`[${this.instanceId}] hideSelectedPopover() called`);
         this.showSelectedPopover = false;
-        this.selectedPopover.classList.remove('ml__selected-popover--visible');
-        this.selectedPopover.classList.remove('ml__selected-popover--virtual');
+        this.selectedPopover.classList.remove('ms__selected-popover--visible');
+        this.selectedPopover.classList.remove('ms__selected-popover--virtual');
         this.selectedPopoverPlacement = null;
 
         // Cleanup virtual scroll
@@ -1839,11 +1828,11 @@ export class WebMultiSelect<T = any> {
 
         // Standard rendering for small selections
         this.selectedPopover.innerHTML = `
-            <div class="ml__selected-popover-header">
+            <div class="ms__selected-popover-header">
                 <span>Selected Items (${count})</span>
-                <button type="button" class="ml__selected-popover-close" aria-label="Close">&times;</button>
+                <button type="button" class="ms__selected-popover-close" aria-label="Close">&times;</button>
             </div>
-            <div class="ml__selected-popover-body">
+            <div class="ms__selected-popover-body">
                 ${selectedOptions.map(option => this.renderBadgeForPopover(option)).join('')}
             </div>
         `;
@@ -1854,17 +1843,17 @@ export class WebMultiSelect<T = any> {
         if (!this.selectedPopoverVirtualScroll) {
             const badgeHeight = this.options.badgeHeight ?? 36;
             const html = `
-                <div class="ml__selected-popover-header">
+                <div class="ms__selected-popover-header">
                     <span>Selected Items (${count})</span>
-                    <button type="button" class="ml__selected-popover-close" aria-label="Close">&times;</button>
+                    <button type="button" class="ms__selected-popover-close" aria-label="Close">&times;</button>
                 </div>
-                <div class="ml__selected-popover-body ml__selected-popover-body--virtual" style="height: 18rem; overflow-y: auto; position: relative; --ml-badge-height-virtual: ${badgeHeight}px;"></div>
+                <div class="ms__selected-popover-body ms__selected-popover-body--virtual" style="height: 18rem; overflow-y: auto; position: relative; --ml-badge-height-virtual: ${badgeHeight}px;"></div>
             `;
             this.selectedPopover.innerHTML = html;
-            this.selectedPopoverContainer = this.selectedPopover.querySelector('.ml__selected-popover-body') as HTMLDivElement;
+            this.selectedPopoverContainer = this.selectedPopover.querySelector('.ms__selected-popover-body') as HTMLDivElement;
         } else {
             // Just update the count in header
-            const header = this.selectedPopover.querySelector('.ml__selected-popover-header span');
+            const header = this.selectedPopover.querySelector('.ms__selected-popover-header span');
             if (header) {
                 header.textContent = `Selected Items (${count})`;
             }
@@ -1918,7 +1907,7 @@ export class WebMultiSelect<T = any> {
         }
 
         // Check for selected item class callback first, fall back to badge class callback
-        let badgeClasses = 'ml__badge';
+        let badgeClasses = 'ms__badge';
         const classCallback = this.options.getSelectedItemClassCallback || this.options.getBadgeClassCallback;
         if (classCallback) {
             const customClasses = classCallback(item);
@@ -1928,8 +1917,8 @@ export class WebMultiSelect<T = any> {
 
         return `
             <div class="${badgeClasses}">
-                <span class="ml__badge-text">${badgeContent}</span>
-                <button type="button" class="ml__badge-remove" data-value="${value}" aria-label="Remove ${this.getItemBadgeDisplayValue(item)}"></button>
+                <span class="ms__badge-text">${badgeContent}</span>
+                <button type="button" class="ms__badge-remove" data-value="${value}" aria-label="Remove ${this.getItemBadgeDisplayValue(item)}"></button>
             </div>
         `;
     }
@@ -1937,14 +1926,14 @@ export class WebMultiSelect<T = any> {
     private handleSelectedPopoverClick(e: MouseEvent): void {
         e.stopPropagation();
 
-        const closeBtn = (e.target as HTMLElement).closest('.ml__selected-popover-close');
+        const closeBtn = (e.target as HTMLElement).closest('.ms__selected-popover-close');
         if (closeBtn) {
             e.preventDefault();
             this.hideSelectedPopover();
             return;
         }
 
-        const removeBtn = (e.target as HTMLElement).closest('.ml__badge-remove') as HTMLElement;
+        const removeBtn = (e.target as HTMLElement).closest('.ms__badge-remove') as HTMLElement;
         if (removeBtn) {
             e.preventDefault();
             const value = removeBtn.dataset.value!;
@@ -2117,11 +2106,11 @@ export class WebMultiSelect<T = any> {
             return;
         }
 
-        const badges = this.badgesContainer.querySelectorAll('.ml__badge:not(.ml__badge--more)');
+        const badges = this.badgesContainer.querySelectorAll('.ms__badge:not(.ms__badge--more)');
         uiLogger.debug(`[${this.instanceId}] Found ${badges.length} badges to attach tooltips to`);
         badges.forEach((badge: Element) => {
             const badgeElement = badge as HTMLElement;
-            const removeBtn = badgeElement.querySelector('.ml__badge-remove') as HTMLElement;
+            const removeBtn = badgeElement.querySelector('.ms__badge-remove') as HTMLElement;
             if (!removeBtn) return;
 
             const value = removeBtn.dataset.value!;
@@ -2129,7 +2118,7 @@ export class WebMultiSelect<T = any> {
             if (!option) return;
 
             // Create tooltip for badge text (not the entire badge to avoid conflicts with remove button)
-            const badgeText = badgeElement.querySelector('.ml__badge-text') as HTMLElement;
+            const badgeText = badgeElement.querySelector('.ms__badge-text') as HTMLElement;
             if (badgeText) {
                 this.createTooltipForElement(badgeText, option, value);
             }
@@ -2140,9 +2129,9 @@ export class WebMultiSelect<T = any> {
         });
 
         // Handle "+X more" badge remove button tooltip
-        const moreBadge = this.badgesContainer.querySelector('.ml__badge--more');
+        const moreBadge = this.badgesContainer.querySelector('.ms__badge--more');
         if (moreBadge) {
-            const removeBtn = moreBadge.querySelector('.ml__badge-remove') as HTMLElement;
+            const removeBtn = moreBadge.querySelector('.ms__badge-remove') as HTMLElement;
             if (removeBtn && removeBtn.dataset.action === 'remove-hidden') {
                 const maxVisible = this.options.badgesMaxVisible || 3;
                 const selectedOptions = Array.from(this.selectedOptions.values());
@@ -2154,7 +2143,7 @@ export class WebMultiSelect<T = any> {
 
     private createTooltipForElement(element: HTMLElement, option: any, uniqueId: string): void {
         const tooltip = document.createElement('div');
-        tooltip.className = 'ml__badge-tooltip';
+        tooltip.className = 'ms__badge-tooltip';
 
         // Get content from callback or use default (display value + subtitle)
         let content: string | HTMLElement;
@@ -2189,7 +2178,7 @@ export class WebMultiSelect<T = any> {
             uiLogger.debug(`[${this.instanceId}] Mouse entered badge "${uniqueId}", will show tooltip in ${this.options.badgeTooltipDelay || 300}ms`);
             showTimeout = window.setTimeout(() => {
                 uiLogger.debug(`[${this.instanceId}] Showing tooltip for "${uniqueId}"`);
-                tooltip.classList.add('ml__badge-tooltip--visible');
+                tooltip.classList.add('ms__badge-tooltip--visible');
                 this.positionBadgeTooltip(element, tooltip, uniqueId);
             }, this.options.badgeTooltipDelay || 300);
         };
@@ -2197,7 +2186,7 @@ export class WebMultiSelect<T = any> {
         const hideTooltip = () => {
             clearTimeout(showTimeout);
             hideTimeout = window.setTimeout(() => {
-                tooltip.classList.remove('ml__badge-tooltip--visible');
+                tooltip.classList.remove('ms__badge-tooltip--visible');
                 this.cleanupBadgeTooltip(uniqueId);
             }, 100);
         };
@@ -2208,7 +2197,7 @@ export class WebMultiSelect<T = any> {
 
     private createRemoveButtonTooltip(removeBtn: HTMLElement, itemName: string, uniqueId: string): void {
         const tooltip = document.createElement('div');
-        tooltip.className = 'ml__badge-tooltip';
+        tooltip.className = 'ms__badge-tooltip';
         tooltip.textContent = `Remove ${itemName}`;
 
         const container = this.options.container || document.body;
@@ -2226,11 +2215,11 @@ export class WebMultiSelect<T = any> {
             // Hide the parent badge tooltip to prevent overlap
             const badgeTooltip = this.badgeTooltips.get(uniqueId);
             if (badgeTooltip) {
-                badgeTooltip.classList.remove('ml__badge-tooltip--visible');
+                badgeTooltip.classList.remove('ms__badge-tooltip--visible');
             }
 
             showTimeout = window.setTimeout(() => {
-                tooltip.classList.add('ml__badge-tooltip--visible');
+                tooltip.classList.add('ms__badge-tooltip--visible');
                 this.positionBadgeTooltip(removeBtn, tooltip, tooltipId);
             }, this.options.badgeTooltipDelay || 300);
         };
@@ -2238,7 +2227,7 @@ export class WebMultiSelect<T = any> {
         const hideTooltip = () => {
             clearTimeout(showTimeout);
             hideTimeout = window.setTimeout(() => {
-                tooltip.classList.remove('ml__badge-tooltip--visible');
+                tooltip.classList.remove('ms__badge-tooltip--visible');
                 this.cleanupBadgeTooltip(tooltipId);
             }, 100);
         };
@@ -2300,7 +2289,7 @@ export class WebMultiSelect<T = any> {
     // ========================================================================
 
     private attachActionButtonTooltips(): void {
-        const actionButtons = this.dropdown.querySelectorAll('.ml__action-btn');
+        const actionButtons = this.dropdown.querySelectorAll('.ms__action-btn');
         uiLogger.debug(`[${this.instanceId}] Found ${actionButtons.length} action buttons to attach tooltips to`);
 
         actionButtons.forEach((button: Element) => {
@@ -2341,7 +2330,7 @@ export class WebMultiSelect<T = any> {
 
     private createActionButtonTooltip(button: HTMLElement, tooltipText: string, uniqueId: string): void {
         const tooltip = document.createElement('div');
-        tooltip.className = 'ml__badge-tooltip'; // Reuse badge tooltip styling
+        tooltip.className = 'ms__badge-tooltip'; // Reuse badge tooltip styling
         tooltip.textContent = tooltipText;
 
         const container = this.options.container || document.body;
@@ -2359,7 +2348,7 @@ export class WebMultiSelect<T = any> {
             uiLogger.debug(`[${this.instanceId}] Mouse entered action button "${uniqueId}", will show tooltip in ${this.options.badgeTooltipDelay || 300}ms`);
             showTimeout = window.setTimeout(() => {
                 uiLogger.debug(`[${this.instanceId}] Showing tooltip for action button "${uniqueId}"`);
-                tooltip.classList.add('ml__badge-tooltip--visible');
+                tooltip.classList.add('ms__badge-tooltip--visible');
                 this.positionActionButtonTooltip(button, tooltip, uniqueId);
             }, this.options.badgeTooltipDelay || 300);
         };
@@ -2367,7 +2356,7 @@ export class WebMultiSelect<T = any> {
         const hideTooltip = () => {
             clearTimeout(showTimeout);
             hideTimeout = window.setTimeout(() => {
-                tooltip.classList.remove('ml__badge-tooltip--visible');
+                tooltip.classList.remove('ms__badge-tooltip--visible');
                 this.cleanupActionButtonTooltip(uniqueId);
             }, 100);
         };
@@ -2440,7 +2429,7 @@ export class WebMultiSelect<T = any> {
 
         // Clear the element's content to prevent duplication on re-initialization
         this.element.innerHTML = '';
-        this.element.classList.remove('ml', 'ml--open', 'ml--no-checkboxes');
+        this.element.classList.remove('ml', 'ms--open', 'ms--no-checkboxes');
 
         initLogger.info(`[${this.instanceId}] Component destroyed`);
     }

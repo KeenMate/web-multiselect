@@ -10,9 +10,6 @@
 
     <!-- Page-specific styles -->
     <style>
-        /* No page-specific styles needed - using all shared styles */
-    </style>
-
         /* Custom styles for rendered content */
         .framework-card {
             display: flex;
@@ -332,13 +329,11 @@
         frameworks.renderOptionContentCallback = (item, context) => {
             const starCount = (item.stars / 1000).toFixed(0);
             return `
-                <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="font-size: 1.25rem;">${item.trending ? '🔥' : '⭐'}</span>
-                        <strong style="font-size: 1rem;">${item.name}</strong>
-                        <span style="margin-left: auto; font-size: 0.875rem; color: #666;">${starCount}k stars</span>
-                    </div>
-                    <div style="font-size: 0.875rem; color: #666; line-height: 1.4; padding-left: 1.75rem;">
+                <div style="display: grid; grid-template-columns: auto 1fr auto; grid-template-rows: auto auto; gap: 0.25rem 0.75rem; align-items: center; width: 100%;">
+                    <span style="grid-row: 1 / 3; font-size: 1.25rem; align-self: center;">${item.trending ? '🔥' : '⭐'}</span>
+                    <strong style="grid-row: 1; grid-column: 2; font-size: 1rem;">${item.name}</strong>
+                    <span style="grid-row: 1 / 3; grid-column: 3; font-size: 0.875rem; color: #666; align-self: center; white-space: nowrap;">${starCount}k stars</span>
+                    <div style="grid-row: 2; grid-column: 2; font-size: 0.875rem; color: #666; line-height: 1.4;">
                         ${item.description}
                     </div>
                 </div>
@@ -372,7 +367,7 @@
             const priceBadge = getPriceBadge(item.price);
 
             return `
-                <div style="display: flex; gap: 0.75rem; align-items: start;">
+                <div style="display: flex; gap: 0.75rem; align-items: center;">
                     <div style="width: 50px; height: 50px; border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); flex-shrink: 0;">
                         <div style="color: white; text-align: center; line-height: 50px; font-size: 1.5rem;">
                             ${item.name.charAt(0)}
@@ -419,19 +414,19 @@
 
             /* Badge styles based on price */
             .product-budget {
-                --ml-badge-text-bg: #d1fae5;
-                --ml-badge-text-color: #059669;
-                --ml-badge-remove-bg: #059669;
+                --ms-badge-text-background: #d1fae5;
+                --ms-badge-text-color: #059669;
+                --ms-badge-remove-background: #059669;
             }
             .product-mid {
-                --ml-badge-text-bg: #dbeafe;
-                --ml-badge-text-color: #2563eb;
-                --ml-badge-remove-bg: #2563eb;
+                --ms-badge-text-background: #dbeafe;
+                --ms-badge-text-color: #2563eb;
+                --ms-badge-remove-background: #2563eb;
             }
             .product-premium {
-                --ml-badge-text-bg: #fce7f3;
-                --ml-badge-text-color: #be185d;
-                --ml-badge-remove-bg: #be185d;
+                --ms-badge-text-background: #fce7f3;
+                --ms-badge-text-color: #be185d;
+                --ms-badge-remove-background: #be185d;
             }
         `;
 
@@ -452,15 +447,13 @@
 
         articles.renderOptionContentCallback = (item, context) => {
             return `
-                <div style="display: flex; flex-direction: column; gap: 0.25rem;">
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span style="font-size: 1.25rem;">${item.icon}</span>
-                        <strong style="flex: 1;">${item.title}</strong>
-                    </div>
-                    <div style="font-size: 0.875rem; color: #666; line-height: 1.4; padding-left: 1.75rem;">
+                <div style="display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto auto; gap: 0.25rem 0.75rem; width: 100%;">
+                    <span style="grid-row: 1 / 4; font-size: 1.25rem; align-self: center;">${item.icon}</span>
+                    <strong style="grid-row: 1; grid-column: 2;">${item.title}</strong>
+                    <div style="grid-row: 2; grid-column: 2; font-size: 0.875rem; color: #666; line-height: 1.4;">
                         ${item.excerpt}
                     </div>
-                    <div style="font-size: 0.75rem; color: #999; padding-left: 1.75rem; display: flex; gap: 0.75rem;">
+                    <div style="grid-row: 3; grid-column: 2; font-size: 0.75rem; color: #999; display: flex; gap: 0.75rem;">
                         <span>By ${item.author}</span>
                         <span>•</span>
                         <span>${item.readTime} read</span>
@@ -486,22 +479,20 @@
 
         jobs.renderOptionContentCallback = (item, context) => {
             return `
-                <div style="display: flex; flex-direction: column; gap: 0.375rem;">
-                    <div style="display: flex; align-items: start; gap: 0.5rem;">
-                        <span style="font-size: 1.25rem;">💼</span>
-                        <div style="flex: 1;">
-                            <div style="font-weight: 600; margin-bottom: 0.125rem;">${item.title}</div>
-                            <div style="font-size: 0.875rem; color: #666;">${item.company}</div>
-                        </div>
+                <div style="display: grid; grid-template-columns: auto 1fr; grid-template-rows: auto auto auto; gap: 0.375rem 0.75rem; width: 100%;">
+                    <span style="grid-row: 1 / 4; font-size: 1.25rem; align-self: center;">💼</span>
+                    <div style="grid-row: 1; grid-column: 2;">
+                        <div style="font-weight: 600; margin-bottom: 0.125rem;">${item.title}</div>
+                        <div style="font-size: 0.875rem; color: #666;">${item.company}</div>
                     </div>
-                    <div style="font-size: 0.875rem; color: #333; padding-left: 1.75rem; display: flex; gap: 0.75rem; flex-wrap: wrap;">
+                    <div style="grid-row: 2; grid-column: 2; font-size: 0.875rem; color: #333; display: flex; gap: 0.75rem; flex-wrap: wrap;">
                         <span>${item.location}</span>
                         <span>•</span>
                         <span style="color: #10b981; font-weight: 600;">${item.salary}</span>
                         <span>•</span>
                         <span>${item.type}</span>
                     </div>
-                    <div style="padding-left: 1.75rem;">
+                    <div style="grid-row: 3; grid-column: 2;">
                         ${item.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
                     </div>
                 </div>
@@ -757,40 +748,38 @@
 
         priorityBadges.getBadgeClassCallback = (item) => {
             // Return CSS class based on priority for semantic styling (main badges area)
-            console.log('getBadgeClassCallback called for:', item.name, 'priority:', item.priority, 'class:', `badge-${item.priority}`);
             return `badge-${item.priority}`;
         };
 
         priorityBadges.getSelectionBadgeClassCallback = (item) => {
             // Return CSS class based on priority for selected items in popover
-            console.log('getSelectionBadgeClassCallback called for:', item.name, 'priority:', item.priority, 'class:', `badge-${item.priority}`);
             return `badge-${item.priority}`;
         };
 
         // Inject custom CSS into Shadow DOM for badge styling
         priorityBadges.customStylesCallback = () => `
             .badge-urgent {
-                --ml-badge-text-bg: #fee2e2;
-                --ml-badge-text-color: #dc2626;
-                --ml-badge-remove-bg: #dc2626;
+                --ms-badge-text-background: #fee2e2;
+                --ms-badge-text-color: #dc2626;
+                --ms-badge-remove-background: #dc2626;
             }
 
             .badge-important {
-                --ml-badge-text-bg: #fef3c7;
-                --ml-badge-text-color: #d97706;
-                --ml-badge-remove-bg: #d97706;
+                --ms-badge-text-background: #fef3c7;
+                --ms-badge-text-color: #d97706;
+                --ms-badge-remove-background: #d97706;
             }
 
             .badge-normal {
-                --ml-badge-text-bg: #dbeafe;
-                --ml-badge-text-color: #2563eb;
-                --ml-badge-remove-bg: #2563eb;
+                --ms-badge-text-background: #dbeafe;
+                --ms-badge-text-color: #2563eb;
+                --ms-badge-remove-background: #2563eb;
             }
 
             .badge-low {
-                --ml-badge-text-bg: #d1fae5;
-                --ml-badge-text-color: #059669;
-                --ml-badge-remove-bg: #059669;
+                --ms-badge-text-background: #d1fae5;
+                --ms-badge-text-color: #059669;
+                --ms-badge-remove-background: #059669;
             }
         `;
 

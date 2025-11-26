@@ -114,8 +114,8 @@ $ml-input-icon-spacing: 2.5rem !default;
 $ml-counter-offset: 2rem !default;
 $ml-option-icon-size: 1.25rem !default;
 $ml-count-clear-size: 1rem !default;
-$ml-badge-height: 1.5rem !default;
-$ml-badge-remove-width: 1.5rem !default;
+$ml-badge-height: 1.7rem !default;
+$ml-badge-remove-width: 1.7rem !default;
 $ml-popover-close-size: 1.5rem !default;
 
 $ml-options-max-height: 20rem !default;
@@ -455,6 +455,9 @@ $ml-selected-popover-body-padding: $ml-spacing-sm !default;
 // ==============================================================================
 $ml-checkbox-offset: 0.125rem !default;
 $ml-checkbox-margin-top: $ml-checkbox-offset !default;
+$ml-checkbox-margin-right: 0 !default; // Horizontal spacing handled by flexbox gap
+$ml-checkbox-margin-bottom: 0 !default;
+$ml-checkbox-margin-left: 0 !default;
 $ml-checkbox-size: 16px !default; // Width and height of checkbox
 $ml-checkbox-scale: 1 !default; // Scale multiplier for checkbox size
 

@@ -41,6 +41,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
     private _getSubtitleCallback?: (item: T) => string;
     private _groupMember?: string;
     private _getGroupCallback?: (item: T) => string;
+    private _renderGroupLabelContentCallback?: (groupName: string) => string | HTMLElement;
     private _disabledMember?: string;
     private _getDisabledCallback?: (item: T) => boolean;
 
@@ -426,6 +427,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
             getIconCallback: this._getIconCallback,
             getSubtitleCallback: this._getSubtitleCallback,
             getGroupCallback: this._getGroupCallback,
+            renderGroupLabelContentCallback: this._renderGroupLabelContentCallback,
             getDisabledCallback: this._getDisabledCallback,
 
             // Custom rendering callbacks
@@ -466,7 +468,11 @@ export class MultiSelectElement<T = any> extends BaseElement {
                     detail: {
                         option,
                         selectedOptions: this.picker?.getSelected(),
-                        selectedValues: Array.from(this.picker?.getValue() as any || [])
+                        selectedValues: (() => {
+                            const val = this.picker?.getValue();
+                            if (val == null) return [];
+                            return Array.isArray(val) ? val : [val];
+                        })()
                     } as MultiSelectEventDetail<T>
                 }));
             },
@@ -476,7 +482,11 @@ export class MultiSelectElement<T = any> extends BaseElement {
                     detail: {
                         option,
                         selectedOptions: this.picker?.getSelected(),
-                        selectedValues: Array.from(this.picker?.getValue() as any || [])
+                        selectedValues: (() => {
+                            const val = this.picker?.getValue();
+                            if (val == null) return [];
+                            return Array.isArray(val) ? val : [val];
+                        })()
                     } as MultiSelectEventDetail<T>
                 }));
             },
@@ -485,7 +495,11 @@ export class MultiSelectElement<T = any> extends BaseElement {
                 this.dispatchEvent(new CustomEvent('change', {
                     detail: {
                         selectedOptions,
-                        selectedValues: Array.from(this.picker?.getValue() as any || [])
+                        selectedValues: (() => {
+                            const val = this.picker?.getValue();
+                            if (val == null) return [];
+                            return Array.isArray(val) ? val : [val];
+                        })()
                     } as MultiSelectEventDetail<T>
                 }));
             },
@@ -704,6 +718,15 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     get getGroupCallback() {
         return this._getGroupCallback;
+    }
+
+    set renderGroupLabelContentCallback(callback: ((groupName: string) => string | HTMLElement) | undefined) {
+        this._renderGroupLabelContentCallback = callback;
+        this.reinitialize();
+    }
+
+    get renderGroupLabelContentCallback() {
+        return this._renderGroupLabelContentCallback;
     }
 
     set getDisabledCallback(callback: ((item: T) => boolean) | undefined) {

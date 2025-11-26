@@ -7,7 +7,74 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - PUBLISHED - 2025-01-26
+
+### Added
+- **Standardized Checkbox Margins** - All 4 checkbox margins now controllable via CSS variables
+  - Added `--ms-checkbox-margin-right`, `--ms-checkbox-margin-bottom`, `--ms-checkbox-margin-left` CSS variables
+  - Complements existing `--ms-checkbox-margin-top` for complete margin control
+  - Overrides browser default checkbox margins for consistent cross-browser appearance
+  - All new margins default to `0` (horizontal/bottom spacing handled by flexbox gap)
+  - Allows fine-tuned checkbox positioning for custom layouts
+  - Defined in `src/scss/_variables.scss`, `src/scss/_css-variables.scss`, and `src/scss/_options.scss`
+- **Custom Group Label Rendering** - New `renderGroupLabelContentCallback` for customizing group headers
+  - Signature: `renderGroupLabelContentCallback(groupName: string) => string | HTMLElement`
+  - Keeps standard `.ms__group-label` wrapper, replaces content inside
+  - Supports HTML strings and HTMLElement returns
+  - Use cases: capitalize group names, add icons/emojis, HTML formatting, i18n translation
+  - Example in `examples-classic.html` showing uppercase + emoji formatting
+  - Follows same naming convention as web-daterangepicker (`render*ContentCallback` = content only)
+- **Initial Options + Async Search Example** - Added comprehensive example in `examples-classic.html`
+  - Demonstrates "favorites + full search" pattern (show 5 most used items initially, search all on typing)
+  - Security Groups example with 20 total items, showing 5 most used by default
+  - Uses `keep-options-on-search="true"` + `min-search-length="2"` configuration
+  - Simulated 400ms API delay for realistic async behavior
+  - Perfect for enterprise scenarios: popular/recent items first, full database search on demand
+
 ### Fixed
+- **Examples - Style Tag Rendering** - Fixed CSS appearing as plain text in `examples-templating.html`
+  - Root cause: Premature `</style>` closing tag on line 14 left CSS rules (lines 15-156) outside style block
+  - All page-specific CSS now properly enclosed in `<style>` tag
+- **Examples - Priority Badge Styling** - Fixed priority-based badge colors not displaying in examples 2 and 11
+  - Root cause: Using SCSS variable names (`--ml-badge-text-bg`) instead of CSS custom properties (`--ms-badge-text-background`)
+  - SCSS variables compile to static values and cannot be overridden at runtime via `customStylesCallback`
+  - Fixed in example 2 (Products): Budget/Mid-Range/Premium badges now show correct colors
+  - Fixed in example 11 (Priority Badges): Urgent/Important/Normal/Low badges now show correct colors
+  - Updated CSS variable names: `--ml-badge-text-bg` → `--ms-badge-text-background`, `--ml-badge-remove-bg` → `--ms-badge-remove-background`
+- **Examples - Debug Logging** - Removed console.log statements from example 11 in `examples-templating.html`
+  - Removed debug logging from `getBadgeClassCallback` and `getSelectionBadgeClassCallback`
+  - Clean console output in production examples
+
+- **CRITICAL: Single-Select Mode Event Values** - Fixed `selectedValues` splitting string values into individual characters
+  - Root cause: `Array.from()` was being used on `getValue()` which returns a string in single-select mode
+  - When selecting value `"acme"` in single-select, `selectedValues` was `["a", "c", "m", "e"]` instead of `["acme"]`
+  - Impact: All single-select mode implementations (cascading selects, dropdowns with `multiple="false"`)
+  - Fixed in: `src/web-component.ts` - All 3 event dispatches (`select`, `deselect`, `change`)
+  - Solution: Properly wrap single values in array instead of treating string as iterable
+  - Multi-select mode was not affected (already returns arrays)
+- **Cascading Selects Example** - Fixed cascading dropdowns not working in `examples-new-api.html`
+  - Root cause: Initialization code was outside `customElements.whenDefined()` block, running before components were ready
+  - Moved all cascade initialization logic inside `whenDefined()` callback
+  - HTML attributes now properly set: `value-member="value"` and `display-value-member="label"`
+  - Organization → Business Unit → Department cascade now works correctly
+- **Form Integration - Array Format** - Fixed array format only capturing last selected item in `examples-new-api.html`
+  - Root cause: `Object.fromEntries(formData)` loses duplicate keys when multiple inputs share same name
+  - Solution: Manual FormData iteration to properly handle array values (e.g., `tags[]`, `tags[]`, `tags[]`)
+  - Array format now correctly captures all selected items, not just the last one
+- **Debug Logging** - Removed all development console.log statements flooding browser console
+  - Removed 24 debug statements from `src/multiselect.ts` (action button rendering logs)
+  - Removed debug statements from `examples-new-api.html` (cascade debugging)
+  - Production builds now have clean console output
+
+### Changed
+- **Examples - Improved Layouts** - Enhanced visual alignment in `examples-templating.html` custom rendering examples
+  - Example 1 (Frameworks): Converted to CSS Grid layout with 3 columns (icon | content | stars)
+    - Icon and star count span 2 rows and are vertically centered
+    - Star counts always aligned in same column regardless of content length
+  - Example 2 (Products): Changed `align-items: start` to `align-items: center` for vertically centered product icons
+  - Example 3 (Articles): Converted to CSS Grid with 2 columns (icon | content), icon spans 3 rows and is vertically centered
+  - Example 4 (Jobs): Converted to CSS Grid with 2 columns (icon | content), icon spans 3 rows and is vertically centered
+  - Result: All option icons now properly centered in the middle of multi-line content
 - **Showcase Property Names** - Corrected all property names in showcase examples to match actual API
   - **Display Modes page** (`display-modes/+page.svelte`):
     - `pills-display-mode` → `badges-display-mode` (all instances)

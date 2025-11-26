@@ -10,39 +10,39 @@
 // ==============================================================================
 
 // Input wrapper
-.ml__input-wrapper {
+.ms__input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
 }
 
 // Search input
-.ml__input {
+.ms__input {
   width: 100%;
-  padding: var(--ml-input-padding, $ml-input-padding);
-  padding-right: var(--ml-input-padding-right, $ml-input-padding-right); // Space for dropdown icon
-  font-size: var(--ml-input-font-size, $ml-input-font-size);
-  border: var(--ml-input-border-style, $ml-input-border-style);
-  border-radius: var(--ml-input-border-radius, $ml-input-border-radius);
-  background: var(--ml-input-bg, $ml-input-bg);
-  color: var(--ml-input-text, $ml-input-text);
+  padding: var(--ms-input-padding, $ml-input-padding);
+  padding-right: var(--ms-input-padding-right, $ml-input-padding-right); // Space for dropdown icon
+  font-size: var(--ms-input-font-size, $ml-input-font-size);
+  border: var(--ms-input-border-style, $ml-input-border-style);
+  border-radius: var(--ms-input-border-radius, $ml-input-border-radius);
+  background: var(--ms-input-background, $ml-input-bg);
+  color: var(--ms-input-color, $ml-input-text);
   cursor: pointer;
-  transition: border-color var(--ml-transition-fast, $ml-transition-fast) var(--ml-easing-snappy, $ml-easing-snappy);
+  transition: border-color var(--ms-transition-fast, $ml-transition-fast) var(--ms-easing-snappy, $ml-easing-snappy);
 
   &:focus {
     outline: none;
-    border-color: var(--ml-input-focus-border-color, $ml-input-focus-border-color);
+    border-color: var(--ms-input-border-color-focus, $ml-input-focus-border-color);
   }
 
   &::placeholder {
-    color: var(--ml-input-placeholder-color, $ml-input-placeholder-color);
+    color: var(--ms-input-placeholder-color, $ml-input-placeholder-color);
     opacity: 0; // Initially hidden until component is ready
-    transition: opacity var(--ml-transition-fast, $ml-transition-fast) var(--ml-easing-snappy, $ml-easing-snappy);
+    transition: opacity var(--ms-transition-fast, $ml-transition-fast) var(--ms-easing-snappy, $ml-easing-snappy);
   }
 
   // Show placeholder only after component is fully initialized
   :host([data-ready]) &::placeholder {
-    opacity: var(--ml-placeholder-opacity, $ml-placeholder-opacity);
+    opacity: var(--ms-placeholder-opacity, $ml-placeholder-opacity);
   }
 }
 
@@ -51,17 +51,18 @@
 // ==============================================================================
 
 // Dropdown toggle icon
-.ml__toggle {
+.ms__toggle {
   position: absolute;
-  right: var(--ml-toggle-right, $ml-toggle-right);
+  right: var(--ms-toggle-right, $ml-toggle-right);
   top: 50%;
-  transform: var(--ml-transform-center-y, $ml-transform-center-y);
+  transform: var(--ms-transform-center-y, $ml-transform-center-y);
   pointer-events: none;
-  color: var(--ml-toggle-color, $ml-toggle-color);
-  transition: transform var(--ml-transition-fast, $ml-transition-fast) var(--ml-easing-snappy, $ml-easing-snappy);
+  color: var(--ms-toggle-icon-color, $ml-toggle-color);
+  transition: transform var(--ms-transition-fast, $ml-transition-fast) var(--ms-easing-snappy, $ml-easing-snappy);
 
-  .ml--open & {
-    transform: var(--ml-transform-center-y, $ml-transform-center-y) rotate(var(--ml-transform-rotate-180, $ml-transform-rotate-180));
+  .ms--open & {
+    transform: var(--ms-transform-center-y, $ml-transform-center-y) rotate(var(--ms-transform-rotate-180, $ml-transform-rotate-180));
+    color: var(--ms-toggle-icon-color-open, $ml-toggle-color);
   }
 }
 
@@ -70,24 +71,24 @@
 // ==============================================================================
 
 // Count badge (appears next to toggle icon)
-.ml__counter {
+.ms__counter {
   position: absolute;
-  right: var(--ml-counter-offset, $ml-counter-offset); // Space for toggle icon
+  right: var(--ms-counter-offset, $ml-counter-offset); // Space for toggle icon
   top: 50%;
-  transform: var(--ml-transform-center-y, $ml-transform-center-y);
-  padding: var(--ml-counter-padding, $ml-counter-padding);
-  background: var(--ml-counter-bg, $ml-counter-bg);
-  color: var(--ml-counter-color, $ml-counter-color);
-  font-size: var(--ml-counter-font-size, $ml-counter-font-size);
-  font-weight: var(--ml-counter-font-weight, $ml-counter-font-weight);
-  border-radius: var(--ml-counter-border-radius, $ml-counter-border-radius);
+  transform: var(--ms-transform-center-y, $ml-transform-center-y);
+  padding: var(--ms-counter-padding, $ml-counter-padding);
+  background: var(--ms-counter-badge-background, $ml-counter-bg);
+  color: var(--ms-counter-badge-color, $ml-counter-color);
+  font-size: var(--ms-counter-font-size, $ml-counter-font-size);
+  font-weight: var(--ms-counter-font-weight, $ml-counter-font-weight);
+  border-radius: var(--ms-counter-border-radius, $ml-counter-border-radius);
   cursor: pointer;
-  transition: all var(--ml-transition-fast, $ml-transition-fast) var(--ml-easing-snappy, $ml-easing-snappy);
+  transition: all var(--ms-transition-fast, $ml-transition-fast) var(--ms-easing-snappy, $ml-easing-snappy);
 
   &:hover {
-    background: var(--ml-counter-bg-hover, $ml-counter-bg-hover);
-    transform: var(--ml-transform-center-y, $ml-transform-center-y)
-      scale(var(--ml-transform-scale-hover, $ml-transform-scale-hover));
+    background: var(--ms-counter-badge-background-hover, $ml-counter-bg-hover);
+    transform: var(--ms-transform-center-y, $ml-transform-center-y)
+      scale(var(--ms-transform-scale-hover, $ml-transform-scale-hover));
   }
 }
 
@@ -96,18 +97,18 @@
 // ==============================================================================
 
 // Floating search hint (appears above input)
-.ml__hint {
+.ms__hint {
   display: none;
   position: absolute;
-  z-index: var(--ml-z-index-popover, $ml-z-index-popover);
-  padding: var(--ml-hint-padding, $ml-hint-padding);
-  background: var(--ml-hint-bg, $ml-hint-bg);
-  border: var(--ml-hint-border, $ml-hint-border);
-  border-radius: var(--ml-hint-border-radius, $ml-hint-border-radius);
-  box-shadow: var(--ml-hint-box-shadow, $ml-hint-box-shadow);
-  font-size: var(--ml-hint-font-size, $ml-hint-font-size);
-  color: var(--ml-hint-color, $ml-hint-color);
-  line-height: var(--ml-line-height-relaxed, $ml-line-height-relaxed);
+  z-index: var(--ms-z-index-popover, $ml-z-index-popover);
+  padding: var(--ms-hint-padding, $ml-hint-padding);
+  background: var(--ms-hint-background, $ml-hint-bg);
+  border: var(--ms-hint-border, $ml-hint-border);
+  border-radius: var(--ms-hint-border-radius, $ml-hint-border-radius);
+  box-shadow: var(--ms-hint-box-shadow, $ml-hint-box-shadow);
+  font-size: var(--ms-hint-font-size, $ml-hint-font-size);
+  color: var(--ms-hint-color, $ml-hint-color);
+  line-height: var(--ms-line-height-relaxed, $ml-line-height-relaxed);
   max-width: 100%;
 
   &--visible {
@@ -120,20 +121,20 @@
 // ==============================================================================
 
 // Floating dropdown (appears below input)
-.ml__dropdown {
+.ms__dropdown {
   display: none;
   position: absolute;
-  z-index: var(--ml-z-index-dropdown, $ml-z-index-dropdown);
-  background: var(--ml-dropdown-bg, $ml-dropdown-bg);
-  border: var(--ml-dropdown-border, $ml-dropdown-border);
-  border-radius: var(--ml-dropdown-border-radius, $ml-dropdown-border-radius);
-  box-shadow: var(--ml-dropdown-box-shadow, $ml-dropdown-box-shadow);
-  max-height: var(--ml-options-max-height, $ml-options-max-height);
+  z-index: var(--ms-z-index-dropdown, $ml-z-index-dropdown);
+  background: var(--ms-dropdown-background, $ml-dropdown-bg);
+  border: var(--ms-dropdown-border, $ml-dropdown-border);
+  border-radius: var(--ms-dropdown-border-radius, $ml-dropdown-border-radius);
+  box-shadow: var(--ms-dropdown-box-shadow, $ml-dropdown-box-shadow);
+  max-height: var(--ms-options-max-height, $ml-options-max-height);
   overflow-y: auto;
   overscroll-behavior: contain;
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
-  color: var(--ml-option-color, $ml-option-color);
+  color: var(--ms-dropdown-text-color, $ml-option-color);
 
   &--visible {
     display: block;
@@ -151,12 +152,12 @@
 // ==============================================================================
 
 // Dropdown actions (Select All / Clear All)
-.ml__actions {
+.ms__actions {
   display: flex;
   flex-wrap: nowrap;
-  gap: var(--ml-actions-gap, $ml-actions-gap);
-  padding: var(--ml-actions-padding, $ml-actions-padding);
-  border-bottom: var(--ml-actions-border-bottom, $ml-actions-border-bottom);
+  gap: var(--ms-actions-gap, $ml-actions-gap);
+  padding: var(--ms-actions-padding, $ml-actions-padding);
+  border-bottom: var(--ms-actions-border-bottom, $ml-actions-border-bottom);
 
   &--wrap {
     flex-wrap: wrap;
@@ -165,34 +166,34 @@
   &--sticky {
     position: sticky;
     top: 0;
-    z-index: var(--ml-z-index-sticky, $ml-z-index-sticky);
-    background: var(--ml-actions-bg, $ml-actions-bg);
+    z-index: var(--ms-z-index-sticky, $ml-z-index-sticky);
+    background: var(--ms-actions-background, $ml-actions-bg);
   }
 }
 
-.ml__action-btn {
+.ms__action-btn {
   flex: 1;
-  padding: var(--ml-action-btn-padding, $ml-action-btn-padding);
-  font-size: var(--ml-action-btn-font-size, $ml-action-btn-font-size);
-  border: var(--ml-action-btn-border, $ml-action-btn-border);
-  border-radius: var(--ml-action-btn-border-radius, $ml-action-btn-border-radius);
-  background: var(--ml-action-btn-bg, $ml-action-btn-bg);
-  color: var(--ml-action-btn-color, $ml-action-btn-color);
+  padding: var(--ms-action-btn-padding, $ml-action-btn-padding);
+  font-size: var(--ms-action-btn-font-size, $ml-action-btn-font-size);
+  border: var(--ms-action-btn-border, $ml-action-btn-border);
+  border-radius: var(--ms-action-btn-border-radius, $ml-action-btn-border-radius);
+  background: var(--ms-action-button-background, $ml-action-btn-bg);
+  color: var(--ms-action-button-color, $ml-action-btn-color);
   cursor: pointer;
-  transition: all var(--ml-transition-fast, $ml-transition-fast) var(--ml-easing-snappy, $ml-easing-snappy);
+  transition: all var(--ms-transition-fast, $ml-transition-fast) var(--ms-easing-snappy, $ml-easing-snappy);
 
   &:hover {
-    background: var(--ml-action-btn-bg-hover, $ml-action-btn-bg-hover);
-    border-color: var(--ml-action-btn-border-color-hover, $ml-action-btn-border-color-hover);
+    background: var(--ms-action-button-background-hover, $ml-action-btn-bg-hover);
+    border-color: var(--ms-action-button-border-color-hover, $ml-action-btn-border-color-hover);
   }
 
   &:active {
-    transform: scale(var(--ml-transform-scale-active, $ml-transform-scale-active));
+    transform: scale(var(--ms-transform-scale-active, $ml-transform-scale-active));
   }
 
   &:disabled,
   &[disabled] {
-    opacity: var(--ml-disabled-opacity, $ml-disabled-opacity);
+    opacity: var(--ms-disabled-opacity, $ml-disabled-opacity);
     cursor: not-allowed;
     pointer-events: none;
   }

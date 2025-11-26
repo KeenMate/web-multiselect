@@ -9,59 +9,59 @@
 // SIZE VARIANTS
 // ==============================================================================
 
-.ml--xs {
-  .ml__input {
-    font-size: var(--ml-font-size-xs, $ml-font-size-xs);
+.ms--xs {
+  .ms__input {
+    font-size: var(--ms-font-size-xs, $ml-font-size-xs);
   }
 
-  .ml__option {
-    padding: var(--ml-spacing-xs, $ml-spacing-xs) var(--ml-spacing-sm, $ml-spacing-sm);
+  .ms__option {
+    padding: var(--ms-spacing-xs, $ml-spacing-xs) var(--ms-spacing-sm, $ml-spacing-sm);
   }
 
-  .ml__option-title {
-    font-size: var(--ml-font-size-xs, $ml-font-size-xs);
+  .ms__option-title {
+    font-size: var(--ms-font-size-xs, $ml-font-size-xs);
   }
 
-  .ml__badge {
-    font-size: var(--ml-font-size-2xs, $ml-font-size-2xs);
-  }
-}
-
-.ml--sm {
-  .ml__input {
-    font-size: var(--ml-font-size-xs, $ml-font-size-xs);
-  }
-
-  .ml__option-title {
-    font-size: var(--ml-font-size-xs, $ml-font-size-xs);
+  .ms__badge {
+    font-size: var(--ms-font-size-2xs, $ml-font-size-2xs);
   }
 }
 
-.ml--lg {
-  .ml__input {
-    font-size: var(--ml-font-size-base, $ml-font-size-base);
+.ms--sm {
+  .ms__input {
+    font-size: var(--ms-font-size-xs, $ml-font-size-xs);
   }
 
-  .ml__option-title {
-    font-size: var(--ml-font-size-base, $ml-font-size-base);
-  }
-
-  .ml__badge {
-    font-size: var(--ml-font-size-sm, $ml-font-size-sm);
+  .ms__option-title {
+    font-size: var(--ms-font-size-xs, $ml-font-size-xs);
   }
 }
 
-.ml--xl {
-  .ml__input {
-    font-size: var(--ml-font-size-lg, $ml-font-size-lg);
+.ms--lg {
+  .ms__input {
+    font-size: var(--ms-font-size-base, $ml-font-size-base);
   }
 
-  .ml__option-title {
-    font-size: var(--ml-font-size-lg, $ml-font-size-lg);
+  .ms__option-title {
+    font-size: var(--ms-font-size-base, $ml-font-size-base);
   }
 
-  .ml__badge {
-    font-size: var(--ml-font-size-base, $ml-font-size-base);
+  .ms__badge {
+    font-size: var(--ms-font-size-sm, $ml-font-size-sm);
+  }
+}
+
+.ms--xl {
+  .ms__input {
+    font-size: var(--ms-font-size-lg, $ml-font-size-lg);
+  }
+
+  .ms__option-title {
+    font-size: var(--ms-font-size-lg, $ml-font-size-lg);
+  }
+
+  .ms__badge {
+    font-size: var(--ms-font-size-base, $ml-font-size-base);
   }
 }
 
@@ -70,26 +70,26 @@
 // ==============================================================================
 
 // Disabled state
-.ml--disabled {
-  .ml__input {
-    opacity: var(--ml-disabled-input-opacity, $ml-disabled-input-opacity);
+.ms--disabled {
+  .ms__input {
+    opacity: var(--ms-disabled-input-opacity, $ml-disabled-input-opacity);
     cursor: not-allowed;
-    background: var(--ml-input-bg-disabled, $ml-input-bg-disabled);
+    background: var(--ms-input-bg-disabled, $ml-input-bg-disabled);
   }
 
-  .ml__toggle {
-    opacity: var(--ml-disabled-input-opacity, $ml-disabled-input-opacity);
+  .ms__toggle {
+    opacity: var(--ms-disabled-input-opacity, $ml-disabled-input-opacity);
   }
 }
 
 // No checkboxes modifier (for simple select mode)
-.ml--no-checkboxes {
-  .ml__option {
+.ms--no-checkboxes {
+  .ms__option {
     gap: 0; // Remove gap since there's no checkbox
-    padding-left: var(--ml-option-padding-h, $ml-option-padding-h); // Adjust padding
+    padding-left: var(--ms-option-padding-h, $ml-option-padding-h); // Adjust padding
   }
 
-  .ml__option-content {
+  .ms__option-content {
     padding-left: 0; // No extra padding needed
   }
 }

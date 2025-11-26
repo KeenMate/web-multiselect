@@ -94,6 +94,12 @@
                     </web-multiselect>
                     <small class="form-text">Use <code>data-subtitle</code> for descriptions</small>
                 </div>
+
+                <div class="form-group">
+                    <label>Custom Group Labels</label>
+                    <web-multiselect id="custom-groups-classic"></web-multiselect>
+                    <small class="form-text">Using <code>renderGroupLabelContentCallback</code> to customize group headers</small>
+                </div>
             </div>
         </div>
 
@@ -636,6 +642,32 @@
                     </web-multiselect>
                     <small class="form-text">Simulated product database search</small>
                 </div>
+
+                <div class="form-group">
+                    <label>Security Groups (Initial + Async)</label>
+                    <web-multiselect
+                        id="security-groups-search"
+                        min-search-length="2"
+                        keep-options-on-search="true"
+                        value-member="id"
+                        display-value-member="name"
+                        subtitle-member="description"
+                        icon-member="icon"
+                        search-placeholder="Type to search all security groups..."
+                        search-hint="💡 Shows 5 most used groups initially, type to search all">
+                    </web-multiselect>
+                    <small class="form-text">Initial favorites + full search on typing (type at least 2 characters)</small>
+                </div>
+            </div>
+            <div class="note">
+                <p><strong>Initial Options + Async Search Pattern:</strong></p>
+                <p>The Security Groups example demonstrates a common UX pattern:</p>
+                <ul>
+                    <li><strong>Initial State:</strong> Shows 5 most frequently used security groups when dropdown opens</li>
+                    <li><strong>On Typing:</strong> Calls server API to search ALL security groups (after 2+ characters)</li>
+                    <li><strong>On Clear:</strong> Returns to showing the 5 initial favorites</li>
+                    <li><strong>Configuration:</strong> <code>options</code> (initial data) + <code>searchCallback</code> (async) + <code>keep-options-on-search="true"</code> + <code>min-search-length="2"</code></li>
+                </ul>
             </div>
         </div>
 
@@ -763,6 +795,20 @@
             { value: 'bar', label: 'Barcelona', icon: '🇪🇸' },
             { value: 'ams', label: 'Amsterdam', icon: '🇳🇱' },
             { value: 'dub', label: 'Dubai', icon: '🇦🇪' }
+        ];
+
+        const groupedTechnologies = [
+            { value: 'react', label: 'React', icon: '⚛️', group: 'frontend' },
+            { value: 'vue', label: 'Vue.js', icon: '🖖', group: 'frontend' },
+            { value: 'svelte', label: 'Svelte', icon: '🔥', group: 'frontend' },
+            { value: 'angular', label: 'Angular', icon: '🅰️', group: 'frontend' },
+            { value: 'nodejs', label: 'Node.js', icon: '🟢', group: 'backend' },
+            { value: 'django', label: 'Django', icon: '🐍', group: 'backend' },
+            { value: 'rails', label: 'Ruby on Rails', icon: '💎', group: 'backend' },
+            { value: 'express', label: 'Express', icon: '🚂', group: 'backend' },
+            { value: 'postgres', label: 'PostgreSQL', icon: '🐘', group: 'database' },
+            { value: 'mongodb', label: 'MongoDB', icon: '🍃', group: 'database' },
+            { value: 'redis', label: 'Redis', icon: '🔴', group: 'database' }
         ];
 
         const allCountries = [
@@ -910,6 +956,30 @@
             const hintSelect = document.getElementById('hint-select');
             if (hintSelect) {
                 hintSelect.options = cities;
+            }
+
+            // Custom group labels
+            const customGroupsClassic = document.getElementById('custom-groups-classic');
+            if (customGroupsClassic) {
+                customGroupsClassic.options = groupedTechnologies;
+                customGroupsClassic.setAttribute('value-member', 'value');
+                customGroupsClassic.setAttribute('display-value-member', 'label');
+                customGroupsClassic.setAttribute('icon-member', 'icon');
+                customGroupsClassic.setAttribute('group-member', 'group');
+
+                // Custom group label rendering
+                customGroupsClassic.renderGroupLabelContentCallback = (groupName) => {
+                    // Capitalize and add emoji based on group
+                    const emojis = {
+                        'frontend': '🎨',
+                        'backend': '🔧',
+                        'database': '🗄️'
+                    };
+                    const emoji = emojis[groupName] || '📦';
+                    return `<strong>${emoji} ${groupName.toUpperCase()}</strong>`;
+                };
+
+                customGroupsClassic.setSelected(['react', 'nodejs']);
             }
 
             // Tech stack options for display mode demos
@@ -1278,6 +1348,63 @@
                         product.subtitle.toLowerCase().includes(term)
                     );
                 };
+            }
+
+            // Async Search: Security Groups (Initial + Async Pattern)
+            const securityGroupsSearch = document.getElementById('security-groups-search');
+            if (securityGroupsSearch) {
+                // Initial options: 5 most used security groups
+                const mostUsedSecurityGroups = [
+                    { id: 'sg-001', name: 'Web Servers', description: 'HTTP/HTTPS access (80, 443)', icon: '🌐', usageCount: 150 },
+                    { id: 'sg-002', name: 'Database Servers', description: 'MySQL/PostgreSQL (3306, 5432)', icon: '🗄️', usageCount: 120 },
+                    { id: 'sg-003', name: 'Application Servers', description: 'Internal API access (8080)', icon: '⚙️', usageCount: 100 },
+                    { id: 'sg-004', name: 'Load Balancers', description: 'ALB/NLB traffic', icon: '⚖️', usageCount: 80 },
+                    { id: 'sg-005', name: 'Cache Servers', description: 'Redis/Memcached (6379, 11211)', icon: '💾', usageCount: 60 }
+                ];
+
+                // Full database of ALL security groups (simulated)
+                const allSecurityGroups = [
+                    ...mostUsedSecurityGroups,
+                    { id: 'sg-006', name: 'SSH Bastion', description: 'SSH access (22)', icon: '🔐', usageCount: 45 },
+                    { id: 'sg-007', name: 'Monitoring Agents', description: 'Metrics collection', icon: '📊', usageCount: 40 },
+                    { id: 'sg-008', name: 'Message Queue', description: 'RabbitMQ/SQS', icon: '📬', usageCount: 35 },
+                    { id: 'sg-009', name: 'File Storage', description: 'NFS/S3 gateway', icon: '📁', usageCount: 30 },
+                    { id: 'sg-010', name: 'VPN Gateway', description: 'VPN access (1194)', icon: '🔒', usageCount: 25 },
+                    { id: 'sg-011', name: 'Email Servers', description: 'SMTP/IMAP (25, 143, 587)', icon: '📧', usageCount: 20 },
+                    { id: 'sg-012', name: 'DNS Servers', description: 'DNS queries (53)', icon: '🌍', usageCount: 18 },
+                    { id: 'sg-013', name: 'FTP Servers', description: 'FTP/SFTP (21, 22)', icon: '📤', usageCount: 15 },
+                    { id: 'sg-014', name: 'CI/CD Pipeline', description: 'Jenkins/GitLab runners', icon: '🚀', usageCount: 12 },
+                    { id: 'sg-015', name: 'Container Registry', description: 'Docker registry (5000)', icon: '🐳', usageCount: 10 },
+                    { id: 'sg-016', name: 'Elasticsearch', description: 'Search cluster (9200, 9300)', icon: '🔍', usageCount: 8 },
+                    { id: 'sg-017', name: 'Kafka Brokers', description: 'Message streaming (9092)', icon: '📨', usageCount: 7 },
+                    { id: 'sg-018', name: 'Development', description: 'Dev environment access', icon: '💻', usageCount: 6 },
+                    { id: 'sg-019', name: 'Staging', description: 'Staging environment', icon: '🧪', usageCount: 5 },
+                    { id: 'sg-020', name: 'Legacy Systems', description: 'Old infrastructure', icon: '🏚️', usageCount: 2 }
+                ];
+
+                // Set initial options (5 most used)
+                securityGroupsSearch.options = mostUsedSecurityGroups;
+
+                // Async search callback - searches ALL security groups
+                securityGroupsSearch.searchCallback = async (searchTerm) => {
+                    // Simulate API call delay (realistic network latency)
+                    await new Promise(resolve => setTimeout(resolve, 400));
+
+                    const term = searchTerm.toLowerCase();
+
+                    // Search across all security groups (simulating server-side search)
+                    const results = allSecurityGroups.filter(sg =>
+                        sg.name.toLowerCase().includes(term) ||
+                        sg.description.toLowerCase().includes(term) ||
+                        sg.id.toLowerCase().includes(term)
+                    );
+
+                    // Sort by usage count (most used first)
+                    return results.sort((a, b) => b.usageCount - a.usageCount);
+                };
+
+                // Pre-select a couple for demo purposes
+                securityGroupsSearch.setSelected(['sg-001', 'sg-002']);
             }
 
             // Search Modes: Filter vs Navigate

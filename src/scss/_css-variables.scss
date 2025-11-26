@@ -11,8 +11,8 @@
 //
 // Usage from outside Shadow DOM:
 //   multi-select {
-//     --ml-accent-color: #10b981;
-//     --ml-input-border-radius: 0.5rem;
+//     --ms-accent-color: #10b981;
+//     --ms-input-border-radius: 0.5rem;
 //   }
 // ==============================================================================
 
@@ -24,369 +24,512 @@
   // ==========================================================================
 
   // Accent Colors
-  --ml-accent-color: #{$ml-accent-color};
-  --ml-accent-color-hover: #{$ml-accent-color-hover};
-  --ml-accent-color-active: #{$ml-accent-color-active};
+  --ms-accent-color: #{$ml-accent-color};
+  --ms-accent-color-hover: #{$ml-accent-color-hover};
+  --ms-accent-color-active: #{$ml-accent-color-active};
 
   // Text Colors
-  --ml-text-primary: #{$ml-text-primary};
-  --ml-text-secondary: #{$ml-text-secondary};
-  --ml-text-white: #{$ml-text-white};
+  --ms-text-primary: #{$ml-text-primary};
+  --ms-text-secondary: #{$ml-text-secondary};
+  --ms-text-white: #{$ml-text-white};
 
   // Background Colors
-  --ml-primary-bg: #{$ml-primary-bg};
-  --ml-primary-bg-hover: #{$ml-primary-bg-hover};
-  --ml-border-color: #{$ml-border-color};
+  --ms-primary-bg: #{$ml-primary-bg};
+  --ms-primary-bg-hover: #{$ml-primary-bg-hover};
+  --ms-border-color: #{$ml-border-color};
+
+  // ==========================================================================
+  // SEMANTIC VARIABLES - Component-Specific Theming
+  // ==========================================================================
+  // These provide an intermediate layer between base colors and components,
+  // allowing independent customization of each component without affecting others.
+  // Users can override these to customize specific components while keeping
+  // the base theme intact.
+  //
+  // Pattern: --ms-{component}-{property}-{state}
+  // Example: --ms-input-background, --ms-option-text-color-hover
+  // ==========================================================================
+
+  // Input Component Semantic Variables
+  // --------------------------------------------------------------------------
+  --ms-input-background: var(--ms-input-bg);
+  --ms-input-color: var(--ms-text-primary);
+  --ms-input-border-color: var(--ms-border-color);
+  --ms-input-border-color-focus: var(--ms-accent-color);
+  --ms-input-placeholder-color: var(--ms-text-secondary);
+  --ms-input-background-disabled: var(--ms-input-bg-disabled);
+
+  // Toggle Icon Semantic Variables
+  // --------------------------------------------------------------------------
+  --ms-toggle-icon-color: var(--ms-text-secondary);
+  --ms-toggle-icon-color-open: var(--ms-text-secondary);
+
+  // Counter Badge (in Input) Semantic Variables
+  // --------------------------------------------------------------------------
+  --ms-counter-badge-background: var(--ms-accent-color);
+  --ms-counter-badge-background-hover: var(--ms-accent-color-hover);
+  --ms-counter-badge-color: var(--ms-text-white);
+
+  // Floating Hint Semantic Variables
+  // --------------------------------------------------------------------------
+  --ms-hint-background: var(--ms-hint-bg);
+  --ms-hint-color: var(--ms-text-secondary);
+  --ms-hint-border-color: var(--ms-border-color);
+
+  // Dropdown Semantic Variables
+  // --------------------------------------------------------------------------
+  --ms-dropdown-background: var(--ms-dropdown-bg);
+  --ms-dropdown-text-color: var(--ms-text-primary);
+  --ms-dropdown-border-color: var(--ms-border-color);
+
+  // Dropdown Actions Semantic Variables
+  // --------------------------------------------------------------------------
+  --ms-actions-background: var(--ms-dropdown-bg);
+  --ms-actions-border-color: var(--ms-border-color);
+
+  // Action Button Semantic Variables
+  // --------------------------------------------------------------------------
+  --ms-action-button-background: transparent;
+  --ms-action-button-background-hover: var(--ms-primary-bg);
+  --ms-action-button-border-color: var(--ms-border-color);
+  --ms-action-button-border-color-hover: var(--ms-accent-color);
+  --ms-action-button-color: var(--ms-text-primary);
+
+  // Group Semantic Variables
+  // --------------------------------------------------------------------------
+  --ms-group-border-color: var(--ms-border-color);
+  --ms-group-label-color: var(--ms-text-secondary);
+
+  // Option Semantic Variables
+  // --------------------------------------------------------------------------
+  --ms-option-text-color: var(--ms-text-primary);
+  --ms-option-background: transparent;
+  --ms-option-background-hover: var(--ms-primary-bg);
+  --ms-option-background-focused: var(--ms-primary-bg);
+  --ms-option-outline-color-focused: var(--ms-accent-color);
+  --ms-option-background-selected: var(--ms-option-bg-selected);
+  --ms-option-background-matched: var(--ms-option-bg-matched);
+  --ms-option-border-matched-color: var(--ms-option-border-matched);
+
+  // Option Content Semantic Variables
+  // --------------------------------------------------------------------------
+  --ms-option-title-color: var(--ms-text-primary);
+  --ms-option-subtitle-color: var(--ms-text-secondary);
+  --ms-option-mark-background: var(--ms-option-mark-bg);
+  --ms-option-mark-color: inherit;
+
+  // Empty/Loading State Semantic Variables
+  // --------------------------------------------------------------------------
+  --ms-empty-color: var(--ms-text-secondary);
+  --ms-loading-color: var(--ms-text-secondary);
+
+  // Badge Semantic Variables
+  // --------------------------------------------------------------------------
+  --ms-badge-background: var(--ms-badge-bg);
+  --ms-badge-background-hover: var(--ms-badge-bg-hover);
+  --ms-badge-background-active: var(--ms-badge-bg-active);
+
+  // Badge Text Semantic Variables
+  // --------------------------------------------------------------------------
+  --ms-badge-text-background: var(--ms-badge-text-bg);
+  --ms-badge-text-color: var(--ms-accent-color);
+
+  // Badge Remove Button Semantic Variables
+  // --------------------------------------------------------------------------
+  --ms-badge-remove-background: var(--ms-accent-color);
+  --ms-badge-remove-background-hover: var(--ms-accent-color-hover);
+  --ms-badge-remove-color: var(--ms-text-white);
+
+  // Badge Counter Variant Semantic Variables
+  // --------------------------------------------------------------------------
+  --ms-badge-counter-border-color: var(--ms-border-color);
+  --ms-badge-counter-text-background: var(--ms-badge-counter-text-bg);
+  --ms-badge-counter-text-color: var(--ms-text-secondary);
+  --ms-badge-counter-remove-background: var(--ms-badge-counter-remove-bg);
+  --ms-badge-counter-remove-background-hover: var(--ms-badge-counter-remove-bg-hover);
+  --ms-badge-counter-remove-color: var(--ms-badge-counter-remove-color);
+
+  // Count Display Semantic Variables
+  // --------------------------------------------------------------------------
+  --ms-counter-wrapper-background: transparent;
+  --ms-counter-wrapper-background-hover: var(--ms-primary-bg);
+  --ms-counter-wrapper-border-color: var(--ms-border-color);
+  --ms-counter-wrapper-border-color-hover: var(--ms-accent-color);
+  --ms-count-text-color: var(--ms-text-primary);
+  --ms-count-clear-background: transparent;
+  --ms-count-clear-background-hover: var(--ms-accent-color);
+  --ms-count-clear-color: var(--ms-text-secondary);
+  --ms-count-clear-color-hover: var(--ms-accent-color);
+
+  // Tooltip Semantic Variables
+  // --------------------------------------------------------------------------
+  --ms-tooltip-background: var(--ms-tooltip-bg);
+  --ms-tooltip-text-color: var(--ms-tooltip-color);
+
+  // Selected Popover Semantic Variables
+  // --------------------------------------------------------------------------
+  --ms-selected-popover-background: var(--ms-dropdown-bg);
+  --ms-selected-popover-border-color: var(--ms-border-color);
+  --ms-selected-popover-header-background: var(--ms-selected-popover-header-bg);
+  --ms-selected-popover-header-color: var(--ms-text-primary);
+  --ms-selected-popover-header-border-color: var(--ms-border-color);
+  --ms-selected-popover-close-background: transparent;
+  --ms-selected-popover-close-background-hover: var(--ms-accent-color);
+  --ms-selected-popover-close-color: var(--ms-text-secondary);
+  --ms-selected-popover-close-color-hover: var(--ms-accent-color);
 
   // ==========================================================================
   // INPUT COMPONENT
   // ==========================================================================
 
-  --ml-input-padding: #{$ml-input-padding};
-  --ml-input-padding-right: #{$ml-input-padding-right};
-  --ml-input-font-size: #{$ml-input-font-size};
-  --ml-input-border-style: #{$ml-input-border-style};
-  --ml-input-border-radius: #{$ml-input-border-radius};
-  --ml-input-bg: #{$ml-input-bg};
-  --ml-input-text: #{$ml-input-text};
-  --ml-input-focus-border-color: #{$ml-input-focus-border-color};
-  --ml-input-placeholder-color: #{$ml-input-placeholder-color};
-  --ml-input-bg-disabled: #{$ml-input-bg-disabled};
+  --ms-input-padding: #{$ml-input-padding};
+  --ms-input-padding-right: #{$ml-input-padding-right};
+  --ms-input-font-size: #{$ml-input-font-size};
+  --ms-input-border-style: #{$ml-input-border-style};
+  --ms-input-border-radius: #{$ml-input-border-radius};
+  --ms-input-bg: #{$ml-input-bg};
+  --ms-input-text: #{$ml-input-text};
+  --ms-input-focus-border-color: #{$ml-input-focus-border-color};
+  --ms-input-placeholder-color: #{$ml-input-placeholder-color};
+  --ms-input-bg-disabled: #{$ml-input-bg-disabled};
 
   // ==========================================================================
   // TOGGLE ICON
   // ==========================================================================
 
-  --ml-toggle-right: #{$ml-toggle-right};
-  --ml-toggle-color: #{$ml-toggle-color};
-  --ml-transform-center-y: #{$ml-transform-center-y};
-  --ml-transform-rotate-180: #{$ml-transform-rotate-180};
+  --ms-toggle-right: #{$ml-toggle-right};
+  --ms-toggle-color: #{$ml-toggle-color};
+  --ms-transform-center-y: #{$ml-transform-center-y};
+  --ms-transform-rotate-180: #{$ml-transform-rotate-180};
 
   // ==========================================================================
   // COUNT BADGE (in input)
   // ==========================================================================
 
-  --ml-counter-offset: #{$ml-counter-offset};
-  --ml-counter-padding: #{$ml-counter-padding};
-  --ml-counter-bg: #{$ml-counter-bg};
-  --ml-counter-color: #{$ml-counter-color};
-  --ml-counter-font-size: #{$ml-counter-font-size};
-  --ml-counter-font-weight: #{$ml-counter-font-weight};
-  --ml-counter-border-radius: #{$ml-counter-border-radius};
-  --ml-counter-bg-hover: #{$ml-counter-bg-hover};
-  --ml-transform-scale-hover: #{$ml-transform-scale-hover};
+  --ms-counter-offset: #{$ml-counter-offset};
+  --ms-counter-padding: #{$ml-counter-padding};
+  --ms-counter-bg: #{$ml-counter-bg};
+  --ms-counter-color: #{$ml-counter-color};
+  --ms-counter-font-size: #{$ml-counter-font-size};
+  --ms-counter-font-weight: #{$ml-counter-font-weight};
+  --ms-counter-border-radius: #{$ml-counter-border-radius};
+  --ms-counter-bg-hover: #{$ml-counter-bg-hover};
+  --ms-transform-scale-hover: #{$ml-transform-scale-hover};
 
   // ==========================================================================
   // FLOATING HINT
   // ==========================================================================
 
-  --ml-hint-padding: #{$ml-hint-padding};
-  --ml-hint-bg: #{$ml-hint-bg};
-  --ml-hint-border: #{$ml-hint-border};
-  --ml-hint-border-radius: #{$ml-hint-border-radius};
-  --ml-hint-box-shadow: #{$ml-hint-box-shadow};
-  --ml-hint-font-size: #{$ml-hint-font-size};
-  --ml-hint-color: #{$ml-hint-color};
-  --ml-line-height-relaxed: #{$ml-line-height-relaxed};
+  --ms-hint-padding: #{$ml-hint-padding};
+  --ms-hint-bg: #{$ml-hint-bg};
+  --ms-hint-border: #{$ml-hint-border};
+  --ms-hint-border-radius: #{$ml-hint-border-radius};
+  --ms-hint-box-shadow: #{$ml-hint-box-shadow};
+  --ms-hint-font-size: #{$ml-hint-font-size};
+  --ms-hint-color: #{$ml-hint-color};
+  --ms-line-height-relaxed: #{$ml-line-height-relaxed};
 
   // ==========================================================================
   // DROPDOWN
   // ==========================================================================
 
-  --ml-dropdown-bg: #{$ml-dropdown-bg};
-  --ml-dropdown-border: #{$ml-dropdown-border};
-  --ml-dropdown-border-radius: #{$ml-dropdown-border-radius};
-  --ml-dropdown-box-shadow: #{$ml-dropdown-box-shadow};
-  --ml-options-max-height: #{$ml-options-max-height};
-  --ml-option-color: #{$ml-option-color};
-  --ml-z-index-dropdown: #{$ml-z-index-dropdown};
-  --ml-z-index-sticky: #{$ml-z-index-sticky};
+  --ms-dropdown-bg: #{$ml-dropdown-bg};
+  --ms-dropdown-border: #{$ml-dropdown-border};
+  --ms-dropdown-border-radius: #{$ml-dropdown-border-radius};
+  --ms-dropdown-box-shadow: #{$ml-dropdown-box-shadow};
+  --ms-options-max-height: #{$ml-options-max-height};
+  --ms-option-color: #{$ml-option-color};
+  --ms-z-index-dropdown: #{$ml-z-index-dropdown};
+  --ms-z-index-sticky: #{$ml-z-index-sticky};
 
   // ==========================================================================
   // DROPDOWN ACTIONS
   // ==========================================================================
 
-  --ml-actions-gap: #{$ml-actions-gap};
-  --ml-actions-padding: #{$ml-actions-padding};
-  --ml-actions-border-bottom: #{$ml-actions-border-bottom};
-  --ml-actions-bg: #{$ml-actions-bg};
+  --ms-actions-gap: #{$ml-actions-gap};
+  --ms-actions-padding: #{$ml-actions-padding};
+  --ms-actions-border-bottom: #{$ml-actions-border-bottom};
+  --ms-actions-bg: #{$ml-actions-bg};
 
   // Action Button
-  --ml-action-btn-padding: #{$ml-action-btn-padding};
-  --ml-action-btn-font-size: #{$ml-action-btn-font-size};
-  --ml-action-btn-border: #{$ml-action-btn-border};
-  --ml-action-btn-border-radius: #{$ml-action-btn-border-radius};
-  --ml-action-btn-bg: #{$ml-action-btn-bg};
-  --ml-action-btn-color: #{$ml-action-btn-color};
-  --ml-action-btn-bg-hover: #{$ml-action-btn-bg-hover};
-  --ml-action-btn-border-color-hover: #{$ml-action-btn-border-color-hover};
-  --ml-transform-scale-active: #{$ml-transform-scale-active};
+  --ms-action-btn-padding: #{$ml-action-btn-padding};
+  --ms-action-btn-font-size: #{$ml-action-btn-font-size};
+  --ms-action-btn-border: #{$ml-action-btn-border};
+  --ms-action-btn-border-radius: #{$ml-action-btn-border-radius};
+  --ms-action-btn-bg: #{$ml-action-btn-bg};
+  --ms-action-btn-color: #{$ml-action-btn-color};
+  --ms-action-btn-bg-hover: #{$ml-action-btn-bg-hover};
+  --ms-action-btn-border-color-hover: #{$ml-action-btn-border-color-hover};
+  --ms-transform-scale-active: #{$ml-transform-scale-active};
 
   // ==========================================================================
   // OPTIONS CONTAINER & GROUPS
   // ==========================================================================
 
-  --ml-options-padding: #{$ml-options-padding};
+  --ms-options-padding: #{$ml-options-padding};
 
   // Group
-  --ml-group-border-top: #{$ml-group-border-top};
-  --ml-group-margin-top: #{$ml-group-margin-top};
-  --ml-group-padding-top: #{$ml-group-padding-top};
+  --ms-group-border-top: #{$ml-group-border-top};
+  --ms-group-margin-top: #{$ml-group-margin-top};
+  --ms-group-padding-top: #{$ml-group-padding-top};
 
   // Group Label
-  --ml-group-label-padding: #{$ml-group-label-padding};
-  --ml-group-label-font-size: #{$ml-group-label-font-size};
-  --ml-group-label-font-weight: #{$ml-group-label-font-weight};
-  --ml-group-label-color: #{$ml-group-label-color};
-  --ml-group-label-transform: #{$ml-group-label-transform};
-  --ml-group-label-letter-spacing: #{$ml-group-label-letter-spacing};
+  --ms-group-label-padding: #{$ml-group-label-padding};
+  --ms-group-label-font-size: #{$ml-group-label-font-size};
+  --ms-group-label-font-weight: #{$ml-group-label-font-weight};
+  --ms-group-label-color: #{$ml-group-label-color};
+  --ms-group-label-transform: #{$ml-group-label-transform};
+  --ms-group-label-letter-spacing: #{$ml-group-label-letter-spacing};
 
   // ==========================================================================
   // INDIVIDUAL OPTIONS
   // ==========================================================================
 
-  --ml-option-gap: #{$ml-option-gap};
-  --ml-option-padding: #{$ml-option-padding};
-  --ml-option-padding-h: #{$ml-option-padding-h};
-  --ml-option-bg: #{$ml-option-bg};
-  --ml-option-bg-hover: #{$ml-option-bg-hover};
-  --ml-option-bg-focused: #{$ml-option-bg-focused};
-  --ml-option-outline-focused: #{$ml-option-outline-focused};
-  --ml-option-focus-outline-offset: #{$ml-option-focus-outline-offset};
-  --ml-option-bg-matched: #{$ml-option-bg-matched};
-  --ml-option-border-matched: #{$ml-option-border-matched};
-  --ml-option-bg-selected: #{$ml-option-bg-selected};
-  --ml-disabled-opacity: #{$ml-disabled-opacity};
+  --ms-option-gap: #{$ml-option-gap};
+  --ms-option-padding: #{$ml-option-padding};
+  --ms-option-padding-h: #{$ml-option-padding-h};
+  --ms-option-bg: #{$ml-option-bg};
+  --ms-option-bg-hover: #{$ml-option-bg-hover};
+  --ms-option-bg-focused: #{$ml-option-bg-focused};
+  --ms-option-outline-focused: #{$ml-option-outline-focused};
+  --ms-option-focus-outline-offset: #{$ml-option-focus-outline-offset};
+  --ms-option-bg-matched: #{$ml-option-bg-matched};
+  --ms-option-border-matched: #{$ml-option-border-matched};
+  --ms-option-bg-selected: #{$ml-option-bg-selected};
+  --ms-disabled-opacity: #{$ml-disabled-opacity};
 
   // ==========================================================================
   // OPTION CONTENT
   // ==========================================================================
 
-  --ml-option-content-gap: #{$ml-option-content-gap};
+  --ms-option-content-gap: #{$ml-option-content-gap};
 
   // Option Icon
-  --ml-option-icon-size: #{$ml-option-icon-size};
-  --ml-option-icon-font-size: #{$ml-option-icon-font-size};
+  --ms-option-icon-size: #{$ml-option-icon-size};
+  --ms-option-icon-font-size: #{$ml-option-icon-font-size};
 
   // Option Title
-  --ml-option-title-font-size: #{$ml-option-title-font-size};
-  --ml-option-title-color: #{$ml-option-title-color};
-  --ml-option-mark-bg: #{$ml-option-mark-bg};
-  --ml-option-mark-color: #{$ml-option-mark-color};
-  --ml-option-mark-font-weight: #{$ml-option-mark-font-weight};
+  --ms-option-title-font-size: #{$ml-option-title-font-size};
+  --ms-option-title-color: #{$ml-option-title-color};
+  --ms-option-mark-bg: #{$ml-option-mark-bg};
+  --ms-option-mark-color: #{$ml-option-mark-color};
+  --ms-option-mark-font-weight: #{$ml-option-mark-font-weight};
 
   // Option Subtitle
-  --ml-option-subtitle-margin-top: #{$ml-option-subtitle-margin-top};
-  --ml-option-subtitle-font-size: #{$ml-option-subtitle-font-size};
-  --ml-option-subtitle-color: #{$ml-option-subtitle-color};
-  --ml-option-subtitle-line-height: #{$ml-option-subtitle-line-height};
+  --ms-option-subtitle-margin-top: #{$ml-option-subtitle-margin-top};
+  --ms-option-subtitle-font-size: #{$ml-option-subtitle-font-size};
+  --ms-option-subtitle-color: #{$ml-option-subtitle-color};
+  --ms-option-subtitle-line-height: #{$ml-option-subtitle-line-height};
 
   // Checkbox
-  --ml-checkbox-margin-top: #{$ml-checkbox-margin-top};
-  --ml-checkbox-size: #{$ml-checkbox-size};
-  --ml-checkbox-scale: #{$ml-checkbox-scale};
-  --ml-checkbox-align: flex-start; // flex-start (top), center, flex-end (bottom)
+  --ms-checkbox-margin-top: #{$ml-checkbox-margin-top};
+  --ms-checkbox-margin-right: #{$ml-checkbox-margin-right};
+  --ms-checkbox-margin-bottom: #{$ml-checkbox-margin-bottom};
+  --ms-checkbox-margin-left: #{$ml-checkbox-margin-left};
+  --ms-checkbox-size: #{$ml-checkbox-size};
+  --ms-checkbox-scale: #{$ml-checkbox-scale};
+  --ms-checkbox-align: flex-start; // flex-start (top), center, flex-end (bottom)
 
   // ==========================================================================
   // EMPTY & LOADING STATES
   // ==========================================================================
 
   // Empty State
-  --ml-empty-padding: #{$ml-empty-padding};
-  --ml-empty-font-size: #{$ml-empty-font-size};
-  --ml-empty-color: #{$ml-empty-color};
+  --ms-empty-padding: #{$ml-empty-padding};
+  --ms-empty-font-size: #{$ml-empty-font-size};
+  --ms-empty-color: #{$ml-empty-color};
 
   // Loader
-  --ml-loader-padding: #{$ml-loader-padding};
-  --ml-loader-gap: #{$ml-loader-gap};
+  --ms-loader-padding: #{$ml-loader-padding};
+  --ms-loader-gap: #{$ml-loader-gap};
 
   // Loading Text
-  --ml-loading-text-font-size: #{$ml-loading-text-font-size};
-  --ml-loading-text-color: #{$ml-loading-text-color};
+  --ms-loading-text-font-size: #{$ml-loading-text-font-size};
+  --ms-loading-text-color: #{$ml-loading-text-color};
 
   // ==========================================================================
   // BADGES DISPLAY
   // ==========================================================================
 
-  --ml-badges-gap: #{$ml-badges-gap};
-  --ml-badges-margin-bottom: #{$ml-badges-margin-bottom};
-  --ml-badges-margin-top: #{$ml-badges-margin-top};
-  --ml-badges-margin-left: #{$ml-badges-margin-left};
-  --ml-badges-margin-right: #{$ml-badges-margin-right};
+  --ms-badges-gap: #{$ml-badges-gap};
+  --ms-badges-margin-bottom: #{$ml-badges-margin-bottom};
+  --ms-badges-margin-top: #{$ml-badges-margin-top};
+  --ms-badges-margin-left: #{$ml-badges-margin-left};
+  --ms-badges-margin-right: #{$ml-badges-margin-right};
 
   // Individual Badge
-  --ml-badge-gap: #{$ml-badge-gap};
-  --ml-badge-height: #{$ml-badge-height};
-  --ml-badge-font-size: #{$ml-badge-font-size};
-  --ml-badge-font-weight: #{$ml-badge-font-weight};
-  --ml-badge-border-radius: #{$ml-badge-border-radius};
-  --ml-badge-bg: #{$ml-badge-bg};
-  --ml-badge-bg-hover: #{$ml-badge-bg-hover};
-  --ml-badge-bg-active: #{$ml-badge-bg-active};
-  --ml-order-first: #{$ml-order-first};
+  --ms-badge-gap: #{$ml-badge-gap};
+  --ms-badge-height: #{$ml-badge-height};
+  --ms-badge-font-size: #{$ml-badge-font-size};
+  --ms-badge-font-weight: #{$ml-badge-font-weight};
+  --ms-badge-border-radius: #{$ml-badge-border-radius};
+  --ms-badge-bg: #{$ml-badge-bg};
+  --ms-badge-bg-hover: #{$ml-badge-bg-hover};
+  --ms-badge-bg-active: #{$ml-badge-bg-active};
+  --ms-order-first: #{$ml-order-first};
 
   // ==========================================================================
   // BADGE TEXT & REMOVE BUTTON
   // ==========================================================================
 
   // Badge Text
-  --ml-badge-text-padding: #{$ml-badge-text-padding};
-  --ml-badge-text-bg: #{$ml-badge-text-bg};
-  --ml-badge-text-color: #{$ml-badge-text-color};
+  --ms-badge-text-padding: #{$ml-badge-text-padding};
+  --ms-badge-text-bg: #{$ml-badge-text-bg};
+  --ms-badge-text-color: #{$ml-badge-text-color};
 
   // Badge Remove Button
-  --ml-badge-remove-width: #{$ml-badge-remove-width};
-  --ml-badge-remove-bg: #{$ml-badge-remove-bg};
-  --ml-badge-remove-color: #{$ml-badge-remove-color};
-  --ml-badge-remove-border: #{$ml-badge-remove-border};
-  --ml-badge-remove-font-size: #{$ml-badge-remove-font-size};
-  --ml-badge-remove-bg-hover: #{$ml-badge-remove-bg-hover};
-  --ml-badge-remove-box-shadow-focus: #{$ml-badge-remove-box-shadow-focus};
-  --ml-icon-remove: "#{$ml-icon-remove}";
+  --ms-badge-remove-width: #{$ml-badge-remove-width};
+  --ms-badge-remove-bg: #{$ml-badge-remove-bg};
+  --ms-badge-remove-color: #{$ml-badge-remove-color};
+  --ms-badge-remove-border: #{$ml-badge-remove-border};
+  --ms-badge-remove-font-size: #{$ml-badge-remove-font-size};
+  --ms-badge-remove-bg-hover: #{$ml-badge-remove-bg-hover};
+  --ms-badge-remove-box-shadow-focus: #{$ml-badge-remove-box-shadow-focus};
+  --ms-icon-remove: "#{$ml-icon-remove}";
 
   // Badge Indicator (for "+ X more", "3 selected", compact mode)
-  --ml-badge-counter-bg: #{$ml-badge-counter-bg};
-  --ml-badge-counter-border: #{$ml-badge-counter-border};
-  --ml-badge-counter-border-radius: #{$ml-badge-counter-border-radius};
-  --ml-badge-counter-text-color: #{$ml-badge-counter-text-color};
-  --ml-badge-counter-text-bg: #{$ml-badge-counter-text-bg};
-  --ml-badge-counter-remove-bg: #{$ml-badge-counter-remove-bg};
-  --ml-badge-counter-remove-color: #{$ml-badge-counter-remove-color};
-  --ml-badge-counter-remove-bg-hover: #{$ml-badge-counter-remove-bg-hover};
+  --ms-badge-counter-bg: #{$ml-badge-counter-bg};
+  --ms-badge-counter-border: #{$ml-badge-counter-border};
+  --ms-badge-counter-border-radius: #{$ml-badge-counter-border-radius};
+  --ms-badge-counter-text-color: #{$ml-badge-counter-text-color};
+  --ms-badge-counter-text-bg: #{$ml-badge-counter-text-bg};
+  --ms-badge-counter-remove-bg: #{$ml-badge-counter-remove-bg};
+  --ms-badge-counter-remove-color: #{$ml-badge-counter-remove-color};
+  --ms-badge-counter-remove-bg-hover: #{$ml-badge-counter-remove-bg-hover};
 
   // ==========================================================================
   // "+X MORE" BADGE
   // ==========================================================================
 
-  --ml-more-badge-bg: #{$ml-more-badge-bg};
-  --ml-more-badge-hover-bg: #{$ml-more-badge-hover-bg};
-  --ml-more-badge-active-bg: #{$ml-more-badge-active-bg};
+  --ms-more-badge-bg: #{$ml-more-badge-bg};
+  --ms-more-badge-hover-bg: #{$ml-more-badge-hover-bg};
+  --ms-more-badge-active-bg: #{$ml-more-badge-active-bg};
 
   // ==========================================================================
   // COUNT DISPLAY MODE
   // ==========================================================================
 
-  --ml-count-display-margin-bottom: #{$ml-count-display-margin-bottom};
-  --ml-count-display-margin-top: #{$ml-count-display-margin-top};
-  --ml-count-display-margin-left: #{$ml-count-display-margin-left};
-  --ml-count-display-margin-right: #{$ml-count-display-margin-right};
+  --ms-count-display-margin-bottom: #{$ml-count-display-margin-bottom};
+  --ms-count-display-margin-top: #{$ml-count-display-margin-top};
+  --ms-count-display-margin-left: #{$ml-count-display-margin-left};
+  --ms-count-display-margin-right: #{$ml-count-display-margin-right};
 
   // Count Badge Wrapper
-  --ml-counter-wrapper-bg: #{$ml-counter-wrapper-bg};
-  --ml-counter-wrapper-border: #{$ml-counter-wrapper-border};
-  --ml-counter-wrapper-border-radius: #{$ml-counter-wrapper-border-radius};
-  --ml-counter-wrapper-padding: #{$ml-counter-wrapper-padding};
-  --ml-counter-wrapper-gap: #{$ml-counter-wrapper-gap};
-  --ml-counter-wrapper-bg-hover: #{$ml-counter-wrapper-bg-hover};
-  --ml-counter-wrapper-border-color-hover: #{$ml-counter-wrapper-border-color-hover};
+  --ms-counter-wrapper-bg: #{$ml-counter-wrapper-bg};
+  --ms-counter-wrapper-border: #{$ml-counter-wrapper-border};
+  --ms-counter-wrapper-border-radius: #{$ml-counter-wrapper-border-radius};
+  --ms-counter-wrapper-padding: #{$ml-counter-wrapper-padding};
+  --ms-counter-wrapper-gap: #{$ml-counter-wrapper-gap};
+  --ms-counter-wrapper-bg-hover: #{$ml-counter-wrapper-bg-hover};
+  --ms-counter-wrapper-border-color-hover: #{$ml-counter-wrapper-border-color-hover};
 
   // ==========================================================================
   // COUNT TEXT & CLEAR BUTTON
   // ==========================================================================
 
   // Count Text
-  --ml-count-text-bg: #{$ml-count-text-bg};
-  --ml-count-text-border: #{$ml-count-text-border};
-  --ml-count-text-font-size: #{$ml-count-text-font-size};
-  --ml-count-text-color: #{$ml-count-text-color};
+  --ms-count-text-bg: #{$ml-count-text-bg};
+  --ms-count-text-border: #{$ml-count-text-border};
+  --ms-count-text-font-size: #{$ml-count-text-font-size};
+  --ms-count-text-color: #{$ml-count-text-color};
 
   // Count Clear Button
-  --ml-count-clear-size: #{$ml-count-clear-size};
-  --ml-count-clear-bg: #{$ml-count-clear-bg};
-  --ml-count-clear-color: #{$ml-count-clear-color};
-  --ml-count-clear-font-size: #{$ml-count-clear-font-size};
-  --ml-count-clear-border-radius: #{$ml-count-clear-border-radius};
-  --ml-count-clear-bg-hover: #{$ml-count-clear-bg-hover};
-  --ml-count-clear-color-hover: #{$ml-count-clear-color-hover};
-  --ml-icon-clear: "#{$ml-icon-clear}";
+  --ms-count-clear-size: #{$ml-count-clear-size};
+  --ms-count-clear-bg: #{$ml-count-clear-bg};
+  --ms-count-clear-color: #{$ml-count-clear-color};
+  --ms-count-clear-font-size: #{$ml-count-clear-font-size};
+  --ms-count-clear-border-radius: #{$ml-count-clear-border-radius};
+  --ms-count-clear-bg-hover: #{$ml-count-clear-bg-hover};
+  --ms-count-clear-color-hover: #{$ml-count-clear-color-hover};
+  --ms-icon-clear: "#{$ml-icon-clear}";
 
   // ==========================================================================
   // TOOLTIPS
   // ==========================================================================
 
-  --ml-tooltip-bg: #{$ml-tooltip-bg};
-  --ml-tooltip-color: #{$ml-tooltip-color};
-  --ml-tooltip-padding: #{$ml-tooltip-padding};
-  --ml-tooltip-border-radius: #{$ml-tooltip-border-radius};
-  --ml-tooltip-font-size: #{$ml-tooltip-font-size};
-  --ml-tooltip-max-width: #{$ml-tooltip-max-width};
-  --ml-tooltip-shadow: #{$ml-tooltip-shadow};
-  --ml-tooltip-z-index: #{$ml-tooltip-z-index};
+  --ms-tooltip-bg: #{$ml-tooltip-bg};
+  --ms-tooltip-color: #{$ml-tooltip-color};
+  --ms-tooltip-padding: #{$ml-tooltip-padding};
+  --ms-tooltip-border-radius: #{$ml-tooltip-border-radius};
+  --ms-tooltip-font-size: #{$ml-tooltip-font-size};
+  --ms-tooltip-max-width: #{$ml-tooltip-max-width};
+  --ms-tooltip-shadow: #{$ml-tooltip-shadow};
+  --ms-tooltip-z-index: #{$ml-tooltip-z-index};
 
   // ==========================================================================
   // SELECTED POPOVER
   // ==========================================================================
 
-  --ml-z-index-popover: #{$ml-z-index-popover};
-  --ml-selected-popover-width: #{$ml-selected-popover-width};
-  --ml-selected-popover-max-height: #{$ml-selected-popover-max-height};
-  --ml-selected-popover-bg: #{$ml-selected-popover-bg};
-  --ml-selected-popover-border: #{$ml-selected-popover-border};
-  --ml-selected-popover-border-radius: #{$ml-selected-popover-border-radius};
-  --ml-selected-popover-box-shadow: #{$ml-selected-popover-box-shadow};
+  --ms-z-index-popover: #{$ml-z-index-popover};
+  --ms-selected-popover-width: #{$ml-selected-popover-width};
+  --ms-selected-popover-max-height: #{$ml-selected-popover-max-height};
+  --ms-selected-popover-bg: #{$ml-selected-popover-bg};
+  --ms-selected-popover-border: #{$ml-selected-popover-border};
+  --ms-selected-popover-border-radius: #{$ml-selected-popover-border-radius};
+  --ms-selected-popover-box-shadow: #{$ml-selected-popover-box-shadow};
 
   // Popover Header
-  --ml-selected-popover-header-padding: #{$ml-selected-popover-header-padding};
-  --ml-selected-popover-header-bg: #{$ml-selected-popover-header-bg};
-  --ml-selected-popover-header-border-bottom: #{$ml-selected-popover-header-border-bottom};
-  --ml-selected-popover-header-font-size: #{$ml-selected-popover-header-font-size};
-  --ml-selected-popover-header-font-weight: #{$ml-selected-popover-header-font-weight};
-  --ml-selected-popover-header-color: #{$ml-selected-popover-header-color};
+  --ms-selected-popover-header-padding: #{$ml-selected-popover-header-padding};
+  --ms-selected-popover-header-bg: #{$ml-selected-popover-header-bg};
+  --ms-selected-popover-header-border-bottom: #{$ml-selected-popover-header-border-bottom};
+  --ms-selected-popover-header-font-size: #{$ml-selected-popover-header-font-size};
+  --ms-selected-popover-header-font-weight: #{$ml-selected-popover-header-font-weight};
+  --ms-selected-popover-header-color: #{$ml-selected-popover-header-color};
 
   // ==========================================================================
   // POPOVER CLOSE BUTTON
   // ==========================================================================
 
-  --ml-popover-close-size: #{$ml-popover-close-size};
-  --ml-selected-popover-close-bg: #{$ml-selected-popover-close-bg};
-  --ml-selected-popover-close-color: #{$ml-selected-popover-close-color};
-  --ml-selected-popover-close-font-size: #{$ml-selected-popover-close-font-size};
-  --ml-selected-popover-close-border-radius: #{$ml-selected-popover-close-border-radius};
-  --ml-selected-popover-close-bg-hover: #{$ml-selected-popover-close-bg-hover};
-  --ml-selected-popover-close-color-hover: #{$ml-selected-popover-close-color-hover};
+  --ms-popover-close-size: #{$ml-popover-close-size};
+  --ms-selected-popover-close-bg: #{$ml-selected-popover-close-bg};
+  --ms-selected-popover-close-color: #{$ml-selected-popover-close-color};
+  --ms-selected-popover-close-font-size: #{$ml-selected-popover-close-font-size};
+  --ms-selected-popover-close-border-radius: #{$ml-selected-popover-close-border-radius};
+  --ms-selected-popover-close-bg-hover: #{$ml-selected-popover-close-bg-hover};
+  --ms-selected-popover-close-color-hover: #{$ml-selected-popover-close-color-hover};
 
   // ==========================================================================
   // POPOVER BODY
   // ==========================================================================
 
-  --ml-selected-popover-body-gap: #{$ml-selected-popover-body-gap};
-  --ml-selected-popover-body-padding: #{$ml-selected-popover-body-padding};
-  --ml-selected-popover-body-max-height: #{$ml-selected-popover-body-max-height};
+  --ms-selected-popover-body-gap: #{$ml-selected-popover-body-gap};
+  --ms-selected-popover-body-padding: #{$ml-selected-popover-body-padding};
+  --ms-selected-popover-body-max-height: #{$ml-selected-popover-body-max-height};
 
   // ==========================================================================
   // TYPOGRAPHY SCALE
   // ==========================================================================
 
-  --ml-font-size-2xs: #{$ml-font-size-2xs};
-  --ml-font-size-xs: #{$ml-font-size-xs};
-  --ml-font-size-sm: #{$ml-font-size-sm};
-  --ml-font-size-base: #{$ml-font-size-base};
-  --ml-font-size-lg: #{$ml-font-size-lg};
-  --ml-font-weight-medium: #{$ml-font-weight-medium};
-  --ml-font-weight-semibold: #{$ml-font-weight-semibold};
-  --ml-line-height-none: #{$ml-line-height-none};
+  --ms-font-size-2xs: #{$ml-font-size-2xs};
+  --ms-font-size-xs: #{$ml-font-size-xs};
+  --ms-font-size-sm: #{$ml-font-size-sm};
+  --ms-font-size-base: #{$ml-font-size-base};
+  --ms-font-size-lg: #{$ml-font-size-lg};
+  --ms-font-weight-medium: #{$ml-font-weight-medium};
+  --ms-font-weight-semibold: #{$ml-font-weight-semibold};
+  --ms-line-height-none: #{$ml-line-height-none};
 
   // ==========================================================================
   // SPACING & SIZING
   // ==========================================================================
 
-  --ml-spacing-xs: #{$ml-spacing-xs};
-  --ml-spacing-sm: #{$ml-spacing-sm};
-  --ml-spacing-md: #{$ml-spacing-md};
-  --ml-spacing-lg: #{$ml-spacing-lg};
+  --ms-spacing-xs: #{$ml-spacing-xs};
+  --ms-spacing-sm: #{$ml-spacing-sm};
+  --ms-spacing-md: #{$ml-spacing-md};
+  --ms-spacing-lg: #{$ml-spacing-lg};
 
   // ==========================================================================
   // TRANSITIONS & EFFECTS
   // ==========================================================================
 
-  --ml-transition-fast: #{$ml-transition-fast};
-  --ml-transition-normal: #{$ml-transition-normal};
-  --ml-easing-snappy: #{$ml-easing-snappy};
+  --ms-transition-fast: #{$ml-transition-fast};
+  --ms-transition-normal: #{$ml-transition-normal};
+  --ms-easing-snappy: #{$ml-easing-snappy};
 
   // ==========================================================================
   // OPACITY VALUES
   // ==========================================================================
 
-  --ml-placeholder-opacity: #{$ml-placeholder-opacity};
-  --ml-disabled-input-opacity: #{$ml-disabled-input-opacity};
+  --ms-placeholder-opacity: #{$ml-placeholder-opacity};
+  --ms-disabled-input-opacity: #{$ml-disabled-input-opacity};
 }

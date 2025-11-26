@@ -2,7 +2,7 @@
 // RTL (Right-to-Left) SUPPORT
 // ==============================================================================
 // Styles for RTL languages (Arabic, Hebrew, etc.)
-// Applied when .ml--rtl class is present
+// Applied when .ms--rtl class is present
 
 @use 'variables' as *;
 
@@ -10,26 +10,26 @@
 // INPUT & TOGGLE ICON
 // ==============================================================================
 
-.ml--rtl {
-  .ml__input-wrapper {
+.ms--rtl {
+  .ms__input-wrapper {
     direction: rtl;
   }
 
-  .ml__input {
+  .ms__input {
     text-align: right;
-    padding-left: var(--ml-input-padding-right, $ml-input-padding-right);
-    padding-right: var(--ml-input-padding-h, $ml-input-padding-h);
+    padding-left: var(--ms-input-padding-right, $ml-input-padding-right);
+    padding-right: var(--ms-input-padding-h, $ml-input-padding-h);
   }
 
   // Move toggle icon to left side
-  .ml__toggle {
-    left: var(--ml-toggle-right, $ml-toggle-right) !important;
+  .ms__toggle {
+    left: var(--ms-toggle-right, $ml-toggle-right) !important;
     right: auto !important;
   }
 
   // Move count badge to left side
-  .ml__counter {
-    left: var(--ml-counter-offset, $ml-counter-offset) !important;
+  .ms__counter {
+    left: var(--ms-counter-offset, $ml-counter-offset) !important;
     right: auto !important;
   }
 
@@ -37,27 +37,27 @@
   // DROPDOWN OPTIONS
   // ==============================================================================
 
-  .ml__dropdown {
+  .ms__dropdown {
     direction: rtl;
     text-align: right;
   }
 
   // Checkbox on right side
-  .ml__option {
+  .ms__option {
     flex-direction: row-reverse;
   }
 
-  .ml__checkbox {
-    margin-left: var(--ml-spacing-sm, $ml-spacing-sm);
+  .ms__checkbox {
+    margin-left: var(--ms-spacing-sm, $ml-spacing-sm);
     margin-right: 0;
   }
 
-  .ml__option-content {
+  .ms__option-content {
     text-align: right;
   }
 
-  .ml__option-icon {
-    margin-left: var(--ml-spacing-xs, $ml-spacing-xs);
+  .ms__option-icon {
+    margin-left: var(--ms-spacing-xs, $ml-spacing-xs);
     margin-right: 0;
   }
 
@@ -65,36 +65,36 @@
   // BADGES LAYOUT
   // ==============================================================================
 
-  .ml__badges {
+  .ms__badges {
     direction: rtl;
   }
 
   // Badges flow right-to-left
-  .ml__badge {
+  .ms__badge {
     flex-direction: row-reverse;
   }
 
   // Remove button on left side of badge
-  .ml__badge-remove {
-    border-radius: var(--ml-badge-remove-border-radius-rtl, $ml-badge-border-radius) 0 0 var(--ml-badge-remove-border-radius-rtl, $ml-badge-border-radius);
-    border-left: var(--ml-badge-remove-border, $ml-badge-remove-border);
+  .ms__badge-remove {
+    border-radius: var(--ms-badge-remove-border-radius-rtl, $ml-badge-border-radius) 0 0 var(--ms-badge-remove-border-radius-rtl, $ml-badge-border-radius);
+    border-left: var(--ms-badge-remove-border, $ml-badge-remove-border);
     border-right: none;
   }
 
   // Badge text rounded on right
-  .ml__badge-text {
-    border-radius: 0 var(--ml-badge-text-border-radius-rtl, $ml-badge-border-radius) var(--ml-badge-text-border-radius-rtl, $ml-badge-border-radius) 0;
+  .ms__badge-text {
+    border-radius: 0 var(--ms-badge-text-border-radius-rtl, $ml-badge-border-radius) var(--ms-badge-text-border-radius-rtl, $ml-badge-border-radius) 0;
   }
 
   // ==============================================================================
   // COUNT DISPLAY
   // ==============================================================================
 
-  .ml__count-display {
+  .ms__count-display {
     direction: rtl;
   }
 
-  .ml__counter-wrapper {
+  .ms__counter-wrapper {
     flex-direction: row-reverse;
   }
 
@@ -102,7 +102,7 @@
   // SELECTED POPOVER
   // ==============================================================================
 
-  .ml__selected-popover {
+  .ms__selected-popover {
     direction: rtl;
     text-align: right;
   }
@@ -111,7 +111,7 @@
   // ACTIONS
   // ==============================================================================
 
-  .ml__actions {
+  .ms__actions {
     direction: rtl;
   }
 
@@ -119,7 +119,7 @@
   // GROUPS
   // ==============================================================================
 
-  .ml__group-label {
+  .ms__group-label {
     text-align: right;
   }
 
@@ -127,7 +127,7 @@
   // EMPTY STATE
   // ==============================================================================
 
-  .ml__empty {
+  .ms__empty {
     text-align: right;
   }
 
@@ -135,7 +135,7 @@
   // HINT
   // ==============================================================================
 
-  .ml__hint {
+  .ms__hint {
     direction: rtl;
     text-align: right;
   }

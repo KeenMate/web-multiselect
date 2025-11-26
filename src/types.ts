@@ -157,6 +157,8 @@ export interface MultiSelectConfig<T = any> {
     groupMember?: string;
     /** Callback to extract group from item */
     getGroupCallback?: (item: T) => string;
+    /** Callback to customize group label content (can return HTML) */
+    renderGroupLabelContentCallback?: (groupName: string) => string | HTMLElement;
 
     /** Member property name for disabled state extraction */
     disabledMember?: string;
