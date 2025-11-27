@@ -261,6 +261,11 @@ multiselect.getGroupCallback = (item) => item.category;
 multiselect.getDisabledCallback = (item) => item.stock === 0;
 
 // Custom rendering - Full HTML control
+multiselect.renderGroupLabelContentCallback = (groupName) => {
+  // Customize group header display (HTML string or HTMLElement)
+  return `<strong>📦 ${groupName.toUpperCase()}</strong>`;
+};
+
 multiselect.renderOptionContentCallback = (item, context) => {
   // Customize option content (HTML string or HTMLElement)
   return `<strong>${item.name}</strong> <span class="badge">${item.status}</span>`;
@@ -650,7 +655,7 @@ Perfect for different use cases and space constraints:
 **Badge Styling:**
 - **Data badges** (selected items like "JavaScript", "Python"): Blue styling by default
 - **BadgeCounters** ("+3 more", "5 selected", compact mode display): Gray styling to distinguish from data
-- Both can be customized via CSS variables (see `--ml-badge-*` and `--ml-badge-counter-*`)
+- Both can be customized via CSS variables (see `--ms-badge-*` and `--ms-badge-counter-*`)
 
 **Counter (`show-counter="true"`)**: Independent feature showing `[X]` next to toggle icon. Works with all display modes. Not affected by callbacks.
 
@@ -829,7 +834,7 @@ select.renderBadgeContentCallback = (item, context) => {
 };
 
 // Custom rendering for selected items popover (separate callback)
-select.renderSelectionBadgeContentCallback = (item) => {
+select.renderSelectedItemContentCallback = (item) => {
   // Full details in popover - has more space
   return `
     <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -845,13 +850,56 @@ select.renderSelectionBadgeContentCallback = (item) => {
 
 **Separate Callbacks for Badges vs. Popover:**
 - `renderBadgeContentCallback` - Renders badges in the main badges area (compact display)
-- `renderSelectionBadgeContentCallback` - Renders items in the selected items popover (can be more detailed)
-- If `renderSelectionBadgeContentCallback` is not defined, falls back to `renderBadgeContentCallback`
+- `renderSelectedItemContentCallback` - Renders items in the selected items popover (can be more detailed)
+- If `renderSelectedItemContentCallback` is not defined, falls back to `renderBadgeContentCallback`
 - Users can assign the same function to both if identical rendering is desired
 
 **Context object** (`BadgeContentRenderContext` for `renderBadgeContentCallback`):
 - `displayMode: BadgesDisplayMode` - Current badges display mode ('pills', 'count', 'compact', 'partial', 'none')
 - `isInPopover: boolean` - Whether the badge is being rendered in the selected items popover (always false for this callback)
+
+#### Custom Group Label Rendering
+
+Customize how group headers are displayed using `renderGroupLabelContentCallback`:
+
+```javascript
+const select = document.querySelector('web-multiselect');
+
+select.options = [
+  { value: 'react', label: 'React', group: 'frontend' },
+  { value: 'vue', label: 'Vue', group: 'frontend' },
+  { value: 'nodejs', label: 'Node.js', group: 'backend' },
+  { value: 'postgres', label: 'PostgreSQL', group: 'database' }
+];
+
+select.isGroupsAllowed = true;
+select.groupMember = 'group';
+
+// Customize group label display
+select.renderGroupLabelContentCallback = (groupName) => {
+  const emojis = {
+    'frontend': '🎨',
+    'backend': '🔧',
+    'database': '🗄️'
+  };
+  const emoji = emojis[groupName] || '📦';
+  return `<strong>${emoji} ${groupName.toUpperCase()}</strong>`;
+};
+```
+
+**Signature:** `(groupName: string) => string | HTMLElement`
+
+**Use cases:**
+- Capitalize or format group names
+- Add icons, emojis, or badges to group headers
+- Apply HTML formatting (bold, colors, etc.)
+- Internationalization (i18n) - translate group names
+- Add group-specific metadata or counts
+
+**Notes:**
+- Keeps standard `.ms__group-label` wrapper for consistent styling
+- Can return HTML string or HTMLElement
+- Group name is passed as a string parameter
 
 #### Custom Badge Styling with CSS Classes
 
@@ -884,21 +932,21 @@ Then style with CSS:
 ```css
 /* Target specific badges with custom classes */
 .badge-urgent {
-  --ml-badge-text-bg: #fee2e2;
-  --ml-badge-text-color: #dc2626;
-  --ml-badge-remove-bg: #dc2626;
+  --ms-badge-text-bg: #fee2e2;
+  --ms-badge-text-color: #dc2626;
+  --ms-badge-remove-bg: #dc2626;
 }
 
 .badge-normal {
-  --ml-badge-text-bg: #dbeafe;
-  --ml-badge-text-color: #2563eb;
-  --ml-badge-remove-bg: #2563eb;
+  --ms-badge-text-bg: #dbeafe;
+  --ms-badge-text-color: #2563eb;
+  --ms-badge-remove-bg: #2563eb;
 }
 
 .badge-low {
-  --ml-badge-text-bg: #d1fae5;
-  --ml-badge-text-color: #059669;
-  --ml-badge-remove-bg: #059669;
+  --ms-badge-text-bg: #d1fae5;
+  --ms-badge-text-color: #059669;
+  --ms-badge-remove-bg: #059669;
 }
 ```
 
@@ -919,15 +967,15 @@ select.getBadgeClassCallback = (item) => {
 };
 
 // Add different/additional classes to selected items in popover
-select.getSelectionBadgeClassCallback = (item) => {
+select.getSelectedItemClassCallback = (item) => {
   // Could add more detailed classes for popover items
   return [`badge-${item.priority}`, 'badge-detailed'];
 };
 ```
 
 - `getBadgeClassCallback` - Adds classes to badges in the main badges area
-- `getSelectionBadgeClassCallback` - Adds classes to items in the selected items popover
-- If `getSelectionBadgeClassCallback` is not defined, falls back to `getBadgeClassCallback`
+- `getSelectedItemClassCallback` - Adds classes to items in the selected items popover
+- If `getSelectedItemClassCallback` is not defined, falls back to `getBadgeClassCallback`
 - Users can assign the same function to both if identical styling is desired
 
 **Shadow DOM CSS Injection:**
@@ -945,21 +993,21 @@ select.getBadgeClassCallback = (item) => {
 // Inject CSS into Shadow DOM to style those classes
 select.customStylesCallback = () => `
   .badge-urgent {
-    --ml-badge-text-bg: #fee2e2;
-    --ml-badge-text-color: #dc2626;
-    --ml-badge-remove-bg: #dc2626;
+    --ms-badge-text-bg: #fee2e2;
+    --ms-badge-text-color: #dc2626;
+    --ms-badge-remove-bg: #dc2626;
   }
 
   .badge-normal {
-    --ml-badge-text-bg: #dbeafe;
-    --ml-badge-text-color: #2563eb;
-    --ml-badge-remove-bg: #2563eb;
+    --ms-badge-text-bg: #dbeafe;
+    --ms-badge-text-color: #2563eb;
+    --ms-badge-remove-bg: #2563eb;
   }
 
   .badge-low {
-    --ml-badge-text-bg: #d1fae5;
-    --ml-badge-text-color: #059669;
-    --ml-badge-remove-bg: #059669;
+    --ms-badge-text-bg: #d1fae5;
+    --ms-badge-text-color: #059669;
+    --ms-badge-remove-bg: #059669;
   }
 `;
 ```
@@ -1106,17 +1154,20 @@ Control checkbox appearance and alignment with CSS variables and attributes:
 <style>
   /* Change checkbox size */
   web-multiselect {
-    --ml-checkbox-size: 20px;  /* Width and height (default: 16px) */
+    --ms-checkbox-size: 20px;  /* Width and height (default: 16px) */
   }
 
   /* Scale checkbox */
   web-multiselect {
-    --ml-checkbox-scale: 1.5;  /* Scale multiplier (default: 1) */
+    --ms-checkbox-scale: 1.5;  /* Scale multiplier (default: 1) */
   }
 
-  /* Fine-tune vertical position */
+  /* Fine-tune checkbox positioning */
   web-multiselect {
-    --ml-checkbox-margin-top: 0.5rem; /* Offset from top (default: 0.125rem) */
+    --ms-checkbox-margin-top: 0.5rem;    /* Vertical alignment (default: 0.125rem) */
+    --ms-checkbox-margin-right: 0;       /* Right spacing (default: 0) */
+    --ms-checkbox-margin-bottom: 0;      /* Bottom spacing (default: 0) */
+    --ms-checkbox-margin-left: 0;        /* Left spacing (default: 0) */
   }
 </style>
 ```
@@ -1156,11 +1207,16 @@ multiselect.renderOptionContentCallback = (item, context) => {
 ```
 
 **Available CSS Variables:**
-- `--ml-checkbox-size`: Checkbox width/height (default: `16px`)
-- `--ml-checkbox-scale`: Scale multiplier (default: `1`)
-- `--ml-checkbox-margin-top`: Vertical offset (default: `0.125rem`)
-- `--ml-checkbox-align`: Alignment value (default: `flex-start`)
-- `--ml-option-gap`: Gap between checkbox and content (default: `0.5rem`)
+- `--ms-checkbox-size`: Checkbox width/height (default: `16px`)
+- `--ms-checkbox-scale`: Scale multiplier (default: `1`)
+- `--ms-checkbox-margin-top`: Top margin for vertical alignment (default: `0.125rem`)
+- `--ms-checkbox-margin-right`: Right margin (default: `0`)
+- `--ms-checkbox-margin-bottom`: Bottom margin (default: `0`)
+- `--ms-checkbox-margin-left`: Left margin (default: `0`)
+- `--ms-checkbox-align`: Alignment value (default: `flex-start`)
+- `--ms-option-gap`: Gap between checkbox and content (default: `0.5rem`)
+
+**Note:** Horizontal and bottom margins default to `0` since spacing is handled by flexbox gap. Override for custom layouts.
 
 ### Flexible Data Handling
 
@@ -1455,26 +1511,26 @@ You can customize the component using CSS variables even with just a `<script>` 
 ```html
 <style>
   /* Override tooltip appearance */
-  multi-select {
-    --ml-tooltip-bg: #1f2937;
-    --ml-tooltip-color: #f9fafb;
-    --ml-tooltip-padding: 0.625rem 0.875rem;
-    --ml-tooltip-border-radius: 0.5rem;
-    --ml-tooltip-font-size: 0.8125rem;
-    --ml-tooltip-max-width: 24rem;
-    --ml-tooltip-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
-    --ml-tooltip-z-index: 10000;
+  web-multiselect {
+    --ms-tooltip-bg: #1f2937;
+    --ms-tooltip-color: #f9fafb;
+    --ms-tooltip-padding: 0.625rem 0.875rem;
+    --ms-tooltip-border-radius: 0.5rem;
+    --ms-tooltip-font-size: 0.8125rem;
+    --ms-tooltip-max-width: 24rem;
+    --ms-tooltip-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    --ms-tooltip-z-index: 10000;
   }
 
   /* Override "+X more" badge colors */
-  multi-select {
-    --ml-more-badge-bg: #dbeafe;
-    --ml-more-badge-hover-bg: #bfdbfe;
-    --ml-more-badge-active-bg: #93c5fd;
+  web-multiselect {
+    --ms-more-badge-bg: #dbeafe;
+    --ms-more-badge-hover-bg: #bfdbfe;
+    --ms-more-badge-active-bg: #93c5fd;
   }
 
   /* Size the component */
-  multi-select {
+  web-multiselect {
     width: 100%;
     max-width: 400px;
   }
@@ -1499,9 +1555,9 @@ All CSS custom properties are now defined at the `:host` level in the compiled C
 ```html
 <style>
   /* These variables will penetrate into the Shadow DOM */
-  multi-select {
-    --ml-accent-color: #10b981;  /* Changes primary color */
-    --ml-input-border-radius: 0.5rem;  /* Rounds input corners */
+  web-multiselect {
+    --ms-accent-color: #10b981;  /* Changes primary color */
+    --ms-input-border-radius: 0.5rem;  /* Rounds input corners */
   }
 </style>
 ```
@@ -1514,100 +1570,100 @@ For the complete list of all available CSS variables, see:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--ml-accent-color` | `#3b82f6` | Primary accent color (blue) |
-| `--ml-accent-color-hover` | `#2563eb` | Accent color on hover |
-| `--ml-accent-color-active` | `#1d4ed8` | Accent color when active |
-| `--ml-text-primary` | `#111827` | Primary text color |
-| `--ml-text-secondary` | `#6b7280` | Secondary/muted text color |
-| `--ml-border-color` | `#e5e7eb` | Default border color |
+| `--ms-accent-color` | `#3b82f6` | Primary accent color (blue) |
+| `--ms-accent-color-hover` | `#2563eb` | Accent color on hover |
+| `--ms-accent-color-active` | `#1d4ed8` | Accent color when active |
+| `--ms-text-primary` | `#111827` | Primary text color |
+| `--ms-text-secondary` | `#6b7280` | Secondary/muted text color |
+| `--ms-border-color` | `#e5e7eb` | Default border color |
 
 #### Input Component
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--ml-input-bg` | `#ffffff` | Input background |
-| `--ml-input-text` | `#111827` | Input text color |
-| `--ml-input-border` | `#d1d5db` | Input border color |
-| `--ml-input-focus-border-color` | `#3b82f6` | Border color when focused |
-| `--ml-input-padding-v` | `0.5rem` | Input vertical padding |
-| `--ml-input-padding-h` | `0.75rem` | Input horizontal padding |
-| `--ml-input-font-size` | `0.875rem` | Input font size |
-| `--ml-input-border-radius` | `0.375rem` | Input border radius |
-| `--ml-input-placeholder-color` | `#6b7280` | Placeholder text color |
+| `--ms-input-bg` | `#ffffff` | Input background |
+| `--ms-input-text` | `#111827` | Input text color |
+| `--ms-input-border` | `#d1d5db` | Input border color |
+| `--ms-input-focus-border-color` | `#3b82f6` | Border color when focused |
+| `--ms-input-padding-v` | `0.5rem` | Input vertical padding |
+| `--ms-input-padding-h` | `0.75rem` | Input horizontal padding |
+| `--ms-input-font-size` | `0.875rem` | Input font size |
+| `--ms-input-border-radius` | `0.375rem` | Input border radius |
+| `--ms-input-placeholder-color` | `#6b7280` | Placeholder text color |
 
 #### Dropdown & Options
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--ml-dropdown-bg` | `#ffffff` | Dropdown background |
-| `--ml-dropdown-border` | `#e5e7eb` | Dropdown border color |
-| `--ml-dropdown-shadow` | (box shadow) | Dropdown shadow |
-| `--ml-dropdown-max-height` | `20rem` | Max height of dropdown |
-| `--ml-option-padding-v` | `0.5rem` | Option vertical padding |
-| `--ml-option-padding-h` | `0.75rem` | Option horizontal padding |
-| `--ml-option-hover-bg` | `#f9fafb` | Option background on hover |
-| `--ml-option-bg-selected` | (rgba accent) | Selected option background |
+| `--ms-dropdown-bg` | `#ffffff` | Dropdown background |
+| `--ms-dropdown-border` | `#e5e7eb` | Dropdown border color |
+| `--ms-dropdown-shadow` | (box shadow) | Dropdown shadow |
+| `--ms-dropdown-max-height` | `20rem` | Max height of dropdown |
+| `--ms-option-padding-v` | `0.5rem` | Option vertical padding |
+| `--ms-option-padding-h` | `0.75rem` | Option horizontal padding |
+| `--ms-option-hover-bg` | `#f9fafb` | Option background on hover |
+| `--ms-option-bg-selected` | (rgba accent) | Selected option background |
 
 #### Badges
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--ml-badge-text-bg` | `#eff6ff` | Badge background color |
-| `--ml-badge-text-color` | `#3b82f6` | Badge text color |
-| `--ml-badge-gap` | `0.5rem` | Gap between badges |
-| `--ml-badge-height` | `1.5rem` | Height of badges |
-| `--ml-badge-font-size` | `0.75rem` | Badge font size |
-| `--ml-badge-border-radius` | `0.375rem` | Badge border radius |
-| `--ml-badge-remove-bg` | `#3b82f6` | Remove button background |
-| `--ml-badge-remove-color` | `#ffffff` | Remove button color |
-| `--ml-badge-counter-text-bg` | `#d1d5db` | BadgeCounter text background ("+X more") |
-| `--ml-badge-counter-text-color` | `#6b7280` | BadgeCounter text color |
-| `--ml-badge-counter-remove-bg` | `#6b7280` | BadgeCounter remove button background |
-| `--ml-badge-counter-remove-color` | `#ffffff` | BadgeCounter remove button color |
-| `--ml-badge-counter-border` | `1px solid #e5e7eb` | BadgeCounter border |
+| `--ms-badge-text-bg` | `#eff6ff` | Badge background color |
+| `--ms-badge-text-color` | `#3b82f6` | Badge text color |
+| `--ms-badge-gap` | `0.5rem` | Gap between badges |
+| `--ms-badge-height` | `1.5rem` | Height of badges |
+| `--ms-badge-font-size` | `0.75rem` | Badge font size |
+| `--ms-badge-border-radius` | `0.375rem` | Badge border radius |
+| `--ms-badge-remove-bg` | `#3b82f6` | Remove button background |
+| `--ms-badge-remove-color` | `#ffffff` | Remove button color |
+| `--ms-badge-counter-text-bg` | `#d1d5db` | BadgeCounter text background ("+X more") |
+| `--ms-badge-counter-text-color` | `#6b7280` | BadgeCounter text color |
+| `--ms-badge-counter-remove-bg` | `#6b7280` | BadgeCounter remove button background |
+| `--ms-badge-counter-remove-color` | `#ffffff` | BadgeCounter remove button color |
+| `--ms-badge-counter-border` | `1px solid #e5e7eb` | BadgeCounter border |
 
 #### Counter (in input)
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--ml-counter-bg` | `#3b82f6` | Counter background |
-| `--ml-counter-color` | `#ffffff` | Counter text color |
-| `--ml-counter-font-size` | `0.75rem` | Counter font size |
-| `--ml-counter-bg-hover` | `#2563eb` | Hover background color |
+| `--ms-counter-bg` | `#3b82f6` | Counter background |
+| `--ms-counter-color` | `#ffffff` | Counter text color |
+| `--ms-counter-font-size` | `0.75rem` | Counter font size |
+| `--ms-counter-bg-hover` | `#2563eb` | Hover background color |
 
 #### Tooltips
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--ml-tooltip-bg` | `#333` | Tooltip background color |
-| `--ml-tooltip-color` | `#fff` | Tooltip text color |
-| `--ml-tooltip-padding` | `0.5rem 0.75rem` | Tooltip padding |
-| `--ml-tooltip-border-radius` | `0.375rem` | Tooltip border radius |
-| `--ml-tooltip-font-size` | `0.875rem` | Tooltip font size |
-| `--ml-tooltip-max-width` | `20rem` | Tooltip maximum width |
-| `--ml-tooltip-shadow` | (box shadow) | Tooltip box shadow |
-| `--ml-tooltip-z-index` | `10000` | Tooltip z-index |
+| `--ms-tooltip-bg` | `#333` | Tooltip background color |
+| `--ms-tooltip-color` | `#fff` | Tooltip text color |
+| `--ms-tooltip-padding` | `0.5rem 0.75rem` | Tooltip padding |
+| `--ms-tooltip-border-radius` | `0.375rem` | Tooltip border radius |
+| `--ms-tooltip-font-size` | `0.875rem` | Tooltip font size |
+| `--ms-tooltip-max-width` | `20rem` | Tooltip maximum width |
+| `--ms-tooltip-shadow` | (box shadow) | Tooltip box shadow |
+| `--ms-tooltip-z-index` | `10000` | Tooltip z-index |
 
 #### Typography
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--ml-font-size-xs` | `0.75rem` | Extra small font size |
-| `--ml-font-size-sm` | `0.875rem` | Small font size |
-| `--ml-font-size-base` | `1rem` | Base font size |
-| `--ml-font-weight-medium` | `500` | Medium font weight |
-| `--ml-font-weight-semibold` | `600` | Semibold font weight |
+| `--ms-font-size-xs` | `0.75rem` | Extra small font size |
+| `--ms-font-size-sm` | `0.875rem` | Small font size |
+| `--ms-font-size-base` | `1rem` | Base font size |
+| `--ms-font-weight-medium` | `500` | Medium font weight |
+| `--ms-font-weight-semibold` | `600` | Semibold font weight |
 
 #### Effects & Transitions
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--ml-transition-fast` | `150ms` | Fast transition duration |
-| `--ml-transition-normal` | `200ms` | Normal transition duration |
-| `--ml-easing-snappy` | (cubic-bezier) | Snappy easing function |
-| `--ml-shadow-md` | (box shadow) | Medium shadow |
-| `--ml-shadow-xl` | (box shadow) | Extra large shadow |
-| `--ml-disabled-opacity` | `0.5` | Opacity for disabled state |
+| `--ms-transition-fast` | `150ms` | Fast transition duration |
+| `--ms-transition-normal` | `200ms` | Normal transition duration |
+| `--ms-easing-snappy` | (cubic-bezier) | Snappy easing function |
+| `--ms-shadow-md` | (box shadow) | Medium shadow |
+| `--ms-shadow-xl` | (box shadow) | Extra large shadow |
+| `--ms-disabled-opacity` | `0.5` | Opacity for disabled state |
 
 ### Advanced: Custom SCSS
 
