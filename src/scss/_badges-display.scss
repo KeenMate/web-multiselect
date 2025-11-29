@@ -146,6 +146,7 @@
   font-weight: var(--ms-badge-font-weight, $ml-badge-font-weight);
   line-height: var(--ms-line-height-none, $ml-line-height-none);
   border-radius: var(--ms-badge-border-radius, $ml-badge-border-radius);
+  border: var(--ms-badge-border, $ml-badge-border);
   overflow: hidden;
   max-width: 100%;
 }

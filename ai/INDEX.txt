@@ -132,6 +132,8 @@ I
 Icons → data-handling.txt, styling-theming.txt
 Import → import-patterns.txt
 initial-values → form-integration.txt, selection-modes.txt
+input-size → styling-theming.txt
+inputSize → styling-theming.txt
 Installation → basic-setup.txt
 Internationalization → display-modes.txt, events-callbacks.txt
 
@@ -214,6 +216,7 @@ setSelected() → selection-modes.txt
 Shadow DOM → styling-theming.txt, custom-rendering.txt
 show-checkboxes → basic-setup.txt, styling-theming.txt
 Single-select → selection-modes.txt
+Size (input) → styling-theming.txt
 SSR → advanced-patterns.txt, basic-setup.txt
 sticky-actions → action-buttons.txt
 Styles → styling-theming.txt

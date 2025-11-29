@@ -12,21 +12,21 @@
 // ==============================================================================
 // Raw values that other variables reference
 
-// Padding & Spacing
-$padding-xs: 0.25rem !default;
-$padding-sm: 0.5rem !default;
-$padding-base: 0.75rem !default;
-$padding-lg: 1rem !default;
+// Padding & Spacing (using --ms-rem for scalability)
+$padding-xs: calc(0.4 * var(--ms-rem)) !default;   // 4px
+$padding-sm: calc(0.8 * var(--ms-rem)) !default;   // 8px
+$padding-base: calc(1.2 * var(--ms-rem)) !default; // 12px
+$padding-lg: calc(1.6 * var(--ms-rem)) !default;   // 16px
 
-// Border Radius
-$border-radius-base: 0.375rem !default;
-$border-radius-sm: 0.25rem !default;
+// Border Radius (using --ms-rem for scalability)
+$border-radius-base: calc(0.6 * var(--ms-rem)) !default;  // 6px
+$border-radius-sm: calc(0.4 * var(--ms-rem)) !default;    // 4px
 $border-radius-full: 50% !default;
 
-// Font Sizes
-$font-size-base: 0.875rem !default;
-$font-size-sm: 0.75rem !default;
-$font-size-lg: 1rem !default;
+// Font Sizes (using --ms-rem for scalability)
+$font-size-base: calc(1.4 * var(--ms-rem)) !default;  // 14px
+$font-size-sm: calc(1.2 * var(--ms-rem)) !default;    // 12px
+$font-size-lg: calc(1.6 * var(--ms-rem)) !default;    // 16px
 
 // Border Width
 $border-width-base: 1px !default;
@@ -34,10 +34,10 @@ $border-width-base: 1px !default;
 // ==============================================================================
 // 2. SPACING SCALE
 // ==============================================================================
-$ml-spacing-xs: $padding-xs !default;      // 0.25rem
-$ml-spacing-sm: $padding-sm !default;      // 0.5rem
-$ml-spacing-md: $padding-base !default;    // 0.75rem
-$ml-spacing-lg: $padding-lg !default;      // 1rem
+$ml-spacing-xs: $padding-xs !default;      // 4px
+$ml-spacing-sm: $padding-sm !default;      // 8px
+$ml-spacing-md: $padding-base !default;    // 12px
+$ml-spacing-lg: $padding-lg !default;      // 16px
 
 // ==============================================================================
 // 3. COLOR PALETTE
@@ -63,14 +63,14 @@ $ml-color-tooltip-bg: #333 !default;
 $ml-color-tooltip-text: #fff !default;
 
 // ==============================================================================
-// 4. TYPOGRAPHY SCALE
+// 4. TYPOGRAPHY SCALE (using --ms-rem for scalability)
 // ==============================================================================
-$ml-font-size-2xs: 0.625rem !default;
-$ml-font-size-xs: $font-size-sm !default;       // 0.75rem
-$ml-font-size-sm: $font-size-base !default;     // 0.875rem
-$ml-font-size-base: $font-size-lg !default;     // 1rem
-$ml-font-size-lg: 1.125rem !default;
-$ml-font-size-xl: 1.25rem !default;
+$ml-font-size-2xs: calc(1 * var(--ms-rem)) !default;    // 10px
+$ml-font-size-xs: $font-size-sm !default;               // 12px (via $font-size-sm)
+$ml-font-size-sm: $font-size-base !default;             // 14px (via $font-size-base)
+$ml-font-size-base: $font-size-lg !default;             // 16px (via $font-size-lg)
+$ml-font-size-lg: calc(1.8 * var(--ms-rem)) !default;   // 18px
+$ml-font-size-xl: calc(2 * var(--ms-rem)) !default;     // 20px
 
 $ml-font-weight-medium: 500 !default;
 $ml-font-weight-semibold: 600 !default;
@@ -108,21 +108,21 @@ $ml-z-index-dropdown: 9999 !default;
 $ml-z-index-popover: 10000 !default;
 
 // ==============================================================================
-// 8. LAYOUT & DIMENSIONS
+// 8. LAYOUT & DIMENSIONS (using --ms-rem for scalability)
 // ==============================================================================
-$ml-input-icon-spacing: 2.5rem !default;
-$ml-counter-offset: 2rem !default;
-$ml-option-icon-size: 1.25rem !default;
-$ml-count-clear-size: 1rem !default;
-$ml-badge-height: 1.7rem !default;
-$ml-badge-remove-width: 1.7rem !default;
-$ml-popover-close-size: 1.5rem !default;
+$ml-input-icon-spacing: calc(4 * var(--ms-rem)) !default;         // 40px
+$ml-counter-offset: calc(3.2 * var(--ms-rem)) !default;           // 32px
+$ml-option-icon-size: calc(2 * var(--ms-rem)) !default;           // 20px
+$ml-count-clear-size: calc(1.6 * var(--ms-rem)) !default;         // 16px
+$ml-badge-height: calc(2.7 * var(--ms-rem)) !default;             // 27px
+$ml-badge-remove-width: calc(2.7 * var(--ms-rem)) !default;       // 27px
+$ml-popover-close-size: calc(2.4 * var(--ms-rem)) !default;       // 24px
 
-$ml-options-max-height: 20rem !default;
-$ml-selected-popover-width: 20rem !default;
-$ml-selected-popover-max-height: 20rem !default;
-$ml-selected-popover-body-max-height: 18rem !default;
-$ml-tooltip-max-width: 20rem !default;
+$ml-options-max-height: calc(32 * var(--ms-rem)) !default;        // 320px
+$ml-selected-popover-width: calc(32 * var(--ms-rem)) !default;    // 320px
+$ml-selected-popover-max-height: calc(32 * var(--ms-rem)) !default; // 320px
+$ml-selected-popover-body-max-height: calc(28.8 * var(--ms-rem)) !default; // 288px
+$ml-tooltip-max-width: calc(32 * var(--ms-rem)) !default;         // 320px
 
 // ==============================================================================
 // 9. OPACITY VALUES
@@ -179,6 +179,36 @@ $ml-input-padding-right: $ml-input-icon-spacing !default;
 $ml-input-placeholder-color: $ml-color-neutral-dark !default;
 $ml-input-bg-disabled: rgba($ml-color-neutral-dark, $ml-opacity-disabled-bg) !default;
 
+// Input Size Variants (using --ms-rem for scalability)
+// ==============================================================================
+// Heights: xs=31px, sm=33px, md=35px, lg=38px, xl=41px (Pure Admin standard)
+// All values use calc() with --ms-rem for consistent scaling
+
+$ms-input-size-xs-font: calc(1.2 * var(--ms-rem)) !default;       // 12px
+$ms-input-size-xs-padding-v: calc(0.4 * var(--ms-rem)) !default;  // 4px
+$ms-input-size-xs-padding-h: calc(0.8 * var(--ms-rem)) !default;  // 8px
+$ms-input-size-xs-height: calc(3.1 * var(--ms-rem)) !default;     // 31px
+
+$ms-input-size-sm-font: calc(1.3 * var(--ms-rem)) !default;       // 13px
+$ms-input-size-sm-padding-v: calc(0.5 * var(--ms-rem)) !default;  // 5px
+$ms-input-size-sm-padding-h: calc(0.8 * var(--ms-rem)) !default;  // 8px
+$ms-input-size-sm-height: calc(3.3 * var(--ms-rem)) !default;     // 33px
+
+$ms-input-size-md-font: calc(1.4 * var(--ms-rem)) !default;       // 14px
+$ms-input-size-md-padding-v: calc(0.8 * var(--ms-rem)) !default;  // 8px
+$ms-input-size-md-padding-h: calc(1.2 * var(--ms-rem)) !default;  // 12px
+$ms-input-size-md-height: calc(3.5 * var(--ms-rem)) !default;     // 35px
+
+$ms-input-size-lg-font: calc(1.6 * var(--ms-rem)) !default;       // 16px
+$ms-input-size-lg-padding-v: calc(1 * var(--ms-rem)) !default;    // 10px
+$ms-input-size-lg-padding-h: calc(1.4 * var(--ms-rem)) !default;  // 14px
+$ms-input-size-lg-height: calc(3.8 * var(--ms-rem)) !default;     // 38px
+
+$ms-input-size-xl-font: calc(1.8 * var(--ms-rem)) !default;       // 18px
+$ms-input-size-xl-padding-v: calc(1.2 * var(--ms-rem)) !default;  // 12px
+$ms-input-size-xl-padding-h: calc(1.6 * var(--ms-rem)) !default;  // 16px
+$ms-input-size-xl-height: calc(4.1 * var(--ms-rem)) !default;     // 41px
+
 // Text Colors
 // ==============================================================================
 $ml-text-primary: $ml-color-neutral-darkest !default;
@@ -203,7 +233,7 @@ $ml-toggle-right: $ml-input-padding-h !default;
 
 // Count Badge (in input)
 // ==============================================================================
-$ml-counter-padding: 0.125rem 0.25rem !default;
+$ml-counter-padding: calc(0.2 * var(--ms-rem)) calc(0.4 * var(--ms-rem)) !default;  // 2px 4px
 $ml-counter-bg: $ml-accent-color !default;
 $ml-counter-color: $ml-text-white !default;
 $ml-counter-font-size: $ml-font-size-xs !default;
@@ -286,6 +316,7 @@ $ml-option-outline-focused: $ml-focus-outline-width solid $ml-accent-color !defa
 $ml-option-bg-matched: rgba($ml-accent-color, 0.08) !default;
 $ml-option-border-matched: 3px solid rgba($ml-accent-color, 0.4) !default;
 $ml-option-bg-selected: rgba($ml-accent-color, $ml-opacity-option-selected-bg) !default;
+$ml-option-color-selected: inherit !default;  // Text color when selected (use 'inherit' to keep default, or set explicit color like #ffffff)
 
 // Option Content
 // ==============================================================================
@@ -377,6 +408,7 @@ $ml-badge-bg-active: $ml-color-accent-lighter !default;
 $ml-badge-font-size: $ml-font-size-xs !default;
 $ml-badge-font-weight: $ml-font-weight-semibold !default;
 $ml-badge-border-radius: $ml-border-radius !default;
+$ml-badge-border: none !default;  // No border by default
 
 // Badge Text
 // ==============================================================================
@@ -453,13 +485,24 @@ $ml-selected-popover-body-padding: $ml-spacing-sm !default;
 
 // Checkbox
 // ==============================================================================
-$ml-checkbox-offset: 0.125rem !default;
+$ml-checkbox-offset: calc(0.2 * var(--ms-rem)) !default;  // 2px
 $ml-checkbox-margin-top: $ml-checkbox-offset !default;
 $ml-checkbox-margin-right: 0 !default; // Horizontal spacing handled by flexbox gap
 $ml-checkbox-margin-bottom: 0 !default;
 $ml-checkbox-margin-left: 0 !default;
-$ml-checkbox-size: 16px !default; // Width and height of checkbox
+$ml-checkbox-size: calc(1.6 * var(--ms-rem)) !default;  // 16px - Width and height of checkbox
 $ml-checkbox-scale: 1 !default; // Scale multiplier for checkbox size
+
+// Checkbox Styling (custom checkbox appearance)
+$ml-checkbox-bg: #ffffff !default;  // White background for better contrast
+$ml-checkbox-border: 1px solid $ml-color-neutral-base !default;  // Darker border (#d1d5db)
+$ml-checkbox-border-radius: calc(0.3 * var(--ms-rem)) !default;  // 3px
+$ml-checkbox-checked-bg: $ml-accent-color !default;
+$ml-checkbox-checked-border: 1px solid $ml-accent-color !default;
+$ml-checkbox-checkmark-color: $ml-text-white !default;
+$ml-checkbox-hover-border-color: $ml-accent-color !default;
+$ml-checkbox-disabled-bg: $ml-primary-bg-hover !default;
+$ml-checkbox-disabled-border: 1px solid $ml-border-color !default;
 
 // Placeholder
 // ==============================================================================
@@ -469,3 +512,11 @@ $ml-placeholder-opacity: $ml-opacity-placeholder !default;
 // ==============================================================================
 $ml-disabled-opacity: $ml-opacity-disabled !default;
 $ml-disabled-input-opacity: $ml-opacity-disabled-input !default;
+
+// Scrollbar
+// ==============================================================================
+$ml-scrollbar-width: 8px !default;
+$ml-scrollbar-track-bg: transparent !default;
+$ml-scrollbar-thumb-bg: $ml-color-neutral-base !default;  // #d1d5db
+$ml-scrollbar-thumb-bg-hover: $ml-color-neutral-dark !default;  // #6b7280
+$ml-scrollbar-thumb-border-radius: 4px !default;

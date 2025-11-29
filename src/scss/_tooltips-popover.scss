@@ -106,6 +106,27 @@
   overflow-y: auto;
   max-height: var(--ms-selected-popover-body-max-height, $ml-selected-popover-body-max-height);
 
+  // Scrollbar styling
+  scrollbar-width: thin;  // Firefox
+  scrollbar-color: var(--ms-scrollbar-thumb-bg, $ml-scrollbar-thumb-bg) var(--ms-scrollbar-track-bg, $ml-scrollbar-track-bg);
+
+  &::-webkit-scrollbar {
+    width: var(--ms-scrollbar-width, $ml-scrollbar-width);
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--ms-scrollbar-track-bg, $ml-scrollbar-track-bg);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--ms-scrollbar-thumb-bg, $ml-scrollbar-thumb-bg);
+    border-radius: var(--ms-scrollbar-thumb-border-radius, $ml-scrollbar-thumb-border-radius);
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--ms-scrollbar-thumb-bg-hover, $ml-scrollbar-thumb-bg-hover);
+  }
+
   // Badges inside popover (non-virtual mode)
   .ms__badge {
     width: 100%;

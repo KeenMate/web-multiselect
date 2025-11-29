@@ -1602,7 +1602,14 @@ For the complete list of all available CSS variables, see:
 | `--ms-option-padding-v` | `0.5rem` | Option vertical padding |
 | `--ms-option-padding-h` | `0.75rem` | Option horizontal padding |
 | `--ms-option-hover-bg` | `#f9fafb` | Option background on hover |
+| `--ms-option-color-hover` | `inherit` | Option text color on hover |
 | `--ms-option-bg-selected` | (rgba accent) | Selected option background |
+| `--ms-option-color-selected` | `inherit` | Selected option text color |
+| `--ms-option-color-selected-hover` | (inherits selected) | Text color when hovering selected option |
+| `--ms-option-bg-focused` | `#f9fafb` | Focused option background (keyboard) |
+| `--ms-option-color-focused` | `inherit` | Focused option text color |
+| `--ms-option-bg-matched` | (accent 8%) | Matched option background (navigate mode) |
+| `--ms-option-color-matched` | `inherit` | Matched option text color |
 
 #### Badges
 
@@ -1621,6 +1628,31 @@ For the complete list of all available CSS variables, see:
 | `--ms-badge-counter-remove-bg` | `#6b7280` | BadgeCounter remove button background |
 | `--ms-badge-counter-remove-color` | `#ffffff` | BadgeCounter remove button color |
 | `--ms-badge-counter-border` | `1px solid #e5e7eb` | BadgeCounter border |
+| `--ms-badge-border` | `none` | Badge border (e.g., `1px solid #3b82f6`) |
+
+#### Checkboxes
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `--ms-checkbox-bg` | `#ffffff` | Checkbox background |
+| `--ms-checkbox-border` | `1px solid #d1d5db` | Checkbox border |
+| `--ms-checkbox-border-radius` | `0.3rem` | Checkbox border radius |
+| `--ms-checkbox-checked-bg` | (accent color) | Background when checked |
+| `--ms-checkbox-checked-border` | `1px solid (accent)` | Border when checked |
+| `--ms-checkbox-checkmark-color` | `#ffffff` | Checkmark color |
+| `--ms-checkbox-hover-border-color` | (accent color) | Border on hover |
+| `--ms-checkbox-disabled-bg` | `#f3f4f6` | Disabled background |
+| `--ms-checkbox-disabled-border` | `1px solid #e5e7eb` | Disabled border |
+
+#### Scrollbar
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `--ms-scrollbar-width` | `8px` | Scrollbar width |
+| `--ms-scrollbar-track-bg` | `transparent` | Track background |
+| `--ms-scrollbar-thumb-bg` | `#d1d5db` | Thumb color |
+| `--ms-scrollbar-thumb-bg-hover` | `#6b7280` | Thumb hover color |
+| `--ms-scrollbar-thumb-border-radius` | `4px` | Thumb border radius |
 
 #### Counter (in input)
 

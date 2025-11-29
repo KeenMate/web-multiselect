@@ -7,6 +7,96 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - PUBLISHED - 2025-11-29
+
+### Added
+
+- **Custom Checkbox Styling** - Full control over checkbox appearance via CSS custom properties
+  - `--ms-checkbox-bg` - Background color (default: `#ffffff`)
+  - `--ms-checkbox-border` - Border style (default: `1px solid #d1d5db`)
+  - `--ms-checkbox-border-radius` - Border radius
+  - `--ms-checkbox-checked-bg` - Background when checked (default: accent color)
+  - `--ms-checkbox-checked-border` - Border when checked
+  - `--ms-checkbox-checkmark-color` - Checkmark color (default: `#ffffff`)
+  - `--ms-checkbox-hover-border-color` - Border color on hover
+  - `--ms-checkbox-disabled-bg` - Background when disabled
+  - `--ms-checkbox-disabled-border` - Border when disabled
+  - Custom checkbox implementation using CSS pseudo-elements for full styling control
+
+- **Badge Border Styling** - New `--ms-badge-border` CSS variable for badge border customization
+  - Default: `none` (no border)
+  - Example: `--ms-badge-border: 1px solid #3b82f6;`
+
+- **Scrollbar Theming** - Custom scrollbar styling for dropdown and popovers
+  - `--ms-scrollbar-width` - Scrollbar width (default: `8px`)
+  - `--ms-scrollbar-track-bg` - Track background color
+  - `--ms-scrollbar-thumb-bg` - Thumb color
+  - `--ms-scrollbar-thumb-bg-hover` - Thumb hover color
+  - `--ms-scrollbar-thumb-border-radius` - Thumb border radius
+  - Applied to `.ms__dropdown` and `.ms__selected-popover-body`
+
+- **Option State Text Colors** - Complete color control for all option states
+  - `--ms-option-color-hover` - Text color on hover
+  - `--ms-option-color-focused` - Text color when focused (keyboard navigation)
+  - `--ms-option-color-selected` - Text color when selected
+  - `--ms-option-color-selected-hover` - Text color when hovering over selected option
+  - `--ms-option-color-matched` - Text color for search matches (navigate mode)
+  - Ensures proper contrast when background colors change (e.g., dark bg + white text)
+
+- **Input Border Theming** - `--ms-input-border-style` now fully themeable
+  - Full shorthand property: `1px solid #color`
+  - Can be set per-theme for consistent styling
+
+- **Toggle Icon Theming** - `--ms-toggle-icon-color` for dropdown arrow customization
+
+- **10px-Based Sizing System** - Migrated to `--ms-rem` variable system for scalable sizing
+  - New base variable `--ms-rem: 10px` enables proportional scaling across the component
+  - All sizing values now use `calc(X * var(--ms-rem))` format internally
+  - Input heights updated to Pure Admin standard: xs=31px, sm=33px, md=35px, lg=38px, xl=41px
+  - Set `--ms-rem: 1rem` for Pure Admin integration (inherits from `html { font-size: 10px }`)
+  - Set `--ms-rem: 12px` to scale all sizes up 20%
+  - Maintains backward compatibility - default output unchanged (10px base = same pixel values)
+  - Converted: padding, border-radius, font sizes, typography scale, input size variants, layout dimensions, checkbox sizing
+
+### Fixed
+
+- **Theme Examples** - Fixed all CSS variable prefixes from `--ml-*` to `--ms-*`
+- **Badge Background Variable** - Fixed themes using wrong variable (`--ms-badge-bg` → `--ms-badge-text-bg`)
+- **Selected Option Hover** - Fixed text becoming unreadable when hovering over selected options in themed modes (black-on-black in Sharp theme)
+- **CSS Build Warning** - Fixed missing semicolon causing SCSS comments to leak into compiled CSS
+
+### Changed
+
+- **Default Checkbox Appearance** - More visible default styling with white background and darker border for better visibility
+- **Theme Examples** - All 7 themes updated with comprehensive styling:
+  - Dark Mode, Neon, Audi, Rounded, Sharp/Minimal, Material, Glass
+  - Each theme now includes: input, dropdown, options, badges, checkboxes, scrollbar styling
+
+## [1.2.0] - PUBLISHED - 2025-01-27
+
+### Changed
+
+- **10px-Based Sizing System** - Migrated to `--ms-rem` variable system for scalable sizing
+  - New base variable `--ms-rem: 10px` enables proportional scaling across the component
+  - All sizing values now use `calc(X * var(--ms-rem))` format internally
+  - Input heights updated to Pure Admin standard: xs=31px, sm=33px, md=35px, lg=38px, xl=41px
+  - Set `--ms-rem: 1rem` for Pure Admin integration (inherits from `html { font-size: 10px }`)
+  - Set `--ms-rem: 12px` to scale all sizes up 20%
+  - Maintains backward compatibility - default output unchanged (10px base = same pixel values)
+  - Converted: padding, border-radius, font sizes, typography scale, input size variants, layout dimensions, checkbox sizing
+
+## [1.2.0] - PUBLISHED - 2025-01-27
+
+### Added
+
+- **Input Size Attribute**: New `input-size` attribute for controlling input field dimensions
+  - Supports 5-level scale: `xs`, `sm`, `md` (default), `lg`, `xl`
+  - Consistent with web-daterangepicker sizing attributes
+  - CSS classes: `.ms__input--xs`, `.ms__input--sm`, `.ms__input--lg`, `.ms__input--xl`
+  - CSS variables for each size: `--ms-input-size-{size}-font`, `--ms-input-size-{size}-padding-v`, `--ms-input-size-{size}-padding-h`, `--ms-input-size-{size}-height`
+  - JavaScript API: `element.inputSize = 'lg'`
+  - Attribute change doesn't re-initialize picker (performance optimization)
+
 ## [1.1.0] - PUBLISHED - 2025-01-26
 
 ### Added

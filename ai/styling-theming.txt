@@ -36,6 +36,89 @@ Primary colors:
 --ml-bg-primary: #ffffff            /* Main background */
 --ml-bg-secondary: #f9fafb          /* Secondary background */
 
+INPUT SIZE ATTRIBUTE
+--------------------
+Control input field dimensions with the input-size attribute:
+
+Attribute: input-size
+Values: xs | sm | md (default) | lg | xl
+
+Usage:
+<web-multiselect input-size="lg"></web-multiselect>
+
+JavaScript API:
+const select = document.querySelector('web-multiselect');
+select.inputSize = 'sm';
+
+Size values (using --ms-rem for scaling, Pure Admin standard):
+- xs: Extra small (31px height, 12px font)
+- sm: Small (33px height, 13px font)
+- md: Medium/default (35px height, 14px font)
+- lg: Large (38px height, 16px font)
+- xl: Extra large (41px height, 18px font)
+
+CSS Variables (per size, using calc() for scalability):
+--ms-input-size-xs-font: calc(1.2 * var(--ms-rem))      /* 12px */
+--ms-input-size-xs-padding-v: calc(0.4 * var(--ms-rem)) /* 4px */
+--ms-input-size-xs-padding-h: calc(0.8 * var(--ms-rem)) /* 8px */
+--ms-input-size-xs-height: calc(3.1 * var(--ms-rem))    /* 31px */
+
+--ms-input-size-sm-font: calc(1.3 * var(--ms-rem))      /* 13px */
+--ms-input-size-sm-padding-v: calc(0.5 * var(--ms-rem)) /* 5px */
+--ms-input-size-sm-padding-h: calc(0.8 * var(--ms-rem)) /* 8px */
+--ms-input-size-sm-height: calc(3.3 * var(--ms-rem))    /* 33px */
+
+--ms-input-size-md-font: calc(1.4 * var(--ms-rem))      /* 14px */
+--ms-input-size-md-padding-v: calc(0.8 * var(--ms-rem)) /* 8px */
+--ms-input-size-md-padding-h: calc(1.2 * var(--ms-rem)) /* 12px */
+--ms-input-size-md-height: calc(3.5 * var(--ms-rem))    /* 35px */
+
+--ms-input-size-lg-font: calc(1.6 * var(--ms-rem))      /* 16px */
+--ms-input-size-lg-padding-v: calc(1 * var(--ms-rem))   /* 10px */
+--ms-input-size-lg-padding-h: calc(1.4 * var(--ms-rem)) /* 14px */
+--ms-input-size-lg-height: calc(3.8 * var(--ms-rem))    /* 38px */
+
+--ms-input-size-xl-font: calc(1.8 * var(--ms-rem))      /* 18px */
+--ms-input-size-xl-padding-v: calc(1.2 * var(--ms-rem)) /* 12px */
+--ms-input-size-xl-padding-h: calc(1.6 * var(--ms-rem)) /* 16px */
+--ms-input-size-xl-height: calc(4.1 * var(--ms-rem))    /* 41px */
+
+SCALING WITH --ms-rem
+---------------------
+All sizes are based on --ms-rem (default: 10px) for scalable sizing:
+
+/* Default (10px base) - produces standard pixel values */
+web-multiselect {
+  --ms-rem: 10px;  /* default */
+}
+
+/* Pure Admin (10px rem base) - scale with document */
+web-multiselect {
+  --ms-rem: 1rem;  /* inherits from html { font-size: 10px } */
+}
+
+/* Custom scaling - everything scales proportionally */
+web-multiselect {
+  --ms-rem: 12px;  /* MD = 3.5 × 12 = 42px */
+}
+
+Direct override (px):
+<style>
+  web-multiselect {
+    --ms-input-size-lg-height: 42px;
+  }
+</style>
+
+Override with calc:
+<style>
+  web-multiselect {
+    --ms-input-size-md-height: calc(4.2 * var(--ms-rem));  /* 42px */
+  }
+</style>
+
+Consistent with web-daterangepicker:
+Both components use identical size scales for visual consistency.
+
 INPUT STYLING
 -------------
 Input field variables:

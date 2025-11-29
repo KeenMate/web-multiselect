@@ -18,7 +18,9 @@
 
 // Search input
 .ms__input {
+  box-sizing: border-box;
   width: 100%;
+  height: var(--ms-input-size-md-height, $ms-input-size-md-height); // Default to md size (35px)
   padding: var(--ms-input-padding, $ml-input-padding);
   padding-right: var(--ms-input-padding-right, $ml-input-padding-right); // Space for dropdown icon
   font-size: var(--ms-input-font-size, $ml-input-font-size);
@@ -43,6 +45,35 @@
   // Show placeholder only after component is fully initialized
   :host([data-ready]) &::placeholder {
     opacity: var(--ms-placeholder-opacity, $ml-placeholder-opacity);
+  }
+
+  // Size variants
+  &.ms__input--xs {
+    font-size: var(--ms-input-size-xs-font);
+    padding: var(--ms-input-size-xs-padding-v) var(--ms-input-size-xs-padding-h);
+    padding-right: calc(var(--ms-input-size-xs-padding-h) * 2.5);
+    height: var(--ms-input-size-xs-height);
+  }
+
+  &.ms__input--sm {
+    font-size: var(--ms-input-size-sm-font);
+    padding: var(--ms-input-size-sm-padding-v) var(--ms-input-size-sm-padding-h);
+    padding-right: calc(var(--ms-input-size-sm-padding-h) * 2.5);
+    height: var(--ms-input-size-sm-height);
+  }
+
+  &.ms__input--lg {
+    font-size: var(--ms-input-size-lg-font);
+    padding: var(--ms-input-size-lg-padding-v) var(--ms-input-size-lg-padding-h);
+    padding-right: calc(var(--ms-input-size-lg-padding-h) * 2.5);
+    height: var(--ms-input-size-lg-height);
+  }
+
+  &.ms__input--xl {
+    font-size: var(--ms-input-size-xl-font);
+    padding: var(--ms-input-size-xl-padding-v) var(--ms-input-size-xl-padding-h);
+    padding-right: calc(var(--ms-input-size-xl-padding-h) * 2.5);
+    height: var(--ms-input-size-xl-height);
   }
 }
 
@@ -135,6 +166,27 @@
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
   color: var(--ms-dropdown-text-color, $ml-option-color);
+
+  // Scrollbar styling
+  scrollbar-width: thin;  // Firefox
+  scrollbar-color: var(--ms-scrollbar-thumb-bg, $ml-scrollbar-thumb-bg) var(--ms-scrollbar-track-bg, $ml-scrollbar-track-bg);
+
+  &::-webkit-scrollbar {
+    width: var(--ms-scrollbar-width, $ml-scrollbar-width);
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--ms-scrollbar-track-bg, $ml-scrollbar-track-bg);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--ms-scrollbar-thumb-bg, $ml-scrollbar-thumb-bg);
+    border-radius: var(--ms-scrollbar-thumb-border-radius, $ml-scrollbar-thumb-border-radius);
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--ms-scrollbar-thumb-bg-hover, $ml-scrollbar-thumb-bg-hover);
+  }
 
   &--visible {
     display: block;

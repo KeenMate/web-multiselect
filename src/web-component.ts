@@ -95,6 +95,9 @@ export class MultiSelectElement<T = any> extends BaseElement {
             // Tooltip options
             'enable-badge-tooltips', 'badge-tooltip-placement',
 
+            // Input size
+            'input-size',
+
             // Debug
             'show-debug-info'
         ];
@@ -142,10 +145,31 @@ export class MultiSelectElement<T = any> extends BaseElement {
     attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null) {
         if (oldValue === newValue) return;
 
+        // Handle input-size attribute without re-initializing picker
+        if (name === 'input-size') {
+            this.applyInputSizeStyles();
+            return;
+        }
+
         // Re-initialize picker if it exists and attributes changed
         if (this.picker && name !== 'initial-values') {
             this.picker.destroy();
             this.initializePicker();
+        }
+    }
+
+    private applyInputSizeStyles() {
+        const inputElement = this.shadow.querySelector('.ms__input') as HTMLElement;
+        if (!inputElement) return;
+
+        const inputSize = this.getAttribute('input-size');
+
+        // Remove existing size classes
+        inputElement.classList.remove('ms__input--xs', 'ms__input--sm', 'ms__input--lg', 'ms__input--xl');
+
+        // Add new size class (md is default, no class needed)
+        if (inputSize && inputSize !== 'md') {
+            inputElement.classList.add(`ms__input--${inputSize}`);
         }
     }
 
@@ -526,6 +550,10 @@ export class MultiSelectElement<T = any> extends BaseElement {
                 this.shadow.appendChild(customStyleSheet);
             }
         }
+
+        // Apply input size styles after picker initialization
+        // Use setTimeout to ensure DOM is fully rendered
+        setTimeout(() => this.applyInputSizeStyles(), 0);
     }
 
     private reinitialize() {
@@ -859,6 +887,15 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     get badgeTooltipPlacement(): string | null {
         return this.getAttribute('badge-tooltip-placement');
+    }
+
+    // Input size
+    get inputSize(): string {
+        return this.getAttribute('input-size') || 'md';
+    }
+
+    set inputSize(value: string) {
+        this.setAttribute('input-size', value);
     }
 
     set getBadgeTooltipCallback(callback: ((item: T) => string | HTMLElement) | undefined) {

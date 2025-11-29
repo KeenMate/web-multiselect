@@ -12,6 +12,27 @@
 // Options container
 .ms__options {
   padding: var(--ms-options-padding, $ml-options-padding);
+
+  // Scrollbar styling
+  scrollbar-width: thin;  // Firefox
+  scrollbar-color: var(--ms-scrollbar-thumb-bg, $ml-scrollbar-thumb-bg) var(--ms-scrollbar-track-bg, $ml-scrollbar-track-bg);
+
+  &::-webkit-scrollbar {
+    width: var(--ms-scrollbar-width, $ml-scrollbar-width);
+  }
+
+  &::-webkit-scrollbar-track {
+    background: var(--ms-scrollbar-track-bg, $ml-scrollbar-track-bg);
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: var(--ms-scrollbar-thumb-bg, $ml-scrollbar-thumb-bg);
+    border-radius: var(--ms-scrollbar-thumb-border-radius, $ml-scrollbar-thumb-border-radius);
+  }
+
+  &::-webkit-scrollbar-thumb:hover {
+    background: var(--ms-scrollbar-thumb-bg-hover, $ml-scrollbar-thumb-bg-hover);
+  }
 }
 
 // Virtual scroll - enforce consistent heights
@@ -67,24 +88,29 @@
 
   &:hover {
     background: var(--ms-option-background-hover, $ml-option-bg-hover);
+    color: var(--ms-option-color-hover, inherit);
   }
 
   &--focused {
     background: var(--ms-option-background-focused, $ml-option-bg-focused);
+    color: var(--ms-option-color-focused, inherit);
     outline: var(--ms-option-outline-focused, $ml-option-outline-focused);
     outline-offset: var(--ms-option-focus-outline-offset, $ml-option-focus-outline-offset);
   }
 
   &--matched {
     background: var(--ms-option-background-matched, $ml-option-bg-matched);
+    color: var(--ms-option-color-matched, inherit);
     border-left: var(--ms-option-border-matched, $ml-option-border-matched);
   }
 
   &--selected {
     background: var(--ms-option-background-selected, $ml-option-bg-selected);
+    color: var(--ms-option-color-selected, inherit);
 
     &:hover {
       background: var(--ms-option-bg-selected-hover, var(--ms-option-background-selected, $ml-option-bg-selected));
+      color: var(--ms-option-color-selected-hover, var(--ms-option-color-selected, inherit));
     }
   }
 
@@ -108,13 +134,19 @@
 }
 
 // ==============================================================================
-// CHECKBOX
+// CHECKBOX (Custom Styled)
 // ==============================================================================
+// Uses a hidden native checkbox with a custom styled pseudo-element overlay.
+// This allows full control over background, border, and checkmark colors.
 
-// Checkbox
 .ms__checkbox {
+  // Hide native checkbox but keep it accessible
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
   flex-shrink: 0;
-  margin-top: var(--ms-checkbox-margin-top, $ml-checkbox-margin-top); // Align with first line of text
+  position: relative;
+  margin-top: var(--ms-checkbox-margin-top, $ml-checkbox-margin-top);
   margin-right: var(--ms-checkbox-margin-right, $ml-checkbox-margin-right);
   margin-bottom: var(--ms-checkbox-margin-bottom, $ml-checkbox-margin-bottom);
   margin-left: var(--ms-checkbox-margin-left, $ml-checkbox-margin-left);
@@ -123,6 +155,61 @@
   transform: scale(var(--ms-checkbox-scale, $ml-checkbox-scale));
   transform-origin: top left;
   cursor: pointer;
+
+  // Custom checkbox appearance
+  background: var(--ms-checkbox-bg, $ml-checkbox-bg);
+  border: var(--ms-checkbox-border, $ml-checkbox-border);
+  border-radius: var(--ms-checkbox-border-radius, $ml-checkbox-border-radius);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+
+  // Checkmark using ::after pseudo-element
+  &::after {
+    content: '';
+    position: absolute;
+    display: none;
+    // Checkmark positioning (centered, slightly offset for visual balance)
+    left: 50%;
+    top: 45%;
+    width: 30%;
+    height: 55%;
+    transform: translate(-50%, -50%) rotate(45deg);
+    // Checkmark shape (right and bottom borders form the check)
+    border: solid var(--ms-checkbox-checkmark-color, $ml-checkbox-checkmark-color);
+    border-width: 0 2px 2px 0;
+  }
+
+  // Hover state
+  &:hover:not(:disabled) {
+    border-color: var(--ms-checkbox-hover-border-color, $ml-checkbox-hover-border-color);
+  }
+
+  // Checked state
+  &:checked {
+    background: var(--ms-checkbox-checked-bg, $ml-checkbox-checked-bg);
+    border: var(--ms-checkbox-checked-border, $ml-checkbox-checked-border);
+
+    &::after {
+      display: block;
+    }
+  }
+
+  // Focus state (accessibility)
+  &:focus-visible {
+    outline: 2px solid var(--ms-checkbox-checked-bg, $ml-checkbox-checked-bg);
+    outline-offset: 2px;
+  }
+
+  // Disabled state
+  &:disabled {
+    cursor: not-allowed;
+    background: var(--ms-checkbox-disabled-bg, $ml-checkbox-disabled-bg);
+    border: var(--ms-checkbox-disabled-border, $ml-checkbox-disabled-border);
+    opacity: 0.6;
+
+    &:checked {
+      background: var(--ms-checkbox-disabled-bg, $ml-checkbox-disabled-bg);
+    }
+  }
 
   .ms__option--disabled & {
     cursor: not-allowed;

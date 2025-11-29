@@ -85,7 +85,8 @@ Common HTML attributes:
   search-placeholder="Search..."
   show-checkboxes="true"         <!-- Show checkboxes (default) -->
   close-on-select="false"        <!-- Keep open after selection -->
-  max-height="20rem">            <!-- Dropdown height -->
+  max-height="20rem"             <!-- Dropdown height -->
+  input-size="md">               <!-- Input size: xs|sm|md|lg|xl -->
   <option value="1">Option 1</option>
   <option value="2">Option 2</option>
 </web-multiselect>

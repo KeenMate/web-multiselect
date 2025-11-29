@@ -20,6 +20,15 @@
 
 :host {
   // ==========================================================================
+  // BASE SIZING UNIT
+  // ==========================================================================
+  // All sizing values are based on this unit for consistent scaling.
+  // Default: 10px produces standard pixel values
+  // Pure Admin: Set to 1rem (inherits from html { font-size: 10px })
+  // Custom: Set to any value to scale all sizes proportionally
+  --ms-rem: 10px;
+
+  // ==========================================================================
   // COLORS & THEME
   // ==========================================================================
 
@@ -105,10 +114,15 @@
   --ms-option-text-color: var(--ms-text-primary);
   --ms-option-background: transparent;
   --ms-option-background-hover: var(--ms-primary-bg);
+  --ms-option-color-hover: inherit;
   --ms-option-background-focused: var(--ms-primary-bg);
+  --ms-option-color-focused: inherit;
   --ms-option-outline-color-focused: var(--ms-accent-color);
   --ms-option-background-selected: var(--ms-option-bg-selected);
+  --ms-option-color-selected: inherit;
+  --ms-option-color-selected-hover: var(--ms-option-color-selected);
   --ms-option-background-matched: var(--ms-option-bg-matched);
+  --ms-option-color-matched: inherit;
   --ms-option-border-matched-color: var(--ms-option-border-matched);
 
   // Option Content Semantic Variables
@@ -192,6 +206,35 @@
   --ms-input-focus-border-color: #{$ml-input-focus-border-color};
   --ms-input-placeholder-color: #{$ml-input-placeholder-color};
   --ms-input-bg-disabled: #{$ml-input-bg-disabled};
+
+  // ==========================================================================
+  // INPUT SIZE VARIANTS
+  // ==========================================================================
+
+  --ms-input-size-xs-font: #{$ms-input-size-xs-font};
+  --ms-input-size-xs-padding-v: #{$ms-input-size-xs-padding-v};
+  --ms-input-size-xs-padding-h: #{$ms-input-size-xs-padding-h};
+  --ms-input-size-xs-height: #{$ms-input-size-xs-height};
+
+  --ms-input-size-sm-font: #{$ms-input-size-sm-font};
+  --ms-input-size-sm-padding-v: #{$ms-input-size-sm-padding-v};
+  --ms-input-size-sm-padding-h: #{$ms-input-size-sm-padding-h};
+  --ms-input-size-sm-height: #{$ms-input-size-sm-height};
+
+  --ms-input-size-md-font: #{$ms-input-size-md-font};
+  --ms-input-size-md-padding-v: #{$ms-input-size-md-padding-v};
+  --ms-input-size-md-padding-h: #{$ms-input-size-md-padding-h};
+  --ms-input-size-md-height: #{$ms-input-size-md-height};
+
+  --ms-input-size-lg-font: #{$ms-input-size-lg-font};
+  --ms-input-size-lg-padding-v: #{$ms-input-size-lg-padding-v};
+  --ms-input-size-lg-padding-h: #{$ms-input-size-lg-padding-h};
+  --ms-input-size-lg-height: #{$ms-input-size-lg-height};
+
+  --ms-input-size-xl-font: #{$ms-input-size-xl-font};
+  --ms-input-size-xl-padding-v: #{$ms-input-size-xl-padding-v};
+  --ms-input-size-xl-padding-h: #{$ms-input-size-xl-padding-h};
+  --ms-input-size-xl-height: #{$ms-input-size-xl-height};
 
   // ==========================================================================
   // TOGGLE ICON
@@ -330,6 +373,17 @@
   --ms-checkbox-scale: #{$ml-checkbox-scale};
   --ms-checkbox-align: flex-start; // flex-start (top), center, flex-end (bottom)
 
+  // Checkbox Styling (custom appearance)
+  --ms-checkbox-bg: #{$ml-checkbox-bg};
+  --ms-checkbox-border: #{$ml-checkbox-border};
+  --ms-checkbox-border-radius: #{$ml-checkbox-border-radius};
+  --ms-checkbox-checked-bg: #{$ml-checkbox-checked-bg};
+  --ms-checkbox-checked-border: #{$ml-checkbox-checked-border};
+  --ms-checkbox-checkmark-color: #{$ml-checkbox-checkmark-color};
+  --ms-checkbox-hover-border-color: #{$ml-checkbox-hover-border-color};
+  --ms-checkbox-disabled-bg: #{$ml-checkbox-disabled-bg};
+  --ms-checkbox-disabled-border: #{$ml-checkbox-disabled-border};
+
   // ==========================================================================
   // EMPTY & LOADING STATES
   // ==========================================================================
@@ -363,6 +417,7 @@
   --ms-badge-font-size: #{$ml-badge-font-size};
   --ms-badge-font-weight: #{$ml-badge-font-weight};
   --ms-badge-border-radius: #{$ml-badge-border-radius};
+  --ms-badge-border: #{$ml-badge-border};
   --ms-badge-bg: #{$ml-badge-bg};
   --ms-badge-bg-hover: #{$ml-badge-bg-hover};
   --ms-badge-bg-active: #{$ml-badge-bg-active};
@@ -532,4 +587,14 @@
 
   --ms-placeholder-opacity: #{$ml-placeholder-opacity};
   --ms-disabled-input-opacity: #{$ml-disabled-input-opacity};
+
+  // ==========================================================================
+  // SCROLLBAR
+  // ==========================================================================
+
+  --ms-scrollbar-width: #{$ml-scrollbar-width};
+  --ms-scrollbar-track-bg: #{$ml-scrollbar-track-bg};
+  --ms-scrollbar-thumb-bg: #{$ml-scrollbar-thumb-bg};
+  --ms-scrollbar-thumb-bg-hover: #{$ml-scrollbar-thumb-bg-hover};
+  --ms-scrollbar-thumb-border-radius: #{$ml-scrollbar-thumb-border-radius};
 }
