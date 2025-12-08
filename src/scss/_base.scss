@@ -22,7 +22,7 @@ multi-select:not(:defined) {
 // ==============================================================================
 
 // Wrapper (contains multiselect + badges)
-.ml-wrapper {
+.ms-wrapper {
   display: flex;
   flex-direction: column; // Default: badges above/below input
   align-items: stretch;
@@ -35,7 +35,8 @@ multi-select:not(:defined) {
 }
 
 // Main container
-.ml {
+// Note: font-family is set on :host in _css-variables.scss so all shadow DOM content inherits
+.ms {
   position: relative;
   width: 100%;
 }

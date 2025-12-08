@@ -34,127 +34,139 @@ $border-width-base: 1px !default;
 // ==============================================================================
 // 2. SPACING SCALE
 // ==============================================================================
-$ml-spacing-xs: $padding-xs !default;      // 4px
-$ml-spacing-sm: $padding-sm !default;      // 8px
-$ml-spacing-md: $padding-base !default;    // 12px
-$ml-spacing-lg: $padding-lg !default;      // 16px
+$ms-spacing-xs: $padding-xs !default;      // 4px
+$ms-spacing-sm: $padding-sm !default;      // 8px
+$ms-spacing-md: $padding-base !default;    // 12px
+$ms-spacing-lg: $padding-lg !default;      // 16px
 
 // ==============================================================================
 // 3. COLOR PALETTE
 // ==============================================================================
 // Neutral Colors
-$ml-color-white: #ffffff !default;
-$ml-color-neutral-lightest: #f9fafb !default;
-$ml-color-neutral-lighter: #f3f4f6 !default;
-$ml-color-neutral-light: #e5e7eb !default;
-$ml-color-neutral-base: #d1d5db !default;
-$ml-color-neutral-dark: #6b7280 !default;
-$ml-color-neutral-darkest: #111827 !default;
+$ms-color-white: #ffffff !default;
+$ms-color-neutral-lightest: #f9fafb !default;
+$ms-color-neutral-lighter: #f3f4f6 !default;
+$ms-color-neutral-light: #e5e7eb !default;
+$ms-color-neutral-base: #d1d5db !default;
+$ms-color-neutral-dark: #6b7280 !default;
+$ms-color-neutral-darkest: #111827 !default;
 
 // Accent Colors
-$ml-color-accent-lightest: #eff6ff !default;
-$ml-color-accent-lighter: #e0f2fe !default;
-$ml-color-accent-base: #3b82f6 !default;
-$ml-color-accent-dark: #2563eb !default;
-$ml-color-accent-darker: #1d4ed8 !default;
+$ms-color-accent-lightest: #eff6ff !default;
+$ms-color-accent-lighter: #e0f2fe !default;
+$ms-color-accent-base: #3b82f6 !default;
+$ms-color-accent-dark: #2563eb !default;
+$ms-color-accent-darker: #1d4ed8 !default;
 
 // Tooltip Colors
-$ml-color-tooltip-bg: #333 !default;
-$ml-color-tooltip-text: #fff !default;
+$ms-color-tooltip-bg: #333 !default;
+$ms-color-tooltip-text: #fff !default;
 
 // ==============================================================================
 // 4. TYPOGRAPHY SCALE (using --ms-rem for scalability)
 // ==============================================================================
-$ml-font-size-2xs: calc(1 * var(--ms-rem)) !default;    // 10px
-$ml-font-size-xs: $font-size-sm !default;               // 12px (via $font-size-sm)
-$ml-font-size-sm: $font-size-base !default;             // 14px (via $font-size-base)
-$ml-font-size-base: $font-size-lg !default;             // 16px (via $font-size-lg)
-$ml-font-size-lg: calc(1.8 * var(--ms-rem)) !default;   // 18px
-$ml-font-size-xl: calc(2 * var(--ms-rem)) !default;     // 20px
 
-$ml-font-weight-medium: 500 !default;
-$ml-font-weight-semibold: 600 !default;
+// Font Family
+$ms-font-family: inherit !default;  // Inherits from parent, or set via --base-font-family
 
-$ml-line-height-none: 1 !default;
-$ml-line-height-relaxed: 1.4 !default;
+// Font Sizes (unitless multipliers × --ms-rem)
+// These are SCSS fallbacks. CSS custom properties in _css-variables.scss use
+// calc(var(--base-font-size-*, default) * var(--ms-rem)) for theme-designer integration.
+$ms-font-size-2xs: calc(1 * var(--ms-rem)) !default;    // 10px
+$ms-font-size-xs: calc(1.2 * var(--ms-rem)) !default;   // 12px
+$ms-font-size-sm: calc(1.4 * var(--ms-rem)) !default;   // 14px
+$ms-font-size-base: calc(1.6 * var(--ms-rem)) !default; // 16px
+$ms-font-size-lg: calc(1.8 * var(--ms-rem)) !default;   // 18px
+$ms-font-size-xl: calc(2 * var(--ms-rem)) !default;     // 20px
 
-$ml-letter-spacing-wide: 0.05em !default;
+// Font Weights
+$ms-font-weight-normal: 400 !default;
+$ms-font-weight-medium: 500 !default;
+$ms-font-weight-semibold: 600 !default;
+
+// Line Heights (Tailwind naming: tight < normal < relaxed)
+$ms-line-height-none: 1 !default;
+$ms-line-height-tight: 1.25 !default;
+$ms-line-height-normal: 1.5 !default;
+$ms-line-height-relaxed: 1.75 !default;
+
+$ms-letter-spacing-wide: 0.05em !default;
 
 // ==============================================================================
 // 5. BORDERS & SHADOWS
 // ==============================================================================
-$ml-border-width-base: $border-width-base !default;
-$ml-border-radius: $border-radius-base !default;
-$ml-border-radius-sm: $border-radius-sm !default;
-$ml-border-radius-full: $border-radius-full !default;
+$ms-border-width-base: $border-width-base !default;
+$ms-border-radius: $border-radius-base !default;
+$ms-border-radius-sm: $border-radius-sm !default;
+$ms-border-radius-full: $border-radius-full !default;
 
-$ml-border-color: $ml-color-neutral-light !default;
+$ms-border-color: $ms-color-neutral-light !default;
 
-$ml-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !default;
-$ml-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !default;
+$ms-shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !default;
+$ms-shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1) !default;
 
 // ==============================================================================
 // 6. TRANSITIONS & ANIMATIONS
 // ==============================================================================
-$ml-transition-fast: 150ms !default;
-$ml-transition-normal: 200ms !default;
-$ml-easing-snappy: cubic-bezier(0.4, 0, 0.2, 1) !default;
+$ms-transition-fast: 150ms !default;
+$ms-transition-normal: 200ms !default;
+$ms-easing-snappy: cubic-bezier(0.4, 0, 0.2, 1) !default;
 
 // ==============================================================================
 // 7. Z-INDEX LAYERS
 // ==============================================================================
-$ml-z-index-sticky: 1 !default;
-$ml-z-index-dropdown: 9999 !default;
-$ml-z-index-popover: 10000 !default;
+$ms-z-index-sticky: 1 !default;
+$ms-z-index-dropdown: 9999 !default;
+$ms-z-index-popover: 10000 !default;
 
 // ==============================================================================
 // 8. LAYOUT & DIMENSIONS (using --ms-rem for scalability)
 // ==============================================================================
-$ml-input-icon-spacing: calc(4 * var(--ms-rem)) !default;         // 40px
-$ml-counter-offset: calc(3.2 * var(--ms-rem)) !default;           // 32px
-$ml-option-icon-size: calc(2 * var(--ms-rem)) !default;           // 20px
-$ml-count-clear-size: calc(1.6 * var(--ms-rem)) !default;         // 16px
-$ml-badge-height: calc(2.7 * var(--ms-rem)) !default;             // 27px
-$ml-badge-remove-width: calc(2.7 * var(--ms-rem)) !default;       // 27px
-$ml-popover-close-size: calc(2.4 * var(--ms-rem)) !default;       // 24px
+$ms-input-icon-spacing: calc(4 * var(--ms-rem)) !default;         // 40px
+$ms-counter-offset: calc(3.2 * var(--ms-rem)) !default;           // 32px
+$ms-option-icon-size: calc(2 * var(--ms-rem)) !default;           // 20px
+$ms-count-clear-size: calc(1.6 * var(--ms-rem)) !default;         // 16px
+$ms-badge-height: calc(2.7 * var(--ms-rem)) !default;             // 27px
+$ms-badge-remove-width: calc(2.7 * var(--ms-rem)) !default;       // 27px
+$ms-popover-close-size: calc(2.4 * var(--ms-rem)) !default;       // 24px
 
-$ml-options-max-height: calc(32 * var(--ms-rem)) !default;        // 320px
-$ml-selected-popover-width: calc(32 * var(--ms-rem)) !default;    // 320px
-$ml-selected-popover-max-height: calc(32 * var(--ms-rem)) !default; // 320px
-$ml-selected-popover-body-max-height: calc(28.8 * var(--ms-rem)) !default; // 288px
-$ml-tooltip-max-width: calc(32 * var(--ms-rem)) !default;         // 320px
+$ms-options-max-height: calc(32 * var(--ms-rem)) !default;        // 320px
+$ms-selected-popover-width: calc(32 * var(--ms-rem)) !default;    // 320px
+$ms-selected-popover-max-height: calc(32 * var(--ms-rem)) !default; // 320px
+$ms-selected-popover-body-max-height: calc(28.8 * var(--ms-rem)) !default; // 288px
+$ms-tooltip-max-width: calc(32 * var(--ms-rem)) !default;         // 320px
 
 // ==============================================================================
 // 9. OPACITY VALUES
 // ==============================================================================
-$ml-opacity-placeholder: 0.6 !default;
-$ml-opacity-disabled: 0.5 !default;
-$ml-opacity-disabled-input: 0.6 !default;
-$ml-opacity-option-selected-bg: 0.1 !default;
-$ml-opacity-highlight-bg: 0.2 !default;
-$ml-opacity-focus-shadow: 0.5 !default;
-$ml-opacity-disabled-bg: 0.05 !default;
+$ms-opacity-placeholder: 0.6 !default;
+$ms-opacity-disabled: 0.5 !default;
+$ms-opacity-disabled-input: 0.6 !default;
+$ms-opacity-option-selected-bg: 0.1 !default;
+$ms-opacity-highlight-bg: 0.2 !default;
+$ms-opacity-focus-shadow: 0.5 !default;
+$ms-opacity-disabled-bg: 0.05 !default;
 
 // ==============================================================================
 // 10. TRANSFORMS
 // ==============================================================================
-$ml-transform-center-y: translateY(-50%) !default;
-$ml-transform-rotate-180: 180deg !default;
-$ml-transform-scale-hover: 1.1 !default;
-$ml-transform-scale-active: 0.98 !default;
+$ms-transform-center-y: translateY(-50%) !default;
+$ms-transform-rotate-180: 180deg !default;
+$ms-transform-scale-hover: 1.1 !default;
+$ms-transform-scale-active: 0.98 !default;
 
 // ==============================================================================
 // 11. ICONS & CONTENT
 // ==============================================================================
-$ml-icon-clear: "×" !default;
-$ml-icon-remove: "×" !default;
+$ms-icon-clear: "×" !default;
+$ms-icon-remove: "×" !default;
 
 // ==============================================================================
 // 12. LAYOUT HELPERS
 // ==============================================================================
-$ml-order-first: -1 !default;
-$ml-focus-outline-width: 2px !default;
-$ml-option-focus-outline-offset: -2px !default;
+$ms-order-first: -1 !default;
+$ms-focus-outline-width: 2px !default;
+$ms-option-focus-outline-offset: -2px !default;
 
 // ==============================================================================
 // COMPONENT SEMANTIC VARIABLES
@@ -164,359 +176,345 @@ $ml-option-focus-outline-offset: -2px !default;
 
 // Input Component
 // ==============================================================================
-$ml-input-padding-v: $ml-spacing-sm !default;
-$ml-input-padding-h: $ml-spacing-md !default;
-$ml-input-bg: $ml-color-white !default;
-$ml-input-text: $ml-color-neutral-darkest !default;
-$ml-input-border: $ml-color-neutral-base !default;
-$ml-input-focus-border-color: $ml-color-accent-base !default;
+$ms-input-padding-v: $ms-spacing-sm !default;
+$ms-input-padding-h: $ms-spacing-md !default;
+$ms-input-height: calc(3.5 * var(--ms-rem)) !default;  // 35px - Input field height
+$ms-input-bg: $ms-color-white !default;
+$ms-input-text: $ms-color-neutral-darkest !default;
+$ms-input-border: $ms-color-neutral-base !default;
+$ms-input-focus-border-color: $ms-color-accent-base !default;
 
-$ml-input-border-style: $ml-border-width-base solid $ml-input-border !default;
-$ml-input-border-radius: $ml-border-radius !default;
-$ml-input-font-size: $ml-font-size-sm !default;
-$ml-input-padding: $ml-input-padding-v $ml-input-padding-h !default;
-$ml-input-padding-right: $ml-input-icon-spacing !default;
-$ml-input-placeholder-color: $ml-color-neutral-dark !default;
-$ml-input-bg-disabled: rgba($ml-color-neutral-dark, $ml-opacity-disabled-bg) !default;
-
-// Input Size Variants (using --ms-rem for scalability)
-// ==============================================================================
-// Heights: xs=31px, sm=33px, md=35px, lg=38px, xl=41px (Pure Admin standard)
-// All values use calc() with --ms-rem for consistent scaling
-
-$ms-input-size-xs-font: calc(1.2 * var(--ms-rem)) !default;       // 12px
-$ms-input-size-xs-padding-v: calc(0.4 * var(--ms-rem)) !default;  // 4px
-$ms-input-size-xs-padding-h: calc(0.8 * var(--ms-rem)) !default;  // 8px
-$ms-input-size-xs-height: calc(3.1 * var(--ms-rem)) !default;     // 31px
-
-$ms-input-size-sm-font: calc(1.3 * var(--ms-rem)) !default;       // 13px
-$ms-input-size-sm-padding-v: calc(0.5 * var(--ms-rem)) !default;  // 5px
-$ms-input-size-sm-padding-h: calc(0.8 * var(--ms-rem)) !default;  // 8px
-$ms-input-size-sm-height: calc(3.3 * var(--ms-rem)) !default;     // 33px
-
-$ms-input-size-md-font: calc(1.4 * var(--ms-rem)) !default;       // 14px
-$ms-input-size-md-padding-v: calc(0.8 * var(--ms-rem)) !default;  // 8px
-$ms-input-size-md-padding-h: calc(1.2 * var(--ms-rem)) !default;  // 12px
-$ms-input-size-md-height: calc(3.5 * var(--ms-rem)) !default;     // 35px
-
-$ms-input-size-lg-font: calc(1.6 * var(--ms-rem)) !default;       // 16px
-$ms-input-size-lg-padding-v: calc(1 * var(--ms-rem)) !default;    // 10px
-$ms-input-size-lg-padding-h: calc(1.4 * var(--ms-rem)) !default;  // 14px
-$ms-input-size-lg-height: calc(3.8 * var(--ms-rem)) !default;     // 38px
-
-$ms-input-size-xl-font: calc(1.8 * var(--ms-rem)) !default;       // 18px
-$ms-input-size-xl-padding-v: calc(1.2 * var(--ms-rem)) !default;  // 12px
-$ms-input-size-xl-padding-h: calc(1.6 * var(--ms-rem)) !default;  // 16px
-$ms-input-size-xl-height: calc(4.1 * var(--ms-rem)) !default;     // 41px
+$ms-input-border-style: $ms-border-width-base solid $ms-input-border !default;
+$ms-input-border-radius: $ms-border-radius !default;
+$ms-input-border-hover: $ms-color-neutral-dark !default;
+$ms-input-font-size: $ms-font-size-sm !default;
+$ms-input-padding: $ms-input-padding-v $ms-input-padding-h !default;
+$ms-input-padding-right: $ms-input-icon-spacing !default;
+$ms-input-placeholder-color: $ms-color-neutral-dark !default;
+$ms-input-bg-disabled: rgba($ms-color-neutral-dark, $ms-opacity-disabled-bg) !default;
 
 // Text Colors
 // ==============================================================================
-$ml-text-primary: $ml-color-neutral-darkest !default;
-$ml-text-secondary: $ml-color-neutral-dark !default;
-$ml-text-white: $ml-color-white !default;
+$ms-text-primary: $ms-color-neutral-darkest !default;
+$ms-text-secondary: $ms-color-neutral-dark !default;
+$ms-text-on-accent: $ms-color-white !default;
 
 // Accent Colors
 // ==============================================================================
-$ml-accent-color: $ml-color-accent-base !default;
-$ml-accent-color-hover: $ml-color-accent-dark !default;
-$ml-accent-color-active: $ml-color-accent-darker !default;
+$ms-accent-color: $ms-color-accent-base !default;
+$ms-accent-color-hover: $ms-color-accent-dark !default;
+$ms-accent-color-active: $ms-color-accent-darker !default;
 
 // Background Colors
 // ==============================================================================
-$ml-primary-bg: $ml-color-neutral-lighter !default;
-$ml-primary-bg-hover: $ml-color-neutral-light !default;
+$ms-primary-bg: $ms-color-neutral-lighter !default;
+$ms-primary-bg-hover: $ms-color-neutral-light !default;
 
 // Toggle Icon
 // ==============================================================================
-$ml-toggle-color: $ml-text-secondary !default;
-$ml-toggle-right: $ml-input-padding-h !default;
+$ms-toggle-color: $ms-text-secondary !default;
+$ms-toggle-right: $ms-input-padding-h !default;
 
 // Count Badge (in input)
 // ==============================================================================
-$ml-counter-padding: calc(0.2 * var(--ms-rem)) calc(0.4 * var(--ms-rem)) !default;  // 2px 4px
-$ml-counter-bg: $ml-accent-color !default;
-$ml-counter-color: $ml-text-white !default;
-$ml-counter-font-size: $ml-font-size-xs !default;
-$ml-counter-font-weight: $ml-font-weight-semibold !default;
-$ml-counter-border-radius: $ml-border-radius-sm !default;
-$ml-counter-bg-hover: $ml-accent-color-hover !default;
+$ms-counter-padding: calc(0.2 * var(--ms-rem)) calc(0.4 * var(--ms-rem)) !default;  // 2px 4px
+$ms-counter-bg: $ms-accent-color !default;
+$ms-counter-color: $ms-text-on-accent !default;
+$ms-counter-font-size: $ms-font-size-xs !default;
+$ms-counter-font-weight: $ms-font-weight-semibold !default;
+$ms-counter-border-radius: $ms-border-radius-sm !default;
+$ms-counter-bg-hover: $ms-accent-color-hover !default;
 
 // Floating Hint
 // ==============================================================================
-$ml-hint-padding: $ml-spacing-sm $ml-spacing-md !default;
-$ml-hint-bg: $ml-color-white !default;
-$ml-hint-border-color: $ml-color-neutral-light !default;
-$ml-hint-border: $ml-border-width-base solid $ml-hint-border-color !default;
-$ml-hint-border-radius: $ml-border-radius !default;
-$ml-hint-box-shadow: $ml-shadow-md !default;
-$ml-hint-font-size: $ml-font-size-xs !default;
-$ml-hint-color: $ml-text-secondary !default;
+$ms-hint-padding: $ms-spacing-sm $ms-spacing-md !default;
+$ms-hint-bg: $ms-color-white !default;
+$ms-hint-border-color: $ms-color-neutral-light !default;
+$ms-hint-border: $ms-border-width-base solid $ms-hint-border-color !default;
+$ms-hint-border-radius: $ms-border-radius !default;
+$ms-hint-box-shadow: $ms-shadow-md !default;
+$ms-hint-font-size: $ms-font-size-xs !default;
+$ms-hint-color: $ms-text-secondary !default;
 
 // Dropdown
 // ==============================================================================
-$ml-dropdown-bg: $ml-color-white !default;
-$ml-dropdown-border-color: $ml-color-neutral-light !default;
-$ml-dropdown-shadow: $ml-shadow-xl !default;
-$ml-dropdown-text: $ml-color-neutral-darkest !default;
+$ms-dropdown-bg: $ms-color-white !default;
+$ms-dropdown-border-color: $ms-color-neutral-light !default;
+$ms-dropdown-shadow: $ms-shadow-xl !default;
+$ms-dropdown-text: $ms-color-neutral-darkest !default;
 
-$ml-dropdown-border: $ml-border-width-base solid $ml-dropdown-border-color !default;
-$ml-dropdown-border-radius: $ml-border-radius !default;
-$ml-dropdown-box-shadow: $ml-dropdown-shadow !default;
-$ml-option-color: $ml-dropdown-text !default;
+$ms-dropdown-border: $ms-border-width-base solid $ms-dropdown-border-color !default;
+$ms-dropdown-border-radius: $ms-border-radius !default;
+$ms-dropdown-box-shadow: $ms-dropdown-shadow !default;
+$ms-option-color: $ms-dropdown-text !default;
 
 // Dropdown Actions
 // ==============================================================================
-$ml-actions-gap: $ml-spacing-xs !default;
-$ml-actions-padding: $ml-spacing-sm !default;
-$ml-actions-border-bottom: $ml-border-width-base solid $ml-border-color !default;
-$ml-actions-bg: $ml-dropdown-bg !default;
+$ms-actions-gap: $ms-spacing-xs !default;
+$ms-actions-padding: $ms-spacing-sm !default;
+$ms-actions-border-bottom: $ms-border-width-base solid $ms-border-color !default;
+$ms-actions-bg: $ms-dropdown-bg !default;
 
 // Action Button
 // ==============================================================================
-$ml-action-btn-padding: $ml-spacing-xs $ml-spacing-sm !default;
-$ml-action-btn-font-size: $ml-font-size-xs !default;
-$ml-action-btn-border: $ml-border-width-base solid $ml-border-color !default;
-$ml-action-btn-border-radius: $ml-border-radius-sm !default;
-$ml-action-btn-bg: transparent !default;
-$ml-action-btn-color: inherit !default;
-$ml-action-btn-bg-hover: $ml-primary-bg !default;
-$ml-action-btn-border-color-hover: $ml-accent-color !default;
+$ms-action-btn-padding: $ms-spacing-xs $ms-spacing-sm !default;
+$ms-action-btn-font-size: $ms-font-size-xs !default;
+$ms-action-btn-border: $ms-border-width-base solid $ms-border-color !default;
+$ms-action-btn-border-radius: $ms-border-radius-sm !default;
+$ms-action-btn-bg: transparent !default;
+$ms-action-btn-color: inherit !default;
+$ms-action-btn-bg-hover: $ms-primary-bg !default;
+$ms-action-btn-border-color-hover: $ms-accent-color !default;
 
 // Options Container
 // ==============================================================================
-$ml-options-padding: $ml-spacing-xs 0 !default;
+$ms-options-padding: $ms-spacing-xs 0 !default;
 
 // Group
 // ==============================================================================
-$ml-group-border-top: $ml-border-width-base solid $ml-border-color !default;
-$ml-group-margin-top: $ml-spacing-xs !default;
-$ml-group-padding-top: $ml-spacing-xs !default;
+$ms-group-border-top: $ms-border-width-base solid $ms-border-color !default;
+$ms-group-margin-top: $ms-spacing-xs !default;
+$ms-group-padding-top: $ms-spacing-xs !default;
 
 // Group Label
 // ==============================================================================
-$ml-option-padding-h: $ml-spacing-md !default;
-$ml-group-label-padding: $ml-spacing-xs $ml-option-padding-h !default;
-$ml-group-label-font-size: $ml-font-size-xs !default;
-$ml-group-label-font-weight: $ml-font-weight-semibold !default;
-$ml-group-label-color: $ml-text-secondary !default;
-$ml-group-label-transform: uppercase !default;
-$ml-group-label-letter-spacing: $ml-letter-spacing-wide !default;
+$ms-option-padding-h: $ms-spacing-md !default;
+$ms-group-label-padding: $ms-spacing-xs $ms-option-padding-h !default;
+$ms-group-label-font-size: $ms-font-size-xs !default;
+$ms-group-label-font-weight: $ms-font-weight-semibold !default;
+$ms-group-label-color: $ms-text-secondary !default;
+$ms-group-label-transform: uppercase !default;
+$ms-group-label-letter-spacing: $ms-letter-spacing-wide !default;
 
 // Option
 // ==============================================================================
-$ml-option-padding-v: $ml-spacing-sm !default;
-$ml-option-gap: $ml-spacing-sm !default;
-$ml-option-hover-bg: $ml-color-neutral-lightest !default;
+$ms-option-padding-v: $ms-spacing-sm !default;
+$ms-option-gap: $ms-spacing-sm !default;
+$ms-option-hover-bg: $ms-color-neutral-lightest !default;
 
-$ml-option-padding: $ml-option-padding-v $ml-option-padding-h !default;
-$ml-option-bg: transparent !default;
-$ml-option-bg-hover: $ml-option-hover-bg !default;
-$ml-option-bg-focused: $ml-option-hover-bg !default;
-$ml-option-outline-focused: $ml-focus-outline-width solid $ml-accent-color !default;
-$ml-option-bg-matched: rgba($ml-accent-color, 0.08) !default;
-$ml-option-border-matched: 3px solid rgba($ml-accent-color, 0.4) !default;
-$ml-option-bg-selected: rgba($ml-accent-color, $ml-opacity-option-selected-bg) !default;
-$ml-option-color-selected: inherit !default;  // Text color when selected (use 'inherit' to keep default, or set explicit color like #ffffff)
+$ms-option-padding: $ms-option-padding-v $ms-option-padding-h !default;
+$ms-option-bg: transparent !default;
+$ms-option-bg-hover: $ms-option-hover-bg !default;
+$ms-option-bg-focused: $ms-option-hover-bg !default;
+$ms-option-outline-focused: $ms-focus-outline-width solid $ms-accent-color !default;
+$ms-option-bg-matched: rgba($ms-accent-color, 0.08) !default;
+$ms-option-border-matched: 3px solid rgba($ms-accent-color, 0.4) !default;
+$ms-option-bg-selected: rgba($ms-accent-color, $ms-opacity-option-selected-bg) !default;
+$ms-option-color-selected: inherit !default;  // Text color when selected (use 'inherit' to keep default, or set explicit color like #ffffff)
+
+// Option State Combinations
+// ==============================================================================
+$ms-option-bg-focused-hover: $ms-option-hover-bg !default;
+$ms-option-bg-matched-hover: rgba($ms-accent-color, 0.12) !default;
+$ms-option-bg-selected-focused: rgba($ms-accent-color, 0.15) !default;
+$ms-option-bg-selected-matched: rgba($ms-accent-color, 0.15) !default;
+$ms-option-bg-disabled-selected: rgba($ms-accent-color, $ms-opacity-option-selected-bg) !default;
 
 // Option Content
 // ==============================================================================
-$ml-option-content-gap: $ml-spacing-sm !default;
+$ms-option-content-gap: $ms-spacing-sm !default;
 
 // Option Icon
 // ==============================================================================
-$ml-option-icon-font-size: $ml-font-size-base !default;
+$ms-option-icon-font-size: $ms-font-size-base !default;
 
 // Option Title
 // ==============================================================================
-$ml-option-title-font-size: $ml-font-size-sm !default;
-$ml-option-title-color: inherit !default;
-$ml-option-mark-bg: rgba($ml-accent-color, $ml-opacity-highlight-bg) !default;
-$ml-option-mark-color: inherit !default;
-$ml-option-mark-font-weight: $ml-font-weight-semibold !default;
+$ms-option-title-font-size: $ms-font-size-sm !default;
+$ms-option-title-color: inherit !default;
+$ms-option-mark-bg: rgba($ms-accent-color, $ms-opacity-highlight-bg) !default;
+$ms-option-mark-color: inherit !default;
+$ms-option-mark-font-weight: $ms-font-weight-semibold !default;
 
 // Option Subtitle
 // ==============================================================================
-$ml-option-subtitle-margin-top: $ml-spacing-xs !default;
-$ml-option-subtitle-font-size: $ml-font-size-xs !default;
-$ml-option-subtitle-color: $ml-text-secondary !default;
-$ml-option-subtitle-line-height: 1.3 !default;
+$ms-option-subtitle-margin-top: $ms-spacing-xs !default;
+$ms-option-subtitle-font-size: $ms-font-size-xs !default;
+$ms-option-subtitle-color: $ms-text-secondary !default;
+$ms-option-subtitle-line-height: $ms-line-height-tight !default;
 
 // Empty State
 // ==============================================================================
-$ml-empty-padding: $ml-spacing-lg $ml-option-padding-h !default;
-$ml-empty-font-size: $ml-font-size-sm !default;
-$ml-empty-color: $ml-text-secondary !default;
+$ms-empty-padding: $ms-spacing-lg $ms-option-padding-h !default;
+$ms-empty-font-size: $ms-font-size-sm !default;
+$ms-empty-color: $ms-text-secondary !default;
 
 // Loader
 // ==============================================================================
-$ml-loader-padding: $ml-spacing-lg !default;
-$ml-loader-gap: $ml-spacing-sm !default;
+$ms-loader-padding: $ms-spacing-lg !default;
+$ms-loader-gap: $ms-spacing-sm !default;
 
 // Loading Text
 // ==============================================================================
-$ml-loading-text-font-size: $ml-font-size-sm !default;
-$ml-loading-text-color: $ml-text-secondary !default;
+$ms-loading-text-font-size: $ms-font-size-sm !default;
+$ms-loading-text-color: $ms-text-secondary !default;
 
 // Badges Container
 // ==============================================================================
-$ml-badge-gap: $ml-spacing-sm !default;
-$ml-badges-gap: $ml-badge-gap !default;
-$ml-badges-margin-bottom: $ml-spacing-sm !default;
-$ml-badges-margin-top: $ml-spacing-sm !default;
-$ml-badges-margin-left: $ml-spacing-xs !default;
-$ml-badges-margin-right: $ml-spacing-xs !default;
+$ms-badge-gap: $ms-spacing-sm !default;
+$ms-badges-gap: $ms-badge-gap !default;
+$ms-badges-margin-bottom: $ms-spacing-sm !default;
+$ms-badges-margin-top: $ms-spacing-sm !default;
+$ms-badges-margin-left: $ms-spacing-xs !default;
+$ms-badges-margin-right: $ms-spacing-xs !default;
 
 // Count Display
 // ==============================================================================
-$ml-count-display-margin-bottom: $ml-spacing-sm !default;
-$ml-count-display-margin-top: $ml-spacing-sm !default;
-$ml-count-display-margin-left: $ml-spacing-sm !default;
-$ml-count-display-margin-right: $ml-spacing-sm !default;
+$ms-count-display-margin-bottom: $ms-spacing-sm !default;
+$ms-count-display-margin-top: $ms-spacing-sm !default;
+$ms-count-display-margin-left: $ms-spacing-sm !default;
+$ms-count-display-margin-right: $ms-spacing-sm !default;
 
 // Count Badge Wrapper
 // ==============================================================================
-$ml-counter-wrapper-bg: transparent !default;
-$ml-counter-wrapper-border: $ml-border-width-base solid $ml-border-color !default;
-$ml-counter-wrapper-border-radius: $ml-border-radius-sm !default;
-$ml-counter-wrapper-padding: $ml-spacing-xs $ml-spacing-sm !default;
-$ml-counter-wrapper-gap: $ml-spacing-xs !default;
-$ml-counter-wrapper-bg-hover: $ml-option-hover-bg !default;
-$ml-counter-wrapper-border-color-hover: $ml-accent-color !default;
+$ms-counter-wrapper-bg: transparent !default;
+$ms-counter-wrapper-border: $ms-border-width-base solid $ms-border-color !default;
+$ms-counter-wrapper-border-radius: $ms-border-radius-sm !default;
+$ms-counter-wrapper-padding: $ms-spacing-xs $ms-spacing-sm !default;
+$ms-counter-wrapper-gap: $ms-spacing-xs !default;
+$ms-counter-wrapper-bg-hover: $ms-option-hover-bg !default;
+$ms-counter-wrapper-border-color-hover: $ms-accent-color !default;
 
 // Count Text
 // ==============================================================================
-$ml-count-text-bg: transparent !default;
-$ml-count-text-border: none !default;
-$ml-count-text-font-size: $ml-font-size-sm !default;
-$ml-count-text-color: $ml-text-primary !default;
+$ms-count-text-bg: transparent !default;
+$ms-count-text-border: none !default;
+$ms-count-text-font-size: $ms-font-size-sm !default;
+$ms-count-text-color: $ms-text-primary !default;
 
 // Count Clear Button
 // ==============================================================================
-$ml-count-clear-bg: transparent !default;
-$ml-count-clear-color: $ml-text-secondary !default;
-$ml-count-clear-font-size: $ml-font-size-lg !default;
-$ml-count-clear-border-radius: $ml-border-radius-full !default;
-$ml-count-clear-bg-hover: rgba($ml-accent-color, $ml-opacity-highlight-bg) !default;
-$ml-count-clear-color-hover: $ml-accent-color !default;
+$ms-count-clear-bg: transparent !default;
+$ms-count-clear-color: $ms-text-secondary !default;
+$ms-count-clear-font-size: $ms-font-size-lg !default;
+$ms-count-clear-border-radius: $ms-border-radius-full !default;
+$ms-count-clear-bg-hover: rgba($ms-accent-color, $ms-opacity-highlight-bg) !default;
+$ms-count-clear-color-hover: $ms-accent-color !default;
 
 // Badge
 // ==============================================================================
-$ml-badge-bg: $ml-color-accent-lightest !default;
-$ml-badge-bg-hover: $ml-color-white !default;
-$ml-badge-bg-active: $ml-color-accent-lighter !default;
+$ms-badge-bg: $ms-color-accent-lightest !default;
+$ms-badge-bg-hover: $ms-color-white !default;
+$ms-badge-bg-active: $ms-color-accent-lighter !default;
 
-$ml-badge-font-size: $ml-font-size-xs !default;
-$ml-badge-font-weight: $ml-font-weight-semibold !default;
-$ml-badge-border-radius: $ml-border-radius !default;
-$ml-badge-border: none !default;  // No border by default
+$ms-badge-font-size: $ms-font-size-xs !default;
+$ms-badge-font-weight: $ms-font-weight-semibold !default;
+$ms-badge-border-radius: $ms-border-radius !default;
 
 // Badge Text
 // ==============================================================================
-$ml-badge-text-padding: 0 $ml-spacing-sm !default;
-$ml-badge-text-bg: $ml-badge-bg !default;
-$ml-badge-text-color: $ml-accent-color !default;
+$ms-badge-text-padding: 0 $ms-spacing-sm !default;
+$ms-badge-text-bg: $ms-badge-bg !default;
+$ms-badge-text-color: $ms-accent-color !default;
+$ms-badge-text-border: none !default;
+$ms-badge-text-bg-hover: $ms-badge-bg-hover !default;
+$ms-badge-text-color-hover: $ms-badge-text-color !default;
 
 // Badge Remove Button
 // ==============================================================================
-$ml-badge-remove-bg: $ml-accent-color !default;
-$ml-badge-remove-color: $ml-text-white !default;
-$ml-badge-remove-border: none !default;
-$ml-badge-remove-font-size: $ml-font-size-xs !default;
-$ml-badge-remove-bg-hover: $ml-accent-color-hover !default;
-$ml-badge-remove-box-shadow-focus: 0 0 0 $ml-focus-outline-width
-  rgba($ml-accent-color, $ml-opacity-focus-shadow) !default;
+$ms-badge-remove-bg: $ms-accent-color !default;
+$ms-badge-remove-color: $ms-text-on-accent !default;
+$ms-badge-remove-border: none !default;
+$ms-badge-remove-font-size: $ms-font-size-xs !default;
+$ms-badge-remove-bg-hover: $ms-accent-color-hover !default;
+$ms-badge-remove-box-shadow-focus: 0 0 0 $ms-focus-outline-width
+  rgba($ms-accent-color, $ms-opacity-focus-shadow) !default;
 
 // Badge Indicator (for "+ X more", "3 selected", compact mode display)
 // ==============================================================================
-$ml-badge-counter-bg: transparent !default;
-$ml-badge-counter-border: $ml-border-width-base solid $ml-border-color !default;
-$ml-badge-counter-border-radius: $ml-border-radius-sm !default;
-$ml-badge-counter-text-color: $ml-text-secondary !default;
-$ml-badge-counter-text-bg: $ml-color-neutral-base !default;
-$ml-badge-counter-remove-bg: $ml-color-neutral-dark !default;
-$ml-badge-counter-remove-color: $ml-color-white !default;
-$ml-badge-counter-remove-bg-hover: $ml-color-neutral-darkest !default;
+$ms-badge-counter-bg: transparent !default;
+$ms-badge-counter-border: $ms-border-width-base solid $ms-border-color !default;
+$ms-badge-counter-border-radius: $ms-border-radius-sm !default;
+$ms-badge-counter-text-color: $ms-text-secondary !default;
+$ms-badge-counter-text-bg: $ms-color-neutral-base !default;
+$ms-badge-counter-remove-bg: $ms-color-neutral-dark !default;
+$ms-badge-counter-remove-color: $ms-color-white !default;
+$ms-badge-counter-remove-bg-hover: $ms-color-neutral-darkest !default;
 
 // "+X more" badge (partial mode)
 // ==============================================================================
-$ml-more-badge-bg: $ml-badge-text-bg !default;
-$ml-more-badge-hover-bg: $ml-badge-bg-hover !default;
-$ml-more-badge-active-bg: $ml-badge-bg-active !default;
+$ms-more-badge-bg: $ms-badge-text-bg !default;
+$ms-more-badge-hover-bg: $ms-badge-bg-hover !default;
+$ms-more-badge-active-bg: $ms-badge-bg-active !default;
 
 // Tooltip
 // ==============================================================================
-$ml-tooltip-bg: $ml-color-tooltip-bg !default;
-$ml-tooltip-color: $ml-color-tooltip-text !default;
-$ml-tooltip-padding: $ml-spacing-sm $ml-spacing-md !default;
-$ml-tooltip-border-radius: $ml-border-radius !default;
-$ml-tooltip-font-size: $ml-font-size-sm !default;
-$ml-tooltip-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !default;
-$ml-tooltip-z-index: $ml-z-index-popover !default;
+$ms-tooltip-bg: $ms-color-tooltip-bg !default;
+$ms-tooltip-color: $ms-color-tooltip-text !default;
+$ms-tooltip-padding: $ms-spacing-sm $ms-spacing-md !default;
+$ms-tooltip-border-radius: $ms-border-radius !default;
+$ms-tooltip-font-size: $ms-font-size-sm !default;
+$ms-tooltip-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !default;
+$ms-tooltip-z-index: $ms-z-index-popover !default;
 
 // Selected Popover
 // ==============================================================================
-$ml-selected-popover-bg: $ml-dropdown-bg !default;
-$ml-selected-popover-border: $ml-border-width-base solid $ml-dropdown-border-color !default;
-$ml-selected-popover-border-radius: $ml-border-radius !default;
-$ml-selected-popover-box-shadow: $ml-dropdown-shadow !default;
+$ms-selected-popover-bg: $ms-dropdown-bg !default;
+$ms-selected-popover-border: $ms-border-width-base solid $ms-dropdown-border-color !default;
+$ms-selected-popover-border-radius: $ms-border-radius !default;
+$ms-selected-popover-box-shadow: $ms-dropdown-shadow !default;
 
 // Selected Popover Header
 // ==============================================================================
-$ml-selected-popover-header-padding: $ml-spacing-sm $ml-spacing-md !default;
-$ml-selected-popover-header-bg: rgba($ml-accent-color, $ml-opacity-option-selected-bg) !default;
-$ml-selected-popover-header-border-bottom: $ml-border-width-base solid $ml-border-color !default;
-$ml-selected-popover-header-font-size: $ml-font-size-sm !default;
-$ml-selected-popover-header-font-weight: $ml-font-weight-semibold !default;
-$ml-selected-popover-header-color: $ml-text-primary !default;
+$ms-selected-popover-header-padding: $ms-spacing-sm $ms-spacing-md !default;
+$ms-selected-popover-header-bg: rgba($ms-accent-color, $ms-opacity-option-selected-bg) !default;
+$ms-selected-popover-header-border-bottom: $ms-border-width-base solid $ms-border-color !default;
+$ms-selected-popover-header-font-size: $ms-font-size-sm !default;
+$ms-selected-popover-header-font-weight: $ms-font-weight-semibold !default;
+$ms-selected-popover-header-color: $ms-text-primary !default;
 
 // Selected Popover Close
 // ==============================================================================
-$ml-selected-popover-close-bg: transparent !default;
-$ml-selected-popover-close-color: $ml-text-secondary !default;
-$ml-selected-popover-close-font-size: $ml-font-size-xl !default;
-$ml-selected-popover-close-border-radius: $ml-border-radius-full !default;
-$ml-selected-popover-close-bg-hover: rgba($ml-accent-color, $ml-opacity-highlight-bg) !default;
-$ml-selected-popover-close-color-hover: $ml-accent-color !default;
+$ms-selected-popover-close-bg: transparent !default;
+$ms-selected-popover-close-color: $ms-text-secondary !default;
+$ms-selected-popover-close-font-size: $ms-font-size-xl !default;
+$ms-selected-popover-close-border-radius: $ms-border-radius-full !default;
+$ms-selected-popover-close-bg-hover: rgba($ms-accent-color, $ms-opacity-highlight-bg) !default;
+$ms-selected-popover-close-color-hover: $ms-accent-color !default;
 
 // Selected Popover Body
 // ==============================================================================
-$ml-selected-popover-body-gap: $ml-spacing-xs !default;
-$ml-selected-popover-body-padding: $ml-spacing-sm !default;
+$ms-selected-popover-body-gap: $ms-spacing-xs !default;
+$ms-selected-popover-body-padding: $ms-spacing-sm !default;
 
 // Checkbox
 // ==============================================================================
-$ml-checkbox-offset: calc(0.2 * var(--ms-rem)) !default;  // 2px
-$ml-checkbox-margin-top: $ml-checkbox-offset !default;
-$ml-checkbox-margin-right: 0 !default; // Horizontal spacing handled by flexbox gap
-$ml-checkbox-margin-bottom: 0 !default;
-$ml-checkbox-margin-left: 0 !default;
-$ml-checkbox-size: calc(1.6 * var(--ms-rem)) !default;  // 16px - Width and height of checkbox
-$ml-checkbox-scale: 1 !default; // Scale multiplier for checkbox size
+$ms-checkbox-offset: calc(0.2 * var(--ms-rem)) !default;  // 2px
+$ms-checkbox-margin-top: $ms-checkbox-offset !default;
+$ms-checkbox-margin-right: 0 !default; // Horizontal spacing handled by flexbox gap
+$ms-checkbox-margin-bottom: 0 !default;
+$ms-checkbox-margin-left: 0 !default;
+$ms-checkbox-size: calc(1.6 * var(--ms-rem)) !default;  // 16px - Width and height of checkbox
+$ms-checkbox-scale: 1 !default; // Scale multiplier for checkbox size
 
 // Checkbox Styling (custom checkbox appearance)
-$ml-checkbox-bg: #ffffff !default;  // White background for better contrast
-$ml-checkbox-border: 1px solid $ml-color-neutral-base !default;  // Darker border (#d1d5db)
-$ml-checkbox-border-radius: calc(0.3 * var(--ms-rem)) !default;  // 3px
-$ml-checkbox-checked-bg: $ml-accent-color !default;
-$ml-checkbox-checked-border: 1px solid $ml-accent-color !default;
-$ml-checkbox-checkmark-color: $ml-text-white !default;
-$ml-checkbox-hover-border-color: $ml-accent-color !default;
-$ml-checkbox-disabled-bg: $ml-primary-bg-hover !default;
-$ml-checkbox-disabled-border: 1px solid $ml-border-color !default;
+$ms-checkbox-bg: #ffffff !default;  // White background for better contrast
+$ms-checkbox-border: 1px solid $ms-color-neutral-base !default;  // Darker border (#d1d5db)
+$ms-checkbox-border-radius: calc(0.3 * var(--ms-rem)) !default;  // 3px
+$ms-checkbox-checked-bg: $ms-accent-color !default;
+$ms-checkbox-checked-border: 1px solid $ms-accent-color !default;
+$ms-checkbox-checkmark-color: $ms-text-on-accent !default;
+$ms-checkbox-hover-border-color: $ms-accent-color !default;
+$ms-checkbox-disabled-bg: $ms-primary-bg-hover !default;
+$ms-checkbox-disabled-border: 1px solid $ms-border-color !default;
+
+// Checkbox State Combinations
+$ms-checkbox-checked-bg-hover: $ms-accent-color-hover !default;
+$ms-checkbox-checked-border-color-hover: $ms-accent-color-hover !default;
 
 // Placeholder
 // ==============================================================================
-$ml-placeholder-opacity: $ml-opacity-placeholder !default;
+$ms-placeholder-opacity: $ms-opacity-placeholder !default;
 
 // Disabled States
 // ==============================================================================
-$ml-disabled-opacity: $ml-opacity-disabled !default;
-$ml-disabled-input-opacity: $ml-opacity-disabled-input !default;
+$ms-disabled-opacity: $ms-opacity-disabled !default;
+$ms-disabled-input-opacity: $ms-opacity-disabled-input !default;
 
 // Scrollbar
 // ==============================================================================
-$ml-scrollbar-width: 8px !default;
-$ml-scrollbar-track-bg: transparent !default;
-$ml-scrollbar-thumb-bg: $ml-color-neutral-base !default;  // #d1d5db
-$ml-scrollbar-thumb-bg-hover: $ml-color-neutral-dark !default;  // #6b7280
-$ml-scrollbar-thumb-border-radius: 4px !default;
+$ms-scrollbar-width: 8px !default;
+$ms-scrollbar-track-bg: transparent !default;
+$ms-scrollbar-thumb-bg: $ms-color-neutral-base !default;  // #d1d5db
+$ms-scrollbar-thumb-bg-hover: $ms-color-neutral-dark !default;  // #6b7280
+$ms-scrollbar-thumb-border-radius: 4px !default;

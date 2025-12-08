@@ -95,9 +95,6 @@ export class MultiSelectElement<T = any> extends BaseElement {
             // Tooltip options
             'enable-badge-tooltips', 'badge-tooltip-placement',
 
-            // Input size
-            'input-size',
-
             // Debug
             'show-debug-info'
         ];
@@ -145,31 +142,10 @@ export class MultiSelectElement<T = any> extends BaseElement {
     attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null) {
         if (oldValue === newValue) return;
 
-        // Handle input-size attribute without re-initializing picker
-        if (name === 'input-size') {
-            this.applyInputSizeStyles();
-            return;
-        }
-
         // Re-initialize picker if it exists and attributes changed
         if (this.picker && name !== 'initial-values') {
             this.picker.destroy();
             this.initializePicker();
-        }
-    }
-
-    private applyInputSizeStyles() {
-        const inputElement = this.shadow.querySelector('.ms__input') as HTMLElement;
-        if (!inputElement) return;
-
-        const inputSize = this.getAttribute('input-size');
-
-        // Remove existing size classes
-        inputElement.classList.remove('ms__input--xs', 'ms__input--sm', 'ms__input--lg', 'ms__input--xl');
-
-        // Add new size class (md is default, no class needed)
-        if (inputSize && inputSize !== 'md') {
-            inputElement.classList.add(`ms__input--${inputSize}`);
         }
     }
 
@@ -193,21 +169,21 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     private renderDebugInfo() {
         // Remove existing debug info if present
-        const existingDebug = this.shadow.querySelector('.ml-debug-info');
+        const existingDebug = this.shadow.querySelector('.ms-debug-info');
         if (existingDebug) {
             existingDebug.remove();
         }
 
         // Create debug info container
         const debugContainer = document.createElement('div');
-        debugContainer.className = 'ml-debug-info';
+        debugContainer.className = 'ms-debug-info';
 
         const details = document.createElement('details');
         const summary = document.createElement('summary');
         summary.textContent = 'Debug Info';
 
         const statsDiv = document.createElement('div');
-        statsDiv.className = 'ml-debug-stats';
+        statsDiv.className = 'ms-debug-stats';
 
         details.appendChild(summary);
         details.appendChild(statsDiv);
@@ -220,7 +196,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
     }
 
     private updateDebugInfo() {
-        const statsDiv = this.shadow.querySelector('.ml-debug-stats');
+        const statsDiv = this.shadow.querySelector('.ms-debug-stats');
         if (!statsDiv || !this.picker) return;
 
         const version = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'unknown';
@@ -470,7 +446,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
             isBadgeTooltipsEnabled: this.getAttribute('enable-badge-tooltips') === 'true',
             getBadgeTooltipCallback: this._getBadgeTooltipCallback,
             badgeTooltipPlacement: (this.getAttribute('badge-tooltip-placement') as any) || 'top',
-            badgeTooltipDelay: parseInt(this.getAttribute('badge-tooltip-delay') || '300'),
+            badgeTooltipDelay: parseInt(this.getAttribute('badge-tooltip-delay') || '100'),
             badgeTooltipOffset: parseInt(this.getAttribute('badge-tooltip-offset') || '8'),
 
             // Count badge callback
@@ -541,19 +517,17 @@ export class MultiSelectElement<T = any> extends BaseElement {
         this.picker = new WebMultiSelect<T>(this.containerElement, options);
 
         // Inject custom styles if callback provided
+        // Prepend to shadow root so @import rules work (must be at top of stylesheet)
         if (this._customStylesCallback) {
             const customStyles = this._customStylesCallback();
             if (customStyles) {
                 const customStyleSheet = document.createElement('style');
-                customStyleSheet.className = 'ml-custom-styles';
+                customStyleSheet.className = 'ms-custom-styles';
                 customStyleSheet.textContent = customStyles;
-                this.shadow.appendChild(customStyleSheet);
+                // Insert at beginning of shadow root so @import/@font-face work
+                this.shadow.insertBefore(customStyleSheet, this.shadow.firstChild);
             }
         }
-
-        // Apply input size styles after picker initialization
-        // Use setTimeout to ensure DOM is fully rendered
-        setTimeout(() => this.applyInputSizeStyles(), 0);
     }
 
     private reinitialize() {
@@ -693,13 +667,13 @@ export class MultiSelectElement<T = any> extends BaseElement {
             const customStyles = value();
             if (customStyles) {
                 // Remove old custom stylesheet if exists
-                const oldCustomStyle = this.shadow.querySelector('style.ml-custom-styles');
+                const oldCustomStyle = this.shadow.querySelector('style.ms-custom-styles');
                 if (oldCustomStyle) {
                     oldCustomStyle.remove();
                 }
                 // Inject new custom styles
                 const customStyleSheet = document.createElement('style');
-                customStyleSheet.className = 'ml-custom-styles';
+                customStyleSheet.className = 'ms-custom-styles';
                 customStyleSheet.textContent = customStyles;
                 this.shadow.appendChild(customStyleSheet);
                 // Trigger re-render to apply new styles
@@ -887,15 +861,6 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     get badgeTooltipPlacement(): string | null {
         return this.getAttribute('badge-tooltip-placement');
-    }
-
-    // Input size
-    get inputSize(): string {
-        return this.getAttribute('input-size') || 'md';
-    }
-
-    set inputSize(value: string) {
-        this.setAttribute('input-size', value);
     }
 
     set getBadgeTooltipCallback(callback: ((item: T) => string | HTMLElement) | undefined) {

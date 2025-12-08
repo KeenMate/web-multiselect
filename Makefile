@@ -33,7 +33,7 @@ publish-dry: ## Publish to npm (dry run) - cleans dist first
 publish: ## Publish to npm - cleans dist first
 	@echo "WARNING: This will publish to npm registry"
 	@echo "Press Ctrl+C to cancel, or Enter to continue..."
-	@powershell -Command "$$null = Read-Host"
+	@powershell -Command "Read-Host | Out-Null"
 	@echo "Publishing to npm..."
 	npm run clean:dist
 	npm run build

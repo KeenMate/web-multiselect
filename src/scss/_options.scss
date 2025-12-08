@@ -11,27 +11,27 @@
 
 // Options container
 .ms__options {
-  padding: var(--ms-options-padding, $ml-options-padding);
+  padding: var(--ms-options-padding, $ms-options-padding);
 
   // Scrollbar styling
   scrollbar-width: thin;  // Firefox
-  scrollbar-color: var(--ms-scrollbar-thumb-bg, $ml-scrollbar-thumb-bg) var(--ms-scrollbar-track-bg, $ml-scrollbar-track-bg);
+  scrollbar-color: var(--ms-scrollbar-thumb-bg, $ms-scrollbar-thumb-bg) var(--ms-scrollbar-track-bg, $ms-scrollbar-track-bg);
 
   &::-webkit-scrollbar {
-    width: var(--ms-scrollbar-width, $ml-scrollbar-width);
+    width: var(--ms-scrollbar-width, $ms-scrollbar-width);
   }
 
   &::-webkit-scrollbar-track {
-    background: var(--ms-scrollbar-track-bg, $ml-scrollbar-track-bg);
+    background: var(--ms-scrollbar-track-bg, $ms-scrollbar-track-bg);
   }
 
   &::-webkit-scrollbar-thumb {
-    background: var(--ms-scrollbar-thumb-bg, $ml-scrollbar-thumb-bg);
-    border-radius: var(--ms-scrollbar-thumb-border-radius, $ml-scrollbar-thumb-border-radius);
+    background: var(--ms-scrollbar-thumb-bg, $ms-scrollbar-thumb-bg);
+    border-radius: var(--ms-scrollbar-thumb-border-radius, $ms-scrollbar-thumb-border-radius);
   }
 
   &::-webkit-scrollbar-thumb:hover {
-    background: var(--ms-scrollbar-thumb-bg-hover, $ml-scrollbar-thumb-bg-hover);
+    background: var(--ms-scrollbar-thumb-bg-hover, $ms-scrollbar-thumb-bg-hover);
   }
 }
 
@@ -55,20 +55,20 @@
 // Group
 .ms__group {
   & + & {
-    border-top: var(--ms-group-border-top, $ml-group-border-top);
-    margin-top: var(--ms-group-margin-top, $ml-group-margin-top);
-    padding-top: var(--ms-group-padding-top, $ml-group-padding-top);
+    border-top: var(--ms-group-border-top, $ms-group-border-top);
+    margin-top: var(--ms-group-margin-top, $ms-group-margin-top);
+    padding-top: var(--ms-group-padding-top, $ms-group-padding-top);
   }
 }
 
 // Group label
 .ms__group-label {
-  padding: var(--ms-group-label-padding, $ml-group-label-padding);
-  font-size: var(--ms-group-label-font-size, $ml-group-label-font-size);
-  font-weight: var(--ms-group-label-font-weight, $ml-group-label-font-weight);
-  color: var(--ms-group-label-color, $ml-group-label-color);
-  text-transform: var(--ms-group-label-transform, $ml-group-label-transform);
-  letter-spacing: var(--ms-group-label-letter-spacing, $ml-group-label-letter-spacing);
+  padding: var(--ms-group-label-padding, $ms-group-label-padding);
+  font-size: var(--ms-group-label-font-size, $ms-group-label-font-size);
+  font-weight: var(--ms-group-label-font-weight, $ms-group-label-font-weight);
+  color: var(--ms-group-label-color, $ms-group-label-color);
+  text-transform: var(--ms-group-label-transform, $ms-group-label-transform);
+  letter-spacing: var(--ms-group-label-letter-spacing, $ms-group-label-letter-spacing);
 }
 
 // ==============================================================================
@@ -79,53 +79,90 @@
 .ms__option {
   display: flex;
   align-items: var(--ms-checkbox-align, flex-start); // Support checkbox alignment
-  gap: var(--ms-option-gap, $ml-option-gap);
-  padding: var(--ms-option-padding, $ml-option-padding);
-  color: var(--ms-option-text-color, $ml-option-color);
-  background: var(--ms-option-background, $ml-option-bg);
+  gap: var(--ms-option-gap, $ms-option-gap);
+  padding: var(--ms-option-padding, $ms-option-padding);
+  color: var(--ms-option-text-color, $ms-option-color);
+  background: var(--ms-option-background, $ms-option-bg);
   cursor: pointer;
-  transition: background-color var(--ms-transition-fast, $ml-transition-fast) var(--ms-easing-snappy, $ml-easing-snappy);
 
   &:hover {
-    background: var(--ms-option-background-hover, $ml-option-bg-hover);
+    background: var(--ms-option-background-hover, $ms-option-bg-hover);
     color: var(--ms-option-color-hover, inherit);
   }
 
   &--focused {
-    background: var(--ms-option-background-focused, $ml-option-bg-focused);
+    background: var(--ms-option-background-focused, $ms-option-bg-focused);
     color: var(--ms-option-color-focused, inherit);
-    outline: var(--ms-option-outline-focused, $ml-option-outline-focused);
-    outline-offset: var(--ms-option-focus-outline-offset, $ml-option-focus-outline-offset);
+    outline: var(--ms-option-outline-focused, $ms-option-outline-focused);
+    outline-offset: var(--ms-option-focus-outline-offset, $ms-option-focus-outline-offset);
   }
 
   &--matched {
-    background: var(--ms-option-background-matched, $ml-option-bg-matched);
+    background: var(--ms-option-background-matched, $ms-option-bg-matched);
     color: var(--ms-option-color-matched, inherit);
-    border-left: var(--ms-option-border-matched, $ml-option-border-matched);
+    border-left: var(--ms-option-border-matched, $ms-option-border-matched);
   }
 
   &--selected {
-    background: var(--ms-option-background-selected, $ml-option-bg-selected);
+    background: var(--ms-option-background-selected, $ms-option-bg-selected);
     color: var(--ms-option-color-selected, inherit);
 
     &:hover {
-      background: var(--ms-option-bg-selected-hover, var(--ms-option-background-selected, $ml-option-bg-selected));
+      background: var(--ms-option-bg-selected-hover, var(--ms-option-background-selected, $ms-option-bg-selected));
       color: var(--ms-option-color-selected-hover, var(--ms-option-color-selected, inherit));
     }
   }
 
   &--disabled {
-    opacity: var(--ms-disabled-opacity, $ml-disabled-opacity);
+    opacity: var(--ms-disabled-opacity, $ms-disabled-opacity);
     cursor: not-allowed;
 
     &:hover {
-      background: var(--ms-option-background, $ml-option-bg);
+      background: var(--ms-option-background, $ms-option-bg);
     }
   }
 
-  // Checkbox alignment variants
-  &[data-checkbox-align="center"] {
-    --ms-checkbox-align: center;
+  // Focused + Hover
+  &--focused:hover {
+    background: var(--ms-option-bg-focused-hover, $ms-option-bg-focused-hover);
+    color: var(--ms-option-color-focused-hover, var(--ms-option-color-focused, var(--ms-option-text-color, $ms-option-color)));
+  }
+
+  // Matched + Hover
+  &--matched:hover {
+    background: var(--ms-option-bg-matched-hover, $ms-option-bg-matched-hover);
+    color: var(--ms-option-color-matched-hover, var(--ms-option-color-matched, var(--ms-option-text-color, $ms-option-color)));
+  }
+
+  // Selected + Focused
+  &--selected#{&}--focused {
+    background: var(--ms-option-bg-selected-focused, $ms-option-bg-selected-focused);
+    color: var(--ms-option-color-selected-focused, var(--ms-option-color-selected, var(--ms-option-text-color, $ms-option-color)));
+    outline: var(--ms-option-outline-focused, $ms-option-outline-focused);
+    outline-offset: var(--ms-option-focus-outline-offset, $ms-option-focus-outline-offset);
+  }
+
+  // Selected + Matched
+  &--selected#{&}--matched {
+    background: var(--ms-option-bg-selected-matched, $ms-option-bg-selected-matched);
+    color: var(--ms-option-color-selected-matched, var(--ms-option-color-selected, var(--ms-option-text-color, $ms-option-color)));
+    border-left: var(--ms-option-border-matched, $ms-option-border-matched);
+  }
+
+  // Disabled + Selected
+  &--disabled#{&}--selected {
+    background: var(--ms-option-bg-disabled-selected, $ms-option-bg-disabled-selected);
+    color: var(--ms-option-color-disabled-selected, var(--ms-option-color-selected, var(--ms-option-text-color, $ms-option-color)));
+  }
+
+  // Disabled + Focused (prevents focus outline on disabled items)
+  &--disabled#{&}--focused {
+    outline: none;
+  }
+
+  // Checkbox alignment variants (center is default, defined in _css-variables.scss)
+  &[data-checkbox-align="top"] {
+    --ms-checkbox-align: flex-start;
   }
 
   &[data-checkbox-align="bottom"] {
@@ -146,20 +183,20 @@
   -moz-appearance: none;
   flex-shrink: 0;
   position: relative;
-  margin-top: var(--ms-checkbox-margin-top, $ml-checkbox-margin-top);
-  margin-right: var(--ms-checkbox-margin-right, $ml-checkbox-margin-right);
-  margin-bottom: var(--ms-checkbox-margin-bottom, $ml-checkbox-margin-bottom);
-  margin-left: var(--ms-checkbox-margin-left, $ml-checkbox-margin-left);
-  width: var(--ms-checkbox-size, $ml-checkbox-size);
-  height: var(--ms-checkbox-size, $ml-checkbox-size);
-  transform: scale(var(--ms-checkbox-scale, $ml-checkbox-scale));
+  margin-top: var(--ms-checkbox-margin-top, $ms-checkbox-margin-top);
+  margin-right: var(--ms-checkbox-margin-right, $ms-checkbox-margin-right);
+  margin-bottom: var(--ms-checkbox-margin-bottom, $ms-checkbox-margin-bottom);
+  margin-left: var(--ms-checkbox-margin-left, $ms-checkbox-margin-left);
+  width: var(--ms-checkbox-size, $ms-checkbox-size);
+  height: var(--ms-checkbox-size, $ms-checkbox-size);
+  transform: scale(var(--ms-checkbox-scale, $ms-checkbox-scale));
   transform-origin: top left;
   cursor: pointer;
 
   // Custom checkbox appearance
-  background: var(--ms-checkbox-bg, $ml-checkbox-bg);
-  border: var(--ms-checkbox-border, $ml-checkbox-border);
-  border-radius: var(--ms-checkbox-border-radius, $ml-checkbox-border-radius);
+  background: var(--ms-checkbox-bg, $ms-checkbox-bg);
+  border: var(--ms-checkbox-border, $ms-checkbox-border);
+  border-radius: var(--ms-checkbox-border-radius, $ms-checkbox-border-radius);
   transition: background-color 0.15s ease, border-color 0.15s ease;
 
   // Checkmark using ::after pseudo-element
@@ -174,40 +211,46 @@
     height: 55%;
     transform: translate(-50%, -50%) rotate(45deg);
     // Checkmark shape (right and bottom borders form the check)
-    border: solid var(--ms-checkbox-checkmark-color, $ml-checkbox-checkmark-color);
+    border: solid var(--ms-checkbox-checkmark-color, $ms-checkbox-checkmark-color);
     border-width: 0 2px 2px 0;
   }
 
   // Hover state
   &:hover:not(:disabled) {
-    border-color: var(--ms-checkbox-hover-border-color, $ml-checkbox-hover-border-color);
+    border-color: var(--ms-checkbox-hover-border-color, $ms-checkbox-hover-border-color);
   }
 
   // Checked state
   &:checked {
-    background: var(--ms-checkbox-checked-bg, $ml-checkbox-checked-bg);
-    border: var(--ms-checkbox-checked-border, $ml-checkbox-checked-border);
+    background: var(--ms-checkbox-checked-bg, $ms-checkbox-checked-bg);
+    border: var(--ms-checkbox-checked-border, $ms-checkbox-checked-border);
 
     &::after {
       display: block;
     }
   }
 
+  // Checked + Hover
+  &:checked:hover:not(:disabled) {
+    background: var(--ms-checkbox-checked-bg-hover, $ms-checkbox-checked-bg-hover);
+    border-color: var(--ms-checkbox-checked-border-color-hover, $ms-checkbox-checked-border-color-hover);
+  }
+
   // Focus state (accessibility)
   &:focus-visible {
-    outline: 2px solid var(--ms-checkbox-checked-bg, $ml-checkbox-checked-bg);
+    outline: 2px solid var(--ms-checkbox-checked-bg, $ms-checkbox-checked-bg);
     outline-offset: 2px;
   }
 
   // Disabled state
   &:disabled {
     cursor: not-allowed;
-    background: var(--ms-checkbox-disabled-bg, $ml-checkbox-disabled-bg);
-    border: var(--ms-checkbox-disabled-border, $ml-checkbox-disabled-border);
+    background: var(--ms-checkbox-disabled-bg, $ms-checkbox-disabled-bg);
+    border: var(--ms-checkbox-disabled-border, $ms-checkbox-disabled-border);
     opacity: 0.6;
 
     &:checked {
-      background: var(--ms-checkbox-disabled-bg, $ml-checkbox-disabled-bg);
+      background: var(--ms-checkbox-disabled-bg, $ms-checkbox-disabled-bg);
     }
   }
 
@@ -221,23 +264,24 @@
 // ==============================================================================
 
 // Option content (rich content wrapper)
+// Note: Uses flex-start to prevent clipping of tall custom content in virtual scroll mode
 .ms__option-content {
   flex: 1;
   display: flex;
   align-items: flex-start;
-  gap: var(--ms-option-content-gap, $ml-option-content-gap);
+  gap: var(--ms-option-content-gap, $ms-option-content-gap);
   min-width: 0; // Allow text truncation
 }
 
 // Option icon/SVG
 .ms__option-icon {
   flex-shrink: 0;
-  width: var(--ms-option-icon-size, $ml-option-icon-size);
-  height: var(--ms-option-icon-size, $ml-option-icon-size);
+  width: var(--ms-option-icon-size, $ms-option-icon-size);
+  height: var(--ms-option-icon-size, $ms-option-icon-size);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: var(--ms-option-icon-font-size, $ml-option-icon-font-size);
+  font-size: var(--ms-option-icon-font-size, $ms-option-icon-font-size);
 
   svg {
     width: 100%;
@@ -254,24 +298,37 @@
 
 // Option title/main text
 .ms__option-title {
-  font-size: var(--ms-option-title-font-size, $ml-option-title-font-size);
-  color: var(--ms-option-title-color, $ml-option-title-color);
-  line-height: var(--ms-line-height-relaxed, $ml-line-height-relaxed);
+  font-size: var(--ms-option-title-font-size, $ms-option-title-font-size);
+  color: var(--ms-option-title-color, $ms-option-title-color);
+  line-height: var(--ms-line-height-relaxed, $ms-line-height-relaxed);
 
   // Highlight matched text
   mark {
-    background: var(--ms-option-mark-background, $ml-option-mark-bg);
-    color: var(--ms-option-mark-color, $ml-option-mark-color);
-    font-weight: var(--ms-option-mark-font-weight, $ml-option-mark-font-weight);
+    background: var(--ms-option-mark-background, $ms-option-mark-bg);
+    color: var(--ms-option-mark-color, $ms-option-mark-color);
+    font-weight: var(--ms-option-mark-font-weight, $ms-option-mark-font-weight);
   }
 }
 
 // Option subtitle (multiline support)
 .ms__option-subtitle {
-  margin-top: var(--ms-option-subtitle-margin-top, $ml-option-subtitle-margin-top);
-  font-size: var(--ms-option-subtitle-font-size, $ml-option-subtitle-font-size);
-  color: var(--ms-option-subtitle-color, $ml-option-subtitle-color);
-  line-height: var(--ms-option-subtitle-line-height, $ml-option-subtitle-line-height);
+  margin-top: var(--ms-option-subtitle-margin-top, $ms-option-subtitle-margin-top);
+  font-size: var(--ms-option-subtitle-font-size, $ms-option-subtitle-font-size);
+  color: var(--ms-option-subtitle-color, $ms-option-subtitle-color);
+  line-height: var(--ms-option-subtitle-line-height, $ms-option-subtitle-line-height);
+
+  // Subtitle color states (for solid background themes)
+  .ms__option:hover & {
+    color: var(--ms-option-subtitle-color-hover, var(--ms-option-subtitle-color, $ms-option-subtitle-color));
+  }
+
+  .ms__option--selected & {
+    color: var(--ms-option-subtitle-color-selected, var(--ms-option-subtitle-color, $ms-option-subtitle-color));
+  }
+
+  .ms__option--selected:hover & {
+    color: var(--ms-option-subtitle-color-selected-hover, var(--ms-option-subtitle-color-selected, var(--ms-option-subtitle-color, $ms-option-subtitle-color)));
+  }
 }
 
 // ==============================================================================
@@ -280,10 +337,10 @@
 
 // Empty state
 .ms__empty {
-  padding: var(--ms-empty-padding, $ml-empty-padding);
+  padding: var(--ms-empty-padding, $ms-empty-padding);
   text-align: center;
-  font-size: var(--ms-empty-font-size, $ml-empty-font-size);
-  color: var(--ms-empty-color, $ml-empty-color);
+  font-size: var(--ms-empty-font-size, $ms-empty-font-size);
+  color: var(--ms-empty-color, $ms-empty-color);
 }
 
 // Loading state
@@ -292,11 +349,11 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: var(--ms-loader-padding, $ml-loader-padding);
-  gap: var(--ms-loader-gap, $ml-loader-gap);
+  padding: var(--ms-loader-padding, $ms-loader-padding);
+  gap: var(--ms-loader-gap, $ms-loader-gap);
 }
 
 .ms__loading-text {
-  font-size: var(--ms-loading-text-font-size, $ml-loading-text-font-size);
-  color: var(--ms-loading-color, $ml-loading-text-color);
+  font-size: var(--ms-loading-text-font-size, $ms-loading-text-font-size);
+  color: var(--ms-loading-color, $ms-loading-text-color);
 }

@@ -322,7 +322,7 @@ export class WebMultiSelect<T = any> {
         }
 
         // Add classes to the element
-        this.element.classList.add('ml');
+        this.element.classList.add('ms');
 
         if (this.isRTL) {
             this.element.classList.add('ms--rtl');
@@ -368,11 +368,11 @@ export class WebMultiSelect<T = any> {
 
         // Create wrapper for input and badges (needed for positioning)
         const wrapper = document.createElement('div');
-        wrapper.className = 'ml-wrapper';
+        wrapper.className = 'ms-wrapper';
 
         // Add layout modifier based on badges position
         if (this.effectiveBadgesPosition === 'left' || this.effectiveBadgesPosition === 'right') {
-            wrapper.classList.add('ml-wrapper--inline');
+            wrapper.classList.add('ms-wrapper--inline');
         }
 
         // Build the structure: element contains wrapper, which contains inputWrapper and badgesContainer
@@ -579,7 +579,7 @@ export class WebMultiSelect<T = any> {
             // Add inline styles to ensure proper height constraint and scrolling
             const maxHeight = this.options.maxHeight || '20rem';
             const optionHeight = this.options.optionHeight ?? 50;
-            html += `<div class="ms__options ms__options--virtual" style="height: ${maxHeight}; max-height: ${maxHeight}; overflow-y: auto; position: relative; --ml-option-height: ${optionHeight}px;"></div>`;
+            html += `<div class="ms__options ms__options--virtual" style="height: ${maxHeight}; max-height: ${maxHeight}; overflow-y: auto; position: relative; --ms-option-height: ${optionHeight}px;"></div>`;
             this.dropdown.innerHTML = html;
 
             // Get options container
@@ -633,7 +633,7 @@ export class WebMultiSelect<T = any> {
         if (isMatched) classes.push('ms__option--matched');
         if (disabled) classes.push('ms__option--disabled');
 
-        const checkboxAlignAttr = this.options.checkboxAlign && this.options.checkboxAlign !== 'top'
+        const checkboxAlignAttr = this.options.checkboxAlign && this.options.checkboxAlign !== 'center'
             ? ` data-checkbox-align="${this.options.checkboxAlign}"`
             : '';
 
@@ -1836,6 +1836,9 @@ export class WebMultiSelect<T = any> {
                 ${selectedOptions.map(option => this.renderBadgeForPopover(option)).join('')}
             </div>
         `;
+
+        // Attach tooltips to popover badges
+        this.attachBadgeTooltips(this.selectedPopover);
     }
 
     private renderSelectedPopoverVirtual(selectedOptions: T[], count: number): void {
@@ -1878,7 +1881,11 @@ export class WebMultiSelect<T = any> {
                     itemHeight,
                     items: selectedOptions,
                     renderItem: (item) => this.renderBadgeForPopover(item),
-                    bufferSize
+                    bufferSize,
+                    onVisibleRangeChange: () => {
+                        // Attach tooltips to newly rendered badges in virtual scroll
+                        this.attachBadgeTooltips(this.selectedPopoverContainer!);
+                    }
                 });
             } else {
                 this.selectedPopoverVirtualScroll.setItems(selectedOptions);
@@ -2100,13 +2107,14 @@ export class WebMultiSelect<T = any> {
     // BADGE TOOLTIP METHODS
     // ========================================================================
 
-    private attachBadgeTooltips(): void {
+    private attachBadgeTooltips(container?: HTMLElement): void {
         if (!this.options.isBadgeTooltipsEnabled) {
             uiLogger.debug(`[${this.instanceId}] Tooltips disabled - isBadgeTooltipsEnabled is false`);
             return;
         }
 
-        const badges = this.badgesContainer.querySelectorAll('.ms__badge:not(.ms__badge--more)');
+        const targetContainer = container || this.badgesContainer;
+        const badges = targetContainer.querySelectorAll('.ms__badge:not(.ms__badge--more)');
         uiLogger.debug(`[${this.instanceId}] Found ${badges.length} badges to attach tooltips to`);
         badges.forEach((badge: Element) => {
             const badgeElement = badge as HTMLElement;
@@ -2128,15 +2136,17 @@ export class WebMultiSelect<T = any> {
             this.createRemoveButtonTooltip(removeBtn, displayValue, value);
         });
 
-        // Handle "+X more" badge remove button tooltip
-        const moreBadge = this.badgesContainer.querySelector('.ms__badge--more');
-        if (moreBadge) {
-            const removeBtn = moreBadge.querySelector('.ms__badge-remove') as HTMLElement;
-            if (removeBtn && removeBtn.dataset.action === 'remove-hidden') {
-                const maxVisible = this.options.badgesMaxVisible || 3;
-                const selectedOptions = Array.from(this.selectedOptions.values());
-                const hiddenCount = selectedOptions.length - maxVisible;
-                this.createRemoveButtonTooltip(removeBtn, `${hiddenCount} hidden items`, 'more-badge-remove');
+        // Handle "+X more" badge remove button tooltip (only for main badges container)
+        if (!container) {
+            const moreBadge = this.badgesContainer.querySelector('.ms__badge--more');
+            if (moreBadge) {
+                const removeBtn = moreBadge.querySelector('.ms__badge-remove') as HTMLElement;
+                if (removeBtn && removeBtn.dataset.action === 'remove-hidden') {
+                    const maxVisible = this.options.badgesMaxVisible || 3;
+                    const selectedOptions = Array.from(this.selectedOptions.values());
+                    const hiddenCount = selectedOptions.length - maxVisible;
+                    this.createRemoveButtonTooltip(removeBtn, `${hiddenCount} hidden items`, 'more-badge-remove');
+                }
             }
         }
     }
@@ -2175,12 +2185,12 @@ export class WebMultiSelect<T = any> {
 
         const showTooltip = () => {
             clearTimeout(hideTimeout);
-            uiLogger.debug(`[${this.instanceId}] Mouse entered badge "${uniqueId}", will show tooltip in ${this.options.badgeTooltipDelay || 300}ms`);
+            uiLogger.debug(`[${this.instanceId}] Mouse entered badge "${uniqueId}", will show tooltip in ${this.options.badgeTooltipDelay ?? 100}ms`);
             showTimeout = window.setTimeout(() => {
                 uiLogger.debug(`[${this.instanceId}] Showing tooltip for "${uniqueId}"`);
                 tooltip.classList.add('ms__badge-tooltip--visible');
                 this.positionBadgeTooltip(element, tooltip, uniqueId);
-            }, this.options.badgeTooltipDelay || 300);
+            }, this.options.badgeTooltipDelay ?? 100);
         };
 
         const hideTooltip = () => {
@@ -2221,7 +2231,7 @@ export class WebMultiSelect<T = any> {
             showTimeout = window.setTimeout(() => {
                 tooltip.classList.add('ms__badge-tooltip--visible');
                 this.positionBadgeTooltip(removeBtn, tooltip, tooltipId);
-            }, this.options.badgeTooltipDelay || 300);
+            }, this.options.badgeTooltipDelay ?? 100);
         };
 
         const hideTooltip = () => {
@@ -2345,12 +2355,12 @@ export class WebMultiSelect<T = any> {
 
         const showTooltip = () => {
             clearTimeout(hideTimeout);
-            uiLogger.debug(`[${this.instanceId}] Mouse entered action button "${uniqueId}", will show tooltip in ${this.options.badgeTooltipDelay || 300}ms`);
+            uiLogger.debug(`[${this.instanceId}] Mouse entered action button "${uniqueId}", will show tooltip in ${this.options.badgeTooltipDelay ?? 100}ms`);
             showTimeout = window.setTimeout(() => {
                 uiLogger.debug(`[${this.instanceId}] Showing tooltip for action button "${uniqueId}"`);
                 tooltip.classList.add('ms__badge-tooltip--visible');
                 this.positionActionButtonTooltip(button, tooltip, uniqueId);
-            }, this.options.badgeTooltipDelay || 300);
+            }, this.options.badgeTooltipDelay ?? 100);
         };
 
         const hideTooltip = () => {
@@ -2429,7 +2439,7 @@ export class WebMultiSelect<T = any> {
 
         // Clear the element's content to prevent duplication on re-initialization
         this.element.innerHTML = '';
-        this.element.classList.remove('ml', 'ms--open', 'ms--no-checkboxes');
+        this.element.classList.remove('ms', 'ms--open', 'ms--no-checkboxes');
 
         initLogger.info(`[${this.instanceId}] Component destroyed`);
     }

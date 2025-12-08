@@ -48,14 +48,14 @@ A feature-rich multiselect web component with typeahead search, virtual scrollin
 - `_badges-display.scss` - Badges, count display, individual badges
 - `_tooltips-popover.scss` - Badge tooltips + selected items popover
 - `_rtl.scss` - RTL language support
-- `_modifiers.scss` - Size variants + state modifiers
+- `_modifiers.scss` - State modifiers (disabled, no-checkboxes)
 - `_debug.scss` - Debug information panel
 
 ### Naming Conventions
 
 - **CSS Classes**: `.ms__*` prefix (e.g., `.ms__input`, `.ms__dropdown`, `.ms__option`)
 - **CSS Variables**: `--ms-*` prefix (e.g., `--ms-accent-color`, `--ms-input-border-radius`)
-- **SCSS Variables**: `$ml-*` prefix for semantic, `$ms-*` for component-specific
+- **SCSS Variables**: `$ms-*` prefix (e.g., `$ms-accent-color`, `$ms-input-padding`)
 
 ## Key Features
 
@@ -82,23 +82,39 @@ A feature-rich multiselect web component with typeahead search, virtual scrollin
 - `renderSelectedItemContentCallback` - Custom popover item content
 - `customStylesCallback` - Inject custom CSS into Shadow DOM
 
-### Input Size System
+### Sizing System
 
-The component uses a 5-level size scale (xs, sm, md, lg, xl) for input sizing:
+The component uses `--ms-rem` for global scaling. Default is `10px` (so `1.4 * --ms-rem = 14px`).
 
-**Web Component Attribute:**
-- `input-size` - Input field size
-
-**CSS Variables (per size):**
-- `--ms-input-size-{size}-font` - Font size
-- `--ms-input-size-{size}-padding-v` - Vertical padding
-- `--ms-input-size-{size}-padding-h` - Horizontal padding
-- `--ms-input-size-{size}-height` - Input height
-
-**Example:**
+**Global Scaling:**
 ```html
-<web-multiselect input-size="lg"></web-multiselect>
+<!-- Compact (80%) -->
+<web-multiselect style="--ms-rem: 8px;"></web-multiselect>
+
+<!-- Default (100%) -->
+<web-multiselect></web-multiselect>
+
+<!-- Large (120%) -->
+<web-multiselect style="--ms-rem: 12px;"></web-multiselect>
 ```
+
+**Fine-grained Control:**
+Override individual variables like `--ms-input-font-size`, `--ms-input-padding-v`, `--ms-input-height`, etc.
+
+**Shadow DOM Note:** CSS variables must be set on the `<web-multiselect>` element itself, not on wrapper divs.
+
+### Typography Integration
+
+Font sizes use unitless multipliers that get multiplied by `--ms-rem`:
+```scss
+--ms-input-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
+```
+
+This enables integration with theme-designer's `--base-*` variables:
+- `--base-font-family` - Font family
+- `--base-font-size-xs`, `--base-font-size-sm`, etc. - Unitless multipliers
+- `--base-font-weight-normal`, `--base-font-weight-semibold`, etc. - Font weights
+- `--base-line-height-tight`, `--base-line-height-normal` - Line heights
 
 ## Development Guidelines
 
@@ -107,7 +123,6 @@ The component uses a 5-level size scale (xs, sm, md, lg, xl) for input sizing:
 1. Add to `observedAttributes` in `web-component.ts`
 2. Handle in `attributeChangedCallback` (consider if re-init needed)
 3. Add getter/setter property
-4. For size-related: add method like `applyInputSizeStyles()`
 
 ### Adding New CSS Variables
 
@@ -118,10 +133,9 @@ The component uses a 5-level size scale (xs, sm, md, lg, xl) for input sizing:
 ### Consistency with web-daterangepicker
 
 Both components share similar patterns:
-- Same size scale (xs, sm, md, lg, xl)
-- Similar attribute naming (`input-size`)
+- Same `--*-rem` scaling approach (`--ms-rem`, `--drp-rem`)
+- Same typography integration with `--base-*` variables
 - CSS variable prefixes (multiselect: `--ms-*`, daterangepicker: `--drp-*`)
-- Same `applyInputSizeStyles()` pattern for efficient attribute handling
 
 ## Build System
 

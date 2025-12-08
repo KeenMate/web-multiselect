@@ -17,19 +17,19 @@
 
   .ms__input {
     text-align: right;
-    padding-left: var(--ms-input-padding-right, $ml-input-padding-right);
-    padding-right: var(--ms-input-padding-h, $ml-input-padding-h);
+    padding-left: var(--ms-input-padding-right, $ms-input-padding-right);
+    padding-right: var(--ms-input-padding-h, $ms-input-padding-h);
   }
 
   // Move toggle icon to left side
   .ms__toggle {
-    left: var(--ms-toggle-right, $ml-toggle-right) !important;
+    left: var(--ms-toggle-right, $ms-toggle-right) !important;
     right: auto !important;
   }
 
   // Move count badge to left side
   .ms__counter {
-    left: var(--ms-counter-offset, $ml-counter-offset) !important;
+    left: var(--ms-counter-offset, $ms-counter-offset) !important;
     right: auto !important;
   }
 
@@ -48,7 +48,7 @@
   }
 
   .ms__checkbox {
-    margin-left: var(--ms-spacing-sm, $ml-spacing-sm);
+    margin-left: var(--ms-spacing-sm, $ms-spacing-sm);
     margin-right: 0;
   }
 
@@ -57,7 +57,7 @@
   }
 
   .ms__option-icon {
-    margin-left: var(--ms-spacing-xs, $ml-spacing-xs);
+    margin-left: var(--ms-spacing-xs, $ms-spacing-xs);
     margin-right: 0;
   }
 
@@ -74,16 +74,18 @@
     flex-direction: row-reverse;
   }
 
-  // Remove button on left side of badge
+  // Remove button on left side of badge (RTL)
   .ms__badge-remove {
-    border-radius: var(--ms-badge-remove-border-radius-rtl, $ml-badge-border-radius) 0 0 var(--ms-badge-remove-border-radius-rtl, $ml-badge-border-radius);
-    border-left: var(--ms-badge-remove-border, $ml-badge-remove-border);
+    border-radius: var(--ms-badge-border-radius, $ms-badge-border-radius) 0 0 var(--ms-badge-border-radius, $ms-badge-border-radius);
+    border-left: var(--ms-badge-remove-border, $ms-badge-remove-border);
     border-right: none;
   }
 
-  // Badge text rounded on right
+  // Badge text rounded on right (RTL)
   .ms__badge-text {
-    border-radius: 0 var(--ms-badge-text-border-radius-rtl, $ml-badge-border-radius) var(--ms-badge-text-border-radius-rtl, $ml-badge-border-radius) 0;
+    border-radius: 0 var(--ms-badge-border-radius, $ms-badge-border-radius) var(--ms-badge-border-radius, $ms-badge-border-radius) 0;
+    border-right: var(--ms-badge-text-border, $ms-badge-text-border);
+    border-left: none;
   }
 
   // ==============================================================================

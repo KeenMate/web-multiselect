@@ -29,23 +29,29 @@
   --ms-rem: 10px;
 
   // ==========================================================================
+  // FONT FAMILY (set at :host so all shadow DOM content inherits)
+  // ==========================================================================
+  // Dropdown/popover are siblings of [data-multiselect], so we set font here
+  font-family: var(--ms-font-family, var(--base-font-family, #{$ms-font-family}));
+
+  // ==========================================================================
   // COLORS & THEME
   // ==========================================================================
 
   // Accent Colors
-  --ms-accent-color: #{$ml-accent-color};
-  --ms-accent-color-hover: #{$ml-accent-color-hover};
-  --ms-accent-color-active: #{$ml-accent-color-active};
+  --ms-accent-color: #{$ms-accent-color};
+  --ms-accent-color-hover: #{$ms-accent-color-hover};
+  --ms-accent-color-active: #{$ms-accent-color-active};
 
   // Text Colors
-  --ms-text-primary: #{$ml-text-primary};
-  --ms-text-secondary: #{$ml-text-secondary};
-  --ms-text-white: #{$ml-text-white};
+  --ms-text-primary: #{$ms-text-primary};
+  --ms-text-secondary: #{$ms-text-secondary};
+  --ms-text-on-accent: #{$ms-text-on-accent};
 
   // Background Colors
-  --ms-primary-bg: #{$ml-primary-bg};
-  --ms-primary-bg-hover: #{$ml-primary-bg-hover};
-  --ms-border-color: #{$ml-border-color};
+  --ms-primary-bg: #{$ms-primary-bg};
+  --ms-primary-bg-hover: #{$ms-primary-bg-hover};
+  --ms-border-color: #{$ms-border-color};
 
   // ==========================================================================
   // SEMANTIC VARIABLES - Component-Specific Theming
@@ -64,6 +70,7 @@
   --ms-input-background: var(--ms-input-bg);
   --ms-input-color: var(--ms-text-primary);
   --ms-input-border-color: var(--ms-border-color);
+  --ms-input-border-color-hover: var(--ms-text-secondary);
   --ms-input-border-color-focus: var(--ms-accent-color);
   --ms-input-placeholder-color: var(--ms-text-secondary);
   --ms-input-background-disabled: var(--ms-input-bg-disabled);
@@ -77,7 +84,7 @@
   // --------------------------------------------------------------------------
   --ms-counter-badge-background: var(--ms-accent-color);
   --ms-counter-badge-background-hover: var(--ms-accent-color-hover);
-  --ms-counter-badge-color: var(--ms-text-white);
+  --ms-counter-badge-color: var(--ms-text-on-accent);
 
   // Floating Hint Semantic Variables
   // --------------------------------------------------------------------------
@@ -147,12 +154,14 @@
   // --------------------------------------------------------------------------
   --ms-badge-text-background: var(--ms-badge-text-bg);
   --ms-badge-text-color: var(--ms-accent-color);
+  --ms-badge-text-background-hover: var(--ms-badge-bg-hover);
+  --ms-badge-text-color-hover: var(--ms-badge-text-color);
 
   // Badge Remove Button Semantic Variables
   // --------------------------------------------------------------------------
   --ms-badge-remove-background: var(--ms-accent-color);
   --ms-badge-remove-background-hover: var(--ms-accent-color-hover);
-  --ms-badge-remove-color: var(--ms-text-white);
+  --ms-badge-remove-color: var(--ms-text-on-accent);
 
   // Badge Counter Variant Semantic Variables
   // --------------------------------------------------------------------------
@@ -196,405 +205,408 @@
   // INPUT COMPONENT
   // ==========================================================================
 
-  --ms-input-padding: #{$ml-input-padding};
-  --ms-input-padding-right: #{$ml-input-padding-right};
-  --ms-input-font-size: #{$ml-input-font-size};
-  --ms-input-border-style: #{$ml-input-border-style};
-  --ms-input-border-radius: #{$ml-input-border-radius};
-  --ms-input-bg: #{$ml-input-bg};
-  --ms-input-text: #{$ml-input-text};
-  --ms-input-focus-border-color: #{$ml-input-focus-border-color};
-  --ms-input-placeholder-color: #{$ml-input-placeholder-color};
-  --ms-input-bg-disabled: #{$ml-input-bg-disabled};
-
-  // ==========================================================================
-  // INPUT SIZE VARIANTS
-  // ==========================================================================
-
-  --ms-input-size-xs-font: #{$ms-input-size-xs-font};
-  --ms-input-size-xs-padding-v: #{$ms-input-size-xs-padding-v};
-  --ms-input-size-xs-padding-h: #{$ms-input-size-xs-padding-h};
-  --ms-input-size-xs-height: #{$ms-input-size-xs-height};
-
-  --ms-input-size-sm-font: #{$ms-input-size-sm-font};
-  --ms-input-size-sm-padding-v: #{$ms-input-size-sm-padding-v};
-  --ms-input-size-sm-padding-h: #{$ms-input-size-sm-padding-h};
-  --ms-input-size-sm-height: #{$ms-input-size-sm-height};
-
-  --ms-input-size-md-font: #{$ms-input-size-md-font};
-  --ms-input-size-md-padding-v: #{$ms-input-size-md-padding-v};
-  --ms-input-size-md-padding-h: #{$ms-input-size-md-padding-h};
-  --ms-input-size-md-height: #{$ms-input-size-md-height};
-
-  --ms-input-size-lg-font: #{$ms-input-size-lg-font};
-  --ms-input-size-lg-padding-v: #{$ms-input-size-lg-padding-v};
-  --ms-input-size-lg-padding-h: #{$ms-input-size-lg-padding-h};
-  --ms-input-size-lg-height: #{$ms-input-size-lg-height};
-
-  --ms-input-size-xl-font: #{$ms-input-size-xl-font};
-  --ms-input-size-xl-padding-v: #{$ms-input-size-xl-padding-v};
-  --ms-input-size-xl-padding-h: #{$ms-input-size-xl-padding-h};
-  --ms-input-size-xl-height: #{$ms-input-size-xl-height};
+  --ms-input-padding: #{$ms-input-padding};
+  --ms-input-padding-right: #{$ms-input-padding-right};
+  --ms-input-height: #{$ms-input-height};
+  --ms-input-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
+  --ms-input-border-style: #{$ms-input-border-style};
+  --ms-input-border-radius: #{$ms-input-border-radius};
+  --ms-input-bg: #{$ms-input-bg};
+  --ms-input-text: #{$ms-input-text};
+  --ms-input-focus-border-color: #{$ms-input-focus-border-color};
+  --ms-input-placeholder-color: #{$ms-input-placeholder-color};
+  --ms-input-bg-disabled: #{$ms-input-bg-disabled};
 
   // ==========================================================================
   // TOGGLE ICON
   // ==========================================================================
 
-  --ms-toggle-right: #{$ml-toggle-right};
-  --ms-toggle-color: #{$ml-toggle-color};
-  --ms-transform-center-y: #{$ml-transform-center-y};
-  --ms-transform-rotate-180: #{$ml-transform-rotate-180};
+  --ms-toggle-right: #{$ms-toggle-right};
+  --ms-toggle-color: #{$ms-toggle-color};
+  --ms-transform-center-y: #{$ms-transform-center-y};
+  --ms-transform-rotate-180: #{$ms-transform-rotate-180};
 
   // ==========================================================================
   // COUNT BADGE (in input)
   // ==========================================================================
 
-  --ms-counter-offset: #{$ml-counter-offset};
-  --ms-counter-padding: #{$ml-counter-padding};
-  --ms-counter-bg: #{$ml-counter-bg};
-  --ms-counter-color: #{$ml-counter-color};
-  --ms-counter-font-size: #{$ml-counter-font-size};
-  --ms-counter-font-weight: #{$ml-counter-font-weight};
-  --ms-counter-border-radius: #{$ml-counter-border-radius};
-  --ms-counter-bg-hover: #{$ml-counter-bg-hover};
-  --ms-transform-scale-hover: #{$ml-transform-scale-hover};
+  --ms-counter-offset: #{$ms-counter-offset};
+  --ms-counter-padding: #{$ms-counter-padding};
+  --ms-counter-bg: #{$ms-counter-bg};
+  --ms-counter-color: #{$ms-counter-color};
+  --ms-counter-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
+  --ms-counter-font-weight: var(--base-font-weight-semibold, 600);
+  --ms-counter-border-radius: #{$ms-counter-border-radius};
+  --ms-counter-bg-hover: #{$ms-counter-bg-hover};
+  --ms-transform-scale-hover: #{$ms-transform-scale-hover};
 
   // ==========================================================================
   // FLOATING HINT
   // ==========================================================================
 
-  --ms-hint-padding: #{$ml-hint-padding};
-  --ms-hint-bg: #{$ml-hint-bg};
-  --ms-hint-border: #{$ml-hint-border};
-  --ms-hint-border-radius: #{$ml-hint-border-radius};
-  --ms-hint-box-shadow: #{$ml-hint-box-shadow};
-  --ms-hint-font-size: #{$ml-hint-font-size};
-  --ms-hint-color: #{$ml-hint-color};
-  --ms-line-height-relaxed: #{$ml-line-height-relaxed};
+  --ms-hint-padding: #{$ms-hint-padding};
+  --ms-hint-bg: #{$ms-hint-bg};
+  --ms-hint-border: #{$ms-hint-border};
+  --ms-hint-border-radius: #{$ms-hint-border-radius};
+  --ms-hint-box-shadow: #{$ms-hint-box-shadow};
+  --ms-hint-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
+  --ms-hint-color: #{$ms-hint-color};
 
   // ==========================================================================
   // DROPDOWN
   // ==========================================================================
 
-  --ms-dropdown-bg: #{$ml-dropdown-bg};
-  --ms-dropdown-border: #{$ml-dropdown-border};
-  --ms-dropdown-border-radius: #{$ml-dropdown-border-radius};
-  --ms-dropdown-box-shadow: #{$ml-dropdown-box-shadow};
-  --ms-options-max-height: #{$ml-options-max-height};
-  --ms-option-color: #{$ml-option-color};
-  --ms-z-index-dropdown: #{$ml-z-index-dropdown};
-  --ms-z-index-sticky: #{$ml-z-index-sticky};
+  --ms-dropdown-bg: #{$ms-dropdown-bg};
+  --ms-dropdown-border: #{$ms-dropdown-border};
+  --ms-dropdown-border-radius: #{$ms-dropdown-border-radius};
+  --ms-dropdown-box-shadow: #{$ms-dropdown-box-shadow};
+  --ms-options-max-height: #{$ms-options-max-height};
+  --ms-option-color: #{$ms-option-color};
+  --ms-z-index-dropdown: #{$ms-z-index-dropdown};
+  --ms-z-index-sticky: #{$ms-z-index-sticky};
 
   // ==========================================================================
   // DROPDOWN ACTIONS
   // ==========================================================================
 
-  --ms-actions-gap: #{$ml-actions-gap};
-  --ms-actions-padding: #{$ml-actions-padding};
-  --ms-actions-border-bottom: #{$ml-actions-border-bottom};
-  --ms-actions-bg: #{$ml-actions-bg};
+  --ms-actions-gap: #{$ms-actions-gap};
+  --ms-actions-padding: #{$ms-actions-padding};
+  --ms-actions-border-bottom: #{$ms-actions-border-bottom};
+  --ms-actions-bg: #{$ms-actions-bg};
 
   // Action Button
-  --ms-action-btn-padding: #{$ml-action-btn-padding};
-  --ms-action-btn-font-size: #{$ml-action-btn-font-size};
-  --ms-action-btn-border: #{$ml-action-btn-border};
-  --ms-action-btn-border-radius: #{$ml-action-btn-border-radius};
-  --ms-action-btn-bg: #{$ml-action-btn-bg};
-  --ms-action-btn-color: #{$ml-action-btn-color};
-  --ms-action-btn-bg-hover: #{$ml-action-btn-bg-hover};
-  --ms-action-btn-border-color-hover: #{$ml-action-btn-border-color-hover};
-  --ms-transform-scale-active: #{$ml-transform-scale-active};
+  --ms-action-btn-padding: #{$ms-action-btn-padding};
+  --ms-action-btn-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
+  --ms-action-btn-border: #{$ms-action-btn-border};
+  --ms-action-btn-border-radius: #{$ms-action-btn-border-radius};
+  --ms-action-btn-bg: #{$ms-action-btn-bg};
+  --ms-action-btn-color: #{$ms-action-btn-color};
+  --ms-action-btn-bg-hover: #{$ms-action-btn-bg-hover};
+  --ms-action-btn-border-color-hover: #{$ms-action-btn-border-color-hover};
+  --ms-transform-scale-active: #{$ms-transform-scale-active};
 
   // ==========================================================================
   // OPTIONS CONTAINER & GROUPS
   // ==========================================================================
 
-  --ms-options-padding: #{$ml-options-padding};
+  --ms-options-padding: #{$ms-options-padding};
 
   // Group
-  --ms-group-border-top: #{$ml-group-border-top};
-  --ms-group-margin-top: #{$ml-group-margin-top};
-  --ms-group-padding-top: #{$ml-group-padding-top};
+  --ms-group-border-top: #{$ms-group-border-top};
+  --ms-group-margin-top: #{$ms-group-margin-top};
+  --ms-group-padding-top: #{$ms-group-padding-top};
 
   // Group Label
-  --ms-group-label-padding: #{$ml-group-label-padding};
-  --ms-group-label-font-size: #{$ml-group-label-font-size};
-  --ms-group-label-font-weight: #{$ml-group-label-font-weight};
-  --ms-group-label-color: #{$ml-group-label-color};
-  --ms-group-label-transform: #{$ml-group-label-transform};
-  --ms-group-label-letter-spacing: #{$ml-group-label-letter-spacing};
+  --ms-group-label-padding: #{$ms-group-label-padding};
+  --ms-group-label-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
+  --ms-group-label-font-weight: var(--base-font-weight-semibold, 600);
+  --ms-group-label-color: #{$ms-group-label-color};
+  --ms-group-label-transform: #{$ms-group-label-transform};
+  --ms-group-label-letter-spacing: #{$ms-group-label-letter-spacing};
 
   // ==========================================================================
   // INDIVIDUAL OPTIONS
   // ==========================================================================
 
-  --ms-option-gap: #{$ml-option-gap};
-  --ms-option-padding: #{$ml-option-padding};
-  --ms-option-padding-h: #{$ml-option-padding-h};
-  --ms-option-bg: #{$ml-option-bg};
-  --ms-option-bg-hover: #{$ml-option-bg-hover};
-  --ms-option-bg-focused: #{$ml-option-bg-focused};
-  --ms-option-outline-focused: #{$ml-option-outline-focused};
-  --ms-option-focus-outline-offset: #{$ml-option-focus-outline-offset};
-  --ms-option-bg-matched: #{$ml-option-bg-matched};
-  --ms-option-border-matched: #{$ml-option-border-matched};
-  --ms-option-bg-selected: #{$ml-option-bg-selected};
-  --ms-disabled-opacity: #{$ml-disabled-opacity};
+  --ms-option-gap: #{$ms-option-gap};
+  --ms-option-padding: #{$ms-option-padding};
+  --ms-option-padding-h: #{$ms-option-padding-h};
+  --ms-option-bg: #{$ms-option-bg};
+  --ms-option-bg-hover: #{$ms-option-bg-hover};
+  --ms-option-bg-focused: #{$ms-option-bg-focused};
+  --ms-option-outline-focused: #{$ms-option-outline-focused};
+  --ms-option-focus-outline-offset: #{$ms-option-focus-outline-offset};
+  --ms-option-bg-matched: #{$ms-option-bg-matched};
+  --ms-option-border-matched: #{$ms-option-border-matched};
+  --ms-option-bg-selected: #{$ms-option-bg-selected};
+
+  // Option State Combinations (background only - colors use fallback chains)
+  --ms-option-bg-focused-hover: #{$ms-option-bg-focused-hover};
+  --ms-option-bg-matched-hover: #{$ms-option-bg-matched-hover};
+  --ms-option-bg-selected-focused: #{$ms-option-bg-selected-focused};
+  --ms-option-bg-selected-matched: #{$ms-option-bg-selected-matched};
+  --ms-option-bg-disabled-selected: #{$ms-option-bg-disabled-selected};
+
+  --ms-disabled-opacity: #{$ms-disabled-opacity};
 
   // ==========================================================================
   // OPTION CONTENT
   // ==========================================================================
 
-  --ms-option-content-gap: #{$ml-option-content-gap};
+  --ms-option-content-gap: #{$ms-option-content-gap};
 
   // Option Icon
-  --ms-option-icon-size: #{$ml-option-icon-size};
-  --ms-option-icon-font-size: #{$ml-option-icon-font-size};
+  --ms-option-icon-size: #{$ms-option-icon-size};
+  --ms-option-icon-font-size: calc(var(--base-font-size-base, 1.6) * var(--ms-rem));
 
   // Option Title
-  --ms-option-title-font-size: #{$ml-option-title-font-size};
-  --ms-option-title-color: #{$ml-option-title-color};
-  --ms-option-mark-bg: #{$ml-option-mark-bg};
-  --ms-option-mark-color: #{$ml-option-mark-color};
-  --ms-option-mark-font-weight: #{$ml-option-mark-font-weight};
+  --ms-option-title-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
+  --ms-option-title-color: #{$ms-option-title-color};
+  --ms-option-mark-bg: #{$ms-option-mark-bg};
+  --ms-option-mark-color: #{$ms-option-mark-color};
+  --ms-option-mark-font-weight: var(--base-font-weight-semibold, 600);
 
   // Option Subtitle
-  --ms-option-subtitle-margin-top: #{$ml-option-subtitle-margin-top};
-  --ms-option-subtitle-font-size: #{$ml-option-subtitle-font-size};
-  --ms-option-subtitle-color: #{$ml-option-subtitle-color};
-  --ms-option-subtitle-line-height: #{$ml-option-subtitle-line-height};
+  --ms-option-subtitle-margin-top: #{$ms-option-subtitle-margin-top};
+  --ms-option-subtitle-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
+  --ms-option-subtitle-color: #{$ms-option-subtitle-color};
+  --ms-option-subtitle-line-height: var(--base-line-height-tight, 1.25);
 
   // Checkbox
-  --ms-checkbox-margin-top: #{$ml-checkbox-margin-top};
-  --ms-checkbox-margin-right: #{$ml-checkbox-margin-right};
-  --ms-checkbox-margin-bottom: #{$ml-checkbox-margin-bottom};
-  --ms-checkbox-margin-left: #{$ml-checkbox-margin-left};
-  --ms-checkbox-size: #{$ml-checkbox-size};
-  --ms-checkbox-scale: #{$ml-checkbox-scale};
-  --ms-checkbox-align: flex-start; // flex-start (top), center, flex-end (bottom)
+  --ms-checkbox-margin-top: #{$ms-checkbox-margin-top};
+  --ms-checkbox-margin-right: #{$ms-checkbox-margin-right};
+  --ms-checkbox-margin-bottom: #{$ms-checkbox-margin-bottom};
+  --ms-checkbox-margin-left: #{$ms-checkbox-margin-left};
+  --ms-checkbox-size: #{$ms-checkbox-size};
+  --ms-checkbox-scale: #{$ms-checkbox-scale};
+  --ms-checkbox-align: center; // flex-start (top), center (default), flex-end (bottom)
 
   // Checkbox Styling (custom appearance)
-  --ms-checkbox-bg: #{$ml-checkbox-bg};
-  --ms-checkbox-border: #{$ml-checkbox-border};
-  --ms-checkbox-border-radius: #{$ml-checkbox-border-radius};
-  --ms-checkbox-checked-bg: #{$ml-checkbox-checked-bg};
-  --ms-checkbox-checked-border: #{$ml-checkbox-checked-border};
-  --ms-checkbox-checkmark-color: #{$ml-checkbox-checkmark-color};
-  --ms-checkbox-hover-border-color: #{$ml-checkbox-hover-border-color};
-  --ms-checkbox-disabled-bg: #{$ml-checkbox-disabled-bg};
-  --ms-checkbox-disabled-border: #{$ml-checkbox-disabled-border};
+  --ms-checkbox-bg: #{$ms-checkbox-bg};
+  --ms-checkbox-border: #{$ms-checkbox-border};
+  --ms-checkbox-border-radius: #{$ms-checkbox-border-radius};
+  --ms-checkbox-checked-bg: #{$ms-checkbox-checked-bg};
+  --ms-checkbox-checked-border: #{$ms-checkbox-checked-border};
+  --ms-checkbox-checkmark-color: #{$ms-checkbox-checkmark-color};
+  --ms-checkbox-hover-border-color: #{$ms-checkbox-hover-border-color};
+  --ms-checkbox-disabled-bg: #{$ms-checkbox-disabled-bg};
+  --ms-checkbox-disabled-border: #{$ms-checkbox-disabled-border};
+
+  // Checkbox State Combinations
+  --ms-checkbox-checked-bg-hover: #{$ms-checkbox-checked-bg-hover};
+  --ms-checkbox-checked-border-color-hover: #{$ms-checkbox-checked-border-color-hover};
 
   // ==========================================================================
   // EMPTY & LOADING STATES
   // ==========================================================================
 
   // Empty State
-  --ms-empty-padding: #{$ml-empty-padding};
-  --ms-empty-font-size: #{$ml-empty-font-size};
-  --ms-empty-color: #{$ml-empty-color};
+  --ms-empty-padding: #{$ms-empty-padding};
+  --ms-empty-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
+  --ms-empty-color: #{$ms-empty-color};
 
   // Loader
-  --ms-loader-padding: #{$ml-loader-padding};
-  --ms-loader-gap: #{$ml-loader-gap};
+  --ms-loader-padding: #{$ms-loader-padding};
+  --ms-loader-gap: #{$ms-loader-gap};
 
   // Loading Text
-  --ms-loading-text-font-size: #{$ml-loading-text-font-size};
-  --ms-loading-text-color: #{$ml-loading-text-color};
+  --ms-loading-text-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
+  --ms-loading-text-color: #{$ms-loading-text-color};
 
   // ==========================================================================
   // BADGES DISPLAY
   // ==========================================================================
 
-  --ms-badges-gap: #{$ml-badges-gap};
-  --ms-badges-margin-bottom: #{$ml-badges-margin-bottom};
-  --ms-badges-margin-top: #{$ml-badges-margin-top};
-  --ms-badges-margin-left: #{$ml-badges-margin-left};
-  --ms-badges-margin-right: #{$ml-badges-margin-right};
+  --ms-badges-gap: #{$ms-badges-gap};
+  --ms-badges-margin-bottom: #{$ms-badges-margin-bottom};
+  --ms-badges-margin-top: #{$ms-badges-margin-top};
+  --ms-badges-margin-left: #{$ms-badges-margin-left};
+  --ms-badges-margin-right: #{$ms-badges-margin-right};
 
   // Individual Badge
-  --ms-badge-gap: #{$ml-badge-gap};
-  --ms-badge-height: #{$ml-badge-height};
-  --ms-badge-font-size: #{$ml-badge-font-size};
-  --ms-badge-font-weight: #{$ml-badge-font-weight};
-  --ms-badge-border-radius: #{$ml-badge-border-radius};
-  --ms-badge-border: #{$ml-badge-border};
-  --ms-badge-bg: #{$ml-badge-bg};
-  --ms-badge-bg-hover: #{$ml-badge-bg-hover};
-  --ms-badge-bg-active: #{$ml-badge-bg-active};
-  --ms-order-first: #{$ml-order-first};
+  --ms-badge-gap: #{$ms-badge-gap};
+  --ms-badge-height: #{$ms-badge-height};
+  --ms-badge-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
+  --ms-badge-font-weight: var(--base-font-weight-semibold, 600);
+  --ms-badge-border-radius: #{$ms-badge-border-radius};
+  --ms-badge-bg: #{$ms-badge-bg};
+  --ms-badge-bg-hover: #{$ms-badge-bg-hover};
+  --ms-badge-bg-active: #{$ms-badge-bg-active};
+  --ms-order-first: #{$ms-order-first};
 
   // ==========================================================================
   // BADGE TEXT & REMOVE BUTTON
   // ==========================================================================
 
   // Badge Text
-  --ms-badge-text-padding: #{$ml-badge-text-padding};
-  --ms-badge-text-bg: #{$ml-badge-text-bg};
-  --ms-badge-text-color: #{$ml-badge-text-color};
+  --ms-badge-text-padding: #{$ms-badge-text-padding};
+  --ms-badge-text-bg: #{$ms-badge-text-bg};
+  --ms-badge-text-color: #{$ms-badge-text-color};
+  --ms-badge-text-border: #{$ms-badge-text-border};
 
   // Badge Remove Button
-  --ms-badge-remove-width: #{$ml-badge-remove-width};
-  --ms-badge-remove-bg: #{$ml-badge-remove-bg};
-  --ms-badge-remove-color: #{$ml-badge-remove-color};
-  --ms-badge-remove-border: #{$ml-badge-remove-border};
-  --ms-badge-remove-font-size: #{$ml-badge-remove-font-size};
-  --ms-badge-remove-bg-hover: #{$ml-badge-remove-bg-hover};
-  --ms-badge-remove-box-shadow-focus: #{$ml-badge-remove-box-shadow-focus};
-  --ms-icon-remove: "#{$ml-icon-remove}";
+  --ms-badge-remove-width: #{$ms-badge-remove-width};
+  --ms-badge-remove-bg: #{$ms-badge-remove-bg};
+  --ms-badge-remove-color: #{$ms-badge-remove-color};
+  --ms-badge-remove-border: #{$ms-badge-remove-border};
+  --ms-badge-remove-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
+  --ms-badge-remove-bg-hover: #{$ms-badge-remove-bg-hover};
+  --ms-badge-remove-box-shadow-focus: #{$ms-badge-remove-box-shadow-focus};
+  --ms-icon-remove: "#{$ms-icon-remove}";
 
   // Badge Indicator (for "+ X more", "3 selected", compact mode)
-  --ms-badge-counter-bg: #{$ml-badge-counter-bg};
-  --ms-badge-counter-border: #{$ml-badge-counter-border};
-  --ms-badge-counter-border-radius: #{$ml-badge-counter-border-radius};
-  --ms-badge-counter-text-color: #{$ml-badge-counter-text-color};
-  --ms-badge-counter-text-bg: #{$ml-badge-counter-text-bg};
-  --ms-badge-counter-remove-bg: #{$ml-badge-counter-remove-bg};
-  --ms-badge-counter-remove-color: #{$ml-badge-counter-remove-color};
-  --ms-badge-counter-remove-bg-hover: #{$ml-badge-counter-remove-bg-hover};
+  --ms-badge-counter-bg: #{$ms-badge-counter-bg};
+  --ms-badge-counter-border: #{$ms-badge-counter-border};
+  --ms-badge-counter-border-radius: #{$ms-badge-counter-border-radius};
+  --ms-badge-counter-text-color: #{$ms-badge-counter-text-color};
+  --ms-badge-counter-text-bg: #{$ms-badge-counter-text-bg};
+  --ms-badge-counter-remove-bg: #{$ms-badge-counter-remove-bg};
+  --ms-badge-counter-remove-color: #{$ms-badge-counter-remove-color};
+  --ms-badge-counter-remove-bg-hover: #{$ms-badge-counter-remove-bg-hover};
 
   // ==========================================================================
   // "+X MORE" BADGE
   // ==========================================================================
 
-  --ms-more-badge-bg: #{$ml-more-badge-bg};
-  --ms-more-badge-hover-bg: #{$ml-more-badge-hover-bg};
-  --ms-more-badge-active-bg: #{$ml-more-badge-active-bg};
+  --ms-more-badge-bg: #{$ms-more-badge-bg};
+  --ms-more-badge-hover-bg: #{$ms-more-badge-hover-bg};
+  --ms-more-badge-active-bg: #{$ms-more-badge-active-bg};
 
   // ==========================================================================
   // COUNT DISPLAY MODE
   // ==========================================================================
 
-  --ms-count-display-margin-bottom: #{$ml-count-display-margin-bottom};
-  --ms-count-display-margin-top: #{$ml-count-display-margin-top};
-  --ms-count-display-margin-left: #{$ml-count-display-margin-left};
-  --ms-count-display-margin-right: #{$ml-count-display-margin-right};
+  --ms-count-display-margin-bottom: #{$ms-count-display-margin-bottom};
+  --ms-count-display-margin-top: #{$ms-count-display-margin-top};
+  --ms-count-display-margin-left: #{$ms-count-display-margin-left};
+  --ms-count-display-margin-right: #{$ms-count-display-margin-right};
 
   // Count Badge Wrapper
-  --ms-counter-wrapper-bg: #{$ml-counter-wrapper-bg};
-  --ms-counter-wrapper-border: #{$ml-counter-wrapper-border};
-  --ms-counter-wrapper-border-radius: #{$ml-counter-wrapper-border-radius};
-  --ms-counter-wrapper-padding: #{$ml-counter-wrapper-padding};
-  --ms-counter-wrapper-gap: #{$ml-counter-wrapper-gap};
-  --ms-counter-wrapper-bg-hover: #{$ml-counter-wrapper-bg-hover};
-  --ms-counter-wrapper-border-color-hover: #{$ml-counter-wrapper-border-color-hover};
+  --ms-counter-wrapper-bg: #{$ms-counter-wrapper-bg};
+  --ms-counter-wrapper-border: #{$ms-counter-wrapper-border};
+  --ms-counter-wrapper-border-radius: #{$ms-counter-wrapper-border-radius};
+  --ms-counter-wrapper-padding: #{$ms-counter-wrapper-padding};
+  --ms-counter-wrapper-gap: #{$ms-counter-wrapper-gap};
+  --ms-counter-wrapper-bg-hover: #{$ms-counter-wrapper-bg-hover};
+  --ms-counter-wrapper-border-color-hover: #{$ms-counter-wrapper-border-color-hover};
 
   // ==========================================================================
   // COUNT TEXT & CLEAR BUTTON
   // ==========================================================================
 
   // Count Text
-  --ms-count-text-bg: #{$ml-count-text-bg};
-  --ms-count-text-border: #{$ml-count-text-border};
-  --ms-count-text-font-size: #{$ml-count-text-font-size};
-  --ms-count-text-color: #{$ml-count-text-color};
+  --ms-count-text-bg: #{$ms-count-text-bg};
+  --ms-count-text-border: #{$ms-count-text-border};
+  --ms-count-text-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
+  --ms-count-text-color: #{$ms-count-text-color};
 
   // Count Clear Button
-  --ms-count-clear-size: #{$ml-count-clear-size};
-  --ms-count-clear-bg: #{$ml-count-clear-bg};
-  --ms-count-clear-color: #{$ml-count-clear-color};
-  --ms-count-clear-font-size: #{$ml-count-clear-font-size};
-  --ms-count-clear-border-radius: #{$ml-count-clear-border-radius};
-  --ms-count-clear-bg-hover: #{$ml-count-clear-bg-hover};
-  --ms-count-clear-color-hover: #{$ml-count-clear-color-hover};
-  --ms-icon-clear: "#{$ml-icon-clear}";
+  --ms-count-clear-size: #{$ms-count-clear-size};
+  --ms-count-clear-bg: #{$ms-count-clear-bg};
+  --ms-count-clear-color: #{$ms-count-clear-color};
+  --ms-count-clear-font-size: calc(var(--base-font-size-lg, 1.8) * var(--ms-rem));
+  --ms-count-clear-border-radius: #{$ms-count-clear-border-radius};
+  --ms-count-clear-bg-hover: #{$ms-count-clear-bg-hover};
+  --ms-count-clear-color-hover: #{$ms-count-clear-color-hover};
+  --ms-icon-clear: "#{$ms-icon-clear}";
 
   // ==========================================================================
   // TOOLTIPS
   // ==========================================================================
 
-  --ms-tooltip-bg: #{$ml-tooltip-bg};
-  --ms-tooltip-color: #{$ml-tooltip-color};
-  --ms-tooltip-padding: #{$ml-tooltip-padding};
-  --ms-tooltip-border-radius: #{$ml-tooltip-border-radius};
-  --ms-tooltip-font-size: #{$ml-tooltip-font-size};
-  --ms-tooltip-max-width: #{$ml-tooltip-max-width};
-  --ms-tooltip-shadow: #{$ml-tooltip-shadow};
-  --ms-tooltip-z-index: #{$ml-tooltip-z-index};
+  --ms-tooltip-bg: #{$ms-tooltip-bg};
+  --ms-tooltip-color: #{$ms-tooltip-color};
+  --ms-tooltip-padding: #{$ms-tooltip-padding};
+  --ms-tooltip-border-radius: #{$ms-tooltip-border-radius};
+  --ms-tooltip-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
+  --ms-tooltip-max-width: #{$ms-tooltip-max-width};
+  --ms-tooltip-shadow: #{$ms-tooltip-shadow};
+  --ms-tooltip-z-index: #{$ms-tooltip-z-index};
 
   // ==========================================================================
   // SELECTED POPOVER
   // ==========================================================================
 
-  --ms-z-index-popover: #{$ml-z-index-popover};
-  --ms-selected-popover-width: #{$ml-selected-popover-width};
-  --ms-selected-popover-max-height: #{$ml-selected-popover-max-height};
-  --ms-selected-popover-bg: #{$ml-selected-popover-bg};
-  --ms-selected-popover-border: #{$ml-selected-popover-border};
-  --ms-selected-popover-border-radius: #{$ml-selected-popover-border-radius};
-  --ms-selected-popover-box-shadow: #{$ml-selected-popover-box-shadow};
+  --ms-z-index-popover: #{$ms-z-index-popover};
+  --ms-selected-popover-width: #{$ms-selected-popover-width};
+  --ms-selected-popover-max-height: #{$ms-selected-popover-max-height};
+  --ms-selected-popover-bg: #{$ms-selected-popover-bg};
+  --ms-selected-popover-border: #{$ms-selected-popover-border};
+  --ms-selected-popover-border-radius: #{$ms-selected-popover-border-radius};
+  --ms-selected-popover-box-shadow: #{$ms-selected-popover-box-shadow};
 
   // Popover Header
-  --ms-selected-popover-header-padding: #{$ml-selected-popover-header-padding};
-  --ms-selected-popover-header-bg: #{$ml-selected-popover-header-bg};
-  --ms-selected-popover-header-border-bottom: #{$ml-selected-popover-header-border-bottom};
-  --ms-selected-popover-header-font-size: #{$ml-selected-popover-header-font-size};
-  --ms-selected-popover-header-font-weight: #{$ml-selected-popover-header-font-weight};
-  --ms-selected-popover-header-color: #{$ml-selected-popover-header-color};
+  --ms-selected-popover-header-padding: #{$ms-selected-popover-header-padding};
+  --ms-selected-popover-header-bg: #{$ms-selected-popover-header-bg};
+  --ms-selected-popover-header-border-bottom: #{$ms-selected-popover-header-border-bottom};
+  --ms-selected-popover-header-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
+  --ms-selected-popover-header-font-weight: var(--base-font-weight-semibold, 600);
+  --ms-selected-popover-header-color: #{$ms-selected-popover-header-color};
 
   // ==========================================================================
   // POPOVER CLOSE BUTTON
   // ==========================================================================
 
-  --ms-popover-close-size: #{$ml-popover-close-size};
-  --ms-selected-popover-close-bg: #{$ml-selected-popover-close-bg};
-  --ms-selected-popover-close-color: #{$ml-selected-popover-close-color};
-  --ms-selected-popover-close-font-size: #{$ml-selected-popover-close-font-size};
-  --ms-selected-popover-close-border-radius: #{$ml-selected-popover-close-border-radius};
-  --ms-selected-popover-close-bg-hover: #{$ml-selected-popover-close-bg-hover};
-  --ms-selected-popover-close-color-hover: #{$ml-selected-popover-close-color-hover};
+  --ms-popover-close-size: #{$ms-popover-close-size};
+  --ms-selected-popover-close-bg: #{$ms-selected-popover-close-bg};
+  --ms-selected-popover-close-color: #{$ms-selected-popover-close-color};
+  --ms-selected-popover-close-font-size: calc(var(--base-font-size-xl, 2) * var(--ms-rem));
+  --ms-selected-popover-close-border-radius: #{$ms-selected-popover-close-border-radius};
+  --ms-selected-popover-close-bg-hover: #{$ms-selected-popover-close-bg-hover};
+  --ms-selected-popover-close-color-hover: #{$ms-selected-popover-close-color-hover};
 
   // ==========================================================================
   // POPOVER BODY
   // ==========================================================================
 
-  --ms-selected-popover-body-gap: #{$ml-selected-popover-body-gap};
-  --ms-selected-popover-body-padding: #{$ml-selected-popover-body-padding};
-  --ms-selected-popover-body-max-height: #{$ml-selected-popover-body-max-height};
+  --ms-selected-popover-body-gap: #{$ms-selected-popover-body-gap};
+  --ms-selected-popover-body-padding: #{$ms-selected-popover-body-padding};
+  --ms-selected-popover-body-max-height: #{$ms-selected-popover-body-max-height};
 
   // ==========================================================================
   // TYPOGRAPHY SCALE
   // ==========================================================================
+  // Typography variables follow this priority chain:
+  //   1. --ms-* (component-specific override)
+  //   2. --base-* (shared theme-designer value)
+  //   3. Unitless default multiplied by --ms-rem
+  //
+  // Note: --ms-font-family is set directly on :host above (not as a variable)
+  // because it needs to be applied, not just defined.
+  //
+  // Font sizes use unitless multipliers from theme-designer:
+  //   Theme-designer outputs: --base-font-size-sm: 1.4 (unitless)
+  //   Component computes: calc(1.4 * var(--ms-rem)) = 14px
 
-  --ms-font-size-2xs: #{$ml-font-size-2xs};
-  --ms-font-size-xs: #{$ml-font-size-xs};
-  --ms-font-size-sm: #{$ml-font-size-sm};
-  --ms-font-size-base: #{$ml-font-size-base};
-  --ms-font-size-lg: #{$ml-font-size-lg};
-  --ms-font-weight-medium: #{$ml-font-weight-medium};
-  --ms-font-weight-semibold: #{$ml-font-weight-semibold};
-  --ms-line-height-none: #{$ml-line-height-none};
+  // Font Sizes (unitless multipliers × --ms-rem)
+  --ms-font-size-2xs: calc(var(--base-font-size-2xs, 1) * var(--ms-rem));     // 10px
+  --ms-font-size-xs: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));     // 12px
+  --ms-font-size-sm: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));     // 14px
+  --ms-font-size-base: calc(var(--base-font-size-base, 1.6) * var(--ms-rem)); // 16px
+  --ms-font-size-lg: calc(var(--base-font-size-lg, 1.8) * var(--ms-rem));     // 18px
+
+  // Font Weights
+  --ms-font-weight-normal: var(--base-font-weight-normal, #{$ms-font-weight-normal});
+  --ms-font-weight-medium: var(--base-font-weight-medium, #{$ms-font-weight-medium});
+  --ms-font-weight-semibold: var(--base-font-weight-semibold, #{$ms-font-weight-semibold});
+
+  // Line Heights
+  --ms-line-height-none: #{$ms-line-height-none};
+  --ms-line-height-tight: var(--base-line-height-tight, #{$ms-line-height-tight});
+  --ms-line-height-normal: var(--base-line-height-normal, #{$ms-line-height-normal});
+  --ms-line-height-relaxed: var(--base-line-height-relaxed, #{$ms-line-height-relaxed});
 
   // ==========================================================================
   // SPACING & SIZING
   // ==========================================================================
 
-  --ms-spacing-xs: #{$ml-spacing-xs};
-  --ms-spacing-sm: #{$ml-spacing-sm};
-  --ms-spacing-md: #{$ml-spacing-md};
-  --ms-spacing-lg: #{$ml-spacing-lg};
+  --ms-spacing-xs: #{$ms-spacing-xs};
+  --ms-spacing-sm: #{$ms-spacing-sm};
+  --ms-spacing-md: #{$ms-spacing-md};
+  --ms-spacing-lg: #{$ms-spacing-lg};
 
   // ==========================================================================
   // TRANSITIONS & EFFECTS
   // ==========================================================================
 
-  --ms-transition-fast: #{$ml-transition-fast};
-  --ms-transition-normal: #{$ml-transition-normal};
-  --ms-easing-snappy: #{$ml-easing-snappy};
+  --ms-transition-fast: #{$ms-transition-fast};
+  --ms-transition-normal: #{$ms-transition-normal};
+  --ms-easing-snappy: #{$ms-easing-snappy};
 
   // ==========================================================================
   // OPACITY VALUES
   // ==========================================================================
 
-  --ms-placeholder-opacity: #{$ml-placeholder-opacity};
-  --ms-disabled-input-opacity: #{$ml-disabled-input-opacity};
+  --ms-placeholder-opacity: #{$ms-placeholder-opacity};
+  --ms-disabled-input-opacity: #{$ms-disabled-input-opacity};
 
   // ==========================================================================
   // SCROLLBAR
   // ==========================================================================
 
-  --ms-scrollbar-width: #{$ml-scrollbar-width};
-  --ms-scrollbar-track-bg: #{$ml-scrollbar-track-bg};
-  --ms-scrollbar-thumb-bg: #{$ml-scrollbar-thumb-bg};
-  --ms-scrollbar-thumb-bg-hover: #{$ml-scrollbar-thumb-bg-hover};
-  --ms-scrollbar-thumb-border-radius: #{$ml-scrollbar-thumb-border-radius};
+  --ms-scrollbar-width: #{$ms-scrollbar-width};
+  --ms-scrollbar-track-bg: #{$ms-scrollbar-track-bg};
+  --ms-scrollbar-thumb-bg: #{$ms-scrollbar-thumb-bg};
+  --ms-scrollbar-thumb-bg-hover: #{$ms-scrollbar-thumb-bg-hover};
+  --ms-scrollbar-thumb-border-radius: #{$ms-scrollbar-thumb-border-radius};
 }

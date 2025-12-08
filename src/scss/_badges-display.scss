@@ -13,7 +13,7 @@
 .ms__badges {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--ms-badges-gap, $ml-badges-gap);
+  gap: var(--ms-badges-gap, $ms-badges-gap);
   padding: 0;
 
   &:empty {
@@ -22,22 +22,22 @@
 
   // Position variants
   &--bottom {
-    margin-top: var(--ms-badges-margin-bottom, $ml-badges-margin-bottom);
+    margin-top: var(--ms-badges-margin-bottom, $ms-badges-margin-bottom);
   }
 
   &--top {
-    margin-bottom: var(--ms-badges-margin-top, $ml-badges-margin-top);
-    order: var(--ms-order-first, $ml-order-first); // Place before multiselect in flex container
+    margin-bottom: var(--ms-badges-margin-top, $ms-badges-margin-top);
+    order: var(--ms-order-first, $ms-order-first); // Place before multiselect in flex container
   }
 
   &--left {
-    order: var(--ms-order-first, $ml-order-first); // Place before multiselect
-    margin-right: var(--ms-badges-margin-left, $ml-badges-margin-left);
+    order: var(--ms-order-first, $ms-order-first); // Place before multiselect
+    margin-right: var(--ms-badges-margin-left, $ms-badges-margin-left);
     justify-content: flex-end; // Badges at right edge of container, close to input
   }
 
   &--right {
-    margin-left: var(--ms-badges-margin-right, $ml-badges-margin-right);
+    margin-left: var(--ms-badges-margin-right, $ms-badges-margin-right);
     justify-content: flex-start; // Badges at left edge of container, close to input
   }
 }
@@ -57,22 +57,22 @@
 
   // Position variants
   &--bottom {
-    margin-top: var(--ms-count-display-margin-bottom, $ml-count-display-margin-bottom);
+    margin-top: var(--ms-count-display-margin-bottom, $ms-count-display-margin-bottom);
   }
 
   &--top {
-    margin-bottom: var(--ms-count-display-margin-top, $ml-count-display-margin-top);
-    order: var(--ms-order-first, $ml-order-first); // Place before multiselect in flex container
+    margin-bottom: var(--ms-count-display-margin-top, $ms-count-display-margin-top);
+    order: var(--ms-order-first, $ms-order-first); // Place before multiselect in flex container
   }
 
   &--left {
-    order: var(--ms-order-first, $ml-order-first); // Place before multiselect
-    margin-right: var(--ms-count-display-margin-left, $ml-count-display-margin-left);
+    order: var(--ms-order-first, $ms-order-first); // Place before multiselect
+    margin-right: var(--ms-count-display-margin-left, $ms-count-display-margin-left);
     justify-content: flex-start;
   }
 
   &--right {
-    margin-left: var(--ms-count-display-margin-right, $ml-count-display-margin-right);
+    margin-left: var(--ms-count-display-margin-right, $ms-count-display-margin-right);
     justify-content: flex-end;
   }
 }
@@ -81,29 +81,29 @@
 .ms__counter-wrapper {
   display: inline-flex;
   align-items: center;
-  gap: var(--ms-counter-wrapper-gap, $ml-counter-wrapper-gap);
-  background: var(--ms-counter-wrapper-background, $ml-counter-wrapper-bg);
-  border: var(--ms-counter-wrapper-border, $ml-counter-wrapper-border);
-  border-radius: var(--ms-counter-wrapper-border-radius, $ml-counter-wrapper-border-radius);
-  padding: var(--ms-counter-wrapper-padding, $ml-counter-wrapper-padding);
-  transition: all var(--ms-transition-fast, $ml-transition-fast) var(--ms-easing-snappy, $ml-easing-snappy);
+  gap: var(--ms-counter-wrapper-gap, $ms-counter-wrapper-gap);
+  background: var(--ms-counter-wrapper-background, $ms-counter-wrapper-bg);
+  border: var(--ms-counter-wrapper-border, $ms-counter-wrapper-border);
+  border-radius: var(--ms-counter-wrapper-border-radius, $ms-counter-wrapper-border-radius);
+  padding: var(--ms-counter-wrapper-padding, $ms-counter-wrapper-padding);
+  transition: all var(--ms-transition-fast, $ms-transition-fast) var(--ms-easing-snappy, $ms-easing-snappy);
 
   &:hover {
-    background: var(--ms-counter-wrapper-background-hover, $ml-counter-wrapper-bg-hover);
-    border-color: var(--ms-counter-wrapper-border-color-hover, $ml-counter-wrapper-border-color-hover);
+    background: var(--ms-counter-wrapper-background-hover, $ms-counter-wrapper-bg-hover);
+    border-color: var(--ms-counter-wrapper-border-color-hover, $ms-counter-wrapper-border-color-hover);
   }
 }
 
 .ms__count-text {
   display: inline-flex;
   align-items: center;
-  background: var(--ms-count-text-bg, $ml-count-text-bg);
-  border: var(--ms-count-text-border, $ml-count-text-border);
+  background: var(--ms-count-text-bg, $ms-count-text-bg);
+  border: var(--ms-count-text-border, $ms-count-text-border);
   padding: 0;
-  font-size: var(--ms-count-text-font-size, $ml-count-text-font-size);
-  color: var(--ms-count-text-color, $ml-count-text-color);
+  font-size: var(--ms-count-text-font-size, $ms-count-text-font-size);
+  color: var(--ms-count-text-color, $ms-count-text-color);
   cursor: pointer;
-  transition: color var(--ms-transition-fast, $ml-transition-fast) var(--ms-easing-snappy, $ml-easing-snappy);
+  transition: color var(--ms-transition-fast, $ms-transition-fast) var(--ms-easing-snappy, $ms-easing-snappy);
 }
 
 .ms__count-clear {
@@ -111,25 +111,25 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--ms-count-clear-size, $ml-count-clear-size);
-  height: var(--ms-count-clear-size, $ml-count-clear-size);
+  width: var(--ms-count-clear-size, $ms-count-clear-size);
+  height: var(--ms-count-clear-size, $ms-count-clear-size);
   padding: 0;
   border: none;
-  background: var(--ms-count-clear-background, $ml-count-clear-bg);
-  color: var(--ms-count-clear-color, $ml-count-clear-color);
-  font-size: var(--ms-count-clear-font-size, $ml-count-clear-font-size);
-  line-height: var(--ms-line-height-none, $ml-line-height-none);
+  background: var(--ms-count-clear-background, $ms-count-clear-bg);
+  color: var(--ms-count-clear-color, $ms-count-clear-color);
+  font-size: var(--ms-count-clear-font-size, $ms-count-clear-font-size);
+  line-height: var(--ms-line-height-none, $ms-line-height-none);
   cursor: pointer;
-  border-radius: var(--ms-count-clear-border-radius, $ml-count-clear-border-radius);
-  transition: all var(--ms-transition-fast, $ml-transition-fast) var(--ms-easing-snappy, $ml-easing-snappy);
+  border-radius: var(--ms-count-clear-border-radius, $ms-count-clear-border-radius);
+  transition: all var(--ms-transition-fast, $ms-transition-fast) var(--ms-easing-snappy, $ms-easing-snappy);
 
   &:hover {
-    background: var(--ms-count-clear-background-hover, $ml-count-clear-bg-hover);
-    color: var(--ms-count-clear-color-hover, $ml-count-clear-color-hover);
+    background: var(--ms-count-clear-background-hover, $ms-count-clear-bg-hover);
+    color: var(--ms-count-clear-color-hover, $ms-count-clear-color-hover);
   }
 
   &::before {
-    content: var(--ms-icon-clear, $ml-icon-clear);
+    content: var(--ms-icon-clear, $ms-icon-clear);
   }
 }
 
@@ -141,12 +141,11 @@
 .ms__badge {
   display: inline-flex;
   align-items: center;
-  height: var(--ms-badge-height, $ml-badge-height); // Match composite badge height
-  font-size: var(--ms-badge-font-size, $ml-badge-font-size);
-  font-weight: var(--ms-badge-font-weight, $ml-badge-font-weight);
-  line-height: var(--ms-line-height-none, $ml-line-height-none);
-  border-radius: var(--ms-badge-border-radius, $ml-badge-border-radius);
-  border: var(--ms-badge-border, $ml-badge-border);
+  height: var(--ms-badge-height, $ms-badge-height); // Match composite badge height
+  font-size: var(--ms-badge-font-size, $ms-badge-font-size);
+  font-weight: var(--ms-badge-font-weight, $ms-badge-font-weight);
+  line-height: var(--ms-line-height-none, $ms-line-height-none);
+  border-radius: var(--ms-badge-border-radius, $ms-badge-border-radius);
   overflow: hidden;
   max-width: 100%;
 }
@@ -156,13 +155,25 @@
   display: flex;
   align-items: center;
   height: 100%;
-  padding: var(--ms-badge-text-padding, $ml-badge-text-padding);
-  background: var(--ms-badge-text-background, $ml-badge-text-bg);
-  color: var(--ms-badge-text-color, $ml-badge-text-color);
+  padding: var(--ms-badge-text-padding, $ms-badge-text-padding);
+  background: var(--ms-badge-text-background, $ms-badge-text-bg);
+  color: var(--ms-badge-text-color, $ms-badge-text-color);
+  border: var(--ms-badge-text-border, $ms-badge-text-border);
+  border-right: none; // No double border between text and button
+  border-radius: var(--ms-badge-border-radius, $ms-badge-border-radius) 0 0 var(--ms-badge-border-radius, $ms-badge-border-radius);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  transition: background-color var(--ms-transition-normal, $ml-transition-normal) ease;
+  transition: background-color var(--ms-transition-normal, $ms-transition-normal) ease,
+              color var(--ms-transition-normal, $ms-transition-normal) ease;
+}
+
+// Badge hover state
+.ms__badge:hover {
+  .ms__badge-text {
+    background: var(--ms-badge-text-background-hover, var(--ms-badge-text-background, $ms-badge-text-bg));
+    color: var(--ms-badge-text-color-hover, var(--ms-badge-text-color, $ms-badge-text-color));
+  }
 }
 
 // Badge remove button (like composite badge button)
@@ -170,29 +181,32 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--ms-badge-remove-width, $ml-badge-remove-width);
+  font-family: inherit; // Form elements don't inherit font by default
+  width: var(--ms-badge-remove-width, $ms-badge-remove-width);
   height: 100%;
   flex-shrink: 0;
-  background: var(--ms-badge-remove-background, $ml-badge-remove-bg);
-  color: var(--ms-badge-remove-color, $ml-badge-remove-color);
-  border: var(--ms-badge-remove-border, $ml-badge-remove-border);
+  background: var(--ms-badge-remove-background, $ms-badge-remove-bg);
+  color: var(--ms-badge-remove-color, $ms-badge-remove-color);
+  border: var(--ms-badge-remove-border, $ms-badge-remove-border);
+  border-left: none; // No double border between text and button
+  border-radius: 0 var(--ms-badge-border-radius, $ms-badge-border-radius) var(--ms-badge-border-radius, $ms-badge-border-radius) 0;
   cursor: pointer;
-  transition: background-color var(--ms-transition-normal, $ml-transition-normal) ease;
-  font-size: var(--ms-badge-remove-font-size, $ml-badge-remove-font-size);
+  transition: background-color var(--ms-transition-normal, $ms-transition-normal) ease;
+  font-size: var(--ms-badge-remove-font-size, $ms-badge-remove-font-size);
 
   &:hover {
-    background: var(--ms-badge-remove-background-hover, $ml-badge-remove-bg-hover);
+    background: var(--ms-badge-remove-background-hover, $ms-badge-remove-bg-hover);
   }
 
   &:focus {
     outline: none;
-    box-shadow: var(--ms-badge-remove-box-shadow-focus, $ml-badge-remove-box-shadow-focus);
+    box-shadow: var(--ms-badge-remove-box-shadow-focus, $ms-badge-remove-box-shadow-focus);
   }
 
   &::before {
-    content: var(--ms-icon-remove, $ml-icon-remove);
-    font-size: var(--ms-font-size-base, $ml-font-size-base);
-    line-height: var(--ms-line-height-none, $ml-line-height-none);
+    content: var(--ms-icon-remove, $ms-icon-remove);
+    font-size: var(--ms-font-size-base, $ms-font-size-base);
+    line-height: var(--ms-line-height-none, $ms-line-height-none);
   }
 }
 
@@ -201,20 +215,23 @@
 // ==============================================================================
 // Gray/neutral styling to distinguish from regular blue badges
 .ms__badge--counter {
-  border: var(--ms-badge-counter-border, $ml-badge-counter-border);
   cursor: pointer;
 
   .ms__badge-text {
-    background: var(--ms-badge-counter-text-background, $ml-badge-counter-text-bg);
-    color: var(--ms-badge-counter-text-color, $ml-badge-counter-text-color);
+    background: var(--ms-badge-counter-text-background, $ms-badge-counter-text-bg);
+    color: var(--ms-badge-counter-text-color, $ms-badge-counter-text-color);
+    border: var(--ms-badge-counter-border, $ms-badge-counter-border);
+    border-right: none;
   }
 
   .ms__badge-remove {
-    background: var(--ms-badge-counter-remove-background, $ml-badge-counter-remove-bg);
-    color: var(--ms-badge-counter-remove-color, $ml-badge-counter-remove-color);
+    background: var(--ms-badge-counter-remove-background, $ms-badge-counter-remove-bg);
+    color: var(--ms-badge-counter-remove-color, $ms-badge-counter-remove-color);
+    border: var(--ms-badge-counter-border, $ms-badge-counter-border);
+    border-left: none;
 
     &:hover {
-      background: var(--ms-badge-counter-remove-background-hover, $ml-badge-counter-remove-bg-hover);
+      background: var(--ms-badge-counter-remove-background-hover, $ms-badge-counter-remove-bg-hover);
     }
   }
 }

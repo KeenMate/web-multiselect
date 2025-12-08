@@ -5,7 +5,101 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.5.0] - PUBLISHED - 2025-12-08
+
+### Changed
+
+- **BREAKING: Default Option Alignment Changed to Center** - Options now vertically center by default
+  - Changed `--ms-checkbox-align` default from `flex-start` to `center`
+  - Checkbox, icon, and text now align vertically centered by default
+  - For top alignment (tall custom templates), use `checkbox-align="top"`
+  - CSS variant `[data-checkbox-align="center"]` replaced with `[data-checkbox-align="top"]`
+
+- **Faster Badge Tooltips** - Default tooltip delay reduced from 300ms to 100ms
+  - Applies to both badge tooltips and "+X more" badge tooltips
+  - Configurable via `badge-tooltip-delay` attribute
+
+### Fixed
+
+- **Virtual Scroll Option Height** - Fixed `option-height` attribute not applying in virtual scroll mode
+  - CSS variable was using old prefix `--ml-option-height` instead of `--ms-option-height`
+  - Custom `option-height` values now correctly apply to virtual scroll items
+
+- **Badge Tooltips in Selected Popover** - Fixed tooltips not appearing on badges in the selected items popover
+  - Tooltips now work in both standard popover (< 100 items) and virtual scroll popover (100+ items)
+  - `attachBadgeTooltips()` now accepts optional container parameter
+
+## [1.5.0-rc01] - RELEASED - 2025-12-08
+
+### Changed
+
+- **BREAKING: Simplified Sizing System** - Removed `input-size` attribute and `--ms-input-size-*` CSS variables
+  - Removed `input-size` attribute (`xs`, `sm`, `md`, `lg`, `xl`)
+  - Removed `--ms-input-size-{size}-font`, `--ms-input-size-{size}-padding-v`, `--ms-input-size-{size}-padding-h`, `--ms-input-size-{size}-height` variables
+  - Removed `.ms--size-xs`, `.ms--size-sm`, `.ms--size-lg`, `.ms--size-xl` modifier classes
+  - **Migration**: Use `--ms-rem` for global scaling instead (e.g., `--ms-rem: 8px` for compact, `--ms-rem: 12px` for large)
+
+- **Typography Integration** - Font sizes now use unitless multipliers with `--base-*` fallbacks
+  - Pattern: `calc(var(--base-font-size-sm, 1.4) * var(--ms-rem))`
+  - Enables integration with theme-designer's typography variables
+  - Affected variables: `--ms-input-font-size`, `--ms-option-title-font-size`, `--ms-badge-font-size`, etc.
+
+- **SCSS Variable Prefix** - All SCSS variables now use `$ms-*` prefix (previously some used `$ml-*`)
+
+### Added
+
+- **`--ms-input-height`** - New CSS variable for input field height (previously only available via size variants)
+
+### Fixed
+
+- **Windows Build** - Fixed `npm run clean` failing on Windows due to rimraf glob pattern handling
+  - Added `--glob` flag for `*.tgz` pattern
+
+## [1.4.0] - 2025-11-30
+
+### Added
+
+- **Input Hover State** - New `--ms-input-border-color-hover` CSS variable for input border on hover
+  - Hover state only applies when input is not focused and not disabled
+  - Defaults to `--ms-text-secondary` (darker border on hover)
+
+- **Badge Hover State** - New CSS variables for badge text styling on hover
+  - `--ms-badge-text-background-hover` - Badge text background on hover
+  - `--ms-badge-text-color-hover` - Badge text color on hover
+  - Hover applies to `.ms__badge:hover .ms__badge-text`
+
+- **Separate Badge Borders** - Badge text and remove button now have independent borders
+  - `--ms-badge-text-border` - Border for the text/label part of the badge
+  - `--ms-badge-remove-border` - Border for the remove (X) button part
+  - Allows matching border color to each part's background for themed badges
+  - Example: Light pink border on text part, dark red border on button part
+
+### Fixed
+
+- **CRITICAL: State-Specific Colors Not Applying** - Fixed `inherit` fallback bug causing state colors to be ignored
+  - Root cause: Using `inherit` as CSS variable fallback causes element to inherit from parent's computed value, not the fallback chain
+  - Affected 8 color variables: `--ms-option-color-focused-hover`, `--ms-option-color-matched-hover`, `--ms-option-color-selected-focused`, `--ms-option-color-selected-matched`, `--ms-option-color-disabled-selected`, `--ms-option-subtitle-color-hover`, `--ms-option-subtitle-color-selected`, `--ms-option-subtitle-color-selected-hover`
+  - Solution: Changed to nested `var()` fallbacks (e.g., `var(--ms-option-color-selected, var(--ms-option-text-color, $ml-option-color))`)
+  - State-specific colors now properly cascade: state color → parent state color → base color
+  - Example: Setting `--ms-option-color-selected: #ffffff` now correctly applies to selected items
+
+### Changed
+
+- **BREAKING: Unified Theming Variable Rename** - Renamed `--ms-text-white` to `--ms-text-on-accent` for consistency with unified theming system across KeenMate components
+  - This variable represents text color on accent-colored backgrounds (e.g., white text on blue buttons)
+  - The new name better describes its purpose and matches the naming convention used in other KeenMate components (web-daterangepicker, etc.)
+  - **Migration**: Find and replace `--ms-text-white` with `--ms-text-on-accent` in your stylesheets
+
+- **Removed Redundant CSS Variables** - Removed 8 CSS custom properties that used `inherit` fallbacks
+  - These variables are now optional overrides - if not set, they fall back through the CSS variable chain
+  - Simplifies theming: set base color once, all states inherit automatically
+  - Users can still override individual states when needed
+
+- **Badge Border Structure** - Moved border from badge container to individual children
+  - Removed `--ms-badge-border` (was on `.ms__badge` container)
+  - Added `--ms-badge-text-border` (on `.ms__badge-text`)
+  - `--ms-badge-remove-border` already existed (on `.ms__badge-remove`)
+  - **Breaking**: If you were using `--ms-badge-border`, migrate to `--ms-badge-text-border` and `--ms-badge-remove-border`
 
 ## [1.3.0] - PUBLISHED - 2025-11-29
 

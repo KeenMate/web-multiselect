@@ -11,21 +11,21 @@
 
 .ms__badge-tooltip {
   position: fixed;
-  z-index: var(--ms-tooltip-z-index, $ml-tooltip-z-index);
+  z-index: var(--ms-tooltip-z-index, $ms-tooltip-z-index);
   opacity: 0;
   visibility: hidden;
-  transition: opacity var(--ms-transition-normal, $ml-transition-normal) ease, visibility var(--ms-transition-normal, $ml-transition-normal) ease;
+  transition: opacity var(--ms-transition-normal, $ms-transition-normal) ease, visibility var(--ms-transition-normal, $ms-transition-normal) ease;
 
-  background: var(--ms-tooltip-background, $ml-tooltip-bg);
-  color: var(--ms-tooltip-text-color, $ml-tooltip-color);
-  padding: var(--ms-tooltip-padding, $ml-tooltip-padding);
-  border-radius: var(--ms-tooltip-border-radius, $ml-tooltip-border-radius);
-  font-size: var(--ms-tooltip-font-size, $ml-tooltip-font-size);
-  line-height: var(--ms-line-height-relaxed, $ml-line-height-relaxed);
-  max-width: var(--ms-tooltip-max-width, $ml-tooltip-max-width);
+  background: var(--ms-tooltip-background, $ms-tooltip-bg);
+  color: var(--ms-tooltip-text-color, $ms-tooltip-color);
+  padding: var(--ms-tooltip-padding, $ms-tooltip-padding);
+  border-radius: var(--ms-tooltip-border-radius, $ms-tooltip-border-radius);
+  font-size: var(--ms-tooltip-font-size, $ms-tooltip-font-size);
+  line-height: var(--ms-line-height-relaxed, $ms-line-height-relaxed);
+  max-width: var(--ms-tooltip-max-width, $ms-tooltip-max-width);
   word-wrap: break-word;
   white-space: pre-wrap;
-  box-shadow: var(--ms-tooltip-shadow, $ml-tooltip-shadow);
+  box-shadow: var(--ms-tooltip-shadow, $ms-tooltip-shadow);
   pointer-events: none; // Prevent tooltip from interfering with mouse events
 
   &--visible {
@@ -42,13 +42,13 @@
 .ms__selected-popover {
   display: none;
   position: absolute;
-  z-index: var(--ms-z-index-popover, $ml-z-index-popover);
-  background: var(--ms-selected-popover-background, $ml-selected-popover-bg);
-  border: var(--ms-selected-popover-border, $ml-selected-popover-border);
-  border-radius: var(--ms-selected-popover-border-radius, $ml-selected-popover-border-radius);
-  box-shadow: var(--ms-selected-popover-box-shadow, $ml-selected-popover-box-shadow);
-  width: var(--ms-selected-popover-width, $ml-selected-popover-width);
-  max-height: var(--ms-selected-popover-max-height, $ml-selected-popover-max-height);
+  z-index: var(--ms-z-index-popover, $ms-z-index-popover);
+  background: var(--ms-selected-popover-background, $ms-selected-popover-bg);
+  border: var(--ms-selected-popover-border, $ms-selected-popover-border);
+  border-radius: var(--ms-selected-popover-border-radius, $ms-selected-popover-border-radius);
+  box-shadow: var(--ms-selected-popover-box-shadow, $ms-selected-popover-box-shadow);
+  width: var(--ms-selected-popover-width, $ms-selected-popover-width);
+  max-height: var(--ms-selected-popover-max-height, $ms-selected-popover-max-height);
   overflow: hidden;
 
   &--visible {
@@ -68,70 +68,70 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--ms-selected-popover-header-padding, $ml-selected-popover-header-padding);
-  background: var(--ms-selected-popover-header-background, $ml-selected-popover-header-bg);
-  border-bottom: var(--ms-selected-popover-header-border-bottom, $ml-selected-popover-header-border-bottom);
-  font-size: var(--ms-selected-popover-header-font-size, $ml-selected-popover-header-font-size);
-  font-weight: var(--ms-selected-popover-header-font-weight, $ml-selected-popover-header-font-weight);
-  color: var(--ms-selected-popover-header-color, $ml-selected-popover-header-color);
+  padding: var(--ms-selected-popover-header-padding, $ms-selected-popover-header-padding);
+  background: var(--ms-selected-popover-header-background, $ms-selected-popover-header-bg);
+  border-bottom: var(--ms-selected-popover-header-border-bottom, $ms-selected-popover-header-border-bottom);
+  font-size: var(--ms-selected-popover-header-font-size, $ms-selected-popover-header-font-size);
+  font-weight: var(--ms-selected-popover-header-font-weight, $ms-selected-popover-header-font-weight);
+  color: var(--ms-selected-popover-header-color, $ms-selected-popover-header-color);
 }
 
 .ms__selected-popover-close {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--ms-popover-close-size, $ml-popover-close-size);
-  height: var(--ms-popover-close-size, $ml-popover-close-size);
+  width: var(--ms-popover-close-size, $ms-popover-close-size);
+  height: var(--ms-popover-close-size, $ms-popover-close-size);
   padding: 0;
   border: none;
-  background: var(--ms-selected-popover-close-background, $ml-selected-popover-close-bg);
-  color: var(--ms-selected-popover-close-color, $ml-selected-popover-close-color);
-  font-size: var(--ms-selected-popover-close-font-size, $ml-selected-popover-close-font-size);
-  line-height: var(--ms-line-height-none, $ml-line-height-none);
+  background: var(--ms-selected-popover-close-background, $ms-selected-popover-close-bg);
+  color: var(--ms-selected-popover-close-color, $ms-selected-popover-close-color);
+  font-size: var(--ms-selected-popover-close-font-size, $ms-selected-popover-close-font-size);
+  line-height: var(--ms-line-height-none, $ms-line-height-none);
   cursor: pointer;
-  border-radius: var(--ms-selected-popover-close-border-radius, $ml-selected-popover-close-border-radius);
-  transition: all var(--ms-transition-fast, $ml-transition-fast) var(--ms-easing-snappy, $ml-easing-snappy);
+  border-radius: var(--ms-selected-popover-close-border-radius, $ms-selected-popover-close-border-radius);
+  transition: all var(--ms-transition-fast, $ms-transition-fast) var(--ms-easing-snappy, $ms-easing-snappy);
 
   &:hover {
-    background: var(--ms-selected-popover-close-background-hover, $ml-selected-popover-close-bg-hover);
-    color: var(--ms-selected-popover-close-color-hover, $ml-selected-popover-close-color-hover);
+    background: var(--ms-selected-popover-close-background-hover, $ms-selected-popover-close-bg-hover);
+    color: var(--ms-selected-popover-close-color-hover, $ms-selected-popover-close-color-hover);
   }
 }
 
 .ms__selected-popover-body {
   display: flex;
   flex-direction: column;
-  gap: var(--ms-selected-popover-body-gap, $ml-selected-popover-body-gap);
-  padding: var(--ms-selected-popover-body-padding, $ml-selected-popover-body-padding);
+  gap: var(--ms-selected-popover-body-gap, $ms-selected-popover-body-gap);
+  padding: var(--ms-selected-popover-body-padding, $ms-selected-popover-body-padding);
   overflow-y: auto;
-  max-height: var(--ms-selected-popover-body-max-height, $ml-selected-popover-body-max-height);
+  max-height: var(--ms-selected-popover-body-max-height, $ms-selected-popover-body-max-height);
 
   // Scrollbar styling
   scrollbar-width: thin;  // Firefox
-  scrollbar-color: var(--ms-scrollbar-thumb-bg, $ml-scrollbar-thumb-bg) var(--ms-scrollbar-track-bg, $ml-scrollbar-track-bg);
+  scrollbar-color: var(--ms-scrollbar-thumb-bg, $ms-scrollbar-thumb-bg) var(--ms-scrollbar-track-bg, $ms-scrollbar-track-bg);
 
   &::-webkit-scrollbar {
-    width: var(--ms-scrollbar-width, $ml-scrollbar-width);
+    width: var(--ms-scrollbar-width, $ms-scrollbar-width);
   }
 
   &::-webkit-scrollbar-track {
-    background: var(--ms-scrollbar-track-bg, $ml-scrollbar-track-bg);
+    background: var(--ms-scrollbar-track-bg, $ms-scrollbar-track-bg);
   }
 
   &::-webkit-scrollbar-thumb {
-    background: var(--ms-scrollbar-thumb-bg, $ml-scrollbar-thumb-bg);
-    border-radius: var(--ms-scrollbar-thumb-border-radius, $ml-scrollbar-thumb-border-radius);
+    background: var(--ms-scrollbar-thumb-bg, $ms-scrollbar-thumb-bg);
+    border-radius: var(--ms-scrollbar-thumb-border-radius, $ms-scrollbar-thumb-border-radius);
   }
 
   &::-webkit-scrollbar-thumb:hover {
-    background: var(--ms-scrollbar-thumb-bg-hover, $ml-scrollbar-thumb-bg-hover);
+    background: var(--ms-scrollbar-thumb-bg-hover, $ms-scrollbar-thumb-bg-hover);
   }
 
   // Badges inside popover (non-virtual mode)
   .ms__badge {
     width: 100%;
     min-height: fit-content; // Allow badges to expand based on content
-    line-height: var(--ms-line-height-relaxed, $ml-line-height-relaxed); // Override line-height: 1 to allow multi-line content
+    line-height: var(--ms-line-height-relaxed, $ms-line-height-relaxed); // Override line-height: 1 to allow multi-line content
   }
 
   .ms__badge-text {
@@ -157,7 +157,7 @@
       height: var(--ms-badge-height-virtual, 36px);
       min-height: var(--ms-badge-height-virtual, 36px);
       max-height: var(--ms-badge-height-virtual, 36px);
-      margin-bottom: var(--ms-selected-popover-body-gap, $ml-selected-popover-body-gap); // Add gap between badges
+      margin-bottom: var(--ms-selected-popover-body-gap, $ms-selected-popover-body-gap); // Add gap between badges
       overflow: hidden;
       box-sizing: border-box;
     }

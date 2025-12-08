@@ -122,7 +122,7 @@ multiselect.setSelected(['js', 'ts']);
 | `show-counter` | `boolean` | `false` | Show [3] badge next to toggle icon |
 | `enable-badge-tooltips` | `boolean` | `false` | Enable tooltips on selected badges |
 | `badge-tooltip-placement` | `'top' \| 'bottom' \| 'left' \| 'right'` | `'top'` | Tooltip placement relative to badge |
-| `badge-tooltip-delay` | `number` | `300` | Delay in ms before showing tooltip |
+| `badge-tooltip-delay` | `number` | `100` | Delay in ms before showing tooltip |
 | `badge-tooltip-offset` | `number` | `8` | Distance in pixels between badge and tooltip |
 | `max-height` | `string` | `'20rem'` | Maximum height of dropdown |
 | `empty-message` | `string` | `'No results found'` | Message when no options found |
@@ -1504,6 +1504,99 @@ interface MultiSelectOption {
 
 The component uses Shadow DOM for style encapsulation, but exposes CSS custom properties (CSS variables) that you can override to customize the appearance.
 
+### Sizing
+
+The component uses `--ms-rem` as a base unit for proportional scaling. Default is `10px`, meaning `calc(1.4 * var(--ms-rem))` equals `14px`.
+
+**Global Scaling:**
+```html
+<!-- Compact (80%) -->
+<web-multiselect style="--ms-rem: 8px;"></web-multiselect>
+
+<!-- Default (100%) -->
+<web-multiselect></web-multiselect>
+
+<!-- Large (120%) -->
+<web-multiselect style="--ms-rem: 12px;"></web-multiselect>
+
+<!-- Pure Admin integration (inherits from html { font-size: 10px }) -->
+<web-multiselect style="--ms-rem: 1rem;"></web-multiselect>
+```
+
+**Via CSS class:**
+```css
+web-multiselect.compact { --ms-rem: 8px; }
+web-multiselect.large { --ms-rem: 12px; }
+```
+
+**Shadow DOM Note:** CSS variables must be set on the `<web-multiselect>` element itself, not on wrapper divs.
+
+**Fine-grained Control:**
+Override individual sizing variables for specific adjustments:
+- `--ms-input-height` - Input field height
+- `--ms-input-font-size` - Input font size
+- `--ms-input-padding` - Input padding
+- `--ms-badge-height` - Badge height
+- `--ms-option-height` - Option height in dropdown
+
+### Theme Designer
+
+The easiest way to customize the appearance of this component is using the **KeenMate Theme Designer** at:
+
+**[theme-designer.keenmate.dev](https://theme-designer.keenmate.dev)**
+
+#### How It Works
+
+1. **Choose 3 base colors** - background, text, and accent
+2. **Preview changes live** - see your theme applied instantly
+3. **Fine-tune individual variables** - lock specific values while adjusting others
+4. **Export your theme** - copy CSS, JSON, or SCSS to your project
+
+#### CSS Variable Layers
+
+KeenMate components support a **two-layer theming architecture**:
+
+**Standalone Mode (Simple)** - Just override the component-specific variables you need:
+
+```css
+:root {
+  --ms-accent-color: #your-brand-color;
+  --ms-primary-bg: #your-background;
+  --ms-text-primary: #your-text-color;
+}
+```
+
+**Cascading Mode (Multi-Component)** - When using multiple KeenMate components, you can define a shared base layer:
+
+```css
+:root {
+  /* Base layer - single source of truth */
+  --base-accent-color: #3b82f6;
+  --base-primary-bg: #ffffff;
+  --base-text-primary: #111827;
+
+  /* Components reference base layer */
+  --ms-accent-color: var(--base-accent-color);
+  --drp-accent-color: var(--base-accent-color);
+}
+```
+
+Change `--base-accent-color` once → all components update automatically.
+
+#### Unified Variable Naming
+
+All KeenMate components follow a consistent naming convention for **Tier 1 variables** (core theming):
+
+| Purpose | web-multiselect | web-daterangepicker |
+|---------|-----------------|---------------------|
+| Brand color | `--ms-accent-color` | `--drp-accent-color` |
+| Background | `--ms-primary-bg` | `--drp-primary-bg` |
+| Text color | `--ms-text-primary` | `--drp-text-primary` |
+| Text on accent | `--ms-text-on-accent` | `--drp-text-on-accent` |
+| Border color | `--ms-border-color` | `--drp-border-color` |
+
+Learn the pattern once, apply it across all components.
+
 ### CSS Variables (No Build System Required)
 
 You can customize the component using CSS variables even with just a `<script>` tag:
@@ -1704,9 +1797,9 @@ For users with a build system, you can import and customize the SCSS:
 ```scss
 // Import and override SCSS variables
 @use '@keenmate/web-multiselect/scss' with (
-  $ml-primary: #10b981,
-  $ml-border-radius: 0.5rem,
-  $ml-font-size: 1rem
+  $ms-accent-color: #10b981,
+  $ms-border-radius: 0.5rem,
+  $ms-font-size-base: 1rem
 );
 ```
 
@@ -1746,7 +1839,7 @@ npm run package
 
 ## License
 
-Copyright (c) 2024 Keenmate
+Copyright (c) 2025 Keenmate
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
