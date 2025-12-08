@@ -264,11 +264,10 @@
 // ==============================================================================
 
 // Option content (rich content wrapper)
-// Note: Uses flex-start to prevent clipping of tall custom content in virtual scroll mode
 .ms__option-content {
   flex: 1;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   gap: var(--ms-option-content-gap, $ms-option-content-gap);
   min-width: 0; // Allow text truncation
 }
