@@ -1,0 +1,32 @@
+/* ==============================================================================
+   MODIFIERS & VARIANTS
+   ==============================================================================
+   State modifiers (disabled, no-checkboxes)
+   Note: Size variants removed - use --ms-rem for global scaling instead
+*/
+
+/* ==============================================================================
+   STATE MODIFIERS
+   ==============================================================================
+*/
+
+/* Disabled state */
+.ms--disabled .ms__input {
+  opacity: var(--ms-disabled-input-opacity);
+  cursor: not-allowed;
+  background: var(--ms-input-bg-disabled);
+}
+
+.ms--disabled .ms__toggle {
+  opacity: var(--ms-disabled-input-opacity);
+}
+
+/* No checkboxes modifier (for simple select mode) */
+.ms--no-checkboxes .ms__option {
+  gap: 0; /* Remove gap since there's no checkbox */
+  padding-left: var(--ms-option-padding-h); /* Adjust padding */
+}
+
+.ms--no-checkboxes .ms__option-content {
+  padding-left: 0; /* No extra padding needed */
+}

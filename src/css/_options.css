@@ -1,0 +1,365 @@
+/* ==============================================================================
+   OPTIONS & CONTENT
+   ==============================================================================
+   Options list, groups, checkbox, option content, icons, text, and states
+*/
+
+/* ==============================================================================
+   OPTIONS CONTAINER
+   ==============================================================================
+*/
+
+/* Options container */
+.ms__options {
+  padding: var(--ms-options-padding);
+
+  /* Scrollbar styling */
+  scrollbar-width: thin;  /* Firefox */
+  scrollbar-color: var(--ms-scrollbar-thumb-bg) var(--ms-scrollbar-track-bg);
+}
+
+.ms__options::-webkit-scrollbar {
+  width: var(--ms-scrollbar-width);
+}
+
+.ms__options::-webkit-scrollbar-track {
+  background: var(--ms-scrollbar-track-bg);
+}
+
+.ms__options::-webkit-scrollbar-thumb {
+  background: var(--ms-scrollbar-thumb-bg);
+  border-radius: var(--ms-scrollbar-thumb-border-radius);
+}
+
+.ms__options::-webkit-scrollbar-thumb:hover {
+  background: var(--ms-scrollbar-thumb-bg-hover);
+}
+
+/* Virtual scroll - enforce consistent heights */
+.ms__options--virtual .ms__option {
+  height: var(--ms-option-height, 50px);
+  min-height: var(--ms-option-height, 50px);
+  max-height: var(--ms-option-height, 50px);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* ==============================================================================
+   GROUPS
+   ==============================================================================
+*/
+
+/* Group - consecutive groups */
+.ms__group + .ms__group {
+  border-top: var(--ms-group-border-top);
+  margin-top: var(--ms-group-margin-top);
+  padding-top: var(--ms-group-padding-top);
+}
+
+/* Group label */
+.ms__group-label {
+  padding: var(--ms-group-label-padding);
+  font-size: var(--ms-group-label-font-size);
+  font-weight: var(--ms-group-label-font-weight);
+  color: var(--ms-group-label-color);
+  text-transform: var(--ms-group-label-transform);
+  letter-spacing: var(--ms-group-label-letter-spacing);
+}
+
+/* ==============================================================================
+   INDIVIDUAL OPTION
+   ==============================================================================
+*/
+
+/* Individual option */
+.ms__option {
+  display: flex;
+  align-items: var(--ms-checkbox-align, center); /* Support checkbox alignment */
+  gap: var(--ms-option-gap);
+  padding: var(--ms-option-padding);
+  color: var(--ms-option-text-color);
+  background: var(--ms-option-background);
+  cursor: pointer;
+}
+
+.ms__option:hover {
+  background: var(--ms-option-background-hover);
+  color: var(--ms-option-color-hover, inherit);
+}
+
+.ms__option--focused {
+  background: var(--ms-option-background-focused);
+  color: var(--ms-option-color-focused, inherit);
+  outline: var(--ms-option-outline-focused);
+  outline-offset: var(--ms-option-focus-outline-offset);
+}
+
+.ms__option--matched {
+  background: var(--ms-option-background-matched);
+  color: var(--ms-option-color-matched, inherit);
+  border-left: var(--ms-option-border-matched);
+}
+
+.ms__option--selected {
+  background: var(--ms-option-background-selected);
+}
+
+.ms__option--selected:hover {
+  background: var(--ms-option-bg-selected-hover, var(--ms-option-background-selected));
+}
+
+.ms__option--disabled {
+  opacity: var(--ms-disabled-opacity);
+  cursor: not-allowed;
+}
+
+.ms__option--disabled:hover {
+  background: var(--ms-option-background);
+}
+
+/* Focused + Hover */
+.ms__option--focused:hover {
+  background: var(--ms-option-bg-focused-hover);
+  color: var(--ms-option-color-focused-hover, var(--ms-option-color-focused, var(--ms-option-text-color)));
+}
+
+/* Matched + Hover */
+.ms__option--matched:hover {
+  background: var(--ms-option-bg-matched-hover);
+  color: var(--ms-option-color-matched-hover, var(--ms-option-color-matched, var(--ms-option-text-color)));
+}
+
+/* Selected + Focused */
+.ms__option--selected.ms__option--focused {
+  background: var(--ms-option-bg-selected-focused);
+  outline: var(--ms-option-outline-focused);
+  outline-offset: var(--ms-option-focus-outline-offset);
+}
+
+/* Selected + Matched */
+.ms__option--selected.ms__option--matched {
+  background: var(--ms-option-bg-selected-matched);
+  border-left: var(--ms-option-border-matched);
+}
+
+/* Disabled + Selected */
+.ms__option--disabled.ms__option--selected {
+  background: var(--ms-option-bg-disabled-selected);
+}
+
+/* Disabled + Focused (prevents focus outline on disabled items) */
+.ms__option--disabled.ms__option--focused {
+  outline: none;
+}
+
+/* Checkbox alignment variants (center is default, defined in _variables.css) */
+.ms__option[data-checkbox-align="top"] {
+  --ms-checkbox-align: flex-start;
+}
+
+.ms__option[data-checkbox-align="bottom"] {
+  --ms-checkbox-align: flex-end;
+}
+
+/* ==============================================================================
+   CHECKBOX (Custom Styled)
+   ==============================================================================
+   Uses a hidden native checkbox with a custom styled pseudo-element overlay.
+   This allows full control over background, border, and checkmark colors.
+*/
+
+.ms__checkbox {
+  /* Hide native checkbox but keep it accessible */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  flex-shrink: 0;
+  position: relative;
+  margin-top: var(--ms-checkbox-margin-top);
+  margin-right: var(--ms-checkbox-margin-right);
+  margin-bottom: var(--ms-checkbox-margin-bottom);
+  margin-left: var(--ms-checkbox-margin-left);
+  width: var(--ms-checkbox-size);
+  height: var(--ms-checkbox-size);
+  transform: scale(var(--ms-checkbox-scale));
+  transform-origin: top left;
+  cursor: pointer;
+
+  /* Custom checkbox appearance */
+  background: var(--ms-checkbox-bg);
+  border: var(--ms-checkbox-border);
+  border-radius: var(--ms-checkbox-border-radius);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+/* Checkmark using ::after pseudo-element */
+.ms__checkbox::after {
+  content: '';
+  position: absolute;
+  display: none;
+  /* Checkmark positioning (centered, slightly offset for visual balance) */
+  left: 50%;
+  top: 45%;
+  width: 30%;
+  height: 55%;
+  transform: translate(-50%, -50%) rotate(45deg);
+  /* Checkmark shape (right and bottom borders form the check) */
+  border: solid var(--ms-checkbox-checkmark-color);
+  border-width: 0 2px 2px 0;
+}
+
+/* Hover state */
+.ms__checkbox:hover:not(:disabled) {
+  border-color: var(--ms-checkbox-hover-border-color);
+}
+
+/* Checked state */
+.ms__checkbox:checked {
+  background: var(--ms-checkbox-checked-bg);
+  border: var(--ms-checkbox-checked-border);
+}
+
+.ms__checkbox:checked::after {
+  display: block;
+}
+
+/* Checked + Hover */
+.ms__checkbox:checked:hover:not(:disabled) {
+  background: var(--ms-checkbox-checked-bg-hover);
+  border-color: var(--ms-checkbox-checked-border-color-hover);
+}
+
+/* Focus state (accessibility) */
+.ms__checkbox:focus-visible {
+  outline: 2px solid var(--ms-checkbox-checked-bg);
+  outline-offset: 2px;
+}
+
+/* Disabled state */
+.ms__checkbox:disabled {
+  cursor: not-allowed;
+  background: var(--ms-checkbox-disabled-bg);
+  border: var(--ms-checkbox-disabled-border);
+  opacity: 0.6;
+}
+
+.ms__checkbox:disabled:checked {
+  background: var(--ms-checkbox-disabled-bg);
+}
+
+.ms__option--disabled .ms__checkbox {
+  cursor: not-allowed;
+}
+
+/* ==============================================================================
+   OPTION CONTENT
+   ==============================================================================
+*/
+
+/* Option content (rich content wrapper) */
+.ms__option-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--ms-option-content-gap);
+  min-width: 0; /* Allow text truncation */
+}
+
+/* Option icon/SVG */
+.ms__option-icon {
+  flex-shrink: 0;
+  width: var(--ms-option-icon-size);
+  height: var(--ms-option-icon-size);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--ms-option-icon-font-size);
+}
+
+.ms__option-icon svg {
+  width: 100%;
+  height: 100%;
+  fill: currentColor;
+}
+
+/* Option text container */
+.ms__option-text {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Option title/main text */
+.ms__option-title {
+  font-size: var(--ms-option-title-font-size);
+  color: var(--ms-option-title-color);
+  line-height: var(--ms-line-height-relaxed);
+}
+
+/* Title color states (for solid background themes) */
+.ms__option:hover .ms__option-title {
+  color: var(--ms-option-title-color-hover, var(--ms-option-title-color));
+}
+
+.ms__option--selected .ms__option-title {
+  color: var(--ms-option-title-color-selected, var(--ms-option-title-color));
+}
+
+.ms__option--selected:hover .ms__option-title {
+  color: var(--ms-option-title-color-selected-hover, var(--ms-option-title-color-selected, var(--ms-option-title-color)));
+}
+
+/* Highlight matched text */
+.ms__option-title mark {
+  background: var(--ms-option-mark-background);
+  color: var(--ms-option-mark-color);
+  font-weight: var(--ms-option-mark-font-weight);
+}
+
+/* Option subtitle (multiline support) */
+.ms__option-subtitle {
+  margin-top: var(--ms-option-subtitle-margin-top);
+  font-size: var(--ms-option-subtitle-font-size);
+  color: var(--ms-option-subtitle-color);
+  line-height: var(--ms-option-subtitle-line-height);
+}
+
+/* Subtitle color states (for solid background themes) */
+.ms__option:hover .ms__option-subtitle {
+  color: var(--ms-option-subtitle-color-hover, var(--ms-option-subtitle-color));
+}
+
+.ms__option--selected .ms__option-subtitle {
+  color: var(--ms-option-subtitle-color-selected, var(--ms-option-subtitle-color));
+}
+
+.ms__option--selected:hover .ms__option-subtitle {
+  color: var(--ms-option-subtitle-color-selected-hover, var(--ms-option-subtitle-color-selected, var(--ms-option-subtitle-color)));
+}
+
+/* ==============================================================================
+   STATES
+   ==============================================================================
+*/
+
+/* Empty state */
+.ms__empty {
+  padding: var(--ms-empty-padding);
+  text-align: center;
+  font-size: var(--ms-empty-font-size);
+  color: var(--ms-empty-color);
+}
+
+/* Loading state */
+.ms__loader {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--ms-loader-padding);
+  gap: var(--ms-loader-gap);
+}
+
+.ms__loading-text {
+  font-size: var(--ms-loading-text-font-size);
+  color: var(--ms-loading-color);
+}

@@ -1,6 +1,6 @@
 import { WebMultiSelect } from './multiselect';
 import type { MultiSelectConfig, MultiSelectEventDetail, OptionContentRenderContext, BadgeContentRenderContext } from './types';
-import styles from './scss/main.scss?inline';
+import styles from './css/main.css?inline';
 import { dataLogger } from './logger';
 
 // SSR compatibility: provide stub HTMLElement if not in browser
@@ -50,6 +50,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     // Tooltip callbacks
     private _getBadgeTooltipCallback?: (item: T) => string | HTMLElement;
+    private _getRemoveButtonTooltipCallback?: (item: T) => string;
 
     // Custom rendering callbacks
     private _renderOptionContentCallback?: (item: T, context: OptionContentRenderContext) => string | HTMLElement;
@@ -78,7 +79,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
             'search-hint', 'search-placeholder', 'multiple', 'allow-groups',
             'show-checkboxes', 'sticky-actions', 'close-on-select',
             'lock-placement', 'dropdown-min-width', 'badges-display-mode', 'badges-threshold', 'badges-max-visible',
-            'badges-threshold-mode', 'badges-position', 'show-counter', 'keep-options-on-search', 'max-height', 'empty-message',
+            'badges-threshold-mode', 'badges-position', 'show-counter', 'keep-options-on-search', 'should-keep-search-on-close', 'max-height', 'empty-message',
             'loading-message', 'min-search-length', 'enable-search', 'search-input-mode', 'search-mode', 'actions-layout', 'allow-add-new',
             'initial-values',
 
@@ -93,7 +94,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
             'name', 'value-format',
 
             // Tooltip options
-            'enable-badge-tooltips', 'badge-tooltip-placement',
+            'enable-badge-tooltips', 'badge-tooltip-placement', 'remove-button-tooltip-text',
 
             // Debug
             'show-debug-info'
@@ -394,6 +395,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
             isAddNewAllowed: this.getAttribute('allow-add-new') === 'true',
             isCounterShown: this.getAttribute('show-counter') === 'true',
             isKeepOptionsOnSearch: this.getAttribute('keep-options-on-search') !== 'false',
+            shouldKeepSearchOnClose: this.getAttribute('should-keep-search-on-close') !== 'false',
             isVirtualScrollEnabled: this.getAttribute('enable-virtual-scroll') === 'true',
 
             // Action buttons
@@ -445,6 +447,8 @@ export class MultiSelectElement<T = any> extends BaseElement {
             // Tooltip options
             isBadgeTooltipsEnabled: this.getAttribute('enable-badge-tooltips') === 'true',
             getBadgeTooltipCallback: this._getBadgeTooltipCallback,
+            getRemoveButtonTooltipCallback: this._getRemoveButtonTooltipCallback,
+            removeButtonTooltipText: this.getAttribute('remove-button-tooltip-text') || undefined,
             badgeTooltipPlacement: (this.getAttribute('badge-tooltip-placement') as any) || 'top',
             badgeTooltipDelay: parseInt(this.getAttribute('badge-tooltip-delay') || '100'),
             badgeTooltipOffset: parseInt(this.getAttribute('badge-tooltip-offset') || '8'),
@@ -870,6 +874,27 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     get getBadgeTooltipCallback() {
         return this._getBadgeTooltipCallback;
+    }
+
+    set getRemoveButtonTooltipCallback(callback: ((item: T) => string) | undefined) {
+        this._getRemoveButtonTooltipCallback = callback;
+        this.reinitialize();
+    }
+
+    get getRemoveButtonTooltipCallback() {
+        return this._getRemoveButtonTooltipCallback;
+    }
+
+    set removeButtonTooltipText(value: string | null) {
+        if (value) {
+            this.setAttribute('remove-button-tooltip-text', value);
+        } else {
+            this.removeAttribute('remove-button-tooltip-text');
+        }
+    }
+
+    get removeButtonTooltipText(): string | null {
+        return this.getAttribute('remove-button-tooltip-text');
     }
 
     set getCounterCallback(callback: ((count: number, moreCount?: number) => string) | undefined) {

@@ -128,7 +128,11 @@ export class VirtualScroll<T> {
      * Update viewport height (visible area)
      */
     private updateViewportHeight(): void {
-        this.viewportHeight = this.container.clientHeight;
+        const newHeight = this.container.clientHeight;
+        // Only update if we have a valid height (prevent 0 height from breaking rendering)
+        if (newHeight > 0) {
+            this.viewportHeight = newHeight;
+        }
     }
 
     /**
@@ -201,6 +205,9 @@ export class VirtualScroll<T> {
      * Update items and re-render
      */
     public setItems(items: T[]): void {
+        // Check if items actually changed (different array or different length)
+        const itemsChanged = items !== this.items && items.length !== this.items.length;
+
         this.items = items;
 
         // Update wrapper height
@@ -209,7 +216,14 @@ export class VirtualScroll<T> {
         // Update viewport height (container dimensions may have changed)
         this.updateViewportHeight();
 
-        // Reset visible range
+        // Only reset scroll position when items actually change (e.g., search results)
+        // Don't reset when just re-rendering with same items (e.g., focus change)
+        if (itemsChanged) {
+            this.scrollTop = 0;
+            this.container.scrollTop = 0;
+        }
+
+        // Reset visible range to force re-render
         this.visibleStart = -1;
         this.visibleEnd = -1;
 
@@ -218,15 +232,28 @@ export class VirtualScroll<T> {
     }
 
     /**
-     * Scroll to specific item index
+     * Scroll to make item at index visible (like scrollIntoView with block: 'nearest')
+     * Only scrolls if item is outside visible area, and scrolls minimally
      */
     public scrollToIndex(index: number): void {
         if (index < 0 || index >= this.items.length) {
             return;
         }
 
-        const scrollTop = index * this.itemHeight;
-        this.container.scrollTop = scrollTop;
+        const itemTop = index * this.itemHeight;
+        const itemBottom = itemTop + this.itemHeight;
+        const viewportTop = this.container.scrollTop;
+        const viewportBottom = viewportTop + this.viewportHeight;
+
+        // Only scroll if item is not fully visible
+        if (itemTop < viewportTop) {
+            // Item is above viewport - scroll up to show it at top
+            this.container.scrollTop = itemTop;
+        } else if (itemBottom > viewportBottom) {
+            // Item is below viewport - scroll down to show it at bottom
+            this.container.scrollTop = itemBottom - this.viewportHeight;
+        }
+        // If item is already fully visible, don't scroll
     }
 
     /**

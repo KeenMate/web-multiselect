@@ -217,6 +217,8 @@ export interface MultiSelectConfig<T = any> {
     isCounterShown?: boolean;
     /** Keep initial options visible when searchCallback is active and search term is empty/short (internal: isKeepOptionsOnSearch) */
     isKeepOptionsOnSearch?: boolean;
+    /** Keep search text and filtered results when dropdown closes (default: true) */
+    shouldKeepSearchOnClose?: boolean;
     /** Enable virtual scrolling for large datasets (internal: isVirtualScrollEnabled) */
     isVirtualScrollEnabled?: boolean;
 
@@ -298,6 +300,10 @@ export interface MultiSelectConfig<T = any> {
     isBadgeTooltipsEnabled?: boolean;
     /** Callback to generate custom tooltip content for a badge */
     getBadgeTooltipCallback?: ((item: T) => string | HTMLElement) | null;
+    /** Callback to generate custom tooltip text for a remove button */
+    getRemoveButtonTooltipCallback?: ((item: T) => string) | null;
+    /** Format string for remove button tooltip text. Use {0} as placeholder for item name. Default: "Remove {0}" */
+    removeButtonTooltipText?: string;
     /** Tooltip placement relative to badge */
     badgeTooltipPlacement?: Placement;
     /** Delay before showing tooltip in milliseconds */

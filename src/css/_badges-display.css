@@ -1,0 +1,251 @@
+/* ==============================================================================
+   BADGES & DISPLAY MODES
+   ==============================================================================
+   Badges container, count display, individual badges, and remove buttons
+*/
+
+/* ==============================================================================
+   BADGES CONTAINER
+   ==============================================================================
+*/
+
+/* Selected badges container */
+.ms__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ms-badges-gap);
+  padding: 0;
+}
+
+.ms__badges:empty {
+  display: none;
+}
+
+/* Position variants */
+.ms__badges--bottom {
+  margin-top: var(--ms-badges-margin-bottom);
+}
+
+.ms__badges--top {
+  margin-bottom: var(--ms-badges-margin-top);
+  order: var(--ms-order-first); /* Place before multiselect in flex container */
+}
+
+.ms__badges--left {
+  order: var(--ms-order-first); /* Place before multiselect */
+  margin-right: var(--ms-badges-margin-left);
+  justify-content: flex-end; /* Badges at right edge of container, close to input */
+}
+
+.ms__badges--right {
+  margin-left: var(--ms-badges-margin-right);
+  justify-content: flex-start; /* Badges at left edge of container, close to input */
+}
+
+/* ==============================================================================
+   COUNT DISPLAY MODE
+   ==============================================================================
+*/
+
+/* Count display (alternative to badges) */
+.ms__count-display {
+  display: flex;
+  align-items: center;
+}
+
+.ms__count-display:empty {
+  display: none;
+}
+
+/* Position variants */
+.ms__count-display--bottom {
+  margin-top: var(--ms-count-display-margin-bottom);
+}
+
+.ms__count-display--top {
+  margin-bottom: var(--ms-count-display-margin-top);
+  order: var(--ms-order-first); /* Place before multiselect in flex container */
+}
+
+.ms__count-display--left {
+  order: var(--ms-order-first); /* Place before multiselect */
+  margin-right: var(--ms-count-display-margin-left);
+  justify-content: flex-start;
+}
+
+.ms__count-display--right {
+  margin-left: var(--ms-count-display-margin-right);
+  justify-content: flex-end;
+}
+
+/* Wrapper containing count text and clear button */
+.ms__counter-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ms-counter-wrapper-gap);
+  background: var(--ms-counter-wrapper-background);
+  border: var(--ms-counter-wrapper-border);
+  border-radius: var(--ms-counter-wrapper-border-radius);
+  padding: var(--ms-counter-wrapper-padding);
+  transition: all var(--ms-transition-fast) var(--ms-easing-snappy);
+}
+
+.ms__counter-wrapper:hover {
+  background: var(--ms-counter-wrapper-background-hover);
+  border-color: var(--ms-counter-wrapper-border-color-hover);
+}
+
+.ms__count-text {
+  display: inline-flex;
+  align-items: center;
+  background: var(--ms-count-text-bg);
+  border: var(--ms-count-text-border);
+  padding: 0;
+  font-size: var(--ms-count-text-font-size);
+  color: var(--ms-count-text-color);
+  cursor: pointer;
+  transition: color var(--ms-transition-fast) var(--ms-easing-snappy);
+}
+
+.ms__count-clear {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ms-count-clear-size);
+  height: var(--ms-count-clear-size);
+  padding: 0;
+  border: none;
+  background: var(--ms-count-clear-background);
+  color: var(--ms-count-clear-color);
+  font-size: var(--ms-count-clear-font-size);
+  line-height: var(--ms-line-height-none);
+  cursor: pointer;
+  border-radius: var(--ms-count-clear-border-radius);
+  transition: all var(--ms-transition-fast) var(--ms-easing-snappy);
+}
+
+.ms__count-clear:hover {
+  background: var(--ms-count-clear-background-hover);
+  color: var(--ms-count-clear-color-hover);
+}
+
+.ms__count-clear::before {
+  content: var(--ms-icon-clear);
+}
+
+/* ==============================================================================
+   INDIVIDUAL BADGES
+   ==============================================================================
+*/
+
+/* Individual badge (styled like Pure Admin composite badge) */
+.ms__badge {
+  display: inline-flex;
+  align-items: center;
+  height: var(--ms-badge-height); /* Match composite badge height */
+  font-size: var(--ms-badge-font-size);
+  font-weight: var(--ms-badge-font-weight);
+  line-height: var(--ms-line-height-none);
+  border-radius: var(--ms-badge-border-radius);
+  overflow: hidden;
+  max-width: 100%;
+}
+
+/* Badge text (like composite badge label) */
+.ms__badge-text {
+  display: flex;
+  align-items: center;
+  box-sizing: border-box; /* Include border in height to prevent clipping */
+  height: 100%;
+  padding: var(--ms-badge-text-padding);
+  background: var(--ms-badge-text-background);
+  color: var(--ms-badge-text-color);
+  border: var(--ms-badge-text-border);
+  border-right: none; /* No double border between text and button */
+  border-radius: var(--ms-badge-border-radius) 0 0 var(--ms-badge-border-radius);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: background-color var(--ms-transition-normal) ease,
+              color var(--ms-transition-normal) ease;
+}
+
+/* Badge hover state */
+.ms__badge:hover .ms__badge-text {
+  background: var(--ms-badge-text-background-hover, var(--ms-badge-text-background));
+  color: var(--ms-badge-text-color-hover, var(--ms-badge-text-color));
+}
+
+/* Badge remove button (like composite badge button) */
+.ms__badge-remove {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box; /* Include border in height to prevent clipping */
+  font-family: inherit; /* Form elements don't inherit font by default */
+  width: var(--ms-badge-remove-width);
+  height: 100%;
+  flex-shrink: 0;
+  background: var(--ms-badge-remove-background);
+  color: var(--ms-badge-remove-color);
+  border: var(--ms-badge-remove-border);
+  border-left: none; /* No double border between text and button */
+  border-radius: 0 var(--ms-badge-border-radius) var(--ms-badge-border-radius) 0;
+  cursor: pointer;
+  transition: background-color var(--ms-transition-normal) ease;
+  font-size: var(--ms-badge-remove-font-size);
+}
+
+.ms__badge-remove:hover {
+  background: var(--ms-badge-remove-background-hover);
+}
+
+.ms__badge-remove:focus {
+  outline: none;
+  box-shadow: var(--ms-badge-remove-box-shadow-focus);
+}
+
+.ms__badge-remove::before {
+  content: var(--ms-icon-remove);
+  font-size: var(--ms-font-size-base);
+  line-height: var(--ms-line-height-none);
+}
+
+/* ==============================================================================
+   INDICATOR BADGE VARIANT (for "+ X more", "3 selected", compact mode)
+   ==============================================================================
+   Gray/neutral styling to distinguish from regular blue badges
+*/
+.ms__badge--counter {
+  cursor: pointer;
+}
+
+.ms__badge--counter .ms__badge-text {
+  background: var(--ms-badge-counter-text-background);
+  color: var(--ms-badge-counter-text-color);
+  border: var(--ms-badge-counter-border);
+  border-right: none;
+}
+
+.ms__badge--counter .ms__badge-remove {
+  background: var(--ms-badge-counter-remove-background);
+  color: var(--ms-badge-counter-remove-color);
+  border: var(--ms-badge-counter-border);
+  border-left: none;
+}
+
+.ms__badge--counter .ms__badge-remove:hover {
+  background: var(--ms-badge-counter-remove-background-hover);
+}
+
+/* ==============================================================================
+   "+X MORE" BADGE VARIANT
+   ==============================================================================
+*/
+
+/* "+X more" badge variant (partial mode) */
+/* Now uses .ms__badge--counter for styling, this just adds cursor */
+.ms__badge--more {
+  cursor: pointer;
+}

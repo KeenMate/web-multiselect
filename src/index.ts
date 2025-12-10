@@ -1,5 +1,5 @@
 // Import styles
-import './scss/main.scss';
+import './css/main.css';
 
 // Import for export and global API
 import { getAllInstances, MultiSelectElement } from './web-component';

@@ -5,6 +5,111 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.0] - 2025-12-10
+
+### Added
+
+- **Preserve Search on Close** - New `shouldKeepSearchOnClose` option (default: `true`)
+  - Search text and filtered results are preserved when dropdown closes
+  - Re-opening dropdown shows the same filtered view
+  - Set `should-keep-search-on-close="false"` or `shouldKeepSearchOnClose: false` for old behavior
+
+- **Border Radius Theme Integration** - Integrated `--base-border-radius-*` variables from theme-designer
+  - `--ms-border-radius-sm`: 4px - checkboxes, badges, counters, tags
+  - `--ms-border-radius-md`: 6px - inputs, buttons (default)
+  - `--ms-border-radius-lg`: 8px - dropdowns, popovers, hints
+  - `--ms-border-radius`: backward compat alias → md
+  - Pattern: `calc(var(--base-border-radius-sm, 0.4) * var(--ms-rem))`
+
+- **Input Border Color Theme Integration** - Integrated `--base-input-border-color-*` variables from theme-designer
+  - `--ms-input-border-color`: normal state → `var(--base-input-border-color, var(--ms-border-color))`
+  - `--ms-input-border-color-hover`: hover state → `var(--base-input-border-color-hover, var(--ms-accent-color))`
+  - `--ms-input-border-color-focus`: focus state → `var(--base-input-border-color-focus, var(--ms-accent-color))`
+
+- **Remove Button Tooltip Customization** - New options to customize remove button tooltip text
+  - `getRemoveButtonTooltipCallback`: Callback to generate custom tooltip text per item
+  - `removeButtonTooltipText`: Format string with `{0}` placeholder (e.g., "Delete {0}")
+  - `remove-button-tooltip-text` HTML attribute
+  - Default remains "Remove {itemName}"
+
+- **Input Size Variants** - Added five input size variants (xs, sm, md, lg, xl) with theme-designer integration
+  - `--ms-input-size-xs-height`: `calc(var(--base-input-size-xs-height, 3.1) * var(--ms-rem))` (31px)
+  - `--ms-input-size-sm-height`: `calc(var(--base-input-size-sm-height, 3.3) * var(--ms-rem))` (33px)
+  - `--ms-input-size-md-height`: `calc(var(--base-input-size-md-height, 3.5) * var(--ms-rem))` (35px)
+  - `--ms-input-size-lg-height`: `calc(var(--base-input-size-lg-height, 3.8) * var(--ms-rem))` (38px)
+  - `--ms-input-size-xl-height`: `calc(var(--base-input-size-xl-height, 4.1) * var(--ms-rem))` (41px)
+  - Each size also includes `-font`, `-padding-v`, `-padding-h` variables
+  - Heights reference `--base-input-size-*-height` from theme-designer for consistent sizing across all KeenMate components
+
+### Changed
+
+- **Default Input Height** - `--ms-input-height` now references `--base-input-size-md-height` for theme-designer consistency
+
+- **BREAKING: Migrated from SCSS to Pure CSS** - Complete removal of SCSS dependency
+  - All 11 SCSS files converted to pure CSS in `src/css/` folder
+  - Removed `sass-embedded` from devDependencies
+  - Removed SCSS preprocessor configuration from `vite.config.ts`
+  - Package exports changed: `./scss` → `./css`, `./src/scss/*` → `./src/css/*`
+  - Files included: `src/css/` folder instead of `src/scss/`
+  - **Migration**: If importing SCSS directly, update paths from `./scss/` to `./css/`
+
+- **Simplified Variable Architecture** - Single source of truth for all styling
+  - All SCSS `$variables` replaced with CSS custom property fallbacks
+  - Pre-computed `color.mix()` values to static hex: `--ms-text-color-2: #353b47`, `--ms-text-color-4: #a0a3a9`
+  - No more build-time vs runtime variable confusion
+  - Theme-designer integration works correctly without SCSS interpolation overrides
+
+- **Arrow Key Navigation** - Disabled wrap-around behavior on ArrowUp at first item
+  - Previously: ArrowUp at first item jumped to last item
+  - Now: ArrowUp at first item stays at first item (use Home/End to jump)
+
+### Fixed
+
+- **Tooltip Remains After Badge Removal** - Fixed tooltip staying visible when clicking remove button
+  - Root cause: `showTimeout` and `hideTimeout` were local closure variables not cleared on cleanup
+  - Added `badgeTooltipShowTimeouts` and `badgeTooltipHideTimeouts` Maps to track pending timeouts
+  - `destroyAllBadgeTooltips()` now clears all pending timeouts before removing elements
+  - `cleanupBadgeTooltip()` now clears specific timeouts for the tooltip being cleaned up
+
+- **Badge Text Border Clipping** - Fixed top/bottom borders being hidden on `.ms__badge-text`
+  - Root cause: `height: 100%` + border caused total height to exceed parent's fixed height with `overflow: hidden`
+  - Added `box-sizing: border-box` to `.ms__badge-text` and `.ms__badge-remove`
+  - Full border now visible on badge text and remove button
+
+- **Text Color Levels Not Applying** - Fixed `--ms-text-color-1` through `--ms-text-color-4` not cascading to option titles/subtitles
+  - Root cause: SCSS interpolation was overriding CSS variable fallback chains
+  - Solution: Pure CSS removes the conflict entirely
+
+- **Virtual Scroll Search Bug** - Fixed issue where searching for non-existent term broke subsequent searches
+  - Root cause: When `filteredOptions.length === 0`, normal rendering was used (not virtual scroll), but `virtualScroll` instance wasn't destroyed
+  - Clearing search caused virtual scroll to render to orphaned DOM elements
+  - Added cleanup in `renderDropdown()` when transitioning from virtual scroll to normal rendering
+
+- **Virtual Scroll Keyboard Navigation** - Fixed arrow key navigation not scrolling beyond visible area
+  - `setItems()` no longer resets scroll position when items haven't changed (e.g., focus change)
+  - `scrollToIndex()` now implements `scrollIntoView({ block: 'nearest' })` behavior - only scrolls if item is outside viewport
+
+- **Checkbox Alignment Default** - Fixed `--ms-checkbox-align` fallback incorrectly set to `flex-start` instead of `center`
+- **Options Padding Default** - Changed `--ms-options-padding` default from `calc(0.4 * var(--ms-rem)) 0` to `0`
+- **Dropdown Border Cascading** - Fixed `--ms-dropdown-border` now uses `var(--base-dropdown-border, ...)` to respect theme-designer settings
+- **Selected Option Title Color** - Added `--ms-option-title-color-selected` and `--ms-option-title-color-selected-hover` CSS rules so title text properly uses contrasted color (e.g., white) on selected accent background
+
+### Removed
+
+- **SCSS Files** - Deleted entire `src/scss/` folder (11 files, ~2,600 lines)
+  - `_variables.scss`, `_css-variables.scss`, `_base.scss`, `_input-dropdown.scss`
+  - `_options.scss`, `_badges-display.scss`, `_tooltips-popover.scss`
+  - `_modifiers.scss`, `_rtl.scss`, `_debug.scss`, `main.scss`
+
+- **Redundant Option Color Variables** - Removed container-level selected color variables in favor of element-specific ones
+  - Removed: `--ms-option-color-selected`, `--ms-option-color-selected-hover`, `--ms-option-color-selected-focused`, `--ms-option-color-selected-matched`, `--ms-option-color-disabled-selected`
+  - Color inheritance for selected options now handled by `--ms-option-title-color-selected` and `--ms-option-subtitle-color-selected`
+
+### Performance
+
+- **Faster Builds** - 375ms vs 851ms (no SCSS compilation)
+- **Smaller Bundle** - 165KB vs 171KB JS bundle
+
 ## [1.5.1] - 2025-12-08
 
 ### Fixed

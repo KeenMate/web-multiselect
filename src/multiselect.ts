@@ -38,6 +38,8 @@ export class WebMultiSelect<T = any> {
     // Badge tooltip storage
     private badgeTooltips = new Map<string, HTMLDivElement>();
     private badgeTooltipCleanups = new Map<string, () => void>();
+    private badgeTooltipShowTimeouts = new Map<string, number>();
+    private badgeTooltipHideTimeouts = new Map<string, number>();
 
     // Action button tooltip storage
     private actionButtonTooltips = new Map<string, HTMLDivElement>();
@@ -245,6 +247,7 @@ export class WebMultiSelect<T = any> {
             isAddNewAllowed: element.dataset.allowAddNew === 'true',
             isCounterShown: element.dataset.showCounter === 'true',
             isKeepOptionsOnSearch: element.dataset.keepOptionsOnSearch !== 'false',
+            shouldKeepSearchOnClose: element.dataset.keepSearchOnClose !== 'false',
 
             // Data and callbacks
             options: [],
@@ -436,6 +439,14 @@ export class WebMultiSelect<T = any> {
         // Remove virtual scroll class if not using it
         this.dropdown.classList.remove('ms__dropdown--virtual');
 
+        // Clean up virtual scroll when switching to normal rendering
+        // This prevents stale references when items drop below threshold (e.g., search with 0 results)
+        if (this.virtualScroll) {
+            this.virtualScroll.destroy();
+            this.virtualScroll = null;
+            this.optionsContainer = null;
+        }
+
         // Normal rendering (existing code)
         let html = '';
 
@@ -587,6 +598,11 @@ export class WebMultiSelect<T = any> {
         }
 
         if (this.filteredOptions.length === 0) {
+            // Destroy virtual scroll when showing empty message to prevent stale state
+            if (this.virtualScroll) {
+                this.virtualScroll.destroy();
+                this.virtualScroll = null;
+            }
             this.optionsContainer.innerHTML = `<div class="ms__empty">${this.options.emptyMessage}</div>`;
             return;
         }
@@ -597,7 +613,9 @@ export class WebMultiSelect<T = any> {
 
         // Defer initialization until container has dimensions
         requestAnimationFrame(() => {
-            if (!this.optionsContainer) return;
+            if (!this.optionsContainer) {
+                return;
+            }
 
             if (!this.virtualScroll) {
                 this.virtualScroll = new VirtualScroll<T>({
@@ -1365,9 +1383,7 @@ export class WebMultiSelect<T = any> {
     private focusPrevious(): void {
         if (this.filteredOptions.length === 0) return;
 
-        this.focusedIndex = this.focusedIndex <= 0
-            ? this.filteredOptions.length - 1
-            : this.focusedIndex - 1;
+        this.focusedIndex = Math.max(0, this.focusedIndex - 1);
         this.renderDropdown();
         this.scrollToFocused();
     }
@@ -1619,24 +1635,29 @@ export class WebMultiSelect<T = any> {
         if (this.hint) {
             this.hint.classList.remove('ms__hint--visible');
         }
-        this.searchTerm = '';
-        // Only clear input in multi-select mode or when search is enabled
-        const willClearInput = this.options.isMultipleEnabled || this.options.isSearchEnabled;
-        uiLogger.warn(`[${this.instanceId}] close() - input clearing decision`, {
-            multiple: this.options.isMultipleEnabled,
-            enableSearch: this.options.isSearchEnabled,
-            willClearInput,
-            currentInputValue: this.input.value
-        });
 
-        if (willClearInput) {
-            uiLogger.info(`[${this.instanceId}] 🧹 close() CLEARING input.value`);
-            this.input.value = '';
-        } else {
-            uiLogger.info(`[${this.instanceId}] 🔒 close() KEEPING input.value = "${this.input.value}"`);
+        // Only clear search if shouldKeepSearchOnClose is false
+        if (!this.options.shouldKeepSearchOnClose) {
+            this.searchTerm = '';
+            // Only clear input in multi-select mode or when search is enabled
+            const willClearInput = this.options.isMultipleEnabled || this.options.isSearchEnabled;
+            uiLogger.warn(`[${this.instanceId}] close() - input clearing decision`, {
+                multiple: this.options.isMultipleEnabled,
+                enableSearch: this.options.isSearchEnabled,
+                willClearInput,
+                currentInputValue: this.input.value
+            });
+
+            if (willClearInput) {
+                uiLogger.info(`[${this.instanceId}] 🧹 close() CLEARING input.value`);
+                this.input.value = '';
+            } else {
+                uiLogger.info(`[${this.instanceId}] 🔒 close() KEEPING input.value = "${this.input.value}"`);
+            }
+
+            this.filteredOptions = [...this.allOptions];
         }
 
-        this.filteredOptions = [...this.allOptions];
         this.focusedIndex = -1;
 
         uiLogger.info(`[${this.instanceId}] 📞 close() CALLING renderBadges()`);
@@ -2133,7 +2154,7 @@ export class WebMultiSelect<T = any> {
 
             // Create tooltip for remove button
             const displayValue = this.getItemBadgeDisplayValue(option);
-            this.createRemoveButtonTooltip(removeBtn, displayValue, value);
+            this.createRemoveButtonTooltip(removeBtn, displayValue, value, option);
         });
 
         // Handle "+X more" badge remove button tooltip (only for main badges container)
@@ -2179,36 +2200,60 @@ export class WebMultiSelect<T = any> {
 
         this.badgeTooltips.set(uniqueId, tooltip);
 
-        // Setup hover handlers
-        let showTimeout: number;
-        let hideTimeout: number;
-
+        // Setup hover handlers with tracked timeouts for proper cleanup
         const showTooltip = () => {
-            clearTimeout(hideTimeout);
+            // Clear any pending hide timeout
+            const existingHideTimeout = this.badgeTooltipHideTimeouts.get(uniqueId);
+            if (existingHideTimeout) {
+                clearTimeout(existingHideTimeout);
+                this.badgeTooltipHideTimeouts.delete(uniqueId);
+            }
+
             uiLogger.debug(`[${this.instanceId}] Mouse entered badge "${uniqueId}", will show tooltip in ${this.options.badgeTooltipDelay ?? 100}ms`);
-            showTimeout = window.setTimeout(() => {
+            const showTimeout = window.setTimeout(() => {
                 uiLogger.debug(`[${this.instanceId}] Showing tooltip for "${uniqueId}"`);
                 tooltip.classList.add('ms__badge-tooltip--visible');
                 this.positionBadgeTooltip(element, tooltip, uniqueId);
+                this.badgeTooltipShowTimeouts.delete(uniqueId);
             }, this.options.badgeTooltipDelay ?? 100);
+            this.badgeTooltipShowTimeouts.set(uniqueId, showTimeout);
         };
 
         const hideTooltip = () => {
-            clearTimeout(showTimeout);
-            hideTimeout = window.setTimeout(() => {
+            // Clear any pending show timeout
+            const existingShowTimeout = this.badgeTooltipShowTimeouts.get(uniqueId);
+            if (existingShowTimeout) {
+                clearTimeout(existingShowTimeout);
+                this.badgeTooltipShowTimeouts.delete(uniqueId);
+            }
+
+            const hideTimeout = window.setTimeout(() => {
                 tooltip.classList.remove('ms__badge-tooltip--visible');
                 this.cleanupBadgeTooltip(uniqueId);
+                this.badgeTooltipHideTimeouts.delete(uniqueId);
             }, 100);
+            this.badgeTooltipHideTimeouts.set(uniqueId, hideTimeout);
         };
 
         element.addEventListener('mouseenter', showTooltip);
         element.addEventListener('mouseleave', hideTooltip);
     }
 
-    private createRemoveButtonTooltip(removeBtn: HTMLElement, itemName: string, uniqueId: string): void {
+    private createRemoveButtonTooltip(removeBtn: HTMLElement, itemName: string, uniqueId: string, option?: T): void {
         const tooltip = document.createElement('div');
         tooltip.className = 'ms__badge-tooltip';
-        tooltip.textContent = `Remove ${itemName}`;
+
+        // Get tooltip text from callback, format string, or default
+        let tooltipText: string;
+        if (option && this.options.getRemoveButtonTooltipCallback) {
+            tooltipText = this.options.getRemoveButtonTooltipCallback(option);
+        } else if (this.options.removeButtonTooltipText) {
+            // Support format string with {0} placeholder for item name
+            tooltipText = this.options.removeButtonTooltipText.replace('{0}', itemName);
+        } else {
+            tooltipText = `Remove ${itemName}`;
+        }
+        tooltip.textContent = tooltipText;
 
         const container = this.options.container || document.body;
         container.appendChild(tooltip);
@@ -2216,11 +2261,14 @@ export class WebMultiSelect<T = any> {
         const tooltipId = `${uniqueId}-remove`;
         this.badgeTooltips.set(tooltipId, tooltip);
 
-        let showTimeout: number;
-        let hideTimeout: number;
-
+        // Setup hover handlers with tracked timeouts for proper cleanup
         const showTooltip = () => {
-            clearTimeout(hideTimeout);
+            // Clear any pending hide timeout
+            const existingHideTimeout = this.badgeTooltipHideTimeouts.get(tooltipId);
+            if (existingHideTimeout) {
+                clearTimeout(existingHideTimeout);
+                this.badgeTooltipHideTimeouts.delete(tooltipId);
+            }
 
             // Hide the parent badge tooltip to prevent overlap
             const badgeTooltip = this.badgeTooltips.get(uniqueId);
@@ -2228,18 +2276,28 @@ export class WebMultiSelect<T = any> {
                 badgeTooltip.classList.remove('ms__badge-tooltip--visible');
             }
 
-            showTimeout = window.setTimeout(() => {
+            const showTimeout = window.setTimeout(() => {
                 tooltip.classList.add('ms__badge-tooltip--visible');
                 this.positionBadgeTooltip(removeBtn, tooltip, tooltipId);
+                this.badgeTooltipShowTimeouts.delete(tooltipId);
             }, this.options.badgeTooltipDelay ?? 100);
+            this.badgeTooltipShowTimeouts.set(tooltipId, showTimeout);
         };
 
         const hideTooltip = () => {
-            clearTimeout(showTimeout);
-            hideTimeout = window.setTimeout(() => {
+            // Clear any pending show timeout
+            const existingShowTimeout = this.badgeTooltipShowTimeouts.get(tooltipId);
+            if (existingShowTimeout) {
+                clearTimeout(existingShowTimeout);
+                this.badgeTooltipShowTimeouts.delete(tooltipId);
+            }
+
+            const hideTimeout = window.setTimeout(() => {
                 tooltip.classList.remove('ms__badge-tooltip--visible');
                 this.cleanupBadgeTooltip(tooltipId);
+                this.badgeTooltipHideTimeouts.delete(tooltipId);
             }, 100);
+            this.badgeTooltipHideTimeouts.set(tooltipId, hideTimeout);
         };
 
         removeBtn.addEventListener('mouseenter', showTooltip);
@@ -2277,6 +2335,19 @@ export class WebMultiSelect<T = any> {
     }
 
     private cleanupBadgeTooltip(uniqueId: string): void {
+        // Clear any pending timeouts for this specific tooltip
+        const showTimeout = this.badgeTooltipShowTimeouts.get(uniqueId);
+        if (showTimeout) {
+            clearTimeout(showTimeout);
+            this.badgeTooltipShowTimeouts.delete(uniqueId);
+        }
+        const hideTimeout = this.badgeTooltipHideTimeouts.get(uniqueId);
+        if (hideTimeout) {
+            clearTimeout(hideTimeout);
+            this.badgeTooltipHideTimeouts.delete(uniqueId);
+        }
+
+        // Clean up Floating UI positioning
         const cleanup = this.badgeTooltipCleanups.get(uniqueId);
         if (cleanup) {
             cleanup();
@@ -2285,11 +2356,17 @@ export class WebMultiSelect<T = any> {
     }
 
     private destroyAllBadgeTooltips(): void {
-        // Clean up all tooltip positioning
+        // Clear all pending show/hide timeouts first to prevent orphaned callbacks
+        this.badgeTooltipShowTimeouts.forEach(timeout => clearTimeout(timeout));
+        this.badgeTooltipShowTimeouts.clear();
+        this.badgeTooltipHideTimeouts.forEach(timeout => clearTimeout(timeout));
+        this.badgeTooltipHideTimeouts.clear();
+
+        // Clean up all tooltip positioning (Floating UI cleanup)
         this.badgeTooltipCleanups.forEach(cleanup => cleanup());
         this.badgeTooltipCleanups.clear();
 
-        // Remove all tooltip elements
+        // Remove all tooltip elements from DOM
         this.badgeTooltips.forEach(tooltip => tooltip.remove());
         this.badgeTooltips.clear();
     }

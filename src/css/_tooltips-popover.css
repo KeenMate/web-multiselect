@@ -1,0 +1,173 @@
+/* ==============================================================================
+   TOOLTIPS & POPOVER
+   ==============================================================================
+   Badge tooltips and selected items popover
+*/
+
+/* ==============================================================================
+   BADGE TOOLTIPS
+   ==============================================================================
+*/
+
+.ms__badge-tooltip {
+  position: fixed;
+  z-index: var(--ms-tooltip-z-index);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--ms-transition-normal) ease, visibility var(--ms-transition-normal) ease;
+
+  background: var(--ms-tooltip-background);
+  color: var(--ms-tooltip-text-color);
+  padding: var(--ms-tooltip-padding);
+  border-radius: var(--ms-tooltip-border-radius);
+  font-size: var(--ms-tooltip-font-size);
+  line-height: var(--ms-line-height-relaxed);
+  max-width: var(--ms-tooltip-max-width);
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  box-shadow: var(--ms-tooltip-shadow);
+  pointer-events: none; /* Prevent tooltip from interfering with mouse events */
+}
+
+.ms__badge-tooltip--visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* ==============================================================================
+   SELECTED ITEMS POPOVER
+   ==============================================================================
+*/
+
+/* Selected items popover (for count display mode) */
+.ms__selected-popover {
+  display: none;
+  position: absolute;
+  z-index: var(--ms-z-index-popover);
+  background: var(--ms-selected-popover-background);
+  border: var(--ms-selected-popover-border);
+  border-radius: var(--ms-selected-popover-border-radius);
+  box-shadow: var(--ms-selected-popover-box-shadow);
+  width: var(--ms-selected-popover-width);
+  max-height: var(--ms-selected-popover-max-height);
+  overflow: hidden;
+}
+
+.ms__selected-popover--visible {
+  display: flex;
+  flex-direction: column;
+}
+
+.ms__selected-popover--virtual {
+  /* In virtual scroll mode, let the body container handle scrolling (matches dropdown pattern) */
+  display: block;        /* Change from flex to block (like dropdown) */
+  overflow: visible;
+  max-height: none;
+}
+
+.ms__selected-popover-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--ms-selected-popover-header-padding);
+  background: var(--ms-selected-popover-header-background);
+  border-bottom: var(--ms-selected-popover-header-border-bottom);
+  font-size: var(--ms-selected-popover-header-font-size);
+  font-weight: var(--ms-selected-popover-header-font-weight);
+  color: var(--ms-selected-popover-header-color);
+}
+
+.ms__selected-popover-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ms-popover-close-size);
+  height: var(--ms-popover-close-size);
+  padding: 0;
+  border: none;
+  background: var(--ms-selected-popover-close-background);
+  color: var(--ms-selected-popover-close-color);
+  font-size: var(--ms-selected-popover-close-font-size);
+  line-height: var(--ms-line-height-none);
+  cursor: pointer;
+  border-radius: var(--ms-selected-popover-close-border-radius);
+  transition: all var(--ms-transition-fast) var(--ms-easing-snappy);
+}
+
+.ms__selected-popover-close:hover {
+  background: var(--ms-selected-popover-close-background-hover);
+  color: var(--ms-selected-popover-close-color-hover);
+}
+
+.ms__selected-popover-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--ms-selected-popover-body-gap);
+  padding: var(--ms-selected-popover-body-padding);
+  overflow-y: auto;
+  max-height: var(--ms-selected-popover-body-max-height);
+
+  /* Scrollbar styling */
+  scrollbar-width: thin;  /* Firefox */
+  scrollbar-color: var(--ms-scrollbar-thumb-bg) var(--ms-scrollbar-track-bg);
+}
+
+.ms__selected-popover-body::-webkit-scrollbar {
+  width: var(--ms-scrollbar-width);
+}
+
+.ms__selected-popover-body::-webkit-scrollbar-track {
+  background: var(--ms-scrollbar-track-bg);
+}
+
+.ms__selected-popover-body::-webkit-scrollbar-thumb {
+  background: var(--ms-scrollbar-thumb-bg);
+  border-radius: var(--ms-scrollbar-thumb-border-radius);
+}
+
+.ms__selected-popover-body::-webkit-scrollbar-thumb:hover {
+  background: var(--ms-scrollbar-thumb-bg-hover);
+}
+
+/* Badges inside popover (non-virtual mode) */
+.ms__selected-popover-body .ms__badge {
+  width: 100%;
+  min-height: fit-content; /* Allow badges to expand based on content */
+  line-height: var(--ms-line-height-relaxed); /* Override line-height: 1 to allow multi-line content */
+}
+
+.ms__selected-popover-body .ms__badge-text {
+  flex: 1;
+  min-width: 0; /* Allow proper flex sizing */
+  white-space: normal; /* Explicitly allow wrapping */
+  word-wrap: break-word; /* Break long words */
+  /* Remove overflow constraints to allow multi-line content */
+  /* overflow: hidden; */
+  /* text-overflow: ellipsis; */
+  /* white-space: nowrap; */
+}
+
+/* Virtual scroll mode */
+.ms__selected-popover-body--virtual {
+  /* Let inline styles control overflow-y: auto (like dropdown does) */
+  display: block;        /* Override flex display for virtual scroll */
+  max-height: none;      /* Remove max-height constraint */
+  padding: 0;            /* Remove padding as virtual scroll has its own spacing */
+}
+
+.ms__selected-popover-body--virtual .ms__badge {
+  /* Fixed height for virtual scroll (default: 36px, configurable via badge-height attribute) */
+  height: var(--ms-badge-height-virtual, 36px);
+  min-height: var(--ms-badge-height-virtual, 36px);
+  max-height: var(--ms-badge-height-virtual, 36px);
+  margin-bottom: var(--ms-selected-popover-body-gap); /* Add gap between badges */
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+.ms__selected-popover-body--virtual .ms__badge-text {
+  /* Enforce single-line truncation for virtual scroll fixed heights */
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

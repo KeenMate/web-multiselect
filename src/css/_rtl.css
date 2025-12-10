@@ -1,0 +1,150 @@
+/* ==============================================================================
+   RTL (Right-to-Left) SUPPORT
+   ==============================================================================
+   Styles for RTL languages (Arabic, Hebrew, etc.)
+   Applied when .ms--rtl class is present
+*/
+
+/* ==============================================================================
+   INPUT & TOGGLE ICON
+   ==============================================================================
+*/
+
+.ms--rtl .ms__input-wrapper {
+  direction: rtl;
+}
+
+.ms--rtl .ms__input {
+  text-align: right;
+  padding-left: var(--ms-input-padding-right);
+  padding-right: var(--ms-input-padding-h);
+}
+
+/* Move toggle icon to left side */
+.ms--rtl .ms__toggle {
+  left: var(--ms-toggle-right) !important;
+  right: auto !important;
+}
+
+/* Move count badge to left side */
+.ms--rtl .ms__counter {
+  left: var(--ms-counter-offset) !important;
+  right: auto !important;
+}
+
+/* ==============================================================================
+   DROPDOWN OPTIONS
+   ==============================================================================
+*/
+
+.ms--rtl .ms__dropdown {
+  direction: rtl;
+  text-align: right;
+}
+
+/* Checkbox on right side */
+.ms--rtl .ms__option {
+  flex-direction: row-reverse;
+}
+
+.ms--rtl .ms__checkbox {
+  margin-left: var(--ms-spacing-sm);
+  margin-right: 0;
+}
+
+.ms--rtl .ms__option-content {
+  text-align: right;
+}
+
+.ms--rtl .ms__option-icon {
+  margin-left: var(--ms-spacing-xs);
+  margin-right: 0;
+}
+
+/* ==============================================================================
+   BADGES LAYOUT
+   ==============================================================================
+*/
+
+.ms--rtl .ms__badges {
+  direction: rtl;
+}
+
+/* Badges flow right-to-left */
+.ms--rtl .ms__badge {
+  flex-direction: row-reverse;
+}
+
+/* Remove button on left side of badge (RTL) */
+.ms--rtl .ms__badge-remove {
+  border-radius: var(--ms-badge-border-radius) 0 0 var(--ms-badge-border-radius);
+  border-left: var(--ms-badge-remove-border);
+  border-right: none;
+}
+
+/* Badge text rounded on right (RTL) */
+.ms--rtl .ms__badge-text {
+  border-radius: 0 var(--ms-badge-border-radius) var(--ms-badge-border-radius) 0;
+  border-right: var(--ms-badge-text-border);
+  border-left: none;
+}
+
+/* ==============================================================================
+   COUNT DISPLAY
+   ==============================================================================
+*/
+
+.ms--rtl .ms__count-display {
+  direction: rtl;
+}
+
+.ms--rtl .ms__counter-wrapper {
+  flex-direction: row-reverse;
+}
+
+/* ==============================================================================
+   SELECTED POPOVER
+   ==============================================================================
+*/
+
+.ms--rtl .ms__selected-popover {
+  direction: rtl;
+  text-align: right;
+}
+
+/* ==============================================================================
+   ACTIONS
+   ==============================================================================
+*/
+
+.ms--rtl .ms__actions {
+  direction: rtl;
+}
+
+/* ==============================================================================
+   GROUPS
+   ==============================================================================
+*/
+
+.ms--rtl .ms__group-label {
+  text-align: right;
+}
+
+/* ==============================================================================
+   EMPTY STATE
+   ==============================================================================
+*/
+
+.ms--rtl .ms__empty {
+  text-align: right;
+}
+
+/* ==============================================================================
+   HINT
+   ==============================================================================
+*/
+
+.ms--rtl .ms__hint {
+  direction: rtl;
+  text-align: right;
+}

@@ -129,6 +129,7 @@ multiselect.setSelected(['js', 'ts']);
 | `loading-message` | `string` | `'Loading...'` | Message while loading async data |
 | `min-search-length` | `number` | `0` | Minimum search length for async |
 | `keep-options-on-search` | `boolean` | `true` | Keep initial options visible when searchCallback is active (hybrid search) |
+| `should-keep-search-on-close` | `boolean` | `true` | Preserve search text and filtered results when dropdown closes |
 | `sticky-actions` | `boolean` | `true` | Keep action buttons fixed at top while scrolling |
 | `actions-layout` | `'nowrap' \| 'wrap'` | `'nowrap'` | Layout mode for action buttons: 'nowrap' (single row) or 'wrap' (multi-row) |
 | `lock-placement` | `boolean` | `true` | Lock dropdown placement after first open to prevent flipping |
@@ -1533,11 +1534,31 @@ web-multiselect.large { --ms-rem: 12px; }
 
 **Fine-grained Control:**
 Override individual sizing variables for specific adjustments:
-- `--ms-input-height` - Input field height
+- `--ms-input-height` - Input field height (default: 35px)
 - `--ms-input-font-size` - Input font size
 - `--ms-input-padding` - Input padding
 - `--ms-badge-height` - Badge height
 - `--ms-option-height` - Option height in dropdown
+
+**Input Size Variants:**
+Five size variants for consistent input sizing across KeenMate components:
+
+| Size | Variable | Height | Base Variable |
+|------|----------|--------|---------------|
+| XS | `--ms-input-size-xs-height` | 31px | `--base-input-size-xs-height` |
+| SM | `--ms-input-size-sm-height` | 33px | `--base-input-size-sm-height` |
+| MD | `--ms-input-size-md-height` | 35px | `--base-input-size-md-height` |
+| LG | `--ms-input-size-lg-height` | 38px | `--base-input-size-lg-height` |
+| XL | `--ms-input-size-xl-height` | 41px | `--base-input-size-xl-height` |
+
+Heights reference `--base-input-size-*-height` from the [Theme Designer](https://theme-designer.keenmate.dev), ensuring consistent input heights across all KeenMate components.
+
+```css
+/* Set consistent input heights across all components */
+:root {
+  --base-input-size-md-height: 4.0;  /* All components: 40px at 10px rem */
+}
+```
 
 ### Theme Designer
 
@@ -1656,8 +1677,7 @@ All CSS custom properties are now defined at the `:host` level in the compiled C
 ```
 
 For the complete list of all available CSS variables, see:
-- [_css-variables.scss](./src/scss/_css-variables.scss) - All 150+ CSS custom properties at `:host` level
-- [_variables.scss](./src/scss/_variables.scss) - Foundation SCSS variables (colors, spacing, typography)
+- [_variables.css](./src/css/_variables.css) - All 150+ CSS custom properties at `:host` level
 
 #### Colors
 
@@ -1697,8 +1717,6 @@ For the complete list of all available CSS variables, see:
 | `--ms-option-hover-bg` | `#f9fafb` | Option background on hover |
 | `--ms-option-color-hover` | `inherit` | Option text color on hover |
 | `--ms-option-bg-selected` | (rgba accent) | Selected option background |
-| `--ms-option-color-selected` | `inherit` | Selected option text color |
-| `--ms-option-color-selected-hover` | (inherits selected) | Text color when hovering selected option |
 | `--ms-option-bg-focused` | `#f9fafb` | Focused option background (keyboard) |
 | `--ms-option-color-focused` | `inherit` | Focused option text color |
 | `--ms-option-bg-matched` | (accent 8%) | Matched option background (navigate mode) |
@@ -1790,17 +1808,18 @@ For the complete list of all available CSS variables, see:
 | `--ms-shadow-xl` | (box shadow) | Extra large shadow |
 | `--ms-disabled-opacity` | `0.5` | Opacity for disabled state |
 
-### Advanced: Custom SCSS
+### Advanced: Direct CSS Import
 
-For users with a build system, you can import and customize the SCSS:
+For users who want to import the raw CSS source files:
 
-```scss
-// Import and override SCSS variables
-@use '@keenmate/web-multiselect/scss' with (
-  $ms-accent-color: #10b981,
-  $ms-border-radius: 0.5rem,
-  $ms-font-size-base: 1rem
-);
+```css
+/* Import component CSS directly */
+@import '@keenmate/web-multiselect/css';
+
+/* Or import individual partials */
+@import '@keenmate/web-multiselect/src/css/_variables.css';
+@import '@keenmate/web-multiselect/src/css/_base.css';
+/* ... etc */
 ```
 
 ## Browser Support

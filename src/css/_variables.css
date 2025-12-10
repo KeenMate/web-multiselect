@@ -1,0 +1,588 @@
+/* ==============================================================================
+   CSS CUSTOM PROPERTIES (:host level)
+   ==============================================================================
+   This file defines all CSS custom properties at the :host level, making them:
+   - Inspectable in browser DevTools
+   - Overridable from outside Shadow DOM
+   - Self-documenting in compiled CSS
+
+   Usage from outside Shadow DOM:
+     multi-select {
+       --ms-accent-color: #10b981;
+       --ms-input-border-radius: 0.5rem;
+     }
+   ============================================================================== */
+
+:host {
+  /* ==========================================================================
+     BASE SIZING UNIT
+     ==========================================================================
+     All sizing values are based on this unit for consistent scaling.
+     Default: 10px produces standard pixel values
+     Pure Admin: Set to 1rem (inherits from html { font-size: 10px })
+     Custom: Set to any value to scale all sizes proportionally */
+  --ms-rem: 10px;
+
+  /* ==========================================================================
+     FONT FAMILY (set at :host so all shadow DOM content inherits)
+     ========================================================================== */
+  font-family: var(--ms-font-family, var(--base-font-family, inherit));
+
+  /* ==========================================================================
+     COLORS & THEME
+     ==========================================================================
+     Color variables follow this priority chain:
+       1. External override: --ms-accent-color: #custom
+       2. Base theme value: var(--base-accent-color)
+       3. Hardcoded default fallback */
+
+  /* Accent Colors */
+  --ms-accent-color: var(--base-accent-color, #3b82f6);
+  --ms-accent-color-hover: var(--base-accent-color-hover, #2563eb);
+  --ms-accent-color-active: var(--base-accent-color-active, #1d4ed8);
+
+  /* Text Color Levels (FluentUI-style hierarchy) */
+  --ms-text-color-1: var(--base-text-color-1, #111827);
+  --ms-text-color-2: var(--base-text-color-2, #353b47);
+  --ms-text-color-3: var(--base-text-color-3, #6b7280);
+  --ms-text-color-4: var(--base-text-color-4, #a0a3a9);
+  --ms-text-on-accent: var(--base-text-on-accent, #ffffff);
+
+  /* Legacy aliases (for backward compatibility) */
+  --ms-text-primary: var(--ms-text-color-1);
+  --ms-text-secondary: var(--ms-text-color-3);
+
+  /* Background Colors */
+  --ms-primary-bg: var(--base-primary-bg, #f3f4f6);
+  --ms-primary-bg-hover: var(--base-primary-bg-hover, #e5e7eb);
+  --ms-border-color: var(--base-border-color, #e5e7eb);
+
+  /* ==========================================================================
+     SEMANTIC VARIABLES - Component-Specific Theming
+     ==========================================================================
+     Pattern: --ms-{component}-{property}-{state}
+     Example: --ms-input-background, --ms-option-text-color-hover */
+
+  /* Input Component Semantic Variables */
+  --ms-input-background: var(--base-input-background, #ffffff);
+  --ms-input-color: var(--base-input-color, var(--ms-text-color-1));
+  --ms-input-border: var(--base-input-border, 1px solid var(--ms-border-color));
+  --ms-input-border-hover: var(--base-input-border-hover, 1px solid var(--ms-accent-color));
+  --ms-input-border-focus: var(--base-input-border-focus, 1px solid var(--ms-accent-color));
+  --ms-input-placeholder-color: var(--base-input-placeholder-color, var(--ms-text-color-4));
+  --ms-input-background-disabled: var(--base-input-background-disabled, rgba(107, 114, 128, 0.05));
+
+  /* Toggle Icon Semantic Variables */
+  --ms-toggle-icon-color: var(--ms-text-color-3);
+  --ms-toggle-icon-color-open: var(--ms-text-color-3);
+
+  /* Counter Badge (in Input) Semantic Variables */
+  --ms-counter-badge-background: var(--ms-accent-color);
+  --ms-counter-badge-background-hover: var(--ms-accent-color-hover);
+  --ms-counter-badge-color: var(--ms-text-on-accent);
+
+  /* Floating Hint Semantic Variables */
+  --ms-hint-background: #ffffff;
+  --ms-hint-color: var(--ms-text-color-4);
+  --ms-hint-border-color: var(--ms-border-color);
+
+  /* Dropdown Semantic Variables */
+  --ms-dropdown-background: var(--base-dropdown-background, #ffffff);
+  --ms-dropdown-text-color: var(--ms-text-color-1);
+  --ms-dropdown-border-color: var(--ms-border-color);
+  --ms-dropdown-box-shadow-semantic: var(--base-dropdown-box-shadow, 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1));
+
+  /* Dropdown Actions Semantic Variables */
+  --ms-actions-background: #ffffff;
+  --ms-actions-border-color: var(--ms-border-color);
+
+  /* Action Button Semantic Variables */
+  --ms-action-button-background: transparent;
+  --ms-action-button-background-hover: var(--ms-primary-bg);
+  --ms-action-button-border-color: var(--ms-border-color);
+  --ms-action-button-border-color-hover: var(--ms-accent-color);
+  --ms-action-button-color: var(--ms-text-color-1);
+
+  /* Group Semantic Variables */
+  --ms-group-border-color: var(--ms-border-color);
+  --ms-group-label-color: var(--ms-text-color-3);
+
+  /* Option Semantic Variables */
+  --ms-option-text-color: var(--ms-text-color-1);
+  --ms-option-background: transparent;
+  --ms-option-background-hover: var(--ms-primary-bg);
+  --ms-option-color-hover: inherit;
+  --ms-option-background-focused: var(--ms-primary-bg);
+  --ms-option-color-focused: inherit;
+  --ms-option-outline-color-focused: var(--ms-accent-color);
+  --ms-option-background-selected: rgba(59, 130, 246, 0.1);
+  --ms-option-background-matched: rgba(59, 130, 246, 0.08);
+  --ms-option-color-matched: inherit;
+  --ms-option-border-matched-color: rgba(59, 130, 246, 0.4);
+
+  /* Option Content Semantic Variables */
+  --ms-option-title-color: var(--ms-text-color-1);
+  --ms-option-subtitle-color: var(--ms-text-color-3);
+  --ms-option-mark-background: rgba(59, 130, 246, 0.2);
+  --ms-option-mark-color: inherit;
+
+  /* Empty/Loading State Semantic Variables */
+  --ms-empty-color: var(--ms-text-color-3);
+  --ms-loading-color: var(--ms-text-color-3);
+
+  /* Badge Semantic Variables */
+  --ms-badge-background: #eff6ff;
+  --ms-badge-background-hover: #ffffff;
+  --ms-badge-background-active: #e0f2fe;
+
+  /* Badge Text Semantic Variables */
+  --ms-badge-text-background: #eff6ff;
+  --ms-badge-text-color: var(--ms-accent-color);
+  --ms-badge-text-background-hover: #ffffff;
+  --ms-badge-text-color-hover: var(--ms-badge-text-color);
+
+  /* Badge Remove Button Semantic Variables */
+  --ms-badge-remove-background: var(--ms-accent-color);
+  --ms-badge-remove-background-hover: var(--ms-accent-color-hover);
+  --ms-badge-remove-color: var(--ms-text-on-accent);
+
+  /* Badge Counter Variant Semantic Variables */
+  --ms-badge-counter-border-color: var(--ms-border-color);
+  --ms-badge-counter-text-background: #d1d5db;
+  --ms-badge-counter-text-color: var(--ms-text-color-3);
+  --ms-badge-counter-remove-background: #6b7280;
+  --ms-badge-counter-remove-background-hover: #111827;
+  --ms-badge-counter-remove-color: #ffffff;
+
+  /* Count Display Semantic Variables */
+  --ms-counter-wrapper-background: transparent;
+  --ms-counter-wrapper-background-hover: var(--ms-primary-bg);
+  --ms-counter-wrapper-border-color: var(--ms-border-color);
+  --ms-counter-wrapper-border-color-hover: var(--ms-accent-color);
+  --ms-count-text-color: var(--ms-text-color-1);
+  --ms-count-clear-background: transparent;
+  --ms-count-clear-background-hover: var(--ms-accent-color);
+  --ms-count-clear-color: var(--ms-text-color-3);
+  --ms-count-clear-color-hover: var(--ms-accent-color);
+
+  /* Tooltip Semantic Variables */
+  --ms-tooltip-background: var(--base-tooltip-background, #333333);
+  --ms-tooltip-text-color: var(--base-tooltip-text-color, #ffffff);
+
+  /* Selected Popover Semantic Variables */
+  --ms-selected-popover-background: #ffffff;
+  --ms-selected-popover-border-color: var(--ms-border-color);
+  --ms-selected-popover-header-background: rgba(59, 130, 246, 0.1);
+  --ms-selected-popover-header-color: var(--ms-text-color-1);
+  --ms-selected-popover-header-border-color: var(--ms-border-color);
+  --ms-selected-popover-close-background: transparent;
+  --ms-selected-popover-close-background-hover: var(--ms-accent-color);
+  --ms-selected-popover-close-color: var(--ms-text-color-3);
+  --ms-selected-popover-close-color-hover: var(--ms-accent-color);
+
+  /* ==========================================================================
+     INPUT COMPONENT
+     ========================================================================== */
+  --ms-input-padding: calc(0.8 * var(--ms-rem)) calc(1.2 * var(--ms-rem));
+  --ms-input-padding-right: calc(4 * var(--ms-rem));
+  --ms-input-height: calc(var(--base-input-size-md-height, 3.5) * var(--ms-rem));
+  --ms-input-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
+  --ms-input-border-width: 1px;
+  --ms-input-border-radius: var(--ms-border-radius-md);
+  --ms-input-bg: #ffffff;
+  --ms-input-text: #111827;
+  --ms-input-bg-disabled: rgba(107, 114, 128, 0.05);
+
+  /* ==========================================================================
+     INPUT SIZE VARIANTS
+     ==========================================================================
+     Five size variants for the input element (xs, sm, md, lg, xl)
+     Heights reference --base-input-size-*-height for consistency across components */
+  --ms-input-size-xs-font: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
+  --ms-input-size-xs-padding-v: calc(0.4 * var(--ms-rem));
+  --ms-input-size-xs-padding-h: calc(0.8 * var(--ms-rem));
+  --ms-input-size-xs-height: calc(var(--base-input-size-xs-height, 3.1) * var(--ms-rem));  /* 31px */
+
+  --ms-input-size-sm-font: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
+  --ms-input-size-sm-padding-v: calc(0.5 * var(--ms-rem));
+  --ms-input-size-sm-padding-h: calc(1.0 * var(--ms-rem));
+  --ms-input-size-sm-height: calc(var(--base-input-size-sm-height, 3.3) * var(--ms-rem));  /* 33px */
+
+  --ms-input-size-md-font: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
+  --ms-input-size-md-padding-v: calc(0.8 * var(--ms-rem));
+  --ms-input-size-md-padding-h: calc(1.2 * var(--ms-rem));
+  --ms-input-size-md-height: calc(var(--base-input-size-md-height, 3.5) * var(--ms-rem));  /* 35px */
+
+  --ms-input-size-lg-font: calc(var(--base-font-size-base, 1.6) * var(--ms-rem));
+  --ms-input-size-lg-padding-v: calc(1.0 * var(--ms-rem));
+  --ms-input-size-lg-padding-h: calc(1.4 * var(--ms-rem));
+  --ms-input-size-lg-height: calc(var(--base-input-size-lg-height, 3.8) * var(--ms-rem));  /* 38px */
+
+  --ms-input-size-xl-font: calc(var(--base-font-size-lg, 1.8) * var(--ms-rem));
+  --ms-input-size-xl-padding-v: calc(1.2 * var(--ms-rem));
+  --ms-input-size-xl-padding-h: calc(1.6 * var(--ms-rem));
+  --ms-input-size-xl-height: calc(var(--base-input-size-xl-height, 4.1) * var(--ms-rem));  /* 41px */
+
+  /* ==========================================================================
+     TOGGLE ICON
+     ========================================================================== */
+  --ms-toggle-right: calc(1.2 * var(--ms-rem));
+  --ms-toggle-color: #6b7280;
+  --ms-transform-center-y: translateY(-50%);
+  --ms-transform-rotate-180: 180deg;
+
+  /* ==========================================================================
+     COUNT BADGE (in input)
+     ========================================================================== */
+  --ms-counter-offset: calc(3.2 * var(--ms-rem));
+  --ms-counter-padding: calc(0.2 * var(--ms-rem)) calc(0.4 * var(--ms-rem));
+  --ms-counter-bg: #3b82f6;
+  --ms-counter-color: #ffffff;
+  --ms-counter-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
+  --ms-counter-font-weight: var(--base-font-weight-semibold, 600);
+  --ms-counter-border-radius: var(--ms-border-radius-sm);
+  --ms-counter-bg-hover: #2563eb;
+  --ms-transform-scale-hover: 1.1;
+
+  /* ==========================================================================
+     FLOATING HINT
+     ========================================================================== */
+  --ms-hint-padding: calc(0.8 * var(--ms-rem)) calc(1.2 * var(--ms-rem));
+  --ms-hint-bg: #ffffff;
+  --ms-hint-border: 1px solid #e5e7eb;
+  --ms-hint-border-radius: var(--ms-border-radius-lg);
+  --ms-hint-box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --ms-hint-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
+
+  /* ==========================================================================
+     DROPDOWN
+     ========================================================================== */
+  --ms-dropdown-bg: #ffffff;
+  --ms-dropdown-border: var(--base-dropdown-border, 1px solid #e5e7eb);
+  --ms-dropdown-border-radius: var(--ms-border-radius-lg);
+  --ms-dropdown-box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --ms-options-max-height: calc(32 * var(--ms-rem));
+  --ms-option-color: #111827;
+  --ms-z-index-dropdown: 9999;
+  --ms-z-index-sticky: 1;
+
+  /* ==========================================================================
+     DROPDOWN ACTIONS
+     ========================================================================== */
+  --ms-actions-gap: calc(0.4 * var(--ms-rem));
+  --ms-actions-padding: calc(0.8 * var(--ms-rem));
+  --ms-actions-border-bottom: 1px solid #e5e7eb;
+  --ms-actions-bg: #ffffff;
+
+  /* Action Button */
+  --ms-action-btn-padding: calc(0.4 * var(--ms-rem)) calc(0.8 * var(--ms-rem));
+  --ms-action-btn-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
+  --ms-action-btn-border: 1px solid #e5e7eb;
+  --ms-action-btn-border-radius: var(--ms-border-radius-sm);
+  --ms-action-btn-bg: transparent;
+  --ms-action-btn-color: inherit;
+  --ms-action-btn-bg-hover: #f3f4f6;
+  --ms-action-btn-border-color-hover: #3b82f6;
+  --ms-transform-scale-active: 0.98;
+
+  /* ==========================================================================
+     OPTIONS CONTAINER & GROUPS
+     ========================================================================== */
+  --ms-options-padding: 0;
+
+  /* Group */
+  --ms-group-border-top: 1px solid #e5e7eb;
+  --ms-group-margin-top: calc(0.4 * var(--ms-rem));
+  --ms-group-padding-top: calc(0.4 * var(--ms-rem));
+
+  /* Group Label */
+  --ms-group-label-padding: calc(0.4 * var(--ms-rem)) calc(1.2 * var(--ms-rem));
+  --ms-group-label-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
+  --ms-group-label-font-weight: var(--base-font-weight-semibold, 600);
+  --ms-group-label-color: #6b7280;
+  --ms-group-label-transform: uppercase;
+  --ms-group-label-letter-spacing: 0.05em;
+
+  /* ==========================================================================
+     INDIVIDUAL OPTIONS
+     ========================================================================== */
+  --ms-option-gap: calc(0.8 * var(--ms-rem));
+  --ms-option-padding: calc(0.8 * var(--ms-rem)) calc(1.2 * var(--ms-rem));
+  --ms-option-padding-h: calc(1.2 * var(--ms-rem));
+  --ms-option-bg: transparent;
+  --ms-option-bg-hover: #f9fafb;
+  --ms-option-bg-focused: #f9fafb;
+  --ms-option-outline-focused: 2px solid #3b82f6;
+  --ms-option-focus-outline-offset: -2px;
+  --ms-option-bg-matched: rgba(59, 130, 246, 0.08);
+  --ms-option-border-matched: 3px solid rgba(59, 130, 246, 0.4);
+  --ms-option-bg-selected: rgba(59, 130, 246, 0.1);
+
+  /* Option State Combinations */
+  --ms-option-bg-focused-hover: #f9fafb;
+  --ms-option-bg-matched-hover: rgba(59, 130, 246, 0.12);
+  --ms-option-bg-selected-focused: rgba(59, 130, 246, 0.15);
+  --ms-option-bg-selected-matched: rgba(59, 130, 246, 0.15);
+  --ms-option-bg-disabled-selected: rgba(59, 130, 246, 0.1);
+
+  --ms-disabled-opacity: 0.5;
+
+  /* ==========================================================================
+     OPTION CONTENT
+     ========================================================================== */
+  --ms-option-content-gap: calc(0.8 * var(--ms-rem));
+
+  /* Option Icon */
+  --ms-option-icon-size: calc(2 * var(--ms-rem));
+  --ms-option-icon-font-size: calc(var(--base-font-size-base, 1.6) * var(--ms-rem));
+
+  /* Option Title */
+  --ms-option-title-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
+  --ms-option-mark-bg: rgba(59, 130, 246, 0.2);
+  --ms-option-mark-color: inherit;
+  --ms-option-mark-font-weight: var(--base-font-weight-semibold, 600);
+
+  /* Option Subtitle */
+  --ms-option-subtitle-margin-top: calc(0.4 * var(--ms-rem));
+  --ms-option-subtitle-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
+  --ms-option-subtitle-line-height: var(--base-line-height-tight, 1.25);
+
+  /* Checkbox */
+  --ms-checkbox-margin-top: calc(0.2 * var(--ms-rem));
+  --ms-checkbox-margin-right: 0;
+  --ms-checkbox-margin-bottom: 0;
+  --ms-checkbox-margin-left: 0;
+  --ms-checkbox-size: calc(1.6 * var(--ms-rem));
+  --ms-checkbox-scale: 1;
+  --ms-checkbox-align: center;
+
+  /* Checkbox Styling */
+  --ms-checkbox-bg: #ffffff;
+  --ms-checkbox-border: 1px solid #d1d5db;
+  --ms-checkbox-border-radius: calc(0.3 * var(--ms-rem));
+  --ms-checkbox-checked-bg: #3b82f6;
+  --ms-checkbox-checked-border: 1px solid #3b82f6;
+  --ms-checkbox-checkmark-color: #ffffff;
+  --ms-checkbox-hover-border-color: #3b82f6;
+  --ms-checkbox-disabled-bg: #e5e7eb;
+  --ms-checkbox-disabled-border: 1px solid #e5e7eb;
+
+  /* Checkbox State Combinations */
+  --ms-checkbox-checked-bg-hover: #2563eb;
+  --ms-checkbox-checked-border-color-hover: #2563eb;
+
+  /* ==========================================================================
+     EMPTY & LOADING STATES
+     ========================================================================== */
+  --ms-empty-padding: calc(1.6 * var(--ms-rem)) calc(1.2 * var(--ms-rem));
+  --ms-empty-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
+  --ms-empty-color: #6b7280;
+
+  /* Loader */
+  --ms-loader-padding: calc(1.6 * var(--ms-rem));
+  --ms-loader-gap: calc(0.8 * var(--ms-rem));
+
+  /* Loading Text */
+  --ms-loading-text-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
+  --ms-loading-text-color: #6b7280;
+
+  /* ==========================================================================
+     BADGES DISPLAY
+     ========================================================================== */
+  --ms-badges-gap: calc(0.8 * var(--ms-rem));
+  --ms-badges-margin-bottom: calc(0.8 * var(--ms-rem));
+  --ms-badges-margin-top: calc(0.8 * var(--ms-rem));
+  --ms-badges-margin-left: calc(0.4 * var(--ms-rem));
+  --ms-badges-margin-right: calc(0.4 * var(--ms-rem));
+
+  /* Individual Badge */
+  --ms-badge-gap: calc(0.8 * var(--ms-rem));
+  --ms-badge-height: calc(2.7 * var(--ms-rem));
+  --ms-badge-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
+  --ms-badge-font-weight: var(--base-font-weight-semibold, 600);
+  --ms-badge-border-radius: var(--ms-border-radius-sm);
+  --ms-badge-bg: #eff6ff;
+  --ms-badge-bg-hover: #ffffff;
+  --ms-badge-bg-active: #e0f2fe;
+  --ms-order-first: -1;
+
+  /* ==========================================================================
+     BADGE TEXT & REMOVE BUTTON
+     ========================================================================== */
+  /* Badge Text */
+  --ms-badge-text-padding: 0 calc(0.8 * var(--ms-rem));
+  --ms-badge-text-bg: #eff6ff;
+  --ms-badge-text-color: #3b82f6;
+  --ms-badge-text-border: none;
+
+  /* Badge Remove Button */
+  --ms-badge-remove-width: calc(2.7 * var(--ms-rem));
+  --ms-badge-remove-bg: #3b82f6;
+  --ms-badge-remove-color: #ffffff;
+  --ms-badge-remove-border: none;
+  --ms-badge-remove-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
+  --ms-badge-remove-bg-hover: #2563eb;
+  --ms-badge-remove-box-shadow-focus: 0 0 0 2px rgba(59, 130, 246, 0.5);
+  --ms-icon-remove: "×";
+
+  /* Badge Indicator */
+  --ms-badge-counter-bg: transparent;
+  --ms-badge-counter-border: 1px solid #e5e7eb;
+  --ms-badge-counter-border-radius: var(--ms-border-radius-sm);
+  --ms-badge-counter-text-color: #6b7280;
+  --ms-badge-counter-text-bg: #d1d5db;
+  --ms-badge-counter-remove-bg: #6b7280;
+  --ms-badge-counter-remove-color: #ffffff;
+  --ms-badge-counter-remove-bg-hover: #111827;
+
+  /* ==========================================================================
+     "+X MORE" BADGE
+     ========================================================================== */
+  --ms-more-badge-bg: #eff6ff;
+  --ms-more-badge-hover-bg: #ffffff;
+  --ms-more-badge-active-bg: #e0f2fe;
+
+  /* ==========================================================================
+     COUNT DISPLAY MODE
+     ========================================================================== */
+  --ms-count-display-margin-bottom: calc(0.8 * var(--ms-rem));
+  --ms-count-display-margin-top: calc(0.8 * var(--ms-rem));
+  --ms-count-display-margin-left: calc(0.8 * var(--ms-rem));
+  --ms-count-display-margin-right: calc(0.8 * var(--ms-rem));
+
+  /* Count Badge Wrapper */
+  --ms-counter-wrapper-bg: transparent;
+  --ms-counter-wrapper-border: 1px solid #e5e7eb;
+  --ms-counter-wrapper-border-radius: var(--ms-border-radius-sm);
+  --ms-counter-wrapper-padding: calc(0.4 * var(--ms-rem)) calc(0.8 * var(--ms-rem));
+  --ms-counter-wrapper-gap: calc(0.4 * var(--ms-rem));
+  --ms-counter-wrapper-bg-hover: #f9fafb;
+  --ms-counter-wrapper-border-color-hover: #3b82f6;
+
+  /* ==========================================================================
+     COUNT TEXT & CLEAR BUTTON
+     ========================================================================== */
+  /* Count Text */
+  --ms-count-text-bg: transparent;
+  --ms-count-text-border: none;
+  --ms-count-text-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
+  --ms-count-text-color: #111827;
+
+  /* Count Clear Button */
+  --ms-count-clear-size: calc(1.6 * var(--ms-rem));
+  --ms-count-clear-bg: transparent;
+  --ms-count-clear-color: #6b7280;
+  --ms-count-clear-font-size: calc(var(--base-font-size-lg, 1.8) * var(--ms-rem));
+  --ms-count-clear-border-radius: 50%;
+  --ms-count-clear-bg-hover: rgba(59, 130, 246, 0.2);
+  --ms-count-clear-color-hover: #3b82f6;
+  --ms-icon-clear: "×";
+
+  /* ==========================================================================
+     TOOLTIPS
+     ========================================================================== */
+  --ms-tooltip-bg: #333333;
+  --ms-tooltip-color: #ffffff;
+  --ms-tooltip-padding: calc(0.8 * var(--ms-rem)) calc(1.2 * var(--ms-rem));
+  --ms-tooltip-border-radius: var(--ms-border-radius-lg);
+  --ms-tooltip-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
+  --ms-tooltip-max-width: calc(32 * var(--ms-rem));
+  --ms-tooltip-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  --ms-tooltip-z-index: 10000;
+
+  /* ==========================================================================
+     SELECTED POPOVER
+     ========================================================================== */
+  --ms-z-index-popover: 10000;
+  --ms-selected-popover-width: calc(32 * var(--ms-rem));
+  --ms-selected-popover-max-height: calc(32 * var(--ms-rem));
+  --ms-selected-popover-bg: #ffffff;
+  --ms-selected-popover-border: 1px solid #e5e7eb;
+  --ms-selected-popover-border-radius: var(--ms-border-radius-lg);
+  --ms-selected-popover-box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+
+  /* Popover Header */
+  --ms-selected-popover-header-padding: calc(0.8 * var(--ms-rem)) calc(1.2 * var(--ms-rem));
+  --ms-selected-popover-header-bg: rgba(59, 130, 246, 0.1);
+  --ms-selected-popover-header-border-bottom: 1px solid #e5e7eb;
+  --ms-selected-popover-header-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
+  --ms-selected-popover-header-font-weight: var(--base-font-weight-semibold, 600);
+  --ms-selected-popover-header-color: #111827;
+
+  /* ==========================================================================
+     POPOVER CLOSE BUTTON
+     ========================================================================== */
+  --ms-popover-close-size: calc(2.4 * var(--ms-rem));
+  --ms-selected-popover-close-bg: transparent;
+  --ms-selected-popover-close-color: #6b7280;
+  --ms-selected-popover-close-font-size: calc(var(--base-font-size-xl, 2) * var(--ms-rem));
+  --ms-selected-popover-close-border-radius: 50%;
+  --ms-selected-popover-close-bg-hover: rgba(59, 130, 246, 0.2);
+  --ms-selected-popover-close-color-hover: #3b82f6;
+
+  /* ==========================================================================
+     POPOVER BODY
+     ========================================================================== */
+  --ms-selected-popover-body-gap: calc(0.4 * var(--ms-rem));
+  --ms-selected-popover-body-padding: calc(0.8 * var(--ms-rem));
+  --ms-selected-popover-body-max-height: calc(28.8 * var(--ms-rem));
+
+  /* ==========================================================================
+     TYPOGRAPHY SCALE
+     ========================================================================== */
+  /* Font Sizes (unitless multipliers × --ms-rem) */
+  --ms-font-size-2xs: calc(var(--base-font-size-2xs, 1) * var(--ms-rem));
+  --ms-font-size-xs: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
+  --ms-font-size-sm: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
+  --ms-font-size-base: calc(var(--base-font-size-base, 1.6) * var(--ms-rem));
+  --ms-font-size-lg: calc(var(--base-font-size-lg, 1.8) * var(--ms-rem));
+
+  /* Font Weights */
+  --ms-font-weight-normal: var(--base-font-weight-normal, 400);
+  --ms-font-weight-medium: var(--base-font-weight-medium, 500);
+  --ms-font-weight-semibold: var(--base-font-weight-semibold, 600);
+
+  /* Line Heights */
+  --ms-line-height-none: 1;
+  --ms-line-height-tight: var(--base-line-height-tight, 1.25);
+  --ms-line-height-normal: var(--base-line-height-normal, 1.5);
+  --ms-line-height-relaxed: var(--base-line-height-relaxed, 1.75);
+
+  /* ==========================================================================
+     BORDER RADIUS SCALE
+     ========================================================================== */
+  --ms-border-radius-sm: calc(var(--base-border-radius-sm, 0.4) * var(--ms-rem));
+  --ms-border-radius-md: calc(var(--base-border-radius-md, 0.6) * var(--ms-rem));
+  --ms-border-radius-lg: calc(var(--base-border-radius-lg, 0.8) * var(--ms-rem));
+  --ms-border-radius: var(--ms-border-radius-md);
+
+  /* ==========================================================================
+     SPACING & SIZING
+     ========================================================================== */
+  --ms-spacing-xs: calc(0.4 * var(--ms-rem));
+  --ms-spacing-sm: calc(0.8 * var(--ms-rem));
+  --ms-spacing-md: calc(1.2 * var(--ms-rem));
+  --ms-spacing-lg: calc(1.6 * var(--ms-rem));
+
+  /* ==========================================================================
+     TRANSITIONS & EFFECTS
+     ========================================================================== */
+  --ms-transition-fast: 150ms;
+  --ms-transition-normal: 200ms;
+  --ms-easing-snappy: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* ==========================================================================
+     OPACITY VALUES
+     ========================================================================== */
+  --ms-placeholder-opacity: 0.6;
+  --ms-disabled-input-opacity: 0.6;
+
+  /* ==========================================================================
+     SCROLLBAR
+     ========================================================================== */
+  --ms-scrollbar-width: 8px;
+  --ms-scrollbar-track-bg: transparent;
+  --ms-scrollbar-thumb-bg: #d1d5db;
+  --ms-scrollbar-thumb-bg-hover: #6b7280;
+  --ms-scrollbar-thumb-border-radius: 4px;
+}

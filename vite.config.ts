@@ -6,13 +6,6 @@ import { readFileSync } from 'fs';
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
 
 export default defineConfig({
-  css: {
-    preprocessorOptions: {
-      scss: {
-        api: 'modern-compiler'
-      }
-    }
-  },
   define: {
     '__VERSION__': JSON.stringify(pkg.version),
     '__PACKAGE_NAME__': JSON.stringify(pkg.name),
