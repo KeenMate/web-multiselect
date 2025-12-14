@@ -199,7 +199,7 @@
   display: none;
   /* Checkmark positioning (centered, slightly offset for visual balance) */
   left: 50%;
-  top: 45%;
+  top: 40%;
   width: 30%;
   height: 55%;
   transform: translate(-50%, -50%) rotate(45deg);

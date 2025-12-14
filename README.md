@@ -933,21 +933,21 @@ Then style with CSS:
 ```css
 /* Target specific badges with custom classes */
 .badge-urgent {
-  --ms-badge-text-bg: #fee2e2;
+  --ms-badge-text-background: #fee2e2;
   --ms-badge-text-color: #dc2626;
-  --ms-badge-remove-bg: #dc2626;
+  --ms-badge-remove-background: #dc2626;
 }
 
 .badge-normal {
-  --ms-badge-text-bg: #dbeafe;
+  --ms-badge-text-background: #dbeafe;
   --ms-badge-text-color: #2563eb;
-  --ms-badge-remove-bg: #2563eb;
+  --ms-badge-remove-background: #2563eb;
 }
 
 .badge-low {
-  --ms-badge-text-bg: #d1fae5;
+  --ms-badge-text-background: #d1fae5;
   --ms-badge-text-color: #059669;
-  --ms-badge-remove-bg: #059669;
+  --ms-badge-remove-background: #059669;
 }
 ```
 
@@ -994,21 +994,21 @@ select.getBadgeClassCallback = (item) => {
 // Inject CSS into Shadow DOM to style those classes
 select.customStylesCallback = () => `
   .badge-urgent {
-    --ms-badge-text-bg: #fee2e2;
+    --ms-badge-text-background: #fee2e2;
     --ms-badge-text-color: #dc2626;
-    --ms-badge-remove-bg: #dc2626;
+    --ms-badge-remove-background: #dc2626;
   }
 
   .badge-normal {
-    --ms-badge-text-bg: #dbeafe;
+    --ms-badge-text-background: #dbeafe;
     --ms-badge-text-color: #2563eb;
-    --ms-badge-remove-bg: #2563eb;
+    --ms-badge-remove-background: #2563eb;
   }
 
   .badge-low {
-    --ms-badge-text-bg: #d1fae5;
+    --ms-badge-text-background: #d1fae5;
     --ms-badge-text-color: #059669;
-    --ms-badge-remove-bg: #059669;
+    --ms-badge-remove-background: #059669;
   }
 `;
 ```
@@ -1626,7 +1626,7 @@ You can customize the component using CSS variables even with just a `<script>` 
 <style>
   /* Override tooltip appearance */
   web-multiselect {
-    --ms-tooltip-bg: #1f2937;
+    --ms-tooltip-background: #1f2937;
     --ms-tooltip-color: #f9fafb;
     --ms-tooltip-padding: 0.625rem 0.875rem;
     --ms-tooltip-border-radius: 0.5rem;
@@ -1694,7 +1694,7 @@ For the complete list of all available CSS variables, see:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--ms-input-bg` | `#ffffff` | Input background |
+| `--ms-input-background` | `var(--base-input-background, #ffffff)` | Input background |
 | `--ms-input-text` | `#111827` | Input text color |
 | `--ms-input-border` | `#d1d5db` | Input border color |
 | `--ms-input-focus-border-color` | `#3b82f6` | Border color when focused |
@@ -1708,8 +1708,8 @@ For the complete list of all available CSS variables, see:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--ms-dropdown-bg` | `#ffffff` | Dropdown background |
-| `--ms-dropdown-border` | `#e5e7eb` | Dropdown border color |
+| `--ms-dropdown-background` | `var(--base-dropdown-background, #ffffff)` | Dropdown background |
+| `--ms-dropdown-border` | `var(--ms-border-color)` | Dropdown border color |
 | `--ms-dropdown-shadow` | (box shadow) | Dropdown shadow |
 | `--ms-dropdown-max-height` | `20rem` | Max height of dropdown |
 | `--ms-option-padding-v` | `0.5rem` | Option vertical padding |
@@ -1726,34 +1726,34 @@ For the complete list of all available CSS variables, see:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--ms-badge-text-bg` | `#eff6ff` | Badge background color |
-| `--ms-badge-text-color` | `#3b82f6` | Badge text color |
+| `--ms-badge-text-background` | `var(--ms-accent-color-light)` | Badge background color |
+| `--ms-badge-text-color` | `var(--ms-accent-color)` | Badge text color |
 | `--ms-badge-gap` | `0.5rem` | Gap between badges |
 | `--ms-badge-height` | `1.5rem` | Height of badges |
 | `--ms-badge-font-size` | `0.75rem` | Badge font size |
 | `--ms-badge-border-radius` | `0.375rem` | Badge border radius |
-| `--ms-badge-remove-bg` | `#3b82f6` | Remove button background |
-| `--ms-badge-remove-color` | `#ffffff` | Remove button color |
-| `--ms-badge-counter-text-bg` | `#d1d5db` | BadgeCounter text background ("+X more") |
-| `--ms-badge-counter-text-color` | `#6b7280` | BadgeCounter text color |
-| `--ms-badge-counter-remove-bg` | `#6b7280` | BadgeCounter remove button background |
-| `--ms-badge-counter-remove-color` | `#ffffff` | BadgeCounter remove button color |
-| `--ms-badge-counter-border` | `1px solid #e5e7eb` | BadgeCounter border |
+| `--ms-badge-remove-background` | `var(--ms-accent-color)` | Remove button background |
+| `--ms-badge-remove-color` | `var(--ms-text-on-accent)` | Remove button color |
+| `--ms-badge-counter-text-background` | `var(--ms-primary-bg)` | BadgeCounter text background ("+X more") |
+| `--ms-badge-counter-text-color` | `var(--ms-text-color-3)` | BadgeCounter text color |
+| `--ms-badge-counter-remove-background` | `var(--ms-text-color-3)` | BadgeCounter remove button background |
+| `--ms-badge-counter-remove-color` | `var(--ms-text-on-accent)` | BadgeCounter remove button color |
+| `--ms-badge-counter-border` | `1px solid var(--ms-border-color)` | BadgeCounter border |
 | `--ms-badge-border` | `none` | Badge border (e.g., `1px solid #3b82f6`) |
 
 #### Checkboxes
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--ms-checkbox-bg` | `#ffffff` | Checkbox background |
-| `--ms-checkbox-border` | `1px solid #d1d5db` | Checkbox border |
+| `--ms-checkbox-bg` | `var(--ms-input-background)` | Checkbox background |
+| `--ms-checkbox-border` | `1px solid var(--ms-border-color)` | Checkbox border |
 | `--ms-checkbox-border-radius` | `0.3rem` | Checkbox border radius |
-| `--ms-checkbox-checked-bg` | (accent color) | Background when checked |
-| `--ms-checkbox-checked-border` | `1px solid (accent)` | Border when checked |
-| `--ms-checkbox-checkmark-color` | `#ffffff` | Checkmark color |
-| `--ms-checkbox-hover-border-color` | (accent color) | Border on hover |
-| `--ms-checkbox-disabled-bg` | `#f3f4f6` | Disabled background |
-| `--ms-checkbox-disabled-border` | `1px solid #e5e7eb` | Disabled border |
+| `--ms-checkbox-checked-bg` | `var(--ms-accent-color)` | Background when checked |
+| `--ms-checkbox-checked-border` | `1px solid var(--ms-accent-color)` | Border when checked |
+| `--ms-checkbox-checkmark-color` | `var(--ms-text-on-accent)` | Checkmark color |
+| `--ms-checkbox-hover-border-color` | `var(--ms-accent-color)` | Border on hover |
+| `--ms-checkbox-disabled-bg` | `var(--ms-primary-bg)` | Disabled background |
+| `--ms-checkbox-disabled-border` | `1px solid var(--ms-border-color)` | Disabled border |
 
 #### Scrollbar
 
@@ -1761,8 +1761,8 @@ For the complete list of all available CSS variables, see:
 |----------|---------|-------------|
 | `--ms-scrollbar-width` | `8px` | Scrollbar width |
 | `--ms-scrollbar-track-bg` | `transparent` | Track background |
-| `--ms-scrollbar-thumb-bg` | `#d1d5db` | Thumb color |
-| `--ms-scrollbar-thumb-bg-hover` | `#6b7280` | Thumb hover color |
+| `--ms-scrollbar-thumb-bg` | `var(--ms-border-color)` | Thumb color |
+| `--ms-scrollbar-thumb-bg-hover` | `var(--ms-text-color-3)` | Thumb hover color |
 | `--ms-scrollbar-thumb-border-radius` | `4px` | Thumb border radius |
 
 #### Counter (in input)
@@ -1778,8 +1778,8 @@ For the complete list of all available CSS variables, see:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--ms-tooltip-bg` | `#333` | Tooltip background color |
-| `--ms-tooltip-color` | `#fff` | Tooltip text color |
+| `--ms-tooltip-background` | `var(--base-tooltip-background, #333333)` | Tooltip background color |
+| `--ms-tooltip-color` | `var(--ms-tooltip-text-color)` | Tooltip text color |
 | `--ms-tooltip-padding` | `0.5rem 0.75rem` | Tooltip padding |
 | `--ms-tooltip-border-radius` | `0.375rem` | Tooltip border radius |
 | `--ms-tooltip-font-size` | `0.875rem` | Tooltip font size |

@@ -223,6 +223,7 @@ export class WebMultiSelect<T = any> {
             searchHint: element.dataset.searchHint || '',
             searchPlaceholder: element.dataset.searchPlaceholder || 'Search...',
             dropdownMinWidth: element.dataset.dropdownMinWidth || undefined,
+            dropdownMaxWidth: element.dataset.dropdownMaxWidth || undefined,
             badgesDisplayMode: (element.dataset.badgesDisplayMode as any) || 'badges',
             badgesPosition: (element.dataset.badgesPosition as BadgesPosition) || 'bottom',
             badgesThresholdMode: (element.dataset.badgesThresholdMode as any) || 'count',
@@ -1715,6 +1716,9 @@ export class WebMultiSelect<T = any> {
 
                     if (this.options.dropdownMinWidth) {
                         styles.minWidth = this.options.dropdownMinWidth;
+                    }
+                    if (this.options.dropdownMaxWidth) {
+                        styles.maxWidth = this.options.dropdownMaxWidth;
                     }
 
                     Object.assign(this.dropdown.style, styles);

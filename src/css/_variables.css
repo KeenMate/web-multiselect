@@ -29,6 +29,12 @@
   font-family: var(--ms-font-family, var(--base-font-family, inherit));
 
   /* ==========================================================================
+     HOST ELEMENT SIZING
+     ==========================================================================
+     Allows external width/height styling on <web-multiselect> element */
+  display: block;
+
+  /* ==========================================================================
      COLORS & THEME
      ==========================================================================
      Color variables follow this priority chain:
@@ -40,6 +46,10 @@
   --ms-accent-color: var(--base-accent-color, #3b82f6);
   --ms-accent-color-hover: var(--base-accent-color-hover, #2563eb);
   --ms-accent-color-active: var(--base-accent-color-active, #1d4ed8);
+
+  /* Accent Color Light Variants (for backgrounds) */
+  --ms-accent-color-light: var(--base-accent-color-light, #eff6ff);
+  --ms-accent-color-light-hover: var(--base-accent-color-light-hover, #e0f2fe);
 
   /* Text Color Levels (FluentUI-style hierarchy) */
   --ms-text-color-1: var(--base-text-color-1, #111827);
@@ -82,7 +92,7 @@
   --ms-counter-badge-color: var(--ms-text-on-accent);
 
   /* Floating Hint Semantic Variables */
-  --ms-hint-background: #ffffff;
+  --ms-hint-background: var(--base-hint-background, #ffffff);
   --ms-hint-color: var(--ms-text-color-4);
   --ms-hint-border-color: var(--ms-border-color);
 
@@ -93,7 +103,7 @@
   --ms-dropdown-box-shadow-semantic: var(--base-dropdown-box-shadow, 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1));
 
   /* Dropdown Actions Semantic Variables */
-  --ms-actions-background: #ffffff;
+  --ms-actions-background: var(--base-actions-background, #ffffff);
   --ms-actions-border-color: var(--ms-border-color);
 
   /* Action Button Semantic Variables */
@@ -115,15 +125,15 @@
   --ms-option-background-focused: var(--ms-primary-bg);
   --ms-option-color-focused: inherit;
   --ms-option-outline-color-focused: var(--ms-accent-color);
-  --ms-option-background-selected: rgba(59, 130, 246, 0.1);
-  --ms-option-background-matched: rgba(59, 130, 246, 0.08);
+  --ms-option-background-selected: color-mix(in srgb, var(--ms-accent-color) 10%, transparent);
+  --ms-option-background-matched: color-mix(in srgb, var(--ms-accent-color) 8%, transparent);
   --ms-option-color-matched: inherit;
-  --ms-option-border-matched-color: rgba(59, 130, 246, 0.4);
+  --ms-option-border-matched-color: color-mix(in srgb, var(--ms-accent-color) 40%, transparent);
 
   /* Option Content Semantic Variables */
   --ms-option-title-color: var(--ms-text-color-1);
   --ms-option-subtitle-color: var(--ms-text-color-3);
-  --ms-option-mark-background: rgba(59, 130, 246, 0.2);
+  --ms-option-mark-background: color-mix(in srgb, var(--ms-accent-color) 20%, transparent);
   --ms-option-mark-color: inherit;
 
   /* Empty/Loading State Semantic Variables */
@@ -131,14 +141,14 @@
   --ms-loading-color: var(--ms-text-color-3);
 
   /* Badge Semantic Variables */
-  --ms-badge-background: #eff6ff;
-  --ms-badge-background-hover: #ffffff;
-  --ms-badge-background-active: #e0f2fe;
+  --ms-badge-background: var(--ms-accent-color-light);
+  --ms-badge-background-hover: var(--base-badge-background-hover, var(--ms-input-background));
+  --ms-badge-background-active: var(--ms-accent-color-light-hover);
 
   /* Badge Text Semantic Variables */
-  --ms-badge-text-background: #eff6ff;
+  --ms-badge-text-background: var(--ms-accent-color-light);
   --ms-badge-text-color: var(--ms-accent-color);
-  --ms-badge-text-background-hover: #ffffff;
+  --ms-badge-text-background-hover: var(--base-badge-background-hover, var(--ms-input-background));
   --ms-badge-text-color-hover: var(--ms-badge-text-color);
 
   /* Badge Remove Button Semantic Variables */
@@ -148,11 +158,11 @@
 
   /* Badge Counter Variant Semantic Variables */
   --ms-badge-counter-border-color: var(--ms-border-color);
-  --ms-badge-counter-text-background: #d1d5db;
+  --ms-badge-counter-text-background: var(--ms-primary-bg);
   --ms-badge-counter-text-color: var(--ms-text-color-3);
-  --ms-badge-counter-remove-background: #6b7280;
-  --ms-badge-counter-remove-background-hover: #111827;
-  --ms-badge-counter-remove-color: #ffffff;
+  --ms-badge-counter-remove-background: var(--ms-text-color-3);
+  --ms-badge-counter-remove-background-hover: var(--ms-text-color-1);
+  --ms-badge-counter-remove-color: var(--ms-text-on-accent);
 
   /* Count Display Semantic Variables */
   --ms-counter-wrapper-background: transparent;
@@ -170,9 +180,9 @@
   --ms-tooltip-text-color: var(--base-tooltip-text-color, #ffffff);
 
   /* Selected Popover Semantic Variables */
-  --ms-selected-popover-background: #ffffff;
+  --ms-selected-popover-background: var(--base-popover-background, #ffffff);
   --ms-selected-popover-border-color: var(--ms-border-color);
-  --ms-selected-popover-header-background: rgba(59, 130, 246, 0.1);
+  --ms-selected-popover-header-background: color-mix(in srgb, var(--ms-accent-color) 10%, transparent);
   --ms-selected-popover-header-color: var(--ms-text-color-1);
   --ms-selected-popover-header-border-color: var(--ms-border-color);
   --ms-selected-popover-close-background: transparent;
@@ -189,8 +199,7 @@
   --ms-input-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
   --ms-input-border-width: 1px;
   --ms-input-border-radius: var(--ms-border-radius-md);
-  --ms-input-bg: #ffffff;
-  --ms-input-text: #111827;
+  --ms-input-text: var(--ms-text-color-1);
   --ms-input-bg-disabled: rgba(107, 114, 128, 0.05);
 
   /* ==========================================================================
@@ -227,7 +236,7 @@
      TOGGLE ICON
      ========================================================================== */
   --ms-toggle-right: calc(1.2 * var(--ms-rem));
-  --ms-toggle-color: #6b7280;
+  --ms-toggle-color: var(--ms-text-color-3);
   --ms-transform-center-y: translateY(-50%);
   --ms-transform-rotate-180: 180deg;
 
@@ -236,20 +245,19 @@
      ========================================================================== */
   --ms-counter-offset: calc(3.2 * var(--ms-rem));
   --ms-counter-padding: calc(0.2 * var(--ms-rem)) calc(0.4 * var(--ms-rem));
-  --ms-counter-bg: #3b82f6;
-  --ms-counter-color: #ffffff;
+  --ms-counter-bg: var(--ms-accent-color);
+  --ms-counter-color: var(--ms-text-on-accent);
   --ms-counter-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
   --ms-counter-font-weight: var(--base-font-weight-semibold, 600);
   --ms-counter-border-radius: var(--ms-border-radius-sm);
-  --ms-counter-bg-hover: #2563eb;
+  --ms-counter-bg-hover: var(--ms-accent-color-hover);
   --ms-transform-scale-hover: 1.1;
 
   /* ==========================================================================
      FLOATING HINT
      ========================================================================== */
   --ms-hint-padding: calc(0.8 * var(--ms-rem)) calc(1.2 * var(--ms-rem));
-  --ms-hint-bg: #ffffff;
-  --ms-hint-border: 1px solid #e5e7eb;
+  --ms-hint-border: 1px solid var(--ms-border-color);
   --ms-hint-border-radius: var(--ms-border-radius-lg);
   --ms-hint-box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --ms-hint-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
@@ -257,12 +265,11 @@
   /* ==========================================================================
      DROPDOWN
      ========================================================================== */
-  --ms-dropdown-bg: #ffffff;
-  --ms-dropdown-border: var(--base-dropdown-border, 1px solid #e5e7eb);
+  --ms-dropdown-border: var(--base-dropdown-border, 1px solid var(--ms-border-color));
   --ms-dropdown-border-radius: var(--ms-border-radius-lg);
   --ms-dropdown-box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
   --ms-options-max-height: calc(32 * var(--ms-rem));
-  --ms-option-color: #111827;
+  --ms-option-color: var(--ms-text-color-1);
   --ms-z-index-dropdown: 9999;
   --ms-z-index-sticky: 1;
 
@@ -271,18 +278,17 @@
      ========================================================================== */
   --ms-actions-gap: calc(0.4 * var(--ms-rem));
   --ms-actions-padding: calc(0.8 * var(--ms-rem));
-  --ms-actions-border-bottom: 1px solid #e5e7eb;
-  --ms-actions-bg: #ffffff;
+  --ms-actions-border-bottom: 1px solid var(--ms-border-color);
 
   /* Action Button */
   --ms-action-btn-padding: calc(0.4 * var(--ms-rem)) calc(0.8 * var(--ms-rem));
   --ms-action-btn-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
-  --ms-action-btn-border: 1px solid #e5e7eb;
+  --ms-action-btn-border: 1px solid var(--ms-border-color);
   --ms-action-btn-border-radius: var(--ms-border-radius-sm);
   --ms-action-btn-bg: transparent;
   --ms-action-btn-color: inherit;
-  --ms-action-btn-bg-hover: #f3f4f6;
-  --ms-action-btn-border-color-hover: #3b82f6;
+  --ms-action-btn-bg-hover: var(--ms-primary-bg);
+  --ms-action-btn-border-color-hover: var(--ms-accent-color);
   --ms-transform-scale-active: 0.98;
 
   /* ==========================================================================
@@ -291,7 +297,7 @@
   --ms-options-padding: 0;
 
   /* Group */
-  --ms-group-border-top: 1px solid #e5e7eb;
+  --ms-group-border-top: 1px solid var(--ms-border-color);
   --ms-group-margin-top: calc(0.4 * var(--ms-rem));
   --ms-group-padding-top: calc(0.4 * var(--ms-rem));
 
@@ -299,7 +305,7 @@
   --ms-group-label-padding: calc(0.4 * var(--ms-rem)) calc(1.2 * var(--ms-rem));
   --ms-group-label-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
   --ms-group-label-font-weight: var(--base-font-weight-semibold, 600);
-  --ms-group-label-color: #6b7280;
+  --ms-group-label-color: var(--ms-text-color-3);
   --ms-group-label-transform: uppercase;
   --ms-group-label-letter-spacing: 0.05em;
 
@@ -310,20 +316,20 @@
   --ms-option-padding: calc(0.8 * var(--ms-rem)) calc(1.2 * var(--ms-rem));
   --ms-option-padding-h: calc(1.2 * var(--ms-rem));
   --ms-option-bg: transparent;
-  --ms-option-bg-hover: #f9fafb;
-  --ms-option-bg-focused: #f9fafb;
-  --ms-option-outline-focused: 2px solid #3b82f6;
+  --ms-option-bg-hover: var(--ms-primary-bg);
+  --ms-option-bg-focused: var(--ms-primary-bg);
+  --ms-option-outline-focused: 2px solid var(--ms-accent-color);
   --ms-option-focus-outline-offset: -2px;
-  --ms-option-bg-matched: rgba(59, 130, 246, 0.08);
-  --ms-option-border-matched: 3px solid rgba(59, 130, 246, 0.4);
-  --ms-option-bg-selected: rgba(59, 130, 246, 0.1);
+  --ms-option-bg-matched: color-mix(in srgb, var(--ms-accent-color) 8%, transparent);
+  --ms-option-border-matched: 3px solid color-mix(in srgb, var(--ms-accent-color) 40%, transparent);
+  --ms-option-bg-selected: color-mix(in srgb, var(--ms-accent-color) 10%, transparent);
 
   /* Option State Combinations */
-  --ms-option-bg-focused-hover: #f9fafb;
-  --ms-option-bg-matched-hover: rgba(59, 130, 246, 0.12);
-  --ms-option-bg-selected-focused: rgba(59, 130, 246, 0.15);
-  --ms-option-bg-selected-matched: rgba(59, 130, 246, 0.15);
-  --ms-option-bg-disabled-selected: rgba(59, 130, 246, 0.1);
+  --ms-option-bg-focused-hover: var(--ms-primary-bg);
+  --ms-option-bg-matched-hover: color-mix(in srgb, var(--ms-accent-color) 12%, transparent);
+  --ms-option-bg-selected-focused: color-mix(in srgb, var(--ms-accent-color) 15%, transparent);
+  --ms-option-bg-selected-matched: color-mix(in srgb, var(--ms-accent-color) 15%, transparent);
+  --ms-option-bg-disabled-selected: color-mix(in srgb, var(--ms-accent-color) 10%, transparent);
 
   --ms-disabled-opacity: 0.5;
 
@@ -338,7 +344,7 @@
 
   /* Option Title */
   --ms-option-title-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
-  --ms-option-mark-bg: rgba(59, 130, 246, 0.2);
+  --ms-option-mark-bg: color-mix(in srgb, var(--ms-accent-color) 20%, transparent);
   --ms-option-mark-color: inherit;
   --ms-option-mark-font-weight: var(--base-font-weight-semibold, 600);
 
@@ -357,26 +363,26 @@
   --ms-checkbox-align: center;
 
   /* Checkbox Styling */
-  --ms-checkbox-bg: #ffffff;
-  --ms-checkbox-border: 1px solid #d1d5db;
+  --ms-checkbox-bg: var(--ms-input-background);
+  --ms-checkbox-border: 1px solid var(--ms-border-color);
   --ms-checkbox-border-radius: calc(0.3 * var(--ms-rem));
-  --ms-checkbox-checked-bg: #3b82f6;
-  --ms-checkbox-checked-border: 1px solid #3b82f6;
-  --ms-checkbox-checkmark-color: #ffffff;
-  --ms-checkbox-hover-border-color: #3b82f6;
-  --ms-checkbox-disabled-bg: #e5e7eb;
-  --ms-checkbox-disabled-border: 1px solid #e5e7eb;
+  --ms-checkbox-checked-bg: var(--ms-accent-color);
+  --ms-checkbox-checked-border: 1px solid var(--ms-accent-color);
+  --ms-checkbox-checkmark-color: var(--ms-text-on-accent);
+  --ms-checkbox-hover-border-color: var(--ms-accent-color);
+  --ms-checkbox-disabled-bg: var(--ms-primary-bg);
+  --ms-checkbox-disabled-border: 1px solid var(--ms-border-color);
 
   /* Checkbox State Combinations */
-  --ms-checkbox-checked-bg-hover: #2563eb;
-  --ms-checkbox-checked-border-color-hover: #2563eb;
+  --ms-checkbox-checked-bg-hover: var(--ms-accent-color-hover);
+  --ms-checkbox-checked-border-color-hover: var(--ms-accent-color-hover);
 
   /* ==========================================================================
      EMPTY & LOADING STATES
      ========================================================================== */
   --ms-empty-padding: calc(1.6 * var(--ms-rem)) calc(1.2 * var(--ms-rem));
   --ms-empty-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
-  --ms-empty-color: #6b7280;
+  --ms-empty-color: var(--ms-text-color-3);
 
   /* Loader */
   --ms-loader-padding: calc(1.6 * var(--ms-rem));
@@ -384,7 +390,7 @@
 
   /* Loading Text */
   --ms-loading-text-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
-  --ms-loading-text-color: #6b7280;
+  --ms-loading-text-color: var(--ms-text-color-3);
 
   /* ==========================================================================
      BADGES DISPLAY
@@ -401,9 +407,9 @@
   --ms-badge-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
   --ms-badge-font-weight: var(--base-font-weight-semibold, 600);
   --ms-badge-border-radius: var(--ms-border-radius-sm);
-  --ms-badge-bg: #eff6ff;
-  --ms-badge-bg-hover: #ffffff;
-  --ms-badge-bg-active: #e0f2fe;
+  --ms-badge-bg: var(--ms-accent-color-light);
+  --ms-badge-bg-hover: var(--ms-badge-background-hover);
+  --ms-badge-bg-active: var(--ms-accent-color-light-hover);
   --ms-order-first: -1;
 
   /* ==========================================================================
@@ -411,36 +417,36 @@
      ========================================================================== */
   /* Badge Text */
   --ms-badge-text-padding: 0 calc(0.8 * var(--ms-rem));
-  --ms-badge-text-bg: #eff6ff;
-  --ms-badge-text-color: #3b82f6;
+  --ms-badge-text-bg: var(--ms-accent-color-light);
+  --ms-badge-text-color: var(--ms-accent-color);
   --ms-badge-text-border: none;
 
   /* Badge Remove Button */
   --ms-badge-remove-width: calc(2.7 * var(--ms-rem));
-  --ms-badge-remove-bg: #3b82f6;
-  --ms-badge-remove-color: #ffffff;
+  --ms-badge-remove-bg: var(--ms-accent-color);
+  --ms-badge-remove-color: var(--ms-text-on-accent);
   --ms-badge-remove-border: none;
   --ms-badge-remove-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
-  --ms-badge-remove-bg-hover: #2563eb;
-  --ms-badge-remove-box-shadow-focus: 0 0 0 2px rgba(59, 130, 246, 0.5);
+  --ms-badge-remove-bg-hover: var(--ms-accent-color-hover);
+  --ms-badge-remove-box-shadow-focus: 0 0 0 2px color-mix(in srgb, var(--ms-accent-color) 50%, transparent);
   --ms-icon-remove: "×";
 
   /* Badge Indicator */
   --ms-badge-counter-bg: transparent;
-  --ms-badge-counter-border: 1px solid #e5e7eb;
+  --ms-badge-counter-border: 1px solid var(--ms-border-color);
   --ms-badge-counter-border-radius: var(--ms-border-radius-sm);
-  --ms-badge-counter-text-color: #6b7280;
-  --ms-badge-counter-text-bg: #d1d5db;
-  --ms-badge-counter-remove-bg: #6b7280;
-  --ms-badge-counter-remove-color: #ffffff;
-  --ms-badge-counter-remove-bg-hover: #111827;
+  --ms-badge-counter-text-color: var(--ms-text-color-3);
+  --ms-badge-counter-text-bg: var(--ms-badge-counter-text-background);
+  --ms-badge-counter-remove-bg: var(--ms-text-color-3);
+  --ms-badge-counter-remove-color: var(--ms-text-on-accent);
+  --ms-badge-counter-remove-bg-hover: var(--ms-badge-counter-remove-background-hover);
 
   /* ==========================================================================
      "+X MORE" BADGE
      ========================================================================== */
-  --ms-more-badge-bg: #eff6ff;
-  --ms-more-badge-hover-bg: #ffffff;
-  --ms-more-badge-active-bg: #e0f2fe;
+  --ms-more-badge-bg: var(--ms-accent-color-light);
+  --ms-more-badge-hover-bg: var(--ms-badge-background-hover);
+  --ms-more-badge-active-bg: var(--ms-accent-color-light-hover);
 
   /* ==========================================================================
      COUNT DISPLAY MODE
@@ -452,12 +458,12 @@
 
   /* Count Badge Wrapper */
   --ms-counter-wrapper-bg: transparent;
-  --ms-counter-wrapper-border: 1px solid #e5e7eb;
+  --ms-counter-wrapper-border: 1px solid var(--ms-border-color);
   --ms-counter-wrapper-border-radius: var(--ms-border-radius-sm);
   --ms-counter-wrapper-padding: calc(0.4 * var(--ms-rem)) calc(0.8 * var(--ms-rem));
   --ms-counter-wrapper-gap: calc(0.4 * var(--ms-rem));
-  --ms-counter-wrapper-bg-hover: #f9fafb;
-  --ms-counter-wrapper-border-color-hover: #3b82f6;
+  --ms-counter-wrapper-bg-hover: var(--ms-primary-bg);
+  --ms-counter-wrapper-border-color-hover: var(--ms-accent-color);
 
   /* ==========================================================================
      COUNT TEXT & CLEAR BUTTON
@@ -466,23 +472,22 @@
   --ms-count-text-bg: transparent;
   --ms-count-text-border: none;
   --ms-count-text-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
-  --ms-count-text-color: #111827;
+  --ms-count-text-color: var(--ms-text-color-1);
 
   /* Count Clear Button */
   --ms-count-clear-size: calc(1.6 * var(--ms-rem));
   --ms-count-clear-bg: transparent;
-  --ms-count-clear-color: #6b7280;
+  --ms-count-clear-color: var(--ms-text-color-3);
   --ms-count-clear-font-size: calc(var(--base-font-size-lg, 1.8) * var(--ms-rem));
   --ms-count-clear-border-radius: 50%;
-  --ms-count-clear-bg-hover: rgba(59, 130, 246, 0.2);
-  --ms-count-clear-color-hover: #3b82f6;
+  --ms-count-clear-bg-hover: color-mix(in srgb, var(--ms-accent-color) 20%, transparent);
+  --ms-count-clear-color-hover: var(--ms-accent-color);
   --ms-icon-clear: "×";
 
   /* ==========================================================================
      TOOLTIPS
      ========================================================================== */
-  --ms-tooltip-bg: #333333;
-  --ms-tooltip-color: #ffffff;
+  --ms-tooltip-color: var(--ms-tooltip-text-color);
   --ms-tooltip-padding: calc(0.8 * var(--ms-rem)) calc(1.2 * var(--ms-rem));
   --ms-tooltip-border-radius: var(--ms-border-radius-lg);
   --ms-tooltip-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
@@ -496,29 +501,28 @@
   --ms-z-index-popover: 10000;
   --ms-selected-popover-width: calc(32 * var(--ms-rem));
   --ms-selected-popover-max-height: calc(32 * var(--ms-rem));
-  --ms-selected-popover-bg: #ffffff;
-  --ms-selected-popover-border: 1px solid #e5e7eb;
+  --ms-selected-popover-border: 1px solid var(--ms-border-color);
   --ms-selected-popover-border-radius: var(--ms-border-radius-lg);
   --ms-selected-popover-box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 
   /* Popover Header */
   --ms-selected-popover-header-padding: calc(0.8 * var(--ms-rem)) calc(1.2 * var(--ms-rem));
-  --ms-selected-popover-header-bg: rgba(59, 130, 246, 0.1);
-  --ms-selected-popover-header-border-bottom: 1px solid #e5e7eb;
+  --ms-selected-popover-header-bg: color-mix(in srgb, var(--ms-accent-color) 10%, transparent);
+  --ms-selected-popover-header-border-bottom: 1px solid var(--ms-border-color);
   --ms-selected-popover-header-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
   --ms-selected-popover-header-font-weight: var(--base-font-weight-semibold, 600);
-  --ms-selected-popover-header-color: #111827;
+  --ms-selected-popover-header-color: var(--ms-text-color-1);
 
   /* ==========================================================================
      POPOVER CLOSE BUTTON
      ========================================================================== */
   --ms-popover-close-size: calc(2.4 * var(--ms-rem));
   --ms-selected-popover-close-bg: transparent;
-  --ms-selected-popover-close-color: #6b7280;
+  --ms-selected-popover-close-color: var(--ms-text-color-3);
   --ms-selected-popover-close-font-size: calc(var(--base-font-size-xl, 2) * var(--ms-rem));
   --ms-selected-popover-close-border-radius: 50%;
-  --ms-selected-popover-close-bg-hover: rgba(59, 130, 246, 0.2);
-  --ms-selected-popover-close-color-hover: #3b82f6;
+  --ms-selected-popover-close-bg-hover: color-mix(in srgb, var(--ms-accent-color) 20%, transparent);
+  --ms-selected-popover-close-color-hover: var(--ms-accent-color);
 
   /* ==========================================================================
      POPOVER BODY
@@ -582,7 +586,7 @@
      ========================================================================== */
   --ms-scrollbar-width: 8px;
   --ms-scrollbar-track-bg: transparent;
-  --ms-scrollbar-thumb-bg: #d1d5db;
-  --ms-scrollbar-thumb-bg-hover: #6b7280;
+  --ms-scrollbar-thumb-bg: var(--ms-border-color);
+  --ms-scrollbar-thumb-bg-hover: var(--ms-text-color-3);
   --ms-scrollbar-thumb-border-radius: 4px;
 }

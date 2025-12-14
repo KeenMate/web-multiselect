@@ -78,7 +78,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
             // Existing attributes (external names - standard/familiar)
             'search-hint', 'search-placeholder', 'multiple', 'allow-groups',
             'show-checkboxes', 'sticky-actions', 'close-on-select',
-            'lock-placement', 'dropdown-min-width', 'badges-display-mode', 'badges-threshold', 'badges-max-visible',
+            'lock-placement', 'dropdown-min-width', 'dropdown-max-width', 'badges-display-mode', 'badges-threshold', 'badges-max-visible',
             'badges-threshold-mode', 'badges-position', 'show-counter', 'keep-options-on-search', 'should-keep-search-on-close', 'max-height', 'empty-message',
             'loading-message', 'min-search-length', 'enable-search', 'search-input-mode', 'search-mode', 'actions-layout', 'allow-add-new',
             'initial-values',
@@ -369,6 +369,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
             searchHint: this.getAttribute('search-hint') || undefined,
             searchPlaceholder: this.getAttribute('search-placeholder') || 'Search...',
             dropdownMinWidth: this.getAttribute('dropdown-min-width') || undefined,
+            dropdownMaxWidth: this.getAttribute('dropdown-max-width') || undefined,
             badgesDisplayMode: (this.getAttribute('badges-display-mode') as any) || 'badges',
             badgesPosition: (this.getAttribute('badges-position') as any) || 'bottom',
             badgesThresholdMode: (this.getAttribute('badges-threshold-mode') as any) || 'count',

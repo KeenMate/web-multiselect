@@ -60,6 +60,38 @@
             --ms-option-title-font-size: 16px;
         }
 
+        /* Narrow input examples */
+        .narrow-demo-grid {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+
+        .narrow-demo-card {
+            flex: 0 0 auto;
+            text-align: center;
+        }
+
+        .narrow-demo-card h4 {
+            margin: 0 0 0.25rem 0;
+            font-size: 0.875rem;
+            color: #374151;
+        }
+
+        .narrow-demo-card p {
+            margin: 0 0 0.75rem 0;
+            font-size: 0.7rem;
+            color: #6b7280;
+        }
+
+        .narrow-demo-card code {
+            background: #f3f4f6;
+            padding: 0.125rem 0.375rem;
+            border-radius: 3px;
+            font-size: 0.65rem;
+        }
+
         /* Font demos */
         .font-grid {
             display: grid;
@@ -273,6 +305,66 @@
                         id="default-compare"
                         placeholder="Default sizing..."
                         multiple="false">
+                    </web-multiselect>
+                </div>
+            </div>
+        </section>
+
+        <!-- Narrow Input, Wide Dropdown -->
+        <section class="example-section">
+            <h2>Narrow Input, Wide Dropdown</h2>
+            <p>For dense forms where input space is limited: show just a code in the input, but use <code>dropdown-min-width</code> to ensure the dropdown is comfortable for selection.</p>
+
+            <div class="code-example">
+                <code>&lt;!-- Narrow input with wide dropdown --&gt;
+&lt;web-multiselect
+  style="width: 4rem;"
+  dropdown-min-width="20rem"
+  multiple="false"&gt;
+&lt;/web-multiselect&gt;
+
+&lt;script&gt;
+  // Show just the code in the closed input
+  select.renderSelectedContentCallback = (item) =&gt; item.code;
+  // Show full label in dropdown
+  select.getDisplayValueCallback = (item) =&gt; `${item.flag} ${item.name}`;
+&lt;/script&gt;</code>
+            </div>
+
+            <div class="narrow-demo-grid">
+                <div class="narrow-demo-card">
+                    <h4>Country Selector</h4>
+                    <p>Input: 6rem, Dropdown: 18rem</p>
+                    <web-multiselect
+                        id="narrow-country"
+                        style="width: 6rem;"
+                        dropdown-min-width="18rem"
+                        multiple="false"
+                        placeholder="--">
+                    </web-multiselect>
+                </div>
+
+                <div class="narrow-demo-card">
+                    <h4>Currency Selector</h4>
+                    <p>Input: 7rem, Dropdown: 16rem</p>
+                    <web-multiselect
+                        id="narrow-currency"
+                        style="width: 7rem;"
+                        dropdown-min-width="16rem"
+                        multiple="false"
+                        placeholder="---">
+                    </web-multiselect>
+                </div>
+
+                <div class="narrow-demo-card">
+                    <h4>Priority Selector</h4>
+                    <p>Input: 5rem, Dropdown: 14rem</p>
+                    <web-multiselect
+                        id="narrow-priority"
+                        style="width: 5rem;"
+                        dropdown-min-width="14rem"
+                        multiple="false"
+                        placeholder="-">
                     </web-multiselect>
                 </div>
             </div>
@@ -536,6 +628,33 @@
             { value: 'go', label: 'Go' }
         ];
 
+        // Narrow input demo data
+        const countries = [
+            { code: 'US', name: 'United States', flag: '🇺🇸' },
+            { code: 'CZ', name: 'Czech Republic', flag: '🇨🇿' },
+            { code: 'DE', name: 'Germany', flag: '🇩🇪' },
+            { code: 'GB', name: 'United Kingdom', flag: '🇬🇧' },
+            { code: 'FR', name: 'France', flag: '🇫🇷' },
+            { code: 'JP', name: 'Japan', flag: '🇯🇵' },
+            { code: 'CA', name: 'Canada', flag: '🇨🇦' },
+            { code: 'AU', name: 'Australia', flag: '🇦🇺' }
+        ];
+
+        const currencies = [
+            { code: 'USD', name: 'US Dollar', symbol: '$' },
+            { code: 'EUR', name: 'Euro', symbol: '€' },
+            { code: 'GBP', name: 'British Pound', symbol: '£' },
+            { code: 'JPY', name: 'Japanese Yen', symbol: '¥' },
+            { code: 'CZK', name: 'Czech Koruna', symbol: 'Kč' },
+            { code: 'CHF', name: 'Swiss Franc', symbol: 'Fr' }
+        ];
+
+        const priorities = [
+            { code: 'H', name: 'High Priority', color: '🔴' },
+            { code: 'M', name: 'Medium Priority', color: '🟡' },
+            { code: 'L', name: 'Low Priority', color: '🟢' }
+        ];
+
         // Google Fonts @import for Shadow DOM injection
         const googleFontsImport = `
             @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@400;500;600&family=Fira+Code:wght@400;500&family=Quicksand:wght@400;500;600&family=Lexend:wght@400;500;600&display=swap');
@@ -559,6 +678,43 @@
                     el.value = ['react', 'typescript'];
                 }
             });
+
+            // Initialize narrow input demos
+            const countrySelect = document.getElementById('narrow-country');
+            if (countrySelect) {
+                countrySelect.options = countries;
+                countrySelect.valueMember = 'code';
+                countrySelect.displayValueMember = 'name';
+                // Show flag + name in dropdown
+                countrySelect.getDisplayValueCallback = (item) => `${item.flag} ${item.name}`;
+                // Show just code in closed input
+                countrySelect.renderSelectedContentCallback = (item) => item.code;
+                countrySelect.value = 'US';
+            }
+
+            const currencySelect = document.getElementById('narrow-currency');
+            if (currencySelect) {
+                currencySelect.options = currencies;
+                currencySelect.valueMember = 'code';
+                currencySelect.displayValueMember = 'name';
+                // Show symbol + code + name in dropdown
+                currencySelect.getDisplayValueCallback = (item) => `${item.symbol} ${item.code} - ${item.name}`;
+                // Show just code in closed input
+                currencySelect.renderSelectedContentCallback = (item) => item.code;
+                currencySelect.value = 'USD';
+            }
+
+            const prioritySelect = document.getElementById('narrow-priority');
+            if (prioritySelect) {
+                prioritySelect.options = priorities;
+                prioritySelect.valueMember = 'code';
+                prioritySelect.displayValueMember = 'name';
+                // Show color + name in dropdown
+                prioritySelect.getDisplayValueCallback = (item) => `${item.color} ${item.name}`;
+                // Show just code in closed input
+                prioritySelect.renderSelectedContentCallback = (item) => item.code;
+                prioritySelect.value = 'M';
+            }
         });
     </script>
 

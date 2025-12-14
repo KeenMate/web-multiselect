@@ -5,6 +5,51 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.6.1] - 2025-12-13
+
+### Fixed
+
+- **Complete Theming Variable Cascade** - All hardcoded colors now respect `--base-*` variables
+  - Setting `--base-*` variables from theme-designer properly cascades throughout the component
+  - Dark themes, custom accent colors, and other theming scenarios now work correctly
+
+- **Accent Color Theming** - Fixed hardcoded accent colors (`#3b82f6`, `#2563eb`)
+  - Checkboxes, badges, counters, focus rings, hover states now use `var(--ms-accent-color)`
+  - RGBA values converted to `color-mix(in srgb, var(--ms-accent-color) X%, transparent)`
+
+- **Badge Hover Theming** - Badge hover backgrounds now respect themes
+  - Was hardcoded to `#ffffff`, now uses `var(--base-badge-background-hover, var(--ms-input-background))`
+
+- **Checkbox Theming** - Checkboxes now inherit theme colors
+  - Background uses `var(--ms-input-background)` instead of `#ffffff`
+  - Border uses `var(--ms-border-color)` instead of `#d1d5db`
+  - Disabled state uses `var(--ms-primary-bg)` instead of `#e5e7eb`
+
+- **Badge Counter Theming** - Badge counter variant now uses semantic variables
+  - Text background, remove button colors now flow from `--ms-text-color-*` and `--ms-primary-bg`
+
+- **Scrollbar Theming** - Scrollbar thumb now uses `var(--ms-border-color)`
+
+- **Checkbox Checkmark Position** - Adjusted checkmark position from `top: 45%` to `top: 40%` for better visual alignment
+
+### Removed
+
+- **Redundant `-bg` Alias Variables** - Cleaned up duplicate variables for simpler architecture
+  - Removed: `--ms-input-bg`, `--ms-hint-bg`, `--ms-dropdown-bg`, `--ms-actions-bg`, `--ms-tooltip-bg`, `--ms-selected-popover-bg`
+  - Use the `-background` semantic variables directly (e.g., `--ms-dropdown-background`)
+
+### Added
+
+- **Accent Color Light Variants** - New CSS variables for light accent backgrounds
+  - `--ms-accent-color-light: var(--base-accent-color-light, #eff6ff);`
+  - `--ms-accent-color-light-hover: var(--base-accent-color-light-hover, #e0f2fe);`
+
+### Changed
+
+- **Theming Examples Updated** - `examples-theming.html` now demonstrates proper `--base-*` variable usage
+  - All 7 themes (Dark, Neon, Audi, Rounded, Sharp, Material, Glass) use `--base-*` variables
+  - Shows how themes can be defined with minimal component-specific overrides
+
 ## [1.6.0] - 2025-12-10
 
 ### Added

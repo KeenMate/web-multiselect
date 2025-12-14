@@ -235,6 +235,8 @@ export interface MultiSelectConfig<T = any> {
     searchPlaceholder?: string;
     /** Minimum width for the dropdown (e.g., '20rem', '300px') */
     dropdownMinWidth?: string | null;
+    /** Maximum width for the dropdown (e.g., '40rem', '500px') */
+    dropdownMaxWidth?: string | null;
     /** Display mode for selected items in badges area */
     badgesDisplayMode?: BadgesDisplayMode;
     /** Position of badges container */
