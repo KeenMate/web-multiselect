@@ -1689,6 +1689,7 @@ For the complete list of all available CSS variables, see:
 | `--ms-text-primary` | `#111827` | Primary text color |
 | `--ms-text-secondary` | `#6b7280` | Secondary/muted text color |
 | `--ms-border-color` | `#e5e7eb` | Default border color |
+| `--ms-border` | `var(--base-border, 1px solid var(--ms-border-color))` | Default full border (inherits from theme-designer) |
 
 #### Input Component
 
@@ -1739,7 +1740,7 @@ For the complete list of all available CSS variables, see:
 | `--ms-badge-counter-remove-background` | `var(--ms-text-color-3)` | BadgeCounter remove button background |
 | `--ms-badge-counter-remove-color` | `var(--ms-text-on-accent)` | BadgeCounter remove button color |
 | `--ms-badge-counter-border` | `1px solid var(--ms-border-color)` | BadgeCounter border |
-| `--ms-badge-border` | `none` | Badge border (e.g., `1px solid #3b82f6`) |
+| `--ms-badge-text-border` | `none` | Badge text border (e.g., `1px solid #3b82f6`) |
 
 #### Checkboxes
 

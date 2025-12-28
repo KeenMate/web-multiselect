@@ -170,42 +170,52 @@
   border-radius: var(--ms-dropdown-border-radius);
   box-shadow: var(--ms-dropdown-box-shadow);
   max-height: var(--ms-options-max-height);
+  overflow: hidden; /* Clips content to border-radius, inner container handles scrolling */
+  color: var(--ms-dropdown-text-color);
+}
+
+.ms__dropdown--visible {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Inner scrolling container - clips scrollbar to rounded corners */
+.ms__dropdown-inner {
+  flex: 1;
   overflow-y: auto;
   overscroll-behavior: contain;
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
-  color: var(--ms-dropdown-text-color);
 
   /* Scrollbar styling */
   scrollbar-width: thin;  /* Firefox */
   scrollbar-color: var(--ms-scrollbar-thumb-bg) var(--ms-scrollbar-track-bg);
 }
 
-.ms__dropdown::-webkit-scrollbar {
+.ms__dropdown-inner::-webkit-scrollbar {
   width: var(--ms-scrollbar-width);
 }
 
-.ms__dropdown::-webkit-scrollbar-track {
+.ms__dropdown-inner::-webkit-scrollbar-track {
   background: var(--ms-scrollbar-track-bg);
 }
 
-.ms__dropdown::-webkit-scrollbar-thumb {
+.ms__dropdown-inner::-webkit-scrollbar-thumb {
   background: var(--ms-scrollbar-thumb-bg);
   border-radius: var(--ms-scrollbar-thumb-border-radius);
 }
 
-.ms__dropdown::-webkit-scrollbar-thumb:hover {
+.ms__dropdown-inner::-webkit-scrollbar-thumb:hover {
   background: var(--ms-scrollbar-thumb-bg-hover);
-}
-
-.ms__dropdown--visible {
-  display: block;
 }
 
 .ms__dropdown--virtual {
   /* In virtual scroll mode, let the options container handle scrolling */
-  overflow-y: visible;
   max-height: none;
+}
+
+.ms__dropdown--virtual .ms__dropdown-inner {
+  overflow-y: visible;
 }
 
 /* ==============================================================================

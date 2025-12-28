@@ -5,6 +5,38 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.7.0] - 2025-12-28
+
+### Added
+
+- **Generic Border Variable** - New `--ms-border` variable for consistent border theming
+  - Inherits from `--base-border` (theme-designer integration)
+  - Pattern: `--ms-border: var(--base-border, 1px solid var(--ms-border-color))`
+  - Aligns with web-daterangepicker v1.9.0 border variable pattern
+
+- **Dropdown Inner Wrapper** - New `.ms__dropdown-inner` element for proper scrollbar clipping
+  - Scrollbar no longer overlaps rounded corners in any theme
+  - Outer `.ms__dropdown` clips content with `overflow: hidden` and `border-radius`
+  - Inner `.ms__dropdown-inner` handles scrolling with `overflow-y: auto`
+  - Cross-browser solution (Chrome, Firefox, Safari, Edge)
+
+### Changed
+
+- **Border Variables Refactor** - Component borders now inherit from `--ms-border`
+  - Updated variables to use `var(--ms-border)` instead of hardcoded `1px solid var(--ms-border-color)`:
+    - `--ms-hint-border`
+    - `--ms-actions-border-bottom`
+    - `--ms-action-btn-border`
+    - `--ms-group-border-top`
+    - `--ms-checkbox-border`
+    - `--ms-checkbox-disabled-border`
+    - `--ms-badge-counter-border`
+    - `--ms-counter-wrapper-border`
+    - `--ms-selected-popover-border`
+    - `--ms-selected-popover-header-border-bottom`
+  - Setting `--base-border` in theme-designer now cascades to all component borders
+  - Individual border variables can still be overridden for component-specific styling
+
 ## [1.6.1] - 2025-12-13
 
 ### Fixed

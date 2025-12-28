@@ -6,7 +6,8 @@
       "Bash(npm run build:*)",
       "Bash(grep:*)",
       "WebFetch(domain:web-multiselect.keenmate.dev)",
-      "WebFetch(domain:unpkg.com)"
+      "WebFetch(domain:unpkg.com)",
+      "Bash(npm run:*)"
     ],
     "deny": [],
     "ask": []

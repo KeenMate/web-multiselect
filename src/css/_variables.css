@@ -65,7 +65,10 @@
   /* Background Colors */
   --ms-primary-bg: var(--base-primary-bg, #f3f4f6);
   --ms-primary-bg-hover: var(--base-primary-bg-hover, #e5e7eb);
+
+  /* Border Base Variables */
   --ms-border-color: var(--base-border-color, #e5e7eb);
+  --ms-border: var(--base-border, 1px solid var(--ms-border-color));
 
   /* ==========================================================================
      SEMANTIC VARIABLES - Component-Specific Theming
@@ -257,7 +260,7 @@
      FLOATING HINT
      ========================================================================== */
   --ms-hint-padding: calc(0.8 * var(--ms-rem)) calc(1.2 * var(--ms-rem));
-  --ms-hint-border: 1px solid var(--ms-border-color);
+  --ms-hint-border: var(--ms-border);
   --ms-hint-border-radius: var(--ms-border-radius-lg);
   --ms-hint-box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --ms-hint-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
@@ -278,12 +281,12 @@
      ========================================================================== */
   --ms-actions-gap: calc(0.4 * var(--ms-rem));
   --ms-actions-padding: calc(0.8 * var(--ms-rem));
-  --ms-actions-border-bottom: 1px solid var(--ms-border-color);
+  --ms-actions-border-bottom: var(--ms-border);
 
   /* Action Button */
   --ms-action-btn-padding: calc(0.4 * var(--ms-rem)) calc(0.8 * var(--ms-rem));
   --ms-action-btn-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
-  --ms-action-btn-border: 1px solid var(--ms-border-color);
+  --ms-action-btn-border: var(--ms-border);
   --ms-action-btn-border-radius: var(--ms-border-radius-sm);
   --ms-action-btn-bg: transparent;
   --ms-action-btn-color: inherit;
@@ -297,7 +300,7 @@
   --ms-options-padding: 0;
 
   /* Group */
-  --ms-group-border-top: 1px solid var(--ms-border-color);
+  --ms-group-border-top: var(--ms-border);
   --ms-group-margin-top: calc(0.4 * var(--ms-rem));
   --ms-group-padding-top: calc(0.4 * var(--ms-rem));
 
@@ -364,14 +367,14 @@
 
   /* Checkbox Styling */
   --ms-checkbox-bg: var(--ms-input-background);
-  --ms-checkbox-border: 1px solid var(--ms-border-color);
+  --ms-checkbox-border: var(--ms-border);
   --ms-checkbox-border-radius: calc(0.3 * var(--ms-rem));
   --ms-checkbox-checked-bg: var(--ms-accent-color);
   --ms-checkbox-checked-border: 1px solid var(--ms-accent-color);
   --ms-checkbox-checkmark-color: var(--ms-text-on-accent);
   --ms-checkbox-hover-border-color: var(--ms-accent-color);
   --ms-checkbox-disabled-bg: var(--ms-primary-bg);
-  --ms-checkbox-disabled-border: 1px solid var(--ms-border-color);
+  --ms-checkbox-disabled-border: var(--ms-border);
 
   /* Checkbox State Combinations */
   --ms-checkbox-checked-bg-hover: var(--ms-accent-color-hover);
@@ -433,7 +436,7 @@
 
   /* Badge Indicator */
   --ms-badge-counter-bg: transparent;
-  --ms-badge-counter-border: 1px solid var(--ms-border-color);
+  --ms-badge-counter-border: var(--ms-border);
   --ms-badge-counter-border-radius: var(--ms-border-radius-sm);
   --ms-badge-counter-text-color: var(--ms-text-color-3);
   --ms-badge-counter-text-bg: var(--ms-badge-counter-text-background);
@@ -458,7 +461,7 @@
 
   /* Count Badge Wrapper */
   --ms-counter-wrapper-bg: transparent;
-  --ms-counter-wrapper-border: 1px solid var(--ms-border-color);
+  --ms-counter-wrapper-border: var(--ms-border);
   --ms-counter-wrapper-border-radius: var(--ms-border-radius-sm);
   --ms-counter-wrapper-padding: calc(0.4 * var(--ms-rem)) calc(0.8 * var(--ms-rem));
   --ms-counter-wrapper-gap: calc(0.4 * var(--ms-rem));
@@ -501,14 +504,14 @@
   --ms-z-index-popover: 10000;
   --ms-selected-popover-width: calc(32 * var(--ms-rem));
   --ms-selected-popover-max-height: calc(32 * var(--ms-rem));
-  --ms-selected-popover-border: 1px solid var(--ms-border-color);
+  --ms-selected-popover-border: var(--ms-border);
   --ms-selected-popover-border-radius: var(--ms-border-radius-lg);
   --ms-selected-popover-box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 
   /* Popover Header */
   --ms-selected-popover-header-padding: calc(0.8 * var(--ms-rem)) calc(1.2 * var(--ms-rem));
   --ms-selected-popover-header-bg: color-mix(in srgb, var(--ms-accent-color) 10%, transparent);
-  --ms-selected-popover-header-border-bottom: 1px solid var(--ms-border-color);
+  --ms-selected-popover-header-border-bottom: var(--ms-border);
   --ms-selected-popover-header-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
   --ms-selected-popover-header-font-weight: var(--base-font-weight-semibold, 600);
   --ms-selected-popover-header-color: var(--ms-text-color-1);

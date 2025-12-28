@@ -40,7 +40,7 @@
         }
 
         #dark-mode {
-            /* Base theme variables */
+            /* Base theme variables - these cascade to all components */
             --base-input-background: #2a2a2a;
             --base-dropdown-background: #2a2a2a;
             --base-actions-background: #2a2a2a;
@@ -48,19 +48,18 @@
             --base-text-color-1: #e5e5e5;
             --base-text-color-3: #808080;
             --base-border-color: #404040;
+            --base-border: 1px solid #404040; /* Sets all component borders at once */
             --base-primary-bg: #3a3a3a;
             --base-accent-color: #667eea;
 
             /* Component-specific overrides */
-            --ms-dropdown-border: 1px solid #404040;
             --ms-dropdown-box-shadow: 0 8px 16px rgba(0, 0, 0, 0.6);
 
-            /* Badges */
+            /* Badges - slightly lighter border for visibility */
             --ms-badge-text-background: #3a3a3a;
-            --ms-badge-border: 1px solid #505050;
+            --ms-badge-text-border: 1px solid #505050;
 
             /* Selected popover */
-            --ms-selected-popover-border: 1px solid #404040;
             --ms-selected-popover-header-background: rgba(102, 126, 234, 0.1);
             --ms-selected-popover-close-background-hover: #3a3a3a;
 
@@ -110,7 +109,7 @@
 
             /* Badges */
             --ms-badge-text-background: rgba(255, 0, 255, 0.3);
-            --ms-badge-border: 1px solid #ff00ff;
+            --ms-badge-text-border: 1px solid #ff00ff;
             --ms-badge-remove-background: #00ffff;
             --ms-badge-remove-color: #1a0a1a;
 
@@ -163,7 +162,7 @@
             /* Badges */
             --ms-badge-text-background: #f5f5f5;
             --ms-badge-text-color: #333333;
-            --ms-badge-border: 1px solid #d0d0d0;
+            --ms-badge-text-border: 1px solid #d0d0d0;
             --ms-badge-border-radius: 2px;
 
             /* Checkboxes */
@@ -194,7 +193,7 @@
             --ms-dropdown-box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 
             /* Badges */
-            --ms-badge-border: 1px solid #ffc0dd;
+            --ms-badge-text-border: 1px solid #ffc0dd;
             --ms-badge-border-radius: 20px;
 
             /* Checkboxes */
@@ -230,7 +229,7 @@
             /* Badges */
             --ms-badge-text-background: #000000;
             --ms-badge-text-color: #ffffff;
-            --ms-badge-border: 2px solid #000000;
+            --ms-badge-text-border: 2px solid #000000;
             --ms-badge-border-radius: 0;
             --ms-badge-remove-background: #ffffff;
             --ms-badge-remove-color: #000000;
@@ -324,7 +323,7 @@
 
             /* Badges */
             --ms-badge-text-background: rgba(255, 255, 255, 0.25);
-            --ms-badge-border: 1px solid rgba(255, 255, 255, 0.3);
+            --ms-badge-text-border: 1px solid rgba(255, 255, 255, 0.3);
             --ms-badge-border-radius: 16px;
             --ms-badge-remove-background: rgba(255, 255, 255, 0.4);
             --ms-badge-remove-color: #667eea;

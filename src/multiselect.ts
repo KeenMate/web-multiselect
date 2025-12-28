@@ -54,6 +54,7 @@ export class WebMultiSelect<T = any> {
     // DOM elements
     private input!: HTMLInputElement;
     private dropdown!: HTMLDivElement;
+    private dropdownInner!: HTMLDivElement;
     private badgesContainer!: HTMLDivElement;
     private counter!: HTMLSpanElement;
     private hint?: HTMLDivElement;
@@ -387,6 +388,10 @@ export class WebMultiSelect<T = any> {
         // Create dropdown (attached to container)
         this.dropdown = document.createElement('div');
         this.dropdown.className = 'ms__dropdown';
+        // Inner wrapper handles scrolling, outer clips to border-radius
+        this.dropdownInner = document.createElement('div');
+        this.dropdownInner.className = 'ms__dropdown-inner';
+        this.dropdown.appendChild(this.dropdownInner);
         container.appendChild(this.dropdown);
 
         // Create hint if provided (attached to container)
@@ -456,7 +461,7 @@ export class WebMultiSelect<T = any> {
             html += '<div class="pa-loader pa-loader--sm"></div>';
             html += `<div class="ms__loading-text">${this.options.loadingMessage}</div>`;
             html += '</div>';
-            this.dropdown.innerHTML = html;
+            this.dropdownInner.innerHTML = html;
             return;
         }
 
@@ -535,7 +540,7 @@ export class WebMultiSelect<T = any> {
         }
 
         html += '</div>';
-        this.dropdown.innerHTML = html;
+        this.dropdownInner.innerHTML = html;
 
         // Attach tooltips to action buttons after rendering
         this.attachActionButtonTooltips();
@@ -592,10 +597,10 @@ export class WebMultiSelect<T = any> {
             const maxHeight = this.options.maxHeight || '20rem';
             const optionHeight = this.options.optionHeight ?? 50;
             html += `<div class="ms__options ms__options--virtual" style="height: ${maxHeight}; max-height: ${maxHeight}; overflow-y: auto; position: relative; --ms-option-height: ${optionHeight}px;"></div>`;
-            this.dropdown.innerHTML = html;
+            this.dropdownInner.innerHTML = html;
 
             // Get options container
-            this.optionsContainer = this.dropdown.querySelector('.ms__options') as HTMLDivElement;
+            this.optionsContainer = this.dropdownInner.querySelector('.ms__options') as HTMLDivElement;
         }
 
         if (this.filteredOptions.length === 0) {
@@ -978,7 +983,7 @@ export class WebMultiSelect<T = any> {
         this.dropdown.addEventListener('click', (e) => this.handleDropdownClick(e));
 
         // Prevent page scroll when scrolling dropdown at boundaries
-        this.dropdown.addEventListener('wheel', (e: WheelEvent) => {
+        this.dropdownInner.addEventListener('wheel', (e: WheelEvent) => {
             // In virtual scroll mode, the .ms__options container handles scrolling, not the dropdown
             // Skip this handler to let wheel events reach the virtual scroll container
             if (this.virtualScroll) {
