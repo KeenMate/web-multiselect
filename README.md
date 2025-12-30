@@ -933,21 +933,21 @@ Then style with CSS:
 ```css
 /* Target specific badges with custom classes */
 .badge-urgent {
-  --ms-badge-text-background: #fee2e2;
+  --ms-badge-text-bg: #fee2e2;
   --ms-badge-text-color: #dc2626;
-  --ms-badge-remove-background: #dc2626;
+  --ms-badge-remove-bg: #dc2626;
 }
 
 .badge-normal {
-  --ms-badge-text-background: #dbeafe;
+  --ms-badge-text-bg: #dbeafe;
   --ms-badge-text-color: #2563eb;
-  --ms-badge-remove-background: #2563eb;
+  --ms-badge-remove-bg: #2563eb;
 }
 
 .badge-low {
-  --ms-badge-text-background: #d1fae5;
+  --ms-badge-text-bg: #d1fae5;
   --ms-badge-text-color: #059669;
-  --ms-badge-remove-background: #059669;
+  --ms-badge-remove-bg: #059669;
 }
 ```
 
@@ -994,21 +994,21 @@ select.getBadgeClassCallback = (item) => {
 // Inject CSS into Shadow DOM to style those classes
 select.customStylesCallback = () => `
   .badge-urgent {
-    --ms-badge-text-background: #fee2e2;
+    --ms-badge-text-bg: #fee2e2;
     --ms-badge-text-color: #dc2626;
-    --ms-badge-remove-background: #dc2626;
+    --ms-badge-remove-bg: #dc2626;
   }
 
   .badge-normal {
-    --ms-badge-text-background: #dbeafe;
+    --ms-badge-text-bg: #dbeafe;
     --ms-badge-text-color: #2563eb;
-    --ms-badge-remove-background: #2563eb;
+    --ms-badge-remove-bg: #2563eb;
   }
 
   .badge-low {
-    --ms-badge-text-background: #d1fae5;
+    --ms-badge-text-bg: #d1fae5;
     --ms-badge-text-color: #059669;
-    --ms-badge-remove-background: #059669;
+    --ms-badge-remove-bg: #059669;
   }
 `;
 ```
@@ -1613,7 +1613,7 @@ All KeenMate components follow a consistent naming convention for **Tier 1 varia
 | Brand color | `--ms-accent-color` | `--drp-accent-color` |
 | Background | `--ms-primary-bg` | `--drp-primary-bg` |
 | Text color | `--ms-text-primary` | `--drp-text-primary` |
-| Text on accent | `--ms-text-on-accent` | `--drp-text-on-accent` |
+| Text on accent | `--ms-text-color-on-accent` | `--drp-text-on-accent` |
 | Border color | `--ms-border-color` | `--drp-border-color` |
 
 Learn the pattern once, apply it across all components.
@@ -1626,7 +1626,7 @@ You can customize the component using CSS variables even with just a `<script>` 
 <style>
   /* Override tooltip appearance */
   web-multiselect {
-    --ms-tooltip-background: #1f2937;
+    --ms-tooltip-bg: #1f2937;
     --ms-tooltip-color: #f9fafb;
     --ms-tooltip-padding: 0.625rem 0.875rem;
     --ms-tooltip-border-radius: 0.5rem;
@@ -1695,7 +1695,7 @@ For the complete list of all available CSS variables, see:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--ms-input-background` | `var(--base-input-background, #ffffff)` | Input background |
+| `--ms-input-bg` | `var(--base-input-bg, #ffffff)` | Input background |
 | `--ms-input-text` | `#111827` | Input text color |
 | `--ms-input-border` | `#d1d5db` | Input border color |
 | `--ms-input-focus-border-color` | `#3b82f6` | Border color when focused |
@@ -1709,7 +1709,7 @@ For the complete list of all available CSS variables, see:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--ms-dropdown-background` | `var(--base-dropdown-background, #ffffff)` | Dropdown background |
+| `--ms-dropdown-bg` | `var(--base-dropdown-bg, #ffffff)` | Dropdown background |
 | `--ms-dropdown-border` | `var(--ms-border-color)` | Dropdown border color |
 | `--ms-dropdown-shadow` | (box shadow) | Dropdown shadow |
 | `--ms-dropdown-max-height` | `20rem` | Max height of dropdown |
@@ -1727,18 +1727,18 @@ For the complete list of all available CSS variables, see:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--ms-badge-text-background` | `var(--ms-accent-color-light)` | Badge background color |
+| `--ms-badge-text-bg` | `var(--ms-accent-color-light)` | Badge background color |
 | `--ms-badge-text-color` | `var(--ms-accent-color)` | Badge text color |
 | `--ms-badge-gap` | `0.5rem` | Gap between badges |
 | `--ms-badge-height` | `1.5rem` | Height of badges |
 | `--ms-badge-font-size` | `0.75rem` | Badge font size |
 | `--ms-badge-border-radius` | `0.375rem` | Badge border radius |
-| `--ms-badge-remove-background` | `var(--ms-accent-color)` | Remove button background |
-| `--ms-badge-remove-color` | `var(--ms-text-on-accent)` | Remove button color |
-| `--ms-badge-counter-text-background` | `var(--ms-primary-bg)` | BadgeCounter text background ("+X more") |
+| `--ms-badge-remove-bg` | `var(--ms-accent-color)` | Remove button background |
+| `--ms-badge-remove-color` | `var(--ms-text-color-on-accent)` | Remove button color |
+| `--ms-badge-counter-text-bg` | `var(--ms-primary-bg)` | BadgeCounter text background ("+X more") |
 | `--ms-badge-counter-text-color` | `var(--ms-text-color-3)` | BadgeCounter text color |
-| `--ms-badge-counter-remove-background` | `var(--ms-text-color-3)` | BadgeCounter remove button background |
-| `--ms-badge-counter-remove-color` | `var(--ms-text-on-accent)` | BadgeCounter remove button color |
+| `--ms-badge-counter-remove-bg` | `var(--ms-text-color-3)` | BadgeCounter remove button background |
+| `--ms-badge-counter-remove-color` | `var(--ms-text-color-on-accent)` | BadgeCounter remove button color |
 | `--ms-badge-counter-border` | `1px solid var(--ms-border-color)` | BadgeCounter border |
 | `--ms-badge-text-border` | `none` | Badge text border (e.g., `1px solid #3b82f6`) |
 
@@ -1746,12 +1746,12 @@ For the complete list of all available CSS variables, see:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--ms-checkbox-bg` | `var(--ms-input-background)` | Checkbox background |
+| `--ms-checkbox-bg` | `var(--ms-input-bg)` | Checkbox background |
 | `--ms-checkbox-border` | `1px solid var(--ms-border-color)` | Checkbox border |
 | `--ms-checkbox-border-radius` | `0.3rem` | Checkbox border radius |
 | `--ms-checkbox-checked-bg` | `var(--ms-accent-color)` | Background when checked |
 | `--ms-checkbox-checked-border` | `1px solid var(--ms-accent-color)` | Border when checked |
-| `--ms-checkbox-checkmark-color` | `var(--ms-text-on-accent)` | Checkmark color |
+| `--ms-checkbox-checkmark-color` | `var(--ms-text-color-on-accent)` | Checkmark color |
 | `--ms-checkbox-hover-border-color` | `var(--ms-accent-color)` | Border on hover |
 | `--ms-checkbox-disabled-bg` | `var(--ms-primary-bg)` | Disabled background |
 | `--ms-checkbox-disabled-border` | `1px solid var(--ms-border-color)` | Disabled border |
@@ -1779,7 +1779,7 @@ For the complete list of all available CSS variables, see:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--ms-tooltip-background` | `var(--base-tooltip-background, #333333)` | Tooltip background color |
+| `--ms-tooltip-bg` | `var(--base-tooltip-bg, #333333)` | Tooltip background color |
 | `--ms-tooltip-color` | `var(--ms-tooltip-text-color)` | Tooltip text color |
 | `--ms-tooltip-padding` | `0.5rem 0.75rem` | Tooltip padding |
 | `--ms-tooltip-border-radius` | `0.375rem` | Tooltip border radius |

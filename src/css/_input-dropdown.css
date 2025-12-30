@@ -27,7 +27,7 @@
   font-size: var(--ms-input-font-size);
   border: var(--ms-input-border);
   border-radius: var(--ms-input-border-radius);
-  background: var(--ms-input-background);
+  background: var(--ms-input-bg);
   color: var(--ms-input-color);
   cursor: pointer;
   transition: border var(--ms-transition-fast) var(--ms-easing-snappy);
@@ -115,7 +115,7 @@
   top: 50%;
   transform: var(--ms-transform-center-y);
   padding: var(--ms-counter-padding);
-  background: var(--ms-counter-badge-background);
+  background: var(--ms-counter-badge-bg);
   color: var(--ms-counter-badge-color);
   font-size: var(--ms-counter-font-size);
   font-weight: var(--ms-counter-font-weight);
@@ -125,7 +125,7 @@
 }
 
 .ms__counter:hover {
-  background: var(--ms-counter-badge-background-hover);
+  background: var(--ms-counter-badge-bg-hover);
   transform: var(--ms-transform-center-y) scale(var(--ms-transform-scale-hover));
 }
 
@@ -140,7 +140,7 @@
   position: absolute;
   z-index: var(--ms-z-index-popover);
   padding: var(--ms-hint-padding);
-  background: var(--ms-hint-background);
+  background: var(--ms-hint-bg);
   border: var(--ms-hint-border);
   border-radius: var(--ms-hint-border-radius);
   box-shadow: var(--ms-hint-box-shadow);
@@ -165,7 +165,7 @@
   position: absolute;
   font-family: inherit; /* Ensure font inherits from container */
   z-index: var(--ms-z-index-dropdown);
-  background: var(--ms-dropdown-background);
+  background: var(--ms-dropdown-bg);
   border: var(--ms-dropdown-border);
   border-radius: var(--ms-dropdown-border-radius);
   box-shadow: var(--ms-dropdown-box-shadow);
@@ -240,7 +240,7 @@
   position: sticky;
   top: 0;
   z-index: var(--ms-z-index-sticky);
-  background: var(--ms-actions-background);
+  background: var(--ms-actions-bg);
 }
 
 .ms__action-btn {
@@ -250,14 +250,14 @@
   font-size: var(--ms-action-btn-font-size);
   border: var(--ms-action-btn-border);
   border-radius: var(--ms-action-btn-border-radius);
-  background: var(--ms-action-button-background);
+  background: var(--ms-action-button-bg);
   color: var(--ms-action-button-color);
   cursor: pointer;
   transition: all var(--ms-transition-fast) var(--ms-easing-snappy);
 }
 
 .ms__action-btn:hover {
-  background: var(--ms-action-button-background-hover);
+  background: var(--ms-action-button-bg-hover);
   border-color: var(--ms-action-button-border-color-hover);
 }
 

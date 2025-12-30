@@ -78,34 +78,34 @@
   gap: var(--ms-option-gap);
   padding: var(--ms-option-padding);
   color: var(--ms-option-text-color);
-  background: var(--ms-option-background);
+  background: var(--ms-option-bg);
   cursor: pointer;
 }
 
 .ms__option:hover {
-  background: var(--ms-option-background-hover);
+  background: var(--ms-option-bg-hover);
   color: var(--ms-option-color-hover, inherit);
 }
 
 .ms__option--focused {
-  background: var(--ms-option-background-focused);
+  background: var(--ms-option-bg-focused);
   color: var(--ms-option-color-focused, inherit);
   outline: var(--ms-option-outline-focused);
   outline-offset: var(--ms-option-focus-outline-offset);
 }
 
 .ms__option--matched {
-  background: var(--ms-option-background-matched);
+  background: var(--ms-option-bg-matched);
   color: var(--ms-option-color-matched, inherit);
   border-left: var(--ms-option-border-matched);
 }
 
 .ms__option--selected {
-  background: var(--ms-option-background-selected);
+  background: var(--ms-option-bg-selected);
 }
 
 .ms__option--selected:hover {
-  background: var(--ms-option-bg-selected-hover, var(--ms-option-background-selected));
+  background: var(--ms-option-bg-selected-hover, var(--ms-option-bg-selected));
 }
 
 .ms__option--disabled {
@@ -114,7 +114,7 @@
 }
 
 .ms__option--disabled:hover {
-  background: var(--ms-option-background);
+  background: var(--ms-option-bg);
 }
 
 /* Focused + Hover */
@@ -310,7 +310,7 @@
 
 /* Highlight matched text */
 .ms__option-title mark {
-  background: var(--ms-option-mark-background);
+  background: var(--ms-option-mark-bg);
   color: var(--ms-option-mark-color);
   font-weight: var(--ms-option-mark-font-weight);
 }

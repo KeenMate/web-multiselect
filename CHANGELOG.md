@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.0] - 2025-12-30
+
+### Changed
+
+- **BREAKING: CSS Variable Naming Consolidation** - Renamed `background` → `bg` for shorter, consistent variable names
+  - **`--base-*` variables (theme-designer integration):**
+    - `--base-input-background` → `--base-input-bg`
+    - `--base-input-background-disabled` → `--base-input-bg-disabled`
+    - `--base-dropdown-background` → `--base-dropdown-bg`
+    - `--base-actions-background` → `--base-actions-bg`
+    - `--base-hint-background` → `--base-hint-bg`
+    - `--base-tooltip-background` → `--base-tooltip-bg`
+    - `--base-popover-background` → `--base-popover-bg`
+    - `--base-badge-background-hover` → `--base-badge-bg-hover`
+  - **`--ms-*` variables (component-specific):**
+    - All `--ms-*-background*` variables renamed to `--ms-*-bg*` (35+ variables)
+    - Includes: input, dropdown, actions, hint, tooltip, option, badge, popover, counter, etc.
+  - **Migration:** Find and replace `background` → `bg` in your CSS variable overrides
+  - Updated `examples-theming.html` with new variable names
+
+- **BREAKING: Text Color Variable Rename** - Added `-color` suffix for consistency
+  - `--base-text-on-accent` → `--base-text-color-on-accent`
+  - `--ms-text-on-accent` → `--ms-text-color-on-accent`
+  - **Migration:** Find and replace in your stylesheets
+
 ## [1.7.0] - 2025-12-28
 
 ### Added

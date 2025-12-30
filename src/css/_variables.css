@@ -56,7 +56,7 @@
   --ms-text-color-2: var(--base-text-color-2, #353b47);
   --ms-text-color-3: var(--base-text-color-3, #6b7280);
   --ms-text-color-4: var(--base-text-color-4, #a0a3a9);
-  --ms-text-on-accent: var(--base-text-on-accent, #ffffff);
+  --ms-text-color-on-accent: var(--base-text-color-on-accent, #ffffff);
 
   /* Legacy aliases (for backward compatibility) */
   --ms-text-primary: var(--ms-text-color-1);
@@ -74,44 +74,44 @@
      SEMANTIC VARIABLES - Component-Specific Theming
      ==========================================================================
      Pattern: --ms-{component}-{property}-{state}
-     Example: --ms-input-background, --ms-option-text-color-hover */
+     Example: --ms-input-bg, --ms-option-text-color-hover */
 
   /* Input Component Semantic Variables */
-  --ms-input-background: var(--base-input-background, #ffffff);
+  --ms-input-bg: var(--base-input-bg, #ffffff);
   --ms-input-color: var(--base-input-color, var(--ms-text-color-1));
   --ms-input-border: var(--base-input-border, 1px solid var(--ms-border-color));
   --ms-input-border-hover: var(--base-input-border-hover, 1px solid var(--ms-accent-color));
   --ms-input-border-focus: var(--base-input-border-focus, 1px solid var(--ms-accent-color));
   --ms-input-placeholder-color: var(--base-input-placeholder-color, var(--ms-text-color-4));
-  --ms-input-background-disabled: var(--base-input-background-disabled, rgba(107, 114, 128, 0.05));
+  --ms-input-bg-disabled: var(--base-input-bg-disabled, rgba(107, 114, 128, 0.05));
 
   /* Toggle Icon Semantic Variables */
   --ms-toggle-icon-color: var(--ms-text-color-3);
   --ms-toggle-icon-color-open: var(--ms-text-color-3);
 
   /* Counter Badge (in Input) Semantic Variables */
-  --ms-counter-badge-background: var(--ms-accent-color);
-  --ms-counter-badge-background-hover: var(--ms-accent-color-hover);
-  --ms-counter-badge-color: var(--ms-text-on-accent);
+  --ms-counter-badge-bg: var(--ms-accent-color);
+  --ms-counter-badge-bg-hover: var(--ms-accent-color-hover);
+  --ms-counter-badge-color: var(--ms-text-color-on-accent);
 
   /* Floating Hint Semantic Variables */
-  --ms-hint-background: var(--base-hint-background, #ffffff);
+  --ms-hint-bg: var(--base-hint-bg, #ffffff);
   --ms-hint-color: var(--ms-text-color-4);
   --ms-hint-border-color: var(--ms-border-color);
 
   /* Dropdown Semantic Variables */
-  --ms-dropdown-background: var(--base-dropdown-background, #ffffff);
+  --ms-dropdown-bg: var(--base-dropdown-bg, #ffffff);
   --ms-dropdown-text-color: var(--ms-text-color-1);
   --ms-dropdown-border-color: var(--ms-border-color);
   --ms-dropdown-box-shadow-semantic: var(--base-dropdown-box-shadow, 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1));
 
   /* Dropdown Actions Semantic Variables */
-  --ms-actions-background: var(--base-actions-background, #ffffff);
+  --ms-actions-bg: var(--base-actions-bg, #ffffff);
   --ms-actions-border-color: var(--ms-border-color);
 
   /* Action Button Semantic Variables */
-  --ms-action-button-background: transparent;
-  --ms-action-button-background-hover: var(--ms-primary-bg);
+  --ms-action-button-bg: transparent;
+  --ms-action-button-bg-hover: var(--ms-primary-bg);
   --ms-action-button-border-color: var(--ms-border-color);
   --ms-action-button-border-color-hover: var(--ms-accent-color);
   --ms-action-button-color: var(--ms-text-color-1);
@@ -122,21 +122,21 @@
 
   /* Option Semantic Variables */
   --ms-option-text-color: var(--ms-text-color-1);
-  --ms-option-background: transparent;
-  --ms-option-background-hover: var(--ms-primary-bg);
+  --ms-option-bg: transparent;
+  --ms-option-bg-hover: var(--ms-primary-bg);
   --ms-option-color-hover: inherit;
-  --ms-option-background-focused: var(--ms-primary-bg);
+  --ms-option-bg-focused: var(--ms-primary-bg);
   --ms-option-color-focused: inherit;
   --ms-option-outline-color-focused: var(--ms-accent-color);
-  --ms-option-background-selected: color-mix(in srgb, var(--ms-accent-color) 10%, transparent);
-  --ms-option-background-matched: color-mix(in srgb, var(--ms-accent-color) 8%, transparent);
+  --ms-option-bg-selected: color-mix(in srgb, var(--ms-accent-color) 10%, transparent);
+  --ms-option-bg-matched: color-mix(in srgb, var(--ms-accent-color) 8%, transparent);
   --ms-option-color-matched: inherit;
   --ms-option-border-matched-color: color-mix(in srgb, var(--ms-accent-color) 40%, transparent);
 
   /* Option Content Semantic Variables */
   --ms-option-title-color: var(--ms-text-color-1);
   --ms-option-subtitle-color: var(--ms-text-color-3);
-  --ms-option-mark-background: color-mix(in srgb, var(--ms-accent-color) 20%, transparent);
+  --ms-option-mark-bg: color-mix(in srgb, var(--ms-accent-color) 20%, transparent);
   --ms-option-mark-color: inherit;
 
   /* Empty/Loading State Semantic Variables */
@@ -144,52 +144,52 @@
   --ms-loading-color: var(--ms-text-color-3);
 
   /* Badge Semantic Variables */
-  --ms-badge-background: var(--ms-accent-color-light);
-  --ms-badge-background-hover: var(--base-badge-background-hover, var(--ms-input-background));
-  --ms-badge-background-active: var(--ms-accent-color-light-hover);
+  --ms-badge-bg: var(--ms-accent-color-light);
+  --ms-badge-bg-hover: var(--base-badge-bg-hover, var(--ms-input-bg));
+  --ms-badge-bg-active: var(--ms-accent-color-light-hover);
 
   /* Badge Text Semantic Variables */
-  --ms-badge-text-background: var(--ms-accent-color-light);
+  --ms-badge-text-bg: var(--ms-accent-color-light);
   --ms-badge-text-color: var(--ms-accent-color);
-  --ms-badge-text-background-hover: var(--base-badge-background-hover, var(--ms-input-background));
+  --ms-badge-text-bg-hover: var(--base-badge-bg-hover, var(--ms-input-bg));
   --ms-badge-text-color-hover: var(--ms-badge-text-color);
 
   /* Badge Remove Button Semantic Variables */
-  --ms-badge-remove-background: var(--ms-accent-color);
-  --ms-badge-remove-background-hover: var(--ms-accent-color-hover);
-  --ms-badge-remove-color: var(--ms-text-on-accent);
+  --ms-badge-remove-bg: var(--ms-accent-color);
+  --ms-badge-remove-bg-hover: var(--ms-accent-color-hover);
+  --ms-badge-remove-color: var(--ms-text-color-on-accent);
 
   /* Badge Counter Variant Semantic Variables */
   --ms-badge-counter-border-color: var(--ms-border-color);
-  --ms-badge-counter-text-background: var(--ms-primary-bg);
+  --ms-badge-counter-text-bg: var(--ms-primary-bg);
   --ms-badge-counter-text-color: var(--ms-text-color-3);
-  --ms-badge-counter-remove-background: var(--ms-text-color-3);
-  --ms-badge-counter-remove-background-hover: var(--ms-text-color-1);
-  --ms-badge-counter-remove-color: var(--ms-text-on-accent);
+  --ms-badge-counter-remove-bg: var(--ms-text-color-3);
+  --ms-badge-counter-remove-bg-hover: var(--ms-text-color-1);
+  --ms-badge-counter-remove-color: var(--ms-text-color-on-accent);
 
   /* Count Display Semantic Variables */
-  --ms-counter-wrapper-background: transparent;
-  --ms-counter-wrapper-background-hover: var(--ms-primary-bg);
+  --ms-counter-wrapper-bg: transparent;
+  --ms-counter-wrapper-bg-hover: var(--ms-primary-bg);
   --ms-counter-wrapper-border-color: var(--ms-border-color);
   --ms-counter-wrapper-border-color-hover: var(--ms-accent-color);
   --ms-count-text-color: var(--ms-text-color-1);
-  --ms-count-clear-background: transparent;
-  --ms-count-clear-background-hover: var(--ms-accent-color);
+  --ms-count-clear-bg: transparent;
+  --ms-count-clear-bg-hover: var(--ms-accent-color);
   --ms-count-clear-color: var(--ms-text-color-3);
   --ms-count-clear-color-hover: var(--ms-accent-color);
 
   /* Tooltip Semantic Variables */
-  --ms-tooltip-background: var(--base-tooltip-background, #333333);
+  --ms-tooltip-bg: var(--base-tooltip-bg, #333333);
   --ms-tooltip-text-color: var(--base-tooltip-text-color, #ffffff);
 
   /* Selected Popover Semantic Variables */
-  --ms-selected-popover-background: var(--base-popover-background, #ffffff);
+  --ms-selected-popover-bg: var(--base-popover-bg, #ffffff);
   --ms-selected-popover-border-color: var(--ms-border-color);
-  --ms-selected-popover-header-background: color-mix(in srgb, var(--ms-accent-color) 10%, transparent);
+  --ms-selected-popover-header-bg: color-mix(in srgb, var(--ms-accent-color) 10%, transparent);
   --ms-selected-popover-header-color: var(--ms-text-color-1);
   --ms-selected-popover-header-border-color: var(--ms-border-color);
-  --ms-selected-popover-close-background: transparent;
-  --ms-selected-popover-close-background-hover: var(--ms-accent-color);
+  --ms-selected-popover-close-bg: transparent;
+  --ms-selected-popover-close-bg-hover: var(--ms-accent-color);
   --ms-selected-popover-close-color: var(--ms-text-color-3);
   --ms-selected-popover-close-color-hover: var(--ms-accent-color);
 
@@ -249,7 +249,7 @@
   --ms-counter-offset: calc(3.2 * var(--ms-rem));
   --ms-counter-padding: calc(0.2 * var(--ms-rem)) calc(0.4 * var(--ms-rem));
   --ms-counter-bg: var(--ms-accent-color);
-  --ms-counter-color: var(--ms-text-on-accent);
+  --ms-counter-color: var(--ms-text-color-on-accent);
   --ms-counter-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
   --ms-counter-font-weight: var(--base-font-weight-semibold, 600);
   --ms-counter-border-radius: var(--ms-border-radius-sm);
@@ -366,12 +366,12 @@
   --ms-checkbox-align: center;
 
   /* Checkbox Styling */
-  --ms-checkbox-bg: var(--ms-input-background);
+  --ms-checkbox-bg: var(--ms-input-bg);
   --ms-checkbox-border: var(--ms-border);
   --ms-checkbox-border-radius: calc(0.3 * var(--ms-rem));
   --ms-checkbox-checked-bg: var(--ms-accent-color);
   --ms-checkbox-checked-border: 1px solid var(--ms-accent-color);
-  --ms-checkbox-checkmark-color: var(--ms-text-on-accent);
+  --ms-checkbox-checkmark-color: var(--ms-text-color-on-accent);
   --ms-checkbox-hover-border-color: var(--ms-accent-color);
   --ms-checkbox-disabled-bg: var(--ms-primary-bg);
   --ms-checkbox-disabled-border: var(--ms-border);
@@ -411,7 +411,7 @@
   --ms-badge-font-weight: var(--base-font-weight-semibold, 600);
   --ms-badge-border-radius: var(--ms-border-radius-sm);
   --ms-badge-bg: var(--ms-accent-color-light);
-  --ms-badge-bg-hover: var(--ms-badge-background-hover);
+  --ms-badge-bg-hover: var(--ms-badge-bg-hover);
   --ms-badge-bg-active: var(--ms-accent-color-light-hover);
   --ms-order-first: -1;
 
@@ -427,7 +427,7 @@
   /* Badge Remove Button */
   --ms-badge-remove-width: calc(2.7 * var(--ms-rem));
   --ms-badge-remove-bg: var(--ms-accent-color);
-  --ms-badge-remove-color: var(--ms-text-on-accent);
+  --ms-badge-remove-color: var(--ms-text-color-on-accent);
   --ms-badge-remove-border: none;
   --ms-badge-remove-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
   --ms-badge-remove-bg-hover: var(--ms-accent-color-hover);
@@ -439,16 +439,16 @@
   --ms-badge-counter-border: var(--ms-border);
   --ms-badge-counter-border-radius: var(--ms-border-radius-sm);
   --ms-badge-counter-text-color: var(--ms-text-color-3);
-  --ms-badge-counter-text-bg: var(--ms-badge-counter-text-background);
+  --ms-badge-counter-text-bg: var(--ms-badge-counter-text-bg);
   --ms-badge-counter-remove-bg: var(--ms-text-color-3);
-  --ms-badge-counter-remove-color: var(--ms-text-on-accent);
-  --ms-badge-counter-remove-bg-hover: var(--ms-badge-counter-remove-background-hover);
+  --ms-badge-counter-remove-color: var(--ms-text-color-on-accent);
+  --ms-badge-counter-remove-bg-hover: var(--ms-badge-counter-remove-bg-hover);
 
   /* ==========================================================================
      "+X MORE" BADGE
      ========================================================================== */
   --ms-more-badge-bg: var(--ms-accent-color-light);
-  --ms-more-badge-hover-bg: var(--ms-badge-background-hover);
+  --ms-more-badge-hover-bg: var(--ms-badge-bg-hover);
   --ms-more-badge-active-bg: var(--ms-accent-color-light-hover);
 
   /* ==========================================================================

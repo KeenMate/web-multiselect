@@ -83,7 +83,7 @@
   display: inline-flex;
   align-items: center;
   gap: var(--ms-counter-wrapper-gap);
-  background: var(--ms-counter-wrapper-background);
+  background: var(--ms-counter-wrapper-bg);
   border: var(--ms-counter-wrapper-border);
   border-radius: var(--ms-counter-wrapper-border-radius);
   padding: var(--ms-counter-wrapper-padding);
@@ -91,7 +91,7 @@
 }
 
 .ms__counter-wrapper:hover {
-  background: var(--ms-counter-wrapper-background-hover);
+  background: var(--ms-counter-wrapper-bg-hover);
   border-color: var(--ms-counter-wrapper-border-color-hover);
 }
 
@@ -116,7 +116,7 @@
   height: var(--ms-count-clear-size);
   padding: 0;
   border: none;
-  background: var(--ms-count-clear-background);
+  background: var(--ms-count-clear-bg);
   color: var(--ms-count-clear-color);
   font-size: var(--ms-count-clear-font-size);
   line-height: var(--ms-line-height-none);
@@ -126,7 +126,7 @@
 }
 
 .ms__count-clear:hover {
-  background: var(--ms-count-clear-background-hover);
+  background: var(--ms-count-clear-bg-hover);
   color: var(--ms-count-clear-color-hover);
 }
 
@@ -159,7 +159,7 @@
   box-sizing: border-box; /* Include border in height to prevent clipping */
   height: 100%;
   padding: var(--ms-badge-text-padding);
-  background: var(--ms-badge-text-background);
+  background: var(--ms-badge-text-bg);
   color: var(--ms-badge-text-color);
   border: var(--ms-badge-text-border);
   border-right: none; /* No double border between text and button */
@@ -173,7 +173,7 @@
 
 /* Badge hover state */
 .ms__badge:hover .ms__badge-text {
-  background: var(--ms-badge-text-background-hover, var(--ms-badge-text-background));
+  background: var(--ms-badge-text-bg-hover, var(--ms-badge-text-bg));
   color: var(--ms-badge-text-color-hover, var(--ms-badge-text-color));
 }
 
@@ -187,7 +187,7 @@
   width: var(--ms-badge-remove-width);
   height: 100%;
   flex-shrink: 0;
-  background: var(--ms-badge-remove-background);
+  background: var(--ms-badge-remove-bg);
   color: var(--ms-badge-remove-color);
   border: var(--ms-badge-remove-border);
   border-left: none; /* No double border between text and button */
@@ -198,7 +198,7 @@
 }
 
 .ms__badge-remove:hover {
-  background: var(--ms-badge-remove-background-hover);
+  background: var(--ms-badge-remove-bg-hover);
 }
 
 .ms__badge-remove:focus {
@@ -222,21 +222,21 @@
 }
 
 .ms__badge--counter .ms__badge-text {
-  background: var(--ms-badge-counter-text-background);
+  background: var(--ms-badge-counter-text-bg);
   color: var(--ms-badge-counter-text-color);
   border: var(--ms-badge-counter-border);
   border-right: none;
 }
 
 .ms__badge--counter .ms__badge-remove {
-  background: var(--ms-badge-counter-remove-background);
+  background: var(--ms-badge-counter-remove-bg);
   color: var(--ms-badge-counter-remove-color);
   border: var(--ms-badge-counter-border);
   border-left: none;
 }
 
 .ms__badge--counter .ms__badge-remove:hover {
-  background: var(--ms-badge-counter-remove-background-hover);
+  background: var(--ms-badge-counter-remove-bg-hover);
 }
 
 /* ==============================================================================

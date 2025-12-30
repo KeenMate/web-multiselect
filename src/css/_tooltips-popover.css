@@ -16,7 +16,7 @@
   visibility: hidden;
   transition: opacity var(--ms-transition-normal) ease, visibility var(--ms-transition-normal) ease;
 
-  background: var(--ms-tooltip-background);
+  background: var(--ms-tooltip-bg);
   color: var(--ms-tooltip-text-color);
   padding: var(--ms-tooltip-padding);
   border-radius: var(--ms-tooltip-border-radius);
@@ -44,7 +44,7 @@
   display: none;
   position: absolute;
   z-index: var(--ms-z-index-popover);
-  background: var(--ms-selected-popover-background);
+  background: var(--ms-selected-popover-bg);
   border: var(--ms-selected-popover-border);
   border-radius: var(--ms-selected-popover-border-radius);
   box-shadow: var(--ms-selected-popover-box-shadow);
@@ -70,7 +70,7 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--ms-selected-popover-header-padding);
-  background: var(--ms-selected-popover-header-background);
+  background: var(--ms-selected-popover-header-bg);
   border-bottom: var(--ms-selected-popover-header-border-bottom);
   font-size: var(--ms-selected-popover-header-font-size);
   font-weight: var(--ms-selected-popover-header-font-weight);
@@ -85,7 +85,7 @@
   height: var(--ms-popover-close-size);
   padding: 0;
   border: none;
-  background: var(--ms-selected-popover-close-background);
+  background: var(--ms-selected-popover-close-bg);
   color: var(--ms-selected-popover-close-color);
   font-size: var(--ms-selected-popover-close-font-size);
   line-height: var(--ms-line-height-none);
@@ -95,7 +95,7 @@
 }
 
 .ms__selected-popover-close:hover {
-  background: var(--ms-selected-popover-close-background-hover);
+  background: var(--ms-selected-popover-close-bg-hover);
   color: var(--ms-selected-popover-close-color-hover);
 }
 
