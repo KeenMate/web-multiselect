@@ -63,8 +63,8 @@
   --ms-text-secondary: var(--ms-text-color-3);
 
   /* Background Colors */
-  --ms-primary-bg: var(--base-primary-bg, #f3f4f6);
-  --ms-primary-bg-hover: var(--base-primary-bg-hover, #e5e7eb);
+  --ms-primary-bg: var(--base-main-bg, #f3f4f6);
+  --ms-primary-bg-hover: var(--base-hover-bg, #e5e7eb);
 
   /* Border Base Variables */
   --ms-border-color: var(--base-border-color, #e5e7eb);
@@ -95,7 +95,7 @@
   --ms-counter-badge-color: var(--ms-text-color-on-accent);
 
   /* Floating Hint Semantic Variables */
-  --ms-hint-bg: var(--base-hint-bg, #ffffff);
+  --ms-hint-bg: var(--base-main-bg, #ffffff);
   --ms-hint-color: var(--ms-text-color-4);
   --ms-hint-border-color: var(--ms-border-color);
 
@@ -106,7 +106,7 @@
   --ms-dropdown-box-shadow-semantic: var(--base-dropdown-box-shadow, 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1));
 
   /* Dropdown Actions Semantic Variables */
-  --ms-actions-bg: var(--base-actions-bg, #ffffff);
+  --ms-actions-bg: var(--base-main-bg, #ffffff);
   --ms-actions-border-color: var(--ms-border-color);
 
   /* Action Button Semantic Variables */
@@ -145,13 +145,13 @@
 
   /* Badge Semantic Variables */
   --ms-badge-bg: var(--ms-accent-color-light);
-  --ms-badge-bg-hover: var(--base-badge-bg-hover, var(--ms-input-bg));
+  --ms-badge-bg-hover: var(--base-hover-bg, var(--ms-input-bg));
   --ms-badge-bg-active: var(--ms-accent-color-light-hover);
 
   /* Badge Text Semantic Variables */
   --ms-badge-text-bg: var(--ms-accent-color-light);
   --ms-badge-text-color: var(--ms-accent-color);
-  --ms-badge-text-bg-hover: var(--base-badge-bg-hover, var(--ms-input-bg));
+  --ms-badge-text-bg-hover: var(--base-hover-bg, var(--ms-input-bg));
   --ms-badge-text-color-hover: var(--ms-badge-text-color);
 
   /* Badge Remove Button Semantic Variables */
@@ -183,7 +183,7 @@
   --ms-tooltip-text-color: var(--base-tooltip-text-color, #ffffff);
 
   /* Selected Popover Semantic Variables */
-  --ms-selected-popover-bg: var(--base-popover-bg, #ffffff);
+  --ms-selected-popover-bg: var(--base-dropdown-bg, #ffffff);
   --ms-selected-popover-border-color: var(--ms-border-color);
   --ms-selected-popover-header-bg: color-mix(in srgb, var(--ms-accent-color) 10%, transparent);
   --ms-selected-popover-header-color: var(--ms-text-color-1);
@@ -332,6 +332,7 @@
   --ms-option-bg-matched-hover: color-mix(in srgb, var(--ms-accent-color) 12%, transparent);
   --ms-option-bg-selected-focused: color-mix(in srgb, var(--ms-accent-color) 15%, transparent);
   --ms-option-bg-selected-matched: color-mix(in srgb, var(--ms-accent-color) 15%, transparent);
+  --ms-option-disabled-bg: var(--base-disabled-bg, transparent);
   --ms-option-bg-disabled-selected: color-mix(in srgb, var(--ms-accent-color) 10%, transparent);
 
   --ms-disabled-opacity: 0.5;

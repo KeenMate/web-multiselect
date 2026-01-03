@@ -111,10 +111,11 @@
 .ms__option--disabled {
   opacity: var(--ms-disabled-opacity);
   cursor: not-allowed;
+  background: var(--ms-option-disabled-bg);
 }
 
 .ms__option--disabled:hover {
-  background: var(--ms-option-bg);
+  background: var(--ms-option-disabled-bg);
 }
 
 /* Focused + Hover */

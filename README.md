@@ -1618,6 +1618,16 @@ All KeenMate components follow a consistent naming convention for **Tier 1 varia
 
 Learn the pattern once, apply it across all components.
 
+#### Component Variables Manifest
+
+This package exports a `component-variables.manifest.json` file that documents all supported CSS variables for tooling integration (e.g., Theme Designer, IDE autocomplete):
+
+```javascript
+import manifest from '@keenmate/web-multiselect/component-variables.manifest.json';
+// manifest.baseVariables - list of --base-* variables the component responds to
+// manifest.componentVariables - list of --ms-* component-specific variables
+```
+
 ### CSS Variables (No Build System Required)
 
 You can customize the component using CSS variables even with just a `<script>` tag:

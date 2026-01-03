@@ -1,6 +1,6 @@
 {
   "name": "@keenmate/web-multiselect",
-  "version": "1.8.0",
+  "version": "1.8.2",
   "description": "Lightweight multiselect web component with typeahead search, rich content support, and excellent keyboard navigation",
   "type": "module",
   "main": "./dist/multiselect.umd.js",
@@ -18,7 +18,8 @@
     "./css": "./src/css/main.css",
     "./dist/*": "./dist/*",
     "./src/css/*": "./src/css/*",
-    "./package.json": "./package.json"
+    "./package.json": "./package.json",
+    "./component-variables.manifest.json": "./component-variables.manifest.json"
   },
   "sideEffects": [
     "./dist/multiselect.js",
@@ -27,7 +28,8 @@
   ],
   "files": [
     "dist",
-    "src/css"
+    "src/css",
+    "component-variables.manifest.json"
   ],
   "scripts": {
     "dev": "vite --port 12200",
