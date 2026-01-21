@@ -9,40 +9,11 @@
     <link rel="stylesheet" href="examples-shared.css">
     <link rel="stylesheet" href="/dist/style.css">
 
-    <!-- Page-specific styles -->
+    <!-- Page-specific styles (uses shared button and note styles) -->
     <style>
-        /* Custom button styling */
-        button {
-            background: #3b82f6;
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            cursor: pointer;
+        /* Adjust button margins for this demo */
+        .controls button {
             margin: 0.25rem;
-        }
-
-        button:hover {
-            background: #2563eb;
-        }
-
-        button.secondary {
-            background: #6b7280;
-        }
-
-        button.secondary:hover {
-            background: #4b5563;
-        }
-
-        .controls {
-            margin: 1rem 0;
-        }
-
-        .note {
-            background: #fef3c7;
-            border-left: 4px solid #f59e0b;
-            padding: 1rem;
-            margin: 1rem 0;
         }
     </style>
 </head>
@@ -54,7 +25,7 @@
             <p class="subtitle">Explore the categorized logging system with runtime controls</p>
         </header>
 
-        <div class="note">
+        <div class="note warning">
             <strong>Note:</strong> Open your browser's Developer Console (F12) to see the log messages.
             By default, all logging is disabled in production.
         </div>

@@ -202,6 +202,7 @@
     { "name": "ms-option-bg-matched-hover", "category": "option", "usage": "Matched option hover background" },
     { "name": "ms-option-bg-selected-focused", "category": "option", "usage": "Selected focused background" },
     { "name": "ms-option-bg-selected-matched", "category": "option", "usage": "Selected matched background" },
+    { "name": "ms-option-disabled-bg", "category": "option", "usage": "Disabled option background" },
     { "name": "ms-option-bg-disabled-selected", "category": "option", "usage": "Disabled selected background" },
     { "name": "ms-disabled-opacity", "category": "option", "usage": "Disabled option opacity" },
 
@@ -275,6 +276,7 @@
     { "name": "ms-icon-remove", "category": "badge", "usage": "Remove icon character" },
     { "name": "ms-badge-counter-bg", "category": "badge", "usage": "Counter badge background" },
     { "name": "ms-badge-counter-border", "category": "badge", "usage": "Counter badge border" },
+    { "name": "ms-badge-counter-border-color", "category": "badge", "usage": "Counter badge border color" },
     { "name": "ms-badge-counter-border-radius", "category": "badge", "usage": "Counter badge border radius" },
     { "name": "ms-badge-counter-text-color", "category": "badge", "usage": "Counter badge text color" },
     { "name": "ms-badge-counter-text-bg", "category": "badge", "usage": "Counter badge text background" },
@@ -295,6 +297,7 @@
     { "name": "ms-counter-wrapper-padding", "category": "count", "usage": "Counter wrapper padding" },
     { "name": "ms-counter-wrapper-gap", "category": "count", "usage": "Counter wrapper gap" },
     { "name": "ms-counter-wrapper-bg-hover", "category": "count", "usage": "Counter wrapper hover background" },
+    { "name": "ms-counter-wrapper-border-color", "category": "count", "usage": "Counter wrapper border color" },
     { "name": "ms-counter-wrapper-border-color-hover", "category": "count", "usage": "Counter wrapper hover border" },
     { "name": "ms-count-text-bg", "category": "count", "usage": "Count text background" },
     { "name": "ms-count-text-border", "category": "count", "usage": "Count text border" },

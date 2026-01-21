@@ -3,344 +3,223 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MultiSelect Examples - Choose Your Demo</title>
+    <title>Web MultiSelect - Examples</title>
+    <link rel="stylesheet" href="examples-shared.css">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        /* Prevent FOAC (Flash of Unstyled Content) for options */
-        web-multiselect option {
-            display: none;
-        }
-
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f0f2f5;
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
             padding: 2rem;
+            max-width: none;
         }
 
-        .container {
-            max-width: 900px;
-            width: 100%;
+        .page-container {
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
-        header {
-            text-align: center;
-            margin-bottom: 3rem;
+        .header-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 16px;
+            padding: 2.5rem 3rem;
+            margin-bottom: 2rem;
             color: white;
         }
 
-        h1 {
-            font-size: 3rem;
+        .header-card h1 {
+            font-size: 2.5rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            margin: 0 0 0.5rem 0;
+            color: white;
+            border-bottom: none;
+            padding-bottom: 0;
         }
 
-        .subtitle {
-            font-size: 1.25rem;
+        .header-card .subtitle {
+            font-size: 1.1rem;
             opacity: 0.9;
-            font-weight: 300;
+            margin: 0 0 1rem 0;
         }
 
         .version-badge {
             display: inline-block;
             background: rgba(255, 255, 255, 0.2);
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
+            padding: 0.35rem 0.85rem;
+            border-radius: 8px;
             font-size: 0.875rem;
-            margin-top: 0.5rem;
-            backdrop-filter: blur(10px);
+            font-weight: 500;
         }
 
         .cards {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 2rem;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
         }
 
-        .card {
+        .card-link {
             background: white;
-            border-radius: 16px;
-            padding: 2rem;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-radius: 12px;
+            padding: 1.75rem;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
             cursor: pointer;
             text-decoration: none;
             color: inherit;
             display: block;
         }
 
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        .card-link:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+            text-decoration: none;
         }
 
         .card-icon {
-            font-size: 3rem;
+            font-size: 2.5rem;
             margin-bottom: 1rem;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
         }
 
-        .card-title {
-            font-size: 1.5rem;
+        .card-link h2.card-title {
+            font-size: 1.25rem;
             font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: #2d3748;
+            margin: 0 0 0.5rem 0;
+            color: #1a202c;
+            border-bottom: none;
+            padding-bottom: 0;
         }
 
         .card-description {
-            color: #718096;
+            color: #64748b;
             line-height: 1.6;
-            margin-bottom: 1rem;
-        }
-
-        .card-features {
-            list-style: none;
-            margin-top: 1rem;
-        }
-
-        .card-features li {
-            padding: 0.5rem 0;
-            border-top: 1px solid #e2e8f0;
-            font-size: 0.875rem;
-            color: #4a5568;
-            display: flex;
-            align-items: center;
-        }
-
-        .card-features li:before {
-            content: "✓";
-            color: #667eea;
-            font-weight: bold;
-            margin-right: 0.5rem;
+            margin: 0;
+            font-size: 0.95rem;
         }
 
         .badge {
             display: inline-block;
-            background: #667eea;
+            background: #f56565;
             color: white;
-            padding: 0.25rem 0.75rem;
-            border-radius: 12px;
-            font-size: 0.75rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 6px;
+            font-size: 0.65rem;
             font-weight: 600;
             margin-left: 0.5rem;
-        }
-
-        .badge.new {
-            background: #f56565;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
+            vertical-align: middle;
+            text-transform: uppercase;
         }
 
         footer {
             text-align: center;
             margin-top: 3rem;
-            color: white;
-            opacity: 0.8;
+            color: #64748b;
             font-size: 0.875rem;
         }
 
         footer a {
-            color: white;
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        footer a:hover {
             text-decoration: underline;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>🎨 MultiSelect Web Component</h1>
-            <p class="subtitle">Interactive examples showcasing features and capabilities</p>
-            <span class="version-badge">v1.8.0</span>
+    <div class="page-container">
+        <header class="header-card">
+            <h1>Web MultiSelect</h1>
+            <p class="subtitle">Feature-rich multiselect web component with typeahead search, virtual scrolling, and extensive customization</p>
+            <span class="version-badge">v1.8.2</span>
         </header>
 
-        <div class="cards">
-            <!-- Classic Examples -->
-            <a href="examples-classic.html" class="card">
-                <div class="card-icon">📦</div>
-                <h2 class="card-title">Classic Examples</h2>
-                <p class="card-description">
-                    Standard multiselect demos with simple string arrays. Perfect for getting started quickly with common use cases.
-                </p>
-                <ul class="card-features">
-                    <li>Single-select & multi-select modes</li>
-                    <li>Grouped options with collapsible groups</li>
-                    <li>Icons & subtitles for rich display</li>
-                    <li>Badges, count & compact display modes</li>
-                    <li>Async search (GitHub API, products)</li>
-                </ul>
-            </a>
-
-            <!-- New API Examples -->
-            <a href="examples-new-api.html" class="card">
-                <div class="card-icon">🚀</div>
-                <h2 class="card-title">
-                    Flexible Data API
-                    <span class="badge new">NEW</span>
-                </h2>
-                <p class="card-description">
-                    Advanced demos showing flexible data handling with custom objects, tuples, and form integration. Use with any data structure.
-                </p>
-                <ul class="card-features">
-                    <li>Custom objects (Product, User, Country)</li>
-                    <li>Tuple arrays [id, name] auto-detection</li>
-                    <li>Member props & callback functions</li>
-                    <li>Form integration (JSON, CSV, array)</li>
-                    <li>getValue() API for easy form submission</li>
-                </ul>
-            </a>
-
-            <!-- Logging Examples -->
-            <a href="examples-logging.html" class="card">
-                <div class="card-icon">🔍</div>
-                <h2 class="card-title">
-                    Logging & Debugging
-                    <span class="badge new">NEW</span>
-                </h2>
-                <p class="card-description">
-                    Explore the categorized logging system with runtime controls. Perfect for debugging and understanding component behavior.
-                </p>
-                <ul class="card-features">
-                    <li>4 log categories (INIT, DATA, UI, INTERACTION)</li>
-                    <li>Runtime enable/disable controls</li>
-                    <li>Color-coded console output</li>
-                    <li>Category-specific filtering</li>
-                    <li>Millisecond-precision timestamps</li>
-                </ul>
-            </a>
-
-            <!-- Performance Test -->
-            <a href="examples-performance.html" class="card">
-                <div class="card-icon">⚡</div>
-                <h2 class="card-title">
-                    Virtual Scrolling Demo
-                    <span class="badge new">NEW</span>
-                </h2>
-                <p class="card-description">
-                    Experience blazing-fast performance with 15,000 options. Virtual scrolling renders only visible items for instant opening, smooth search, and 99.8% memory reduction.
-                </p>
-                <ul class="card-features">
-                    <li>15,000 options in 30ms (25× faster)</li>
-                    <li>15ms search (13-33× faster)</li>
-                    <li>99.8% less memory (7.5MB → 15KB)</li>
-                    <li>Full keyboard & mouse wheel support</li>
-                    <li>Real-time performance metrics</li>
-                </ul>
-            </a>
-
-            <!-- Custom Rendering Examples -->
-            <a href="examples-templating.html" class="card">
-                <div class="card-icon">🎨</div>
-                <h2 class="card-title">
-                    Custom Rendering
-                    <span class="badge new">NEW</span>
-                </h2>
-                <p class="card-description">
-                    Fully customize how options, badges, and selected items are displayed using render callbacks. Build rich UIs with HTML or DOM elements.
-                </p>
-                <ul class="card-features">
-                    <li>Custom option content with badges & icons</li>
-                    <li>Rich badge rendering (avatars, details)</li>
-                    <li>Context-aware rendering (selected, focused)</li>
-                    <li>HTMLElement or HTML string returns</li>
-                    <li>All three callbacks demonstrated</li>
-                </ul>
-            </a>
-
-            <!-- Sizes & Fonts -->
-            <a href="examples-sizes.html" class="card">
-                <div class="card-icon">📏</div>
-                <h2 class="card-title">
-                    Sizes & Fonts
-                </h2>
-                <p class="card-description">
-                    Control input dimensions and typography. Preset sizes, custom fonts, and theme-designer integration.
-                </p>
-                <ul class="card-features">
-                    <li>5 preset sizes (xs, sm, md, lg, xl)</li>
-                    <li>Custom font families (Google Fonts)</li>
-                    <li>REM-based scaling (--ms-rem)</li>
-                    <li>Theme-designer --base-* integration</li>
-                    <li>Complete variable reference</li>
-                </ul>
-            </a>
-
-            <!-- Base Variables Demo -->
-            <a href="examples-base-variables.html" class="card">
-                <div class="card-icon">🎨</div>
-                <h2 class="card-title">
-                    Base Variables Demo
-                    <span class="badge new">NEW</span>
-                </h2>
-                <p class="card-description">
-                    Interactive demo for testing theme-designer --base-* typography integration. Adjust fonts, sizes, weights in real-time.
-                </p>
-                <ul class="card-features">
-                    <li>Google Fonts loader with Shadow DOM</li>
-                    <li>Real-time font size controls</li>
-                    <li>Font weight & line height adjustment</li>
-                    <li>Live CSS output panel</li>
-                    <li>Multiple multiselect demos</li>
-                </ul>
-            </a>
-
-            <!-- Theming Examples -->
-            <a href="examples-theming.html" class="card">
-                <div class="card-icon">🎭</div>
-                <h2 class="card-title">
-                    Theming Showcase
-                    <span class="badge new">NEW</span>
-                </h2>
-                <p class="card-description">
-                    Explore different visual styles and themes using CSS variables. From dark mode to glassmorphism, see how to customize every aspect of the component.
-                </p>
-                <ul class="card-features">
-                    <li>7 complete theme examples</li>
-                    <li>Dark mode & neon/cyberpunk styles</li>
-                    <li>Corporate & minimal designs</li>
-                    <li>Material Design & glassmorphism</li>
-                    <li>Complete CSS variable reference</li>
-                </ul>
-            </a>
-
-            <!-- Action Buttons Examples -->
-            <a href="examples-action-buttons.html" class="card">
-                <div class="card-icon">🎛️</div>
-                <h2 class="card-title">
-                    Action Buttons
-                    <span class="badge new">NEW</span>
-                </h2>
-                <p class="card-description">
-                    Comprehensive guide to action button configuration. Static properties, dynamic callbacks, custom actions, wrapping modes, and Font Awesome icons.
-                </p>
-                <ul class="card-features">
-                    <li>Static & dynamic properties (visibility, disabled, text)</li>
-                    <li>Custom actions with onClick handlers</li>
-                    <li>Dynamic CSS classes & tooltips</li>
-                    <li>Wrap mode for multiple buttons</li>
-                    <li>Font Awesome icons & HTML content support</li>
-                </ul>
-            </a>
-        </div>
+        <div class="cards" id="cards"></div>
 
         <footer>
-            <p>
-                Created by <a href="https://github.com/keenmate" target="_blank">Keenmate</a> |
-                <a href="https://github.com/keenmate/web-multiselect" target="_blank">GitHub</a> |
-                <a href="docs/api-reference.html" target="_blank">API Documentation</a>
-            </p>
+            <p>Created by <a href="https://github.com/keenmate" target="_blank">KeenMate</a> | <a href="https://github.com/keenmate/web-multiselect" target="_blank">GitHub</a> | <a href="docs/api-reference.html" target="_blank">API Docs</a></p>
         </footer>
     </div>
+
+    <script>
+        // =====================================================
+        // Demo Page Registry
+        // Add new pages here - they'll appear automatically
+        // =====================================================
+        const pages = [
+            {
+                href: 'examples-classic.html',
+                icon: '📦',
+                title: 'Classic Examples',
+                description: 'Standard multiselect demos with string arrays, grouped options, display modes, and async search.'
+            },
+            {
+                href: 'examples-new-api.html',
+                icon: '🚀',
+                title: 'Flexible Data API',
+                description: 'Advanced data handling with custom objects, tuples, member callbacks, and form integration.'
+            },
+            {
+                href: 'examples-performance.html',
+                icon: '⚡',
+                title: 'Virtual Scrolling',
+                description: 'Blazing-fast performance with 15,000 options using virtual scrolling and real-time metrics.'
+            },
+            {
+                href: 'examples-templating.html',
+                icon: '✨',
+                title: 'Custom Rendering',
+                description: 'Fully customize options, badges, and selected items using render callbacks with HTML or DOM elements.'
+            },
+            {
+                href: 'examples-action-buttons.html',
+                icon: '🎛️',
+                title: 'Action Buttons',
+                description: 'Configure action buttons with static/dynamic properties, custom actions, and Font Awesome icons.'
+            },
+            {
+                href: 'examples-sizes.html',
+                icon: '📏',
+                title: 'Sizes & Fonts',
+                description: 'Control input dimensions and typography with preset sizes, custom fonts, and REM-based scaling.'
+            },
+            {
+                href: 'examples-base-variables.html',
+                icon: '🎨',
+                title: 'Base Variables',
+                description: 'Theme-designer typography integration with --base-* variables for fonts, sizes, and weights.'
+            },
+            {
+                href: 'examples-theming.html',
+                icon: '🎭',
+                title: 'Theming',
+                description: 'Customize appearance with CSS custom properties. Dark mode, neon, corporate, and more.'
+            },
+            {
+                href: 'examples-logging.html',
+                icon: '🐛',
+                title: 'Logging & Debugging',
+                description: 'Built-in logging system with categorized debug output for development and troubleshooting.'
+            }
+        ]
+
+        // =====================================================
+        // Render cards from registry
+        // =====================================================
+        function renderCards() {
+            const container = document.getElementById('cards')
+            container.innerHTML = pages.map(page => `
+                <a href="${page.href}" class="card-link">
+                    <div class="card-icon">${page.icon}</div>
+                    <h2 class="card-title">
+                        ${page.title}${page.badge ? `<span class="badge">${page.badge}</span>` : ''}
+                    </h2>
+                    <p class="card-description">${page.description}</p>
+                </a>
+            `).join('')
+        }
+
+        renderCards()
+    </script>
 </body>
 </html>

@@ -160,9 +160,10 @@
   --ms-badge-remove-color: var(--ms-text-color-on-accent);
 
   /* Badge Counter Variant Semantic Variables */
+  /* Neutral/gray styling to distinguish from accent-colored selection badges */
   --ms-badge-counter-border-color: var(--ms-border-color);
-  --ms-badge-counter-text-bg: var(--ms-primary-bg);
-  --ms-badge-counter-text-color: var(--ms-text-color-3);
+  --ms-badge-counter-text-bg: var(--ms-primary-bg-hover);
+  --ms-badge-counter-text-color: var(--ms-text-color-1);
   --ms-badge-counter-remove-bg: var(--ms-text-color-3);
   --ms-badge-counter-remove-bg-hover: var(--ms-text-color-1);
   --ms-badge-counter-remove-color: var(--ms-text-color-on-accent);
@@ -435,15 +436,10 @@
   --ms-badge-remove-box-shadow-focus: 0 0 0 2px color-mix(in srgb, var(--ms-accent-color) 50%, transparent);
   --ms-icon-remove: "×";
 
-  /* Badge Indicator */
+  /* Badge Counter Indicator (layout-only properties, colors come from semantic section) */
   --ms-badge-counter-bg: transparent;
   --ms-badge-counter-border: var(--ms-border);
   --ms-badge-counter-border-radius: var(--ms-border-radius-sm);
-  --ms-badge-counter-text-color: var(--ms-text-color-3);
-  --ms-badge-counter-text-bg: var(--ms-badge-counter-text-bg);
-  --ms-badge-counter-remove-bg: var(--ms-text-color-3);
-  --ms-badge-counter-remove-color: var(--ms-text-color-on-accent);
-  --ms-badge-counter-remove-bg-hover: var(--ms-badge-counter-remove-bg-hover);
 
   /* ==========================================================================
      "+X MORE" BADGE

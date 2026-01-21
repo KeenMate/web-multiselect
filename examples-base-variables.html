@@ -29,15 +29,9 @@
       padding: 0;
     }
 
+    /* Red danger button for reset */
     .reset-btn {
       background: #e53e3e;
-      color: white;
-      border: none;
-      padding: 0.5rem 1rem;
-      border-radius: 0.375rem;
-      cursor: pointer;
-      font-size: 0.875rem;
-      font-family: inherit;
     }
 
     .reset-btn:hover {
@@ -111,19 +105,6 @@
       width: 500px !important;
     }
 
-    .load-font-btn {
-      padding: 0.5rem 1rem;
-      border: 1px solid #d1d5db;
-      border-radius: 0.375rem;
-      cursor: pointer;
-      background: white;
-      font-family: inherit;
-    }
-
-    .load-font-btn:hover {
-      background: #f3f4f6;
-      border-color: #9ca3af;
-    }
 
     /* Demo Cards */
     .demos {
@@ -186,8 +167,8 @@
   <div class="container">
     <header>
       <a href="index.html" class="back-link">&larr; Back to Examples</a>
-      <h1>Base Variables Demo</h1>
-      <p class="subtitle">Test theme-designer <code>--base-*</code> typography variables with web-multiselect. Adjust font family, sizes, weights, and line heights in real-time.</p>
+      <h1>🎨 Base Variables</h1>
+      <p class="subtitle">Theme-designer typography integration with --base-* variables for fonts, sizes, and weights</p>
     </header>
 
     <!-- Controls Panel -->
@@ -205,7 +186,7 @@
             <label for="fontLink">Paste &lt;link&gt; tag or URL</label>
             <input type="text" id="fontLink" class="font-link-input" placeholder="e.g., https://fonts.googleapis.com/css2?family=Lexend...">
           </div>
-          <button id="loadFontBtn" class="load-font-btn">Load Font</button>
+          <button id="loadFontBtn" class="btn-outline">Load Font</button>
         </div>
       </div>
 

@@ -10,7 +10,7 @@
 
     <!-- Page-specific styles -->
     <style>
-        /* Custom badge styling */
+        /* Badge styling for section headers */
         .badge {
             background: #667eea;
             color: white;
@@ -24,7 +24,7 @@
             background: #f56565;
         }
 
-        /* Enhanced demo area styling */
+        /* Enhanced demo area with dark output theme */
         .demo-area {
             background: #f7fafc;
             padding: 1.5rem;
@@ -39,7 +39,7 @@
             display: block;
         }
 
-        /* Custom output styling */
+        /* Dark theme output styling */
         .output {
             background: #2d3748;
             color: #a0aec0;
@@ -61,34 +61,10 @@
             margin: 0;
             white-space: pre-wrap;
             word-wrap: break-word;
-        }
-
-        /* Inline code color override */
-        code {
-            color: #d53f8c;
-        }
-
-        /* Custom button styling */
-        button {
-            background: #667eea;
-            color: white;
+            background: transparent;
+            padding: 0;
             border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.875rem;
-            font-weight: 600;
-            transition: background 0.2s;
-            margin-right: 0.5rem;
-            margin-top: 0.5rem;
-        }
-
-        button:hover {
-            background: #5568d3;
-        }
-
-        button:active {
-            transform: scale(0.98);
+            color: inherit;
         }
 
         /* Form styling */
@@ -112,13 +88,7 @@
             gap: 0.5rem;
         }
 
-        .grid-2 {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-top: 1rem;
-        }
-
+        /* Feature list styling */
         .feature-list {
             list-style: none;
             margin: 1rem 0;

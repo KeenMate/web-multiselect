@@ -5,6 +5,35 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.3] - 2026-01-21
+
+### Added
+
+- **Image/File Picker Example** - New example (#6) in `examples-templating.html` demonstrating:
+  - Thumbnail images with custom option rendering
+  - File metadata display (filename, dimensions, file size)
+  - `renderSelectedItemContentCallback` for rich content in Selected Items popover
+  - `badges-threshold="2"` with count mode showing "+N more"
+
+### Fixed
+
+- **Example Callback Names** - Fixed incorrect callback names in examples
+  - `renderSelectionBadgeContentCallback` → `renderSelectedItemContentCallback`
+  - `getSelectionBadgeClassCallback` → `getSelectedItemClassCallback`
+  - Affected examples: Image/File Picker (#6), Priority Badges (#12)
+
+### Changed
+
+- **Example Files CSS Cleanup** - Removed redundant CSS from individual example files that duplicated styles in `examples-shared.css`
+  - `examples-new-api.html` - Removed duplicate button, code, grid styles
+  - `examples-action-buttons.html` - Removed duplicate code override
+  - `examples-logging.html` - Removed button styles, updated to use shared `.note` class
+  - `examples-base-variables.html` - Simplified button styling, uses shared `.btn-outline`
+  - `examples-performance.html` - Replaced custom tips styling with shared `.note.warning`
+  - `examples-sizes.html` - Replaced custom `.code-example` with shared `.code-block`
+
+- **Theme Examples Styling** - Added padding and border-radius to `.theme-card` in `examples-theming.html` for better visual presentation
+
 ## [1.8.2] - 2026-01-03
 
 ### Added

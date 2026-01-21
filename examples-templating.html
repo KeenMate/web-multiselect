@@ -156,8 +156,8 @@
     <div class="container">
         <header>
             <a href="index.html" class="back-link">← Back to Examples</a>
-            <h1>Custom Rendering</h1>
-            <p class="subtitle">Examples of renderOptionContentCallback, renderBadgeContentCallback, and renderSelectedContentCallback</p>
+            <h1>✨ Custom Rendering</h1>
+            <p class="subtitle">Fully customize options, badges, and selected items using render callbacks with HTML or DOM elements</p>
         </header>
 
         <div class="card">
@@ -202,20 +202,27 @@
                 <web-multiselect id="movies" option-height="85"></web-multiselect>
                 <small class="form-text">Movie details with genre, rating, year, and synopsis</small>
             </div>
+
+            <h3>6. Image/File Picker</h3>
+            <div class="form-group">
+                <label for="images">Select Images</label>
+                <web-multiselect id="images" option-height="70" badges-threshold="2" badges-threshold-mode="count"></web-multiselect>
+                <small class="form-text">Image thumbnails with filename, dimensions, and file size. Shows max 2 badges then "+N more".</small>
+            </div>
         </div>
 
         <div class="card">
             <h2>Badge Rendering Examples</h2>
             <p>These examples demonstrate <code>renderBadgeContentCallback</code> for customizing selected item badges.</p>
 
-            <h3>6. User Selector with Avatars</h3>
+            <h3>7. User Selector with Avatars</h3>
             <div class="form-group">
                 <label for="users">Select Team Members</label>
                 <web-multiselect id="users"></web-multiselect>
                 <small class="form-text">Compact badges in main area, detailed badges in popover</small>
             </div>
 
-            <h3>7. Tags with Icons</h3>
+            <h3>8. Tags with Icons</h3>
             <div class="form-group">
                 <label for="tags">Select Tags</label>
                 <web-multiselect id="tags"></web-multiselect>
@@ -227,14 +234,14 @@
             <h2>Single-Select Custom Rendering</h2>
             <p>These examples demonstrate <code>renderSelectedContentCallback</code> for customizing the selected value text in single-select mode.</p>
 
-            <h3>8. Person Selector (First Name Only When Closed)</h3>
+            <h3>9. Person Selector (First Name Only When Closed)</h3>
             <div class="form-group">
                 <label for="person">Select Person</label>
                 <web-multiselect id="person" multiple="false"></web-multiselect>
                 <small class="form-text">Shows full name in dropdown, first name only when closed</small>
             </div>
 
-            <h3>9. Country Code (Abbreviation When Closed)</h3>
+            <h3>10. Country Code (Abbreviation When Closed)</h3>
             <div class="form-group">
                 <label for="country">Select Country</label>
                 <web-multiselect id="country" multiple="false"></web-multiselect>
@@ -250,7 +257,7 @@
                 work together to create different displays for the same data in different contexts (dropdown vs badges vs popover).
             </p>
 
-            <h3>10. Context-Aware Rendering</h3>
+            <h3>11. Context-Aware Rendering</h3>
             <div class="form-group">
                 <label for="contextual">Select Projects</label>
                 <web-multiselect id="contextual" option-height="80" badges-threshold="3" badges-threshold-mode="partial" enable-badge-tooltips="true"></web-multiselect>
@@ -261,12 +268,12 @@
                 </small>
             </div>
 
-            <h3>11. Priority-Based Badge Styling</h3>
+            <h3>12. Priority-Based Badge Styling</h3>
             <div class="form-group">
                 <label for="priority-badges">Select Tasks</label>
                 <web-multiselect id="priority-badges" option-height="60" badges-threshold="2" badges-threshold-mode="count" show-counter="true"></web-multiselect>
                 <small class="form-text">
-                    Uses <code>renderBadgeContentCallback</code> for compact badge display and <code>renderSelectionBadgeContentCallback</code> for detailed popover display.
+                    Uses <code>renderBadgeContentCallback</code> for compact badge display and <code>renderSelectedItemContentCallback</code> for detailed popover display.
                     Uses <code>getBadgeClassCallback</code> to add priority-based CSS classes (badge-urgent, badge-important, badge-normal, badge-low).
                     Uses <code>customStylesCallback</code> to inject CSS into Shadow DOM for styling those classes.
                     Demonstrates separate callbacks for badges vs. selected items popover and solving Shadow DOM CSS isolation.
@@ -278,21 +285,21 @@
             <h2>Advanced Layout Examples</h2>
             <p>Examples demonstrating flex/grid layouts with checkbox alignment control.</p>
 
-            <h3>12. Grid Layout with Centered Checkboxes</h3>
+            <h3>13. Grid Layout with Centered Checkboxes</h3>
             <div class="form-group">
                 <label for="grid-layout">Product Comparison Grid</label>
                 <web-multiselect id="grid-layout" checkbox-align="center" option-height="90"></web-multiselect>
                 <small class="form-text">CSS Grid layout with 2-column spec comparison, checkboxes centered</small>
             </div>
 
-            <h3>13. Flex Layout with Top-Aligned Checkboxes</h3>
+            <h3>14. Flex Layout with Top-Aligned Checkboxes</h3>
             <div class="form-group">
                 <label for="flex-layout">Notification Settings</label>
                 <web-multiselect id="flex-layout" checkbox-align="top" option-height="75"></web-multiselect>
                 <small class="form-text">Flexbox layout showing setting details with icons and badges</small>
             </div>
 
-            <h3>14. Large Checkbox Scale Example</h3>
+            <h3>15. Large Checkbox Scale Example</h3>
             <div class="form-group">
                 <label for="large-checkbox">Important Agreements</label>
                 <web-multiselect id="large-checkbox" option-height="60"></web-multiselect>
@@ -535,7 +542,89 @@
             `;
         };
 
-        // 6. User Selector with Avatars
+        // 6. Image/File Picker
+        const images = document.getElementById('images');
+        images.options = [
+            { id: 1, filename: 'hero-banner.jpg', width: 1920, height: 1080, size: 2456000, type: 'image/jpeg', thumbnail: 'https://picsum.photos/seed/hero/60/60' },
+            { id: 2, filename: 'product-photo.png', width: 800, height: 800, size: 1234000, type: 'image/png', thumbnail: 'https://picsum.photos/seed/product/60/60' },
+            { id: 3, filename: 'team-photo.jpg', width: 1600, height: 900, size: 3120000, type: 'image/jpeg', thumbnail: 'https://picsum.photos/seed/team/60/60' },
+            { id: 4, filename: 'logo-dark.svg', width: 200, height: 60, size: 8500, type: 'image/svg+xml', thumbnail: null },
+            { id: 5, filename: 'background-pattern.png', width: 400, height: 400, size: 156000, type: 'image/png', thumbnail: 'https://picsum.photos/seed/pattern/60/60' },
+            { id: 6, filename: 'icon-set.svg', width: 24, height: 24, size: 12400, type: 'image/svg+xml', thumbnail: null },
+            { id: 7, filename: 'screenshot-app.png', width: 1440, height: 900, size: 890000, type: 'image/png', thumbnail: 'https://picsum.photos/seed/app/60/60' }
+        ];
+
+        images.valueMember = 'id';
+        images.displayValueMember = 'filename';
+
+        // Format file size
+        const formatFileSize = (bytes) => {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        };
+
+        // Get file type icon
+        const getFileIcon = (type) => {
+            if (type === 'image/svg+xml') return '📐';
+            if (type === 'image/png') return '🖼️';
+            return '📷';
+        };
+
+        images.renderOptionContentCallback = (item, context) => {
+            const icon = getFileIcon(item.type);
+            const fileSize = formatFileSize(item.size);
+            const dimensions = `${item.width} × ${item.height}`;
+
+            // Use thumbnail if available, otherwise show colored placeholder
+            const thumbnailHtml = item.thumbnail
+                ? `<img src="${item.thumbnail}" style="width: 50px; height: 50px; border-radius: 6px; object-fit: cover;">`
+                : `<div style="width: 50px; height: 50px; border-radius: 6px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">${icon}</div>`;
+
+            return `
+                <div style="display: flex; gap: 0.75rem; align-items: center;">
+                    ${thumbnailHtml}
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 500; margin-bottom: 0.25rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                            ${icon} ${item.filename}
+                        </div>
+                        <div style="display: flex; gap: 1rem; font-size: 0.8rem; color: #666;">
+                            <span>${dimensions}</span>
+                            <span style="color: #10b981; font-weight: 500;">${fileSize}</span>
+                            <span style="color: #999;">${item.type.split('/')[1].toUpperCase()}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        images.renderBadgeContentCallback = (item, context) => {
+            const icon = getFileIcon(item.type);
+            return `${icon} ${item.filename}`;
+        };
+
+        // Rich rendering for Selected Items popover
+        images.renderSelectedItemContentCallback = (item) => {
+            const icon = getFileIcon(item.type);
+            const fileSize = formatFileSize(item.size);
+            const dimensions = `${item.width} × ${item.height}`;
+
+            const thumbnailHtml = item.thumbnail
+                ? `<img src="${item.thumbnail}" style="width: 36px; height: 36px; border-radius: 4px; object-fit: cover;">`
+                : `<div style="width: 36px; height: 36px; border-radius: 4px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; font-size: 1rem;">${icon}</div>`;
+
+            return `
+                <div style="display: flex; align-items: center; gap: 0.5rem; width: 100%;">
+                    ${thumbnailHtml}
+                    <div style="flex: 1; min-width: 0;">
+                        <div style="font-weight: 500; font-size: 0.8rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${item.filename}</div>
+                        <div style="font-size: 0.7rem; color: #666;">${dimensions} • ${fileSize}</div>
+                    </div>
+                </div>
+            `;
+        };
+
+        // 7. User Selector with Avatars
         const users = document.getElementById('users');
         users.options = [
             { id: 1, firstName: 'John', lastName: 'Doe', role: 'Admin', avatar: '👨‍💼', status: 'online' },
@@ -730,7 +819,7 @@
         };
 
         // Selected items popover: Show full details with icon, name, due date, and priority label
-        priorityBadges.renderSelectionBadgeContentCallback = (item) => {
+        priorityBadges.renderSelectedItemContentCallback = (item) => {
             const priorityIcons = { urgent: '🚨', important: '⚠️', normal: '📋', low: '📝' };
             const priorityLabels = { urgent: 'URGENT', important: 'Important', normal: 'Normal', low: 'Low Priority' };
 
@@ -751,7 +840,7 @@
             return `badge-${item.priority}`;
         };
 
-        priorityBadges.getSelectionBadgeClassCallback = (item) => {
+        priorityBadges.getSelectedItemClassCallback = (item) => {
             // Return CSS class based on priority for selected items in popover
             return `badge-${item.priority}`;
         };

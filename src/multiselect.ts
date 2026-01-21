@@ -910,7 +910,7 @@ export class WebMultiSelect<T = any> {
                 }
 
                 this.badgesContainer.innerHTML = `
-                    <div class="ms__badge ms__badge--counter" data-action="show-selected">
+                    <div class="ms__badge" data-action="show-selected">
                         <span class="ms__badge-text">${compactText}</span>
                         <button type="button" class="ms__badge-remove" data-action="clear-count" aria-label="Clear all selections"></button>
                     </div>
