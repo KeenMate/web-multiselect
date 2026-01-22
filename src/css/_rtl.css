@@ -70,6 +70,18 @@
   direction: rtl;
 }
 
+/* RTL: Fix margins for inline badge positions */
+/* In RTL, visual left/right are swapped, so margins need to be on opposite sides */
+.ms--rtl .ms__badges--right {
+  margin-left: 0;
+  margin-right: var(--ms-badges-margin-right);
+}
+
+.ms--rtl .ms__badges--left {
+  margin-right: 0;
+  margin-left: var(--ms-badges-margin-left);
+}
+
 /* Badges flow right-to-left */
 .ms--rtl .ms__badge {
   flex-direction: row-reverse;
@@ -96,6 +108,17 @@
 
 .ms--rtl .ms__count-display {
   direction: rtl;
+}
+
+/* RTL: Fix margins for inline count-display positions */
+.ms--rtl .ms__count-display--right {
+  margin-left: 0;
+  margin-right: var(--ms-count-display-margin-right);
+}
+
+.ms--rtl .ms__count-display--left {
+  margin-right: 0;
+  margin-left: var(--ms-count-display-margin-left);
 }
 
 .ms--rtl .ms__counter-wrapper {

@@ -5,6 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.5] - 2026-01-22
+
+### Added
+
+- **Inline Badge Vertical Alignment** - New `--ms-inline-align` CSS variable for controlling vertical alignment when using left/right badge positions
+  - `center` (default) - Badges vertically centered with input
+  - `flex-start` - Badges aligned to top of input
+  - `flex-end` - Badges aligned to bottom of input
+  - Example: `<web-multiselect badges-position="right" style="--ms-inline-align: flex-start;">`
+
+### Fixed
+
+- **RTL Inline Badge Margins** - Fixed badges touching input in RTL mode with left/right positioning
+  - Root cause: Margins for inline badge positions were not RTL-aware
+  - In RTL mode, flex layout reverses visually but CSS `margin-left`/`margin-right` weren't swapped
+  - Added RTL overrides for `.ms__badges--left`, `.ms__badges--right`, `.ms__count-display--left`, `.ms__count-display--right`
+  - Badges now have proper spacing from input in all RTL + inline position combinations
+
 ## [1.8.4] - 2026-01-22
 
 ### Added

@@ -407,6 +407,10 @@
   --ms-badges-margin-left: calc(0.4 * var(--ms-rem));
   --ms-badges-margin-right: calc(0.4 * var(--ms-rem));
 
+  /* Vertical alignment for inline (left/right) badge positioning */
+  /* Options: center (default), flex-start (top), flex-end (bottom) */
+  --ms-inline-align: center;
+
   /* Individual Badge */
   --ms-badge-gap: calc(0.8 * var(--ms-rem));
   --ms-badge-height: calc(2.7 * var(--ms-rem));

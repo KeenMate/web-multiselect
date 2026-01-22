@@ -532,6 +532,66 @@
                     <small class="form-text">Badges appear inline to the right of input</small>
                 </div>
             </div>
+
+            <h3 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1.2rem; color: #667eea;">Inline Vertical Alignment</h3>
+            <p>Control vertical alignment for left/right badge positions with <code>--ms-inline-align</code></p>
+            <div class="grid">
+                <div class="form-group">
+                    <label>Right + Center Align (Default)</label>
+                    <web-multiselect
+                        id="badges-right-center"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        badges-position="right"
+                        style="--ms-inline-align: center;"
+                        search-placeholder="Select technologies...">
+                    </web-multiselect>
+                    <small class="form-text"><code>--ms-inline-align: center</code></small>
+                </div>
+
+                <div class="form-group">
+                    <label>Right + Top Align</label>
+                    <web-multiselect
+                        id="badges-right-top"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        badges-position="right"
+                        style="--ms-inline-align: flex-start;"
+                        search-placeholder="Select technologies...">
+                    </web-multiselect>
+                    <small class="form-text"><code>--ms-inline-align: flex-start</code></small>
+                </div>
+
+                <div class="form-group">
+                    <label>Left + Center Align (Default)</label>
+                    <web-multiselect
+                        id="badges-left-center"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        badges-position="left"
+                        style="--ms-inline-align: center;"
+                        search-placeholder="Select technologies...">
+                    </web-multiselect>
+                    <small class="form-text"><code>--ms-inline-align: center</code></small>
+                </div>
+
+                <div class="form-group">
+                    <label>Left + Top Align</label>
+                    <web-multiselect
+                        id="badges-left-top"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        badges-position="left"
+                        style="--ms-inline-align: flex-start;"
+                        search-placeholder="Select technologies...">
+                    </web-multiselect>
+                    <small class="form-text"><code>--ms-inline-align: flex-start</code></small>
+                </div>
+            </div>
         </div>
 
         <!-- RTL Support -->
@@ -606,6 +666,34 @@
                         </div>
                     </div>
                     <small class="form-text">Notice toggle position, text alignment, and badge layout differences</small>
+                </div>
+
+                <div class="form-group">
+                    <label>RTL + Badges Position: Right</label>
+                    <web-multiselect
+                        id="rtl-badges-right"
+                        dir="rtl"
+                        badges-position="right"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        search-placeholder="...بحث">
+                    </web-multiselect>
+                    <small class="form-text">Badges inline on left (visually) with proper margin</small>
+                </div>
+
+                <div class="form-group">
+                    <label>RTL + Badges Position: Left</label>
+                    <web-multiselect
+                        id="rtl-badges-left"
+                        dir="rtl"
+                        badges-position="left"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        search-placeholder="...بحث">
+                    </web-multiselect>
+                    <small class="form-text">Badges inline on right (visually) with proper margin</small>
                 </div>
             </div>
         </div>
@@ -1176,6 +1264,34 @@
                 badgesRightSelect.setSelected(['js', 'ts']);
             }
 
+            // Badge Positioning - Right + Center Align
+            const badgesRightCenter = document.getElementById('badges-right-center');
+            if (badgesRightCenter) {
+                badgesRightCenter.options = languages;
+                badgesRightCenter.setSelected(['js', 'ts', 'python', 'java']);
+            }
+
+            // Badge Positioning - Right + Top Align
+            const badgesRightTop = document.getElementById('badges-right-top');
+            if (badgesRightTop) {
+                badgesRightTop.options = languages;
+                badgesRightTop.setSelected(['js', 'ts', 'python', 'java']);
+            }
+
+            // Badge Positioning - Left + Center Align
+            const badgesLeftCenter = document.getElementById('badges-left-center');
+            if (badgesLeftCenter) {
+                badgesLeftCenter.options = languages;
+                badgesLeftCenter.setSelected(['js', 'ts', 'python', 'java']);
+            }
+
+            // Badge Positioning - Left + Top Align
+            const badgesLeftTop = document.getElementById('badges-left-top');
+            if (badgesLeftTop) {
+                badgesLeftTop.options = languages;
+                badgesLeftTop.setSelected(['js', 'ts', 'python', 'java']);
+            }
+
             // RTL Support - Basic RTL
             const rtlBasicSelect = document.getElementById('rtl-basic');
             if (rtlBasicSelect) {
@@ -1220,6 +1336,20 @@
             if (rtlComparisonRTL) {
                 rtlComparisonRTL.options = languages;
                 rtlComparisonRTL.setSelected(['js', 'ts']);
+            }
+
+            // RTL Support - Badges Position Right (BUG TEST)
+            const rtlBadgesRight = document.getElementById('rtl-badges-right');
+            if (rtlBadgesRight) {
+                rtlBadgesRight.options = languages;
+                rtlBadgesRight.setSelected(['js', 'ts', 'python']);
+            }
+
+            // RTL Support - Badges Position Left (BUG TEST)
+            const rtlBadgesLeft = document.getElementById('rtl-badges-left');
+            if (rtlBadgesLeft) {
+                rtlBadgesLeft.options = languages;
+                rtlBadgesLeft.setSelected(['js', 'ts', 'python']);
             }
 
             // Async Search: GitHub Users

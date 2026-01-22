@@ -680,6 +680,19 @@ Control where selected item badges appear relative to the input:
 <web-multiselect badges-position="right"></web-multiselect>
 ```
 
+**Inline Vertical Alignment:** For left/right positioning, control vertical alignment with `--ms-inline-align`:
+
+```html
+<!-- Center aligned (default) -->
+<web-multiselect badges-position="right" style="--ms-inline-align: center;"></web-multiselect>
+
+<!-- Top aligned -->
+<web-multiselect badges-position="right" style="--ms-inline-align: flex-start;"></web-multiselect>
+
+<!-- Bottom aligned -->
+<web-multiselect badges-position="left" style="--ms-inline-align: flex-end;"></web-multiselect>
+```
+
 **Note:** In RTL mode, left/right positions are automatically mirrored - `badges-position="left"` will appear on the physical right side in RTL languages.
 
 ### Badge Tooltips
