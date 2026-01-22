@@ -5,6 +5,8 @@
 
 A lightweight, accessible multiselect web component with typeahead search, RTL language support, rich content, and excellent keyboard navigation.
 
+> **⚠️ Security Notice:** This component intentionally allows raw HTML in rendering callbacks to give developers full control over content display. If you display user-generated content, you must sanitize it yourself. See [HTML Injection (XSS) Notice](#html-injection-xss-notice) for the complete list of affected callbacks.
+
 ## Features
 
 - 📝 **Declarative HTML** - Use standard `<option>` and `<optgroup>` elements - no JavaScript required for simple cases!
@@ -326,7 +328,7 @@ multiselect.addNewCallback = async (value) => {
 - **↑ ↓** - Navigate up/down through options
 - **Ctrl+↑ Ctrl+↓** - Jump between matched items (navigate mode only)
 - **Enter** - Select focused option
-- **Escape** - Close dropdown
+- **Escape** - Close popover → Clear search → Close dropdown (priority order)
 - **Tab** - Close dropdown and move to next field
 - **Type** - Filter options by search term
 
@@ -773,6 +775,34 @@ Three rendering callbacks are available:
 - **`renderSelectedContentCallback`** - Customize selected value text (single-select mode)
 
 All callbacks can return either **HTML strings** or **HTMLElement** objects (except `renderSelectedContentCallback` which returns plain text).
+
+#### HTML Injection (XSS) Notice
+
+The following callbacks allow **raw HTML injection** and are intentionally **NOT XSS-safe**. This gives developers full control over rendering but requires sanitizing untrusted data:
+
+| Callback | Output Used In | Risk Level |
+|----------|---------------|------------|
+| `renderOptionContentCallback` | Dropdown options (innerHTML) | HTML injection |
+| `renderBadgeContentCallback` | Badges (innerHTML) | HTML injection |
+| `renderSelectedItemContentCallback` | Selected items popover (innerHTML) | HTML injection |
+| `renderGroupLabelContentCallback` | Group headers (innerHTML) | HTML injection |
+| `getIconCallback` | Option icons (innerHTML) | HTML injection |
+| `getSubtitleCallback` | Option subtitles (innerHTML) | HTML injection |
+| `getDisplayValueCallback` | Option titles, badges (innerHTML) | HTML injection |
+| `getBadgeDisplayCallback` | Badge text (innerHTML) | HTML injection |
+| `getCounterCallback` | Count badges (innerHTML) | HTML injection |
+| `getBadgeTooltipCallback` | Tooltips (innerHTML if HTMLElement) | HTML injection |
+| `customStylesCallback` | Style tag (textContent) | CSS injection |
+
+**Safe callbacks** (output is escaped or used as data):
+- `getValueCallback`, `getSearchValueCallback`, `getGroupCallback`, `getDisabledCallback`
+- `getBadgeClassCallback`, `getSelectedItemClassCallback` (CSS class names only)
+- `beforeSearchCallback`, `searchCallback`, `addNewCallback`
+- `selectCallback`, `deselectCallback`, `changeCallback`
+- `getRemoveButtonTooltipCallback` (used as title attribute)
+- `getValueFormatCallback` (form value)
+
+**If displaying user-generated content**, sanitize it before returning from these callbacks.
 
 #### Custom Option Rendering
 

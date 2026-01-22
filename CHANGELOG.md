@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.4] - 2026-01-22
+
+### Added
+
+- **Escape Key Behavior** - Pressing Escape now has priority-based behavior
+  - First priority: closes Selected Items popover (if open)
+  - Second priority: clears search text and resets filtered options (if search has text)
+  - Third priority: closes dropdown
+  - Standard UX pattern for quick dismissal without multiple clicks
+
+### Fixed
+
+- **RTL Input Padding** - Fixed missing padding on right side of input text/placeholder in RTL mode
+  - Root cause: `_rtl.css` referenced `var(--ms-input-padding-h)` which didn't exist in `_variables.css`
+  - Added missing `--ms-input-padding-h: calc(1.2 * var(--ms-rem))` variable to match horizontal component of `--ms-input-padding`
+
+- **Document Event Listener Cleanup** - Fixed memory leak where document-level event listeners were not removed on component destroy
+  - `click` handler for outside-click detection now properly removed
+  - `keydown` handler for Escape key now properly removed
+  - Prevents accumulating listeners when components are dynamically created/destroyed
+
+### Documentation
+
+- **HTML Injection (XSS) Notice** - Added comprehensive table in README documenting which callbacks allow raw HTML injection
+  - Lists all callbacks that use innerHTML (not XSS-safe by design for full developer control)
+  - Lists all safe callbacks (output escaped or used as data)
+  - Advises sanitizing user-generated content
+
 ## [1.8.3] - 2026-01-21
 
 ### Added

@@ -199,6 +199,7 @@
      ========================================================================== */
   --ms-input-padding: calc(0.8 * var(--ms-rem)) calc(1.2 * var(--ms-rem));
   --ms-input-padding-right: calc(4 * var(--ms-rem));
+  --ms-input-padding-h: calc(1.2 * var(--ms-rem));
   --ms-input-height: calc(var(--base-input-size-md-height, 3.5) * var(--ms-rem));
   --ms-input-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
   --ms-input-border-width: 1px;

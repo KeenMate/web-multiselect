@@ -60,6 +60,10 @@ export class WebMultiSelect<T = any> {
     private hint?: HTMLDivElement;
     private selectedPopover!: HTMLDivElement;
 
+    // Document-level event handlers (stored for cleanup)
+    private documentKeydownHandler: ((e: KeyboardEvent) => void) | null = null;
+    private documentClickHandler: ((e: MouseEvent) => void) | null = null;
+
     // ========================================================================
     // DATA EXTRACTION METHODS (following svelte-treeview pattern)
     // ========================================================================
@@ -976,9 +980,19 @@ export class WebMultiSelect<T = any> {
         this.input.addEventListener('keydown', (e) => this.handleKeydown(e));
 
         // Delay click-outside handler to avoid immediate close
+        this.documentClickHandler = (e: MouseEvent) => this.handleClickOutside(e);
         setTimeout(() => {
-            document.addEventListener('click', (e) => this.handleClickOutside(e));
+            document.addEventListener('click', this.documentClickHandler!);
         }, 0);
+
+        // Document-level Escape handler for closing popover when input doesn't have focus
+        this.documentKeydownHandler = (e: KeyboardEvent) => {
+            if (e.key === 'Escape' && this.showSelectedPopover) {
+                e.preventDefault();
+                this.hideSelectedPopover();
+            }
+        };
+        document.addEventListener('keydown', this.documentKeydownHandler);
 
         this.dropdown.addEventListener('click', (e) => this.handleDropdownClick(e));
 
@@ -1208,7 +1222,18 @@ export class WebMultiSelect<T = any> {
                 break;
             case 'Escape':
                 e.preventDefault();
-                this.close();
+                // Priority: 1) Close selected popover, 2) Clear search, 3) Close dropdown
+                if (this.showSelectedPopover) {
+                    this.hideSelectedPopover();
+                } else if (this.input.value) {
+                    this.input.value = '';
+                    this.searchTerm = '';
+                    this.filteredOptions = [...this.allOptions];
+                    this.focusedIndex = -1;
+                    this.renderDropdown();
+                } else {
+                    this.close();
+                }
                 break;
             case 'Tab':
                 this.close();
@@ -2512,6 +2537,16 @@ export class WebMultiSelect<T = any> {
         if (this.dropdownCleanup) this.dropdownCleanup();
         if (this.hintCleanup) this.hintCleanup();
         if (this.selectedPopoverCleanup) this.selectedPopoverCleanup();
+
+        // Clean up document-level event listeners
+        if (this.documentClickHandler) {
+            document.removeEventListener('click', this.documentClickHandler);
+            this.documentClickHandler = null;
+        }
+        if (this.documentKeydownHandler) {
+            document.removeEventListener('keydown', this.documentKeydownHandler);
+            this.documentKeydownHandler = null;
+        }
 
         // Clean up virtual scroll
         if (this.virtualScroll) {
