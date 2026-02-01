@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.8.6] - PUBLISHED - 2026-02-01
+
+### Fixed
+
+- **TypeScript Declaration Bundling** - Fixed consuming projects seeing ~896 type errors ("implicit any") from untyped JS dist file
+  - Root cause: `tsc` generated 6 individual `.d.ts` files mirroring source structure, but Vite bundles JS into a single `multiselect.js` — the mismatch caused consuming TypeScript projects to fail resolving types
+  - Additionally, `index.d.ts` contained `import './css/main.css'` which doesn't exist in `dist/`, further breaking type resolution
+  - Solution: Added `vite-plugin-dts` with `rollupTypes: true` to generate a single bundled `index.d.ts` with all types inlined and CSS imports stripped
+  - Removed standalone `tsc` step from build script (now handled by vite-plugin-dts during Vite build)
+  - Consuming projects now properly resolve all types regardless of their `moduleResolution` setting
+
 ## [1.8.5] - 2026-01-22
 
 ### Added

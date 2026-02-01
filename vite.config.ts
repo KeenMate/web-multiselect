@@ -1,11 +1,15 @@
 import { defineConfig } from 'vite';
 import { resolve } from 'path';
 import { readFileSync } from 'fs';
+import dts from 'vite-plugin-dts';
 
 // Read package.json for build-time constants
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
 
 export default defineConfig({
+  plugins: [
+    dts({ rollupTypes: true })
+  ],
   define: {
     '__VERSION__': JSON.stringify(pkg.version),
     '__PACKAGE_NAME__': JSON.stringify(pkg.name),
