@@ -206,7 +206,7 @@ export class VirtualScroll<T> {
      */
     public setItems(items: T[]): void {
         // Check if items actually changed (different array or different length)
-        const itemsChanged = items !== this.items && items.length !== this.items.length;
+        const itemsChanged = items !== this.items || items.length !== this.items.length;
 
         this.items = items;
 

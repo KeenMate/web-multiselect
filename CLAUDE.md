@@ -37,25 +37,25 @@ A feature-rich multiselect web component with typeahead search, virtual scrollin
 **src/logger.ts**
 - Debug logging utilities (initLogger, dataLogger, uiLogger, interactionLogger)
 
-### SCSS Structure
+### CSS Structure
 
-**src/scss/main.scss** - Entry point importing all partials:
-- `_variables.scss` - SCSS variables (base primitives + semantic)
-- `_css-variables.scss` - CSS custom properties at `:host` level (for theming)
-- `_base.scss` - FOUC prevention + layout containers
-- `_input-dropdown.scss` - Input, toggle, counter, hint, dropdown, actions
-- `_options.scss` - Options list, groups, checkbox, content, states
-- `_badges-display.scss` - Badges, count display, individual badges
-- `_tooltips-popover.scss` - Badge tooltips + selected items popover
-- `_rtl.scss` - RTL language support
-- `_modifiers.scss` - State modifiers (disabled, no-checkboxes)
-- `_debug.scss` - Debug information panel
+The styles are plain CSS (no SCSS / no preprocessor). All theming is done via CSS custom properties.
+
+**src/css/main.css** - Entry point that `@import`s all partials:
+- `_variables.css` - All `--ms-*` CSS custom properties at `:host` level (base primitives, semantic per-component theming hooks, sizing)
+- `_base.css` - FOUC prevention + layout containers
+- `_input-dropdown.css` - Input, toggle, counter, hint, dropdown, actions
+- `_options.css` - Options list, groups, checkbox, content, states
+- `_badges-display.css` - Badges, count display, individual badges
+- `_tooltips-popover.css` - Badge tooltips + selected items popover
+- `_rtl.css` - RTL language support
+- `_modifiers.css` - State modifiers (disabled, no-checkboxes)
+- `_debug.css` - Debug information panel
 
 ### Naming Conventions
 
 - **CSS Classes**: `.ms__*` prefix (e.g., `.ms__input`, `.ms__dropdown`, `.ms__option`)
 - **CSS Variables**: `--ms-*` prefix (e.g., `--ms-accent-color`, `--ms-input-border-radius`)
-- **SCSS Variables**: `$ms-*` prefix (e.g., `$ms-accent-color`, `$ms-input-padding`)
 
 ## Key Features
 
@@ -106,7 +106,7 @@ Override individual variables like `--ms-input-font-size`, `--ms-input-padding-v
 ### Typography Integration
 
 Font sizes use unitless multipliers that get multiplied by `--ms-rem`:
-```scss
+```css
 --ms-input-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
 ```
 
@@ -121,14 +121,17 @@ This enables integration with theme-designer's `--base-*` variables:
 ### Adding New Attributes
 
 1. Add to `observedAttributes` in `web-component.ts`
-2. Handle in `attributeChangedCallback` (consider if re-init needed)
-3. Add getter/setter property
+2. Map the attribute to a config key inside `initializePicker` (`web-component.ts`)
+3. Handle in `attributeChangedCallback` (consider if re-init needed)
+4. Add getter/setter property
 
 ### Adding New CSS Variables
 
-1. Add SCSS variable in `_variables.scss`
-2. Add CSS custom property in `_css-variables.scss`
-3. Use in component SCSS with fallback: `var(--ms-new-var, $scss-fallback)`
+1. Declare the variable in `src/css/_variables.css` at `:host` level. Per-component theming hooks default to a base variable, e.g.
+   `--ms-myComponent-border-color: var(--ms-border-color);`
+2. Reference the new variable from the actual rule in the relevant `_*.css` partial — e.g.
+   `.ms__myComponent { border: 1px solid var(--ms-myComponent-border-color); }`
+3. Always wire a declared variable into at least one rule. A declaration with no `var()` reader is dead theming surface.
 
 ### Consistency with web-daterangepicker
 
@@ -142,7 +145,6 @@ Both components share similar patterns:
 ### Build Tools
 - **Vite** - Fast build tool and dev server with HMR
 - **TypeScript** - Type-safe development
-- **Sass** - CSS preprocessing
 - **Makefile** / **make.bat** - Build automation
 
 ### Available Commands

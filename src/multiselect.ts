@@ -4,9 +4,10 @@
  */
 
 import { computePosition, flip, offset, autoUpdate, shift, type Placement } from '@floating-ui/dom';
-import type { MultiSelectOption, MultiSelectOptions, MultiSelectConfig, BadgesDisplayMode, BadgesPosition, SearchInputMode, BadgesThresholdMode, SearchMode, OptionContentRenderContext, BadgeContentRenderContext } from './types';
+import type { MultiSelectConfig, BadgesPosition, SearchInputMode, SearchMode, OptionContentRenderContext, BadgeContentRenderContext } from './types';
 import { initLogger, dataLogger, uiLogger, interactionLogger } from './logger';
 import { VirtualScroll } from './virtual-scroll';
+import { Tooltip } from './tooltip';
 
 export class WebMultiSelect<T = any> {
     private element: HTMLElement;
@@ -35,15 +36,8 @@ export class WebMultiSelect<T = any> {
     private hintCleanup: (() => void) | null = null;
     private selectedPopoverCleanup: (() => void) | null = null;
 
-    // Badge tooltip storage
-    private badgeTooltips = new Map<string, HTMLDivElement>();
-    private badgeTooltipCleanups = new Map<string, () => void>();
-    private badgeTooltipShowTimeouts = new Map<string, number>();
-    private badgeTooltipHideTimeouts = new Map<string, number>();
-
-    // Action button tooltip storage
-    private actionButtonTooltips = new Map<string, HTMLDivElement>();
-    private actionButtonTooltipCleanups = new Map<string, () => void>();
+    // All hover tooltips (badge text, badge-remove buttons, action buttons), keyed by id.
+    private tooltips = new Map<string, Tooltip>();
 
     // Virtual scroll instance
     private virtualScroll: VirtualScroll<T> | null = null;
@@ -69,158 +63,132 @@ export class WebMultiSelect<T = any> {
     // ========================================================================
 
     /**
-     * Extract value/ID from item
-     * Precedence: tuple[0] -> valueMember -> getValueCallback -> '[N/A]'
+     * Generic field extractor with the precedence:
+     *   tuple short-circuit -> member property -> callback -> fallback
+     *
+     * Tuple handling:
+     *   - `tupleIndex` (0 | 1): for `[key, value]` items, return that slot.
+     *   - `tupleSkip: true`: for any tuple, skip directly to fallback (used for icon/subtitle/group/disabled —
+     *     fields that don't make sense on a 2-element array).
+     *   - neither: tuples flow through the member/callback/fallback chain as if they were objects.
+     *
+     * `transform` is applied to tuple-slot and member-property reads (not to callback returns or the fallback),
+     * so e.g. you can pass `String` to coerce numeric members to strings while letting a typed callback return its
+     * own type unchanged.
      */
+    private extractField<R>(item: T, opts: {
+        member?: string;
+        callback?: (item: T) => R;
+        tupleIndex?: 0 | 1;
+        tupleSkip?: boolean;
+        transform?: (raw: any) => R;
+        fallback: R | (() => R);
+    }): R {
+        const isTuple = Array.isArray(item) && item.length === 2;
+
+        if (isTuple) {
+            if (opts.tupleSkip) {
+                // skip member/callback for tuples — go straight to fallback
+                return typeof opts.fallback === 'function' ? (opts.fallback as () => R)() : opts.fallback;
+            }
+            if (opts.tupleIndex !== undefined) {
+                const raw = (item as any)[opts.tupleIndex];
+                return opts.transform ? opts.transform(raw) : raw;
+            }
+        }
+
+        if (opts.member && (item as any)[opts.member] !== undefined) {
+            const raw = (item as any)[opts.member];
+            return opts.transform ? opts.transform(raw) : raw;
+        }
+
+        if (opts.callback) {
+            return opts.callback(item);
+        }
+
+        return typeof opts.fallback === 'function' ? (opts.fallback as () => R)() : opts.fallback;
+    }
+
     private getItemValue(item: T): string | number {
-        // Auto-detect [key, value] tuple
-        if (Array.isArray(item) && item.length === 2) {
-            return item[0];
-        }
-
-        // Member property
-        if (this.options.valueMember && (item as any)[this.options.valueMember] !== undefined) {
-            return (item as any)[this.options.valueMember];
-        }
-
-        // Callback
-        if (this.options.getValueCallback) {
-            return this.options.getValueCallback(item);
-        }
-
-        // Fallback
-        return '[N/A]';
+        return this.extractField<string | number>(item, {
+            tupleIndex: 0,
+            member: this.options.valueMember,
+            callback: this.options.getValueCallback,
+            fallback: '[N/A]'
+        });
     }
 
-    /**
-     * Extract display value from item
-     * Precedence: tuple[1] -> displayValueMember -> getDisplayValueCallback -> '[N/A]'
-     */
     private getItemDisplayValue(item: T): string {
-        // Auto-detect [key, value] tuple
-        if (Array.isArray(item) && item.length === 2) {
-            return String(item[1]);
-        }
-
-        // Member property
-        if (this.options.displayValueMember && (item as any)[this.options.displayValueMember] !== undefined) {
-            return String((item as any)[this.options.displayValueMember]);
-        }
-
-        // Callback
-        if (this.options.getDisplayValueCallback) {
-            return this.options.getDisplayValueCallback(item);
-        }
-
-        // Fallback
-        return '[N/A]';
+        return this.extractField<string>(item, {
+            tupleIndex: 1,
+            member: this.options.displayValueMember,
+            callback: this.options.getDisplayValueCallback,
+            transform: String,
+            fallback: '[N/A]'
+        });
     }
 
     /**
-     * Extract badge display value from item
-     * Precedence: getBadgeDisplayCallback -> getItemDisplayValue()
-     * This allows customizing badge text separately from dropdown display text
+     * Badge display falls back to the regular display value rather than '[N/A]', so consumers can override badge
+     * text independently. Doesn't fit the extractField shape (no tuple/member layer of its own).
      */
     private getItemBadgeDisplayValue(item: T): string {
-        // Custom badge callback (if provided)
-        if (this.options.getBadgeDisplayCallback) {
-            return this.options.getBadgeDisplayCallback(item);
-        }
-
-        // Fall back to standard display value
+        if (this.options.getBadgeDisplayCallback) return this.options.getBadgeDisplayCallback(item);
         return this.getItemDisplayValue(item);
     }
 
-    /**
-     * Extract search value from item
-     * Precedence: searchValueMember -> getSearchValueCallback -> displayValue
-     */
     private getItemSearchValue(item: T): string {
-        // Member property
-        if (this.options.searchValueMember && (item as any)[this.options.searchValueMember] !== undefined) {
-            return String((item as any)[this.options.searchValueMember]);
-        }
-
-        // Callback
-        if (this.options.getSearchValueCallback) {
-            return this.options.getSearchValueCallback(item);
-        }
-
-        // Fallback to display value
-        return this.getItemDisplayValue(item);
+        return this.extractField<string>(item, {
+            member: this.options.searchValueMember,
+            callback: this.options.getSearchValueCallback,
+            transform: String,
+            fallback: () => this.getItemDisplayValue(item)
+        });
     }
 
-    /**
-     * Extract icon from item
-     */
     private getItemIcon(item: T): string | undefined {
-        if (Array.isArray(item)) return undefined;
-
-        if (this.options.iconMember && (item as any)[this.options.iconMember] !== undefined) {
-            return String((item as any)[this.options.iconMember]);
-        }
-
-        if (this.options.getIconCallback) {
-            return this.options.getIconCallback(item);
-        }
-
-        return undefined;
+        return this.extractField<string | undefined>(item, {
+            tupleSkip: true,
+            member: this.options.iconMember,
+            callback: this.options.getIconCallback,
+            transform: String,
+            fallback: undefined
+        });
     }
 
-    /**
-     * Extract subtitle from item
-     */
     private getItemSubtitle(item: T): string | undefined {
-        if (Array.isArray(item)) return undefined;
-
-        if (this.options.subtitleMember && (item as any)[this.options.subtitleMember] !== undefined) {
-            return String((item as any)[this.options.subtitleMember]);
-        }
-
-        if (this.options.getSubtitleCallback) {
-            return this.options.getSubtitleCallback(item);
-        }
-
-        return undefined;
+        return this.extractField<string | undefined>(item, {
+            tupleSkip: true,
+            member: this.options.subtitleMember,
+            callback: this.options.getSubtitleCallback,
+            transform: String,
+            fallback: undefined
+        });
     }
 
-    /**
-     * Extract group from item
-     */
     private getItemGroup(item: T): string | undefined {
-        if (Array.isArray(item)) return undefined;
-
-        if (this.options.groupMember && (item as any)[this.options.groupMember] !== undefined) {
-            return String((item as any)[this.options.groupMember]);
-        }
-
-        if (this.options.getGroupCallback) {
-            return this.options.getGroupCallback(item);
-        }
-
-        return undefined;
+        return this.extractField<string | undefined>(item, {
+            tupleSkip: true,
+            member: this.options.groupMember,
+            callback: this.options.getGroupCallback,
+            transform: String,
+            fallback: undefined
+        });
     }
 
-    /**
-     * Extract disabled state from item
-     */
     private getItemDisabled(item: T): boolean {
-        if (Array.isArray(item)) return false;
-
-        if (this.options.disabledMember && (item as any)[this.options.disabledMember] !== undefined) {
-            return Boolean((item as any)[this.options.disabledMember]);
-        }
-
-        if (this.options.getDisabledCallback) {
-            return this.options.getDisabledCallback(item);
-        }
-
-        return false;
+        return this.extractField<boolean>(item, {
+            tupleSkip: true,
+            member: this.options.disabledMember,
+            callback: this.options.getDisabledCallback,
+            transform: Boolean,
+            fallback: false
+        });
     }
 
     constructor(element: HTMLElement, options: Partial<MultiSelectConfig<T>> = {}) {
         this.element = element;
-        this.instanceId = `MS-${Math.random().toString(36).substr(2, 9)}`;
+        this.instanceId = `MS-${Math.random().toString(36).slice(2, 11)}`;
 
         // Merge options with defaults (using internal naming with 'is' prefix for booleans)
         this.options = {
@@ -469,39 +437,7 @@ export class WebMultiSelect<T = any> {
             return;
         }
 
-        if (this.options.isMultipleEnabled && this.options.actionButtons && this.options.actionButtons.length > 0) {
-            const stickyClass = this.options.isActionsSticky ? ' ms__actions--sticky' : '';
-            const wrapClass = this.options.actionsLayout === 'wrap' ? ' ms__actions--wrap' : '';
-            html += `<div class="ms__actions${stickyClass}${wrapClass}">`;
-            this.options.actionButtons.forEach(button => {
-                // Check visibility condition (callback takes priority over static property)
-                const isVisible = button.isVisibleCallback ? button.isVisibleCallback(this) : (button.isVisible ?? true);
-                if (!isVisible) {
-                    return;
-                }
-
-                // Check disabled state (callback takes priority over static property)
-                const isDisabled = button.isDisabledCallback ? button.isDisabledCallback(this) : (button.isDisabled ?? false);
-                const disabledAttr = isDisabled ? ' disabled' : '';
-
-                // Get button text (callback takes priority over static property)
-                const text = button.getTextCallback ? button.getTextCallback(this) : button.text;
-
-                // Get CSS classes (callback takes priority over static property)
-                let cssClass = '';
-                if (button.getClassCallback) {
-                    const classes = button.getClassCallback(this);
-                    cssClass = Array.isArray(classes) ? ` ${classes.join(' ')}` : (classes ? ` ${classes}` : '');
-                } else if (button.cssClass) {
-                    cssClass = ` ${button.cssClass}`;
-                }
-
-                // Note: Tooltips are handled by Floating UI, not HTML title attribute
-
-                html += `<button type="button"${disabledAttr} class="ms__action-btn${cssClass}" data-action="${button.action}">${text}</button>`;
-            });
-            html += '</div>';
-        }
+        html += this.renderActionsHTML();
 
         html += '<div class="ms__options">';
 
@@ -562,39 +498,7 @@ export class WebMultiSelect<T = any> {
             let html = '';
 
             // Render actions (Select All/Clear All) outside virtual scroll
-            if (this.options.isMultipleEnabled && this.options.actionButtons && this.options.actionButtons.length > 0) {
-                const stickyClass = this.options.isActionsSticky ? ' ms__actions--sticky' : '';
-                const wrapClass = this.options.actionsLayout === 'wrap' ? ' ms__actions--wrap' : '';
-                html += `<div class="ms__actions${stickyClass}${wrapClass}">`;
-                this.options.actionButtons.forEach(button => {
-                    // Check visibility condition (callback takes priority over static property)
-                    const isVisible = button.isVisibleCallback ? button.isVisibleCallback(this) : (button.isVisible ?? true);
-                    if (!isVisible) {
-                        return;
-                    }
-
-                    // Check disabled state (callback takes priority over static property)
-                    const isDisabled = button.isDisabledCallback ? button.isDisabledCallback(this) : (button.isDisabled ?? false);
-                    const disabledAttr = isDisabled ? ' disabled' : '';
-
-                    // Get button text (callback takes priority over static property)
-                    const text = button.getTextCallback ? button.getTextCallback(this) : button.text;
-
-                    // Get CSS classes (callback takes priority over static property)
-                    let cssClass = '';
-                    if (button.getClassCallback) {
-                        const classes = button.getClassCallback(this);
-                        cssClass = Array.isArray(classes) ? ` ${classes.join(' ')}` : (classes ? ` ${classes}` : '');
-                    } else if (button.cssClass) {
-                        cssClass = ` ${button.cssClass}`;
-                    }
-
-                    // Note: Tooltips are handled by Floating UI, not HTML title attribute
-
-                    html += `<button type="button"${disabledAttr} class="ms__action-btn${cssClass}" data-action="${button.action}">${text}</button>`;
-                });
-                html += '</div>';
-            }
+            html += this.renderActionsHTML();
 
             // Create options container for virtual scroll
             // Add inline styles to ensure proper height constraint and scrolling
@@ -642,6 +546,40 @@ export class WebMultiSelect<T = any> {
             // Attach tooltips to action buttons after rendering
             this.attachActionButtonTooltips();
         });
+    }
+
+    /**
+     * Render the Select All / Clear All / custom action buttons row.
+     * Returns the empty string if multiple-select is off or no buttons are configured.
+     */
+    private renderActionsHTML(): string {
+        const buttons = this.options.actionButtons;
+        if (!this.options.isMultipleEnabled || !buttons || buttons.length === 0) return '';
+
+        const stickyClass = this.options.isActionsSticky ? ' ms__actions--sticky' : '';
+        const wrapClass = this.options.actionsLayout === 'wrap' ? ' ms__actions--wrap' : '';
+
+        const buttonsHTML = buttons.map((button, buttonIndex) => {
+            const isVisible = button.isVisibleCallback ? button.isVisibleCallback(this) : (button.isVisible ?? true);
+            if (!isVisible) return '';
+
+            const isDisabled = button.isDisabledCallback ? button.isDisabledCallback(this) : (button.isDisabled ?? false);
+            const disabledAttr = isDisabled ? ' disabled' : '';
+
+            const text = button.getTextCallback ? button.getTextCallback(this) : button.text;
+
+            let cssClass = '';
+            if (button.getClassCallback) {
+                const classes = button.getClassCallback(this);
+                cssClass = Array.isArray(classes) ? ` ${classes.join(' ')}` : (classes ? ` ${classes}` : '');
+            } else if (button.cssClass) {
+                cssClass = ` ${button.cssClass}`;
+            }
+
+            return `<button type="button"${disabledAttr} class="ms__action-btn${cssClass}" data-action="${button.action}" data-button-index="${buttonIndex}">${text}</button>`;
+        }).join('');
+
+        return `<div class="ms__actions${stickyClass}${wrapClass}">${buttonsHTML}</div>`;
     }
 
     private renderOption(option: T, index: number): string {
@@ -754,23 +692,10 @@ export class WebMultiSelect<T = any> {
                 }
             }
 
-            uiLogger.warn(`[${this.instanceId}] renderBadges() single-select mode`, {
-                isOpen: this.isOpen,
-                count,
-                selectedOptionsLength: selectedOptions.length,
-                willSetValue: !this.isOpen && count > 0 && selectedOptions.length > 0,
-                selectedLabel
-            });
-
             if (!this.isOpen && count > 0 && selectedOptions.length > 0) {
-                uiLogger.info(`[${this.instanceId}] ✅ SETTING input.value = "${selectedLabel}"`);
                 this.input.value = selectedLabel!;
-                uiLogger.info(`[${this.instanceId}] 🔍 VERIFY input.value = "${this.input.value}"`);
             } else if (!this.isOpen) {
-                uiLogger.info(`[${this.instanceId}] ❌ CLEARING input.value (no selection)`);
                 this.input.value = '';
-            } else {
-                uiLogger.info(`[${this.instanceId}] ⏭️ SKIPPING input update (dropdown is open)`);
             }
             return;
         }
@@ -807,39 +732,9 @@ export class WebMultiSelect<T = any> {
 
         if (effectiveMode === 'badges') {
             this.badgesContainer.className = `ms__badges ms__badges--${this.effectiveBadgesPosition}`;
-            this.badgesContainer.innerHTML = selectedOptions.map(option => {
-                const value = this.getItemValue(option);
-                let badgeContent: string;
-
-                // Check if custom render callback is provided
-                if (this.options.renderBadgeContentCallback) {
-                    const context: BadgeContentRenderContext = {
-                        displayMode: 'badges',
-                        isInPopover: false
-                    };
-                    const customContent = this.options.renderBadgeContentCallback(option, context);
-                    badgeContent = typeof customContent === 'string' ? customContent : customContent.outerHTML;
-                } else {
-                    // Default: use existing badge display logic
-                    const displayValue = this.getItemBadgeDisplayValue(option);
-                    badgeContent = displayValue;
-                }
-
-                // Get custom CSS classes if callback provided
-                let badgeClasses = 'ms__badge';
-                if (this.options.getBadgeClassCallback) {
-                    const customClasses = this.options.getBadgeClassCallback(option);
-                    const classArray = Array.isArray(customClasses) ? customClasses : [customClasses];
-                    badgeClasses += ' ' + classArray.filter(c => c).join(' ');
-                }
-
-                return `
-                <div class="${badgeClasses}">
-                    <span class="ms__badge-text">${badgeContent}</span>
-                    <button type="button" class="ms__badge-remove" data-value="${value}" aria-label="Remove ${this.getItemBadgeDisplayValue(option)}"></button>
-                </div>
-            `;
-            }).join('');
+            this.badgesContainer.innerHTML = selectedOptions
+                .map(option => this.renderBadgeHTML(option, { displayMode: 'badges', isInPopover: false }))
+                .join('');
         } else if (effectiveMode === 'partial') {
             // Partial mode: show limited badges + "+X more" badge
             this.badgesContainer.className = `ms__badges ms__badges--${this.effectiveBadgesPosition}`;
@@ -848,38 +743,9 @@ export class WebMultiSelect<T = any> {
             const visibleOptions = selectedOptions.slice(0, maxVisible);
             const remainingCount = count - maxVisible;
 
-            const visibleBadgesHtml = visibleOptions.map(option => {
-                const value = this.getItemValue(option);
-                let badgeContent: string;
-
-                // Check if custom render callback is provided
-                if (this.options.renderBadgeContentCallback) {
-                    const context: BadgeContentRenderContext = {
-                        displayMode: 'partial',
-                        isInPopover: false
-                    };
-                    const customContent = this.options.renderBadgeContentCallback(option, context);
-                    badgeContent = typeof customContent === 'string' ? customContent : customContent.outerHTML;
-                } else {
-                    // Default: use existing badge display logic
-                    badgeContent = this.getItemBadgeDisplayValue(option);
-                }
-
-                // Get custom CSS classes if callback provided
-                let badgeClasses = 'ms__badge';
-                if (this.options.getBadgeClassCallback) {
-                    const customClasses = this.options.getBadgeClassCallback(option);
-                    const classArray = Array.isArray(customClasses) ? customClasses : [customClasses];
-                    badgeClasses += ' ' + classArray.filter(c => c).join(' ');
-                }
-
-                return `
-                <div class="${badgeClasses}">
-                    <span class="ms__badge-text">${badgeContent}</span>
-                    <button type="button" class="ms__badge-remove" data-value="${value}" aria-label="Remove ${this.getItemBadgeDisplayValue(option)}"></button>
-                </div>
-            `;
-            }).join('');
+            const visibleBadgesHtml = visibleOptions
+                .map(option => this.renderBadgeHTML(option, { displayMode: 'partial', isInPopover: false }))
+                .join('');
 
             let moreBadgeHtml = '';
             if (remainingCount > 0) {
@@ -1272,10 +1138,9 @@ export class WebMultiSelect<T = any> {
             } else if (action === 'clear-all') {
                 this.clearAll();
             } else if (action === 'custom') {
-                // Find the custom button and call its onClick handler
-                const button = this.options.actionButtons?.find(btn =>
-                    btn.action === 'custom' && btn.text === actionBtn.textContent?.trim()
-                );
+                // Look up the custom button by its rendered index (set as data-button-index)
+                const buttonIndex = parseInt(actionBtn.dataset.buttonIndex || '-1');
+                const button = this.options.actionButtons?.[buttonIndex];
                 if (button?.onClick) {
                     button.onClick(this);
                 }
@@ -1403,80 +1268,43 @@ export class WebMultiSelect<T = any> {
         }
     }
 
-    private focusNext(): void {
-        if (this.filteredOptions.length === 0) return;
-
-        this.focusedIndex = Math.min(this.filteredOptions.length - 1, this.focusedIndex + 1);
+    /**
+     * Move focus by computing a new index from (current, total).
+     * Returning -1 from `compute` is a no-op (used for empty list / no match).
+     */
+    private focusBy(compute: (current: number, total: number) => number): void {
+        const total = this.filteredOptions.length;
+        if (total === 0) return;
+        const next = compute(this.focusedIndex, total);
+        if (next < 0) return;
+        this.focusedIndex = next;
         this.renderDropdown();
         this.scrollToFocused();
     }
 
-    private focusPrevious(): void {
-        if (this.filteredOptions.length === 0) return;
-
-        this.focusedIndex = Math.max(0, this.focusedIndex - 1);
-        this.renderDropdown();
-        this.scrollToFocused();
-    }
-
-    private focusFirst(): void {
-        if (this.filteredOptions.length === 0) return;
-
-        this.focusedIndex = 0;
-        this.renderDropdown();
-        this.scrollToFocused();
-    }
-
-    private focusLast(): void {
-        if (this.filteredOptions.length === 0) return;
-
-        this.focusedIndex = this.filteredOptions.length - 1;
-        this.renderDropdown();
-        this.scrollToFocused();
-    }
+    private focusNext(): void     { this.focusBy((i, n) => Math.min(n - 1, i + 1)); }
+    private focusPrevious(): void { this.focusBy((i)    => Math.max(0, i - 1)); }
+    private focusFirst(): void    { this.focusBy(()     => 0); }
+    private focusLast(): void     { this.focusBy((_, n) => n - 1); }
+    private focusPageUp(): void   { this.focusBy((i)    => Math.max(0, i - 10)); }
+    private focusPageDown(): void { this.focusBy((i, n) => Math.min(n - 1, i + 10)); }
 
     private focusNextMatch(): void {
         if (this.matchingIndices.size === 0) return;
-
-        const matchedArray = Array.from(this.matchingIndices).sort((a, b) => a - b);
-        const currentIndex = matchedArray.findIndex(idx => idx === this.focusedIndex);
-        const nextIndex = (currentIndex + 1) % matchedArray.length;
-
-        this.focusedIndex = matchedArray[nextIndex];
-        this.renderDropdown();
-        this.scrollToFocused();
-        interactionLogger.debug(`[${this.instanceId}] Jumped to next match: index ${this.focusedIndex} (${currentIndex + 1} of ${matchedArray.length})`);
+        const matched = Array.from(this.matchingIndices).sort((a, b) => a - b);
+        const currentIndex = matched.findIndex(idx => idx === this.focusedIndex);
+        const nextIndex = (currentIndex + 1) % matched.length;
+        this.focusBy(() => matched[nextIndex]);
+        interactionLogger.debug(`[${this.instanceId}] Jumped to next match: index ${this.focusedIndex} (${currentIndex + 1} of ${matched.length})`);
     }
 
     private focusPreviousMatch(): void {
         if (this.matchingIndices.size === 0) return;
-
-        const matchedArray = Array.from(this.matchingIndices).sort((a, b) => a - b);
-        const currentIndex = matchedArray.findIndex(idx => idx === this.focusedIndex);
-        const prevIndex = currentIndex <= 0 ? matchedArray.length - 1 : currentIndex - 1;
-
-        this.focusedIndex = matchedArray[prevIndex];
-        this.renderDropdown();
-        this.scrollToFocused();
-        interactionLogger.debug(`[${this.instanceId}] Jumped to previous match: index ${this.focusedIndex} (${currentIndex + 1} of ${matchedArray.length})`);
-    }
-
-    private focusPageUp(): void {
-        if (this.filteredOptions.length === 0) return;
-
-        // Jump 10 items up or to the first item
-        this.focusedIndex = Math.max(0, this.focusedIndex - 10);
-        this.renderDropdown();
-        this.scrollToFocused();
-    }
-
-    private focusPageDown(): void {
-        if (this.filteredOptions.length === 0) return;
-
-        // Jump 10 items down or to the last item
-        this.focusedIndex = Math.min(this.filteredOptions.length - 1, this.focusedIndex + 10);
-        this.renderDropdown();
-        this.scrollToFocused();
+        const matched = Array.from(this.matchingIndices).sort((a, b) => a - b);
+        const currentIndex = matched.findIndex(idx => idx === this.focusedIndex);
+        const prevIndex = currentIndex <= 0 ? matched.length - 1 : currentIndex - 1;
+        this.focusBy(() => matched[prevIndex]);
+        interactionLogger.debug(`[${this.instanceId}] Jumped to previous match: index ${this.focusedIndex} (${currentIndex + 1} of ${matched.length})`);
     }
 
     private scrollToFocused(): void {
@@ -1508,7 +1336,6 @@ export class WebMultiSelect<T = any> {
                 this.selectOption(option);
             }
 
-            uiLogger.info(`[${this.instanceId}] ❌ Closing dropdown (single-select mode)`);
             this.close();
             return;
         }
@@ -1521,16 +1348,8 @@ export class WebMultiSelect<T = any> {
             this.selectOption(option);
         }
 
-        interactionLogger.debug(`[${this.instanceId}] Checking closeOnSelect`, {
-            closeOnSelect: this.options.isCloseOnSelect,
-            willClose: this.options.isCloseOnSelect === true,
-            placeholder: this.options.searchPlaceholder
-        });
         if (this.options.isCloseOnSelect) {
-            uiLogger.info(`[${this.instanceId}] ❌ Closing dropdown (closeOnSelect=true)`);
             this.close();
-        } else {
-            uiLogger.info(`[${this.instanceId}] ✅ Keeping dropdown open (closeOnSelect=false)`);
         }
     }
 
@@ -1566,16 +1385,7 @@ export class WebMultiSelect<T = any> {
         const valueKey = String(value);
         this.selectedValues.add(valueKey);
         this.selectedOptions.set(valueKey, option);
-        this.renderDropdown();
-        this.renderBadges();
-        this.updateHiddenInput();
-
-        if (this.options.selectCallback) {
-            this.options.selectCallback(option);
-        }
-        if (this.options.changeCallback) {
-            this.options.changeCallback(this.getSelected());
-        }
+        this.commit({ added: [option] });
     }
 
     private deselectOption(option: T): void {
@@ -1583,44 +1393,49 @@ export class WebMultiSelect<T = any> {
         const valueKey = String(value);
         this.selectedValues.delete(valueKey);
         this.selectedOptions.delete(valueKey);
-        this.renderDropdown();
-        this.renderBadges();
-        this.updateHiddenInput();
-
-        if (this.options.deselectCallback) {
-            this.options.deselectCallback(option);
-        }
-        if (this.options.changeCallback) {
-            this.options.changeCallback(this.getSelected());
-        }
+        this.commit({ removed: [option] });
     }
 
     private selectAll(): void {
+        const added: T[] = [];
         this.filteredOptions.forEach(option => {
-            if (!this.getItemDisabled(option)) {
-                const value = this.getItemValue(option);
-                const valueKey = String(value);
-                this.selectedValues.add(valueKey);
-                this.selectedOptions.set(valueKey, option);
-            }
+            if (this.getItemDisabled(option)) return;
+            const valueKey = String(this.getItemValue(option));
+            if (this.selectedValues.has(valueKey)) return;
+            this.selectedValues.add(valueKey);
+            this.selectedOptions.set(valueKey, option);
+            added.push(option);
         });
-        this.renderDropdown();
-        this.renderBadges();
-        this.updateHiddenInput();
-
-        if (this.options.changeCallback) {
-            this.options.changeCallback(this.getSelected());
-        }
+        this.commit({ added });
     }
 
     private clearAll(): void {
+        const removed = Array.from(this.selectedOptions.values());
         this.selectedValues.clear();
         this.selectedOptions.clear();
+        this.commit({ removed });
+    }
+
+    /**
+     * Re-render and fire callbacks after a selection state change.
+     * `added` / `removed` drive per-item select/deselect callbacks.
+     * `changeCallback` fires once if anything actually changed.
+     */
+    private commit(delta: { added?: T[]; removed?: T[] }): void {
         this.renderDropdown();
         this.renderBadges();
         this.updateHiddenInput();
 
-        if (this.options.changeCallback) {
+        const added = delta.added ?? [];
+        const removed = delta.removed ?? [];
+
+        if (this.options.selectCallback) {
+            added.forEach(option => this.options.selectCallback!(option));
+        }
+        if (this.options.deselectCallback) {
+            removed.forEach(option => this.options.deselectCallback!(option));
+        }
+        if ((added.length > 0 || removed.length > 0) && this.options.changeCallback) {
             this.options.changeCallback(this.getSelected());
         }
     }
@@ -1671,19 +1486,8 @@ export class WebMultiSelect<T = any> {
         if (!this.options.shouldKeepSearchOnClose) {
             this.searchTerm = '';
             // Only clear input in multi-select mode or when search is enabled
-            const willClearInput = this.options.isMultipleEnabled || this.options.isSearchEnabled;
-            uiLogger.warn(`[${this.instanceId}] close() - input clearing decision`, {
-                multiple: this.options.isMultipleEnabled,
-                enableSearch: this.options.isSearchEnabled,
-                willClearInput,
-                currentInputValue: this.input.value
-            });
-
-            if (willClearInput) {
-                uiLogger.info(`[${this.instanceId}] 🧹 close() CLEARING input.value`);
+            if (this.options.isMultipleEnabled || this.options.isSearchEnabled) {
                 this.input.value = '';
-            } else {
-                uiLogger.info(`[${this.instanceId}] 🔒 close() KEEPING input.value = "${this.input.value}"`);
             }
 
             this.filteredOptions = [...this.allOptions];
@@ -1691,9 +1495,7 @@ export class WebMultiSelect<T = any> {
 
         this.focusedIndex = -1;
 
-        uiLogger.info(`[${this.instanceId}] 📞 close() CALLING renderBadges()`);
         this.renderBadges();
-        uiLogger.info(`[${this.instanceId}] ✅ close() AFTER renderBadges(), input.value = "${this.input.value}"`);
 
         if (this.dropdownCleanup) {
             this.dropdownCleanup();
@@ -1707,59 +1509,60 @@ export class WebMultiSelect<T = any> {
         // Reset placement tracking
         this.dropdownPlacement = null;
 
-        uiLogger.info(`[${this.instanceId}] Dropdown closed. Stack trace:`);
-        uiLogger.trace();
+        uiLogger.debug(`[${this.instanceId}] Dropdown closed`);
+    }
+
+    /**
+     * Anchor a floating panel (dropdown or selected-items popover) below/above the input with
+     * placement-locking and width-syncing. Returns the `autoUpdate` cleanup.
+     *
+     * Both panels share: anchor on input, sync width, default to 'bottom-start', flip on first
+     * compute then lock the resulting placement, optionally clamp by dropdownMin/MaxWidth.
+     */
+    private anchorFloatingPanel(panel: HTMLElement, opts: {
+        getPlacement: () => Placement | null;
+        setPlacement: (p: Placement) => void;
+        /** When false, never locks (re-flips on every update). Defaults to true. */
+        isLocked?: () => boolean;
+        applyMaxWidth?: boolean;
+        afterPosition?: () => void;
+    }): () => void {
+        return autoUpdate(this.input, panel, () => {
+            const locked = opts.isLocked?.() ?? true;
+            const current = opts.getPlacement();
+            const placement: Placement = (locked && current) ? current : 'bottom-start';
+            const middleware = [
+                offset(4),
+                ...(locked && current ? [] : [flip()]),
+                shift({ padding: 8 })
+            ];
+
+            computePosition(this.input, panel, { placement, middleware }).then(({ x, y, placement: finalPlacement }) => {
+                if (!current) opts.setPlacement(finalPlacement);
+                const styles: Record<string, string> = {
+                    left: `${x}px`,
+                    top: `${y}px`,
+                    width: `${this.input.offsetWidth}px`
+                };
+                if (this.options.dropdownMinWidth) styles.minWidth = this.options.dropdownMinWidth;
+                if (opts.applyMaxWidth && this.options.dropdownMaxWidth) styles.maxWidth = this.options.dropdownMaxWidth;
+                Object.assign(panel.style, styles);
+                opts.afterPosition?.();
+            });
+        });
     }
 
     private positionDropdown(): void {
-        this.dropdownCleanup = autoUpdate(
-            this.input,
-            this.dropdown,
-            () => {
-                // Use locked placement if lockPlacement is enabled and we have a placement
-                const placement = (this.options.isPlacementLocked && this.dropdownPlacement)
-                    ? this.dropdownPlacement
-                    : 'bottom-start';
-
-                // Only include flip() if placement is not locked or lockPlacement is disabled
-                const middleware = [
-                    offset(4),
-                    ...(this.options.isPlacementLocked && this.dropdownPlacement ? [] : [flip()]),
-                    shift({ padding: 8 })
-                ];
-
-                computePosition(this.input, this.dropdown, {
-                    placement: placement,
-                    middleware: middleware
-                }).then(({ x, y, placement: finalPlacement }) => {
-                    // Lock placement after first computation if lockPlacement is enabled
-                    if (this.options.isPlacementLocked && !this.dropdownPlacement) {
-                        this.dropdownPlacement = finalPlacement;
-                        uiLogger.debug(`[${this.instanceId}] Locked dropdown placement:`, finalPlacement);
-                    }
-
-                    const styles: Record<string, string> = {
-                        left: `${x}px`,
-                        top: `${y}px`,
-                        width: `${this.input.offsetWidth}px`
-                    };
-
-                    if (this.options.dropdownMinWidth) {
-                        styles.minWidth = this.options.dropdownMinWidth;
-                    }
-                    if (this.options.dropdownMaxWidth) {
-                        styles.maxWidth = this.options.dropdownMaxWidth;
-                    }
-
-                    Object.assign(this.dropdown.style, styles);
-
-                    // Update hint position if it exists
-                    if (this.hint && this.isOpen) {
-                        this.positionHint();
-                    }
-                });
-            }
-        );
+        this.dropdownCleanup = this.anchorFloatingPanel(this.dropdown, {
+            getPlacement: () => this.dropdownPlacement,
+            setPlacement: (p) => {
+                this.dropdownPlacement = p;
+                uiLogger.debug(`[${this.instanceId}] Locked dropdown placement:`, p);
+            },
+            isLocked: () => !!this.options.isPlacementLocked,
+            applyMaxWidth: true,
+            afterPosition: () => { if (this.hint && this.isOpen) this.positionHint(); }
+        });
     }
 
     private positionHint(): void {
@@ -1842,7 +1645,7 @@ export class WebMultiSelect<T = any> {
         this.selectedPopover.classList.add('ms__selected-popover--visible');
 
         // Add virtual class if using virtual scroll (matches dropdown pattern)
-        const threshold = 100;
+        const threshold = this.options.virtualScrollThreshold ?? 100;
         if (this.selectedValues.size >= threshold) {
             this.selectedPopover.classList.add('ms__selected-popover--virtual');
         }
@@ -1868,14 +1671,22 @@ export class WebMultiSelect<T = any> {
             this.selectedPopoverCleanup();
             this.selectedPopoverCleanup = null;
         }
+
+        // Tear down popover-only tooltips so they don't leak Floating UI cleanups.
+        for (const id of Array.from(this.tooltips.keys())) {
+            if (id.startsWith('popover-')) {
+                this.tooltips.get(id)?.destroy();
+                this.tooltips.delete(id);
+            }
+        }
     }
 
     private renderSelectedPopover(): void {
         const selectedOptions = Array.from(this.selectedOptions.values());
         const count = this.selectedValues.size;
 
-        // Use virtual scroll for large selections
-        const threshold = 100;
+        // Use virtual scroll for large selections (same threshold as the dropdown)
+        const threshold = this.options.virtualScrollThreshold ?? 100;
         if (count >= threshold) {
             this.renderSelectedPopoverVirtual(selectedOptions, count);
             return;
@@ -1888,7 +1699,7 @@ export class WebMultiSelect<T = any> {
                 <button type="button" class="ms__selected-popover-close" aria-label="Close">&times;</button>
             </div>
             <div class="ms__selected-popover-body">
-                ${selectedOptions.map(option => this.renderBadgeForPopover(option)).join('')}
+                ${selectedOptions.map(option => this.renderBadgeHTML(option, { displayMode: this.options.badgesDisplayMode || 'badges', isInPopover: true })).join('')}
             </div>
         `;
 
@@ -1905,7 +1716,7 @@ export class WebMultiSelect<T = any> {
                     <span>Selected Items (${count})</span>
                     <button type="button" class="ms__selected-popover-close" aria-label="Close">&times;</button>
                 </div>
-                <div class="ms__selected-popover-body ms__selected-popover-body--virtual" style="height: 18rem; overflow-y: auto; position: relative; --ml-badge-height-virtual: ${badgeHeight}px;"></div>
+                <div class="ms__selected-popover-body ms__selected-popover-body--virtual" style="height: 18rem; overflow-y: auto; position: relative; --ms-badge-height-virtual: ${badgeHeight}px;"></div>
             `;
             this.selectedPopover.innerHTML = html;
             this.selectedPopoverContainer = this.selectedPopover.querySelector('.ms__selected-popover-body') as HTMLDivElement;
@@ -1935,7 +1746,7 @@ export class WebMultiSelect<T = any> {
                     container: this.selectedPopoverContainer,
                     itemHeight,
                     items: selectedOptions,
-                    renderItem: (item) => this.renderBadgeForPopover(item),
+                    renderItem: (item) => this.renderBadgeHTML(item, { displayMode: this.options.badgesDisplayMode || 'badges', isInPopover: true }),
                     bufferSize,
                     onVisibleRangeChange: () => {
                         // Attach tooltips to newly rendered badges in virtual scroll
@@ -1948,39 +1759,47 @@ export class WebMultiSelect<T = any> {
         });
     }
 
-    private renderBadgeForPopover(item: T): string {
-        const value = this.getItemValue(item);
-        let badgeContent: string;
+    /**
+     * Render a removable badge for a selected option (used by the badges/partial display modes
+     * and by the selected-items popover).
+     *
+     * - In the popover, `renderSelectedItemContentCallback` and `getSelectedItemClassCallback` win
+     *   over the regular badge callbacks; that's how consumers customize popover items independently.
+     * - The `data-value` and aria-label both go through `getItemBadgeDisplayValue` so badge text and
+     *   accessible name stay in sync.
+     */
+    private renderBadgeHTML(option: T, ctx: BadgeContentRenderContext): string {
+        const value = this.getItemValue(option);
 
-        // Check for selected item content callback first, fall back to badge content callback
-        if (this.options.renderSelectedItemContentCallback) {
-            const customContent = this.options.renderSelectedItemContentCallback(item);
-            badgeContent = typeof customContent === 'string' ? customContent : customContent.outerHTML;
+        // Resolve content
+        let badgeContent: string;
+        const popoverCallback = ctx.isInPopover ? this.options.renderSelectedItemContentCallback : undefined;
+        if (popoverCallback) {
+            const c = popoverCallback(option);
+            badgeContent = typeof c === 'string' ? c : c.outerHTML;
         } else if (this.options.renderBadgeContentCallback) {
-            const context: BadgeContentRenderContext = {
-                displayMode: this.options.badgesDisplayMode || 'badges',
-                isInPopover: true
-            };
-            const customContent = this.options.renderBadgeContentCallback(item, context);
-            badgeContent = typeof customContent === 'string' ? customContent : customContent.outerHTML;
+            const c = this.options.renderBadgeContentCallback(option, ctx);
+            badgeContent = typeof c === 'string' ? c : c.outerHTML;
         } else {
-            // Default: use existing badge display logic
-            badgeContent = this.getItemBadgeDisplayValue(item);
+            badgeContent = this.getItemBadgeDisplayValue(option);
         }
 
-        // Check for selected item class callback first, fall back to badge class callback
+        // Resolve classes
+        const classCallback = ctx.isInPopover
+            ? (this.options.getSelectedItemClassCallback || this.options.getBadgeClassCallback)
+            : this.options.getBadgeClassCallback;
         let badgeClasses = 'ms__badge';
-        const classCallback = this.options.getSelectedItemClassCallback || this.options.getBadgeClassCallback;
         if (classCallback) {
-            const customClasses = classCallback(item);
+            const customClasses = classCallback(option);
             const classArray = Array.isArray(customClasses) ? customClasses : [customClasses];
             badgeClasses += ' ' + classArray.filter(c => c).join(' ');
         }
 
+        const removeLabel = this.getItemBadgeDisplayValue(option);
         return `
             <div class="${badgeClasses}">
                 <span class="ms__badge-text">${badgeContent}</span>
-                <button type="button" class="ms__badge-remove" data-value="${value}" aria-label="Remove ${this.getItemBadgeDisplayValue(item)}"></button>
+                <button type="button" class="ms__badge-remove" data-value="${value}" aria-label="Remove ${removeLabel}"></button>
             </div>
         `;
     }
@@ -2011,39 +1830,13 @@ export class WebMultiSelect<T = any> {
     }
 
     private positionSelectedPopover(): void {
-        this.selectedPopoverCleanup = autoUpdate(
-            this.input,
-            this.selectedPopover,
-            () => {
-                const placement = this.selectedPopoverPlacement || 'bottom-start';
-
-                computePosition(this.input, this.selectedPopover, {
-                    placement: placement,
-                    middleware: [
-                        offset(4),
-                        ...(this.selectedPopoverPlacement ? [] : [flip()]),
-                        shift({ padding: 8 })
-                    ]
-                }).then(({ x, y, placement: finalPlacement }) => {
-                    if (!this.selectedPopoverPlacement) {
-                        this.selectedPopoverPlacement = finalPlacement;
-                        uiLogger.debug(`[${this.instanceId}] Locked popover placement:`, finalPlacement);
-                    }
-
-                    const styles: Record<string, string> = {
-                        left: `${x}px`,
-                        top: `${y}px`,
-                        width: `${this.input.offsetWidth}px`
-                    };
-
-                    if (this.options.dropdownMinWidth) {
-                        styles.minWidth = this.options.dropdownMinWidth;
-                    }
-
-                    Object.assign(this.selectedPopover.style, styles);
-                });
+        this.selectedPopoverCleanup = this.anchorFloatingPanel(this.selectedPopover, {
+            getPlacement: () => this.selectedPopoverPlacement,
+            setPlacement: (p) => {
+                this.selectedPopoverPlacement = p;
+                uiLogger.debug(`[${this.instanceId}] Locked popover placement:`, p);
             }
-        );
+        });
     }
 
     // ========================================================================
@@ -2159,371 +1952,156 @@ export class WebMultiSelect<T = any> {
     }
 
     // ========================================================================
-    // BADGE TOOLTIP METHODS
+    // TOOLTIPS (badge text, badge-remove buttons, action buttons)
     // ========================================================================
 
+    /**
+     * Create or replace a tracked tooltip with the given id. Replacing destroys the old one,
+     * which is the normal flow when re-rendering badges/actions.
+     */
+    private spawnTooltip(spec: {
+        id: string;
+        trigger: HTMLElement;
+        content: string | HTMLElement;
+        onBeforeShow?: () => void;
+    }): void {
+        this.tooltips.get(spec.id)?.destroy();
+        const tooltip = new Tooltip({
+            trigger: spec.trigger,
+            container: this.options.container || document.body,
+            content: spec.content,
+            placement: this.options.badgeTooltipPlacement || 'top',
+            offsetDistance: this.options.badgeTooltipOffset ?? 8,
+            showDelay: this.options.badgeTooltipDelay ?? 100,
+            onBeforeShow: spec.onBeforeShow
+        });
+        this.tooltips.set(spec.id, tooltip);
+    }
+
+    private destroyAllTooltips(): void {
+        this.tooltips.forEach(t => t.destroy());
+        this.tooltips.clear();
+    }
+
+    /** Build the badge-text tooltip content (callback overrides; default = displayValue + optional subtitle on next line). */
+    private buildBadgeTooltipContent(option: T): string | HTMLElement {
+        if (this.options.getBadgeTooltipCallback) return this.options.getBadgeTooltipCallback(option);
+        const displayValue = this.getItemBadgeDisplayValue(option);
+        const subtitle = this.getItemSubtitle(option);
+        return subtitle ? `${displayValue}\n${subtitle}` : displayValue;
+    }
+
+    /** Build the remove-button tooltip text (callback > format string with {0} > "Remove {name}"). */
+    private buildRemoveButtonTooltipText(itemName: string, option?: T): string {
+        if (option && this.options.getRemoveButtonTooltipCallback) return this.options.getRemoveButtonTooltipCallback(option);
+        if (this.options.removeButtonTooltipText) return this.options.removeButtonTooltipText.replace('{0}', itemName);
+        return `Remove ${itemName}`;
+    }
+
     private attachBadgeTooltips(container?: HTMLElement): void {
-        if (!this.options.isBadgeTooltipsEnabled) {
-            uiLogger.debug(`[${this.instanceId}] Tooltips disabled - isBadgeTooltipsEnabled is false`);
-            return;
-        }
+        if (!this.options.isBadgeTooltipsEnabled) return;
 
+        const isPopover = !!container;
         const targetContainer = container || this.badgesContainer;
+        // Prefix popover tooltips so they don't collide with the main badges container's tooltips
+        // (which are keyed by raw option value).
+        const idPrefix = isPopover ? 'popover-' : '';
         const badges = targetContainer.querySelectorAll('.ms__badge:not(.ms__badge--more)');
-        uiLogger.debug(`[${this.instanceId}] Found ${badges.length} badges to attach tooltips to`);
-        badges.forEach((badge: Element) => {
-            const badgeElement = badge as HTMLElement;
-            const removeBtn = badgeElement.querySelector('.ms__badge-remove') as HTMLElement;
-            if (!removeBtn) return;
 
+        badges.forEach((badge: Element) => {
+            const removeBtn = badge.querySelector('.ms__badge-remove') as HTMLElement;
+            if (!removeBtn) return;
             const value = removeBtn.dataset.value!;
             const option = this.selectedOptions.get(value);
             if (!option) return;
 
-            // Create tooltip for badge text (not the entire badge to avoid conflicts with remove button)
-            const badgeText = badgeElement.querySelector('.ms__badge-text') as HTMLElement;
+            const textId = `${idPrefix}${value}`;
+            const removeId = `${idPrefix}${value}-remove`;
+
+            const badgeText = badge.querySelector('.ms__badge-text') as HTMLElement;
             if (badgeText) {
-                this.createTooltipForElement(badgeText, option, value);
-            }
-
-            // Create tooltip for remove button
-            const displayValue = this.getItemBadgeDisplayValue(option);
-            this.createRemoveButtonTooltip(removeBtn, displayValue, value, option);
-        });
-
-        // Handle "+X more" badge remove button tooltip (only for main badges container)
-        if (!container) {
-            const moreBadge = this.badgesContainer.querySelector('.ms__badge--more');
-            if (moreBadge) {
-                const removeBtn = moreBadge.querySelector('.ms__badge-remove') as HTMLElement;
-                if (removeBtn && removeBtn.dataset.action === 'remove-hidden') {
-                    const maxVisible = this.options.badgesMaxVisible || 3;
-                    const selectedOptions = Array.from(this.selectedOptions.values());
-                    const hiddenCount = selectedOptions.length - maxVisible;
-                    this.createRemoveButtonTooltip(removeBtn, `${hiddenCount} hidden items`, 'more-badge-remove');
-                }
-            }
-        }
-    }
-
-    private createTooltipForElement(element: HTMLElement, option: any, uniqueId: string): void {
-        const tooltip = document.createElement('div');
-        tooltip.className = 'ms__badge-tooltip';
-
-        // Get content from callback or use default (display value + subtitle)
-        let content: string | HTMLElement;
-        if (this.options.getBadgeTooltipCallback) {
-            content = this.options.getBadgeTooltipCallback(option);
-            uiLogger.debug(`[${this.instanceId}] Using custom callback for tooltip content`);
-        } else {
-            const displayValue = this.getItemBadgeDisplayValue(option);
-            const subtitle = this.getItemSubtitle(option);
-            content = subtitle ? `${displayValue}\n${subtitle}` : displayValue;
-            uiLogger.debug(`[${this.instanceId}] Using default content: "${content}"`);
-        }
-
-        if (typeof content === 'string') {
-            tooltip.textContent = content;
-        } else {
-            tooltip.appendChild(content);
-        }
-
-        const container = this.options.container || document.body;
-        container.appendChild(tooltip);
-        uiLogger.debug(`[${this.instanceId}] Tooltip element created and appended for "${uniqueId}"`);
-
-        this.badgeTooltips.set(uniqueId, tooltip);
-
-        // Setup hover handlers with tracked timeouts for proper cleanup
-        const showTooltip = () => {
-            // Clear any pending hide timeout
-            const existingHideTimeout = this.badgeTooltipHideTimeouts.get(uniqueId);
-            if (existingHideTimeout) {
-                clearTimeout(existingHideTimeout);
-                this.badgeTooltipHideTimeouts.delete(uniqueId);
-            }
-
-            uiLogger.debug(`[${this.instanceId}] Mouse entered badge "${uniqueId}", will show tooltip in ${this.options.badgeTooltipDelay ?? 100}ms`);
-            const showTimeout = window.setTimeout(() => {
-                uiLogger.debug(`[${this.instanceId}] Showing tooltip for "${uniqueId}"`);
-                tooltip.classList.add('ms__badge-tooltip--visible');
-                this.positionBadgeTooltip(element, tooltip, uniqueId);
-                this.badgeTooltipShowTimeouts.delete(uniqueId);
-            }, this.options.badgeTooltipDelay ?? 100);
-            this.badgeTooltipShowTimeouts.set(uniqueId, showTimeout);
-        };
-
-        const hideTooltip = () => {
-            // Clear any pending show timeout
-            const existingShowTimeout = this.badgeTooltipShowTimeouts.get(uniqueId);
-            if (existingShowTimeout) {
-                clearTimeout(existingShowTimeout);
-                this.badgeTooltipShowTimeouts.delete(uniqueId);
-            }
-
-            const hideTimeout = window.setTimeout(() => {
-                tooltip.classList.remove('ms__badge-tooltip--visible');
-                this.cleanupBadgeTooltip(uniqueId);
-                this.badgeTooltipHideTimeouts.delete(uniqueId);
-            }, 100);
-            this.badgeTooltipHideTimeouts.set(uniqueId, hideTimeout);
-        };
-
-        element.addEventListener('mouseenter', showTooltip);
-        element.addEventListener('mouseleave', hideTooltip);
-    }
-
-    private createRemoveButtonTooltip(removeBtn: HTMLElement, itemName: string, uniqueId: string, option?: T): void {
-        const tooltip = document.createElement('div');
-        tooltip.className = 'ms__badge-tooltip';
-
-        // Get tooltip text from callback, format string, or default
-        let tooltipText: string;
-        if (option && this.options.getRemoveButtonTooltipCallback) {
-            tooltipText = this.options.getRemoveButtonTooltipCallback(option);
-        } else if (this.options.removeButtonTooltipText) {
-            // Support format string with {0} placeholder for item name
-            tooltipText = this.options.removeButtonTooltipText.replace('{0}', itemName);
-        } else {
-            tooltipText = `Remove ${itemName}`;
-        }
-        tooltip.textContent = tooltipText;
-
-        const container = this.options.container || document.body;
-        container.appendChild(tooltip);
-
-        const tooltipId = `${uniqueId}-remove`;
-        this.badgeTooltips.set(tooltipId, tooltip);
-
-        // Setup hover handlers with tracked timeouts for proper cleanup
-        const showTooltip = () => {
-            // Clear any pending hide timeout
-            const existingHideTimeout = this.badgeTooltipHideTimeouts.get(tooltipId);
-            if (existingHideTimeout) {
-                clearTimeout(existingHideTimeout);
-                this.badgeTooltipHideTimeouts.delete(tooltipId);
-            }
-
-            // Hide the parent badge tooltip to prevent overlap
-            const badgeTooltip = this.badgeTooltips.get(uniqueId);
-            if (badgeTooltip) {
-                badgeTooltip.classList.remove('ms__badge-tooltip--visible');
-            }
-
-            const showTimeout = window.setTimeout(() => {
-                tooltip.classList.add('ms__badge-tooltip--visible');
-                this.positionBadgeTooltip(removeBtn, tooltip, tooltipId);
-                this.badgeTooltipShowTimeouts.delete(tooltipId);
-            }, this.options.badgeTooltipDelay ?? 100);
-            this.badgeTooltipShowTimeouts.set(tooltipId, showTimeout);
-        };
-
-        const hideTooltip = () => {
-            // Clear any pending show timeout
-            const existingShowTimeout = this.badgeTooltipShowTimeouts.get(tooltipId);
-            if (existingShowTimeout) {
-                clearTimeout(existingShowTimeout);
-                this.badgeTooltipShowTimeouts.delete(tooltipId);
-            }
-
-            const hideTimeout = window.setTimeout(() => {
-                tooltip.classList.remove('ms__badge-tooltip--visible');
-                this.cleanupBadgeTooltip(tooltipId);
-                this.badgeTooltipHideTimeouts.delete(tooltipId);
-            }, 100);
-            this.badgeTooltipHideTimeouts.set(tooltipId, hideTimeout);
-        };
-
-        removeBtn.addEventListener('mouseenter', showTooltip);
-        removeBtn.addEventListener('mouseleave', hideTooltip);
-    }
-
-    private positionBadgeTooltip(referenceElement: HTMLElement, tooltip: HTMLElement, uniqueId: string): void {
-        const cleanup = autoUpdate(referenceElement, tooltip, () => {
-            computePosition(referenceElement, tooltip, {
-                placement: this.options.badgeTooltipPlacement || 'top',
-                strategy: 'fixed',
-                middleware: [
-                    offset(this.options.badgeTooltipOffset || 8),
-                    flip(),
-                    shift({ padding: 8 })
-                ]
-            }).then(({ x, y }) => {
-                Object.assign(tooltip.style, {
-                    left: `${x}px`,
-                    top: `${y}px`
+                this.spawnTooltip({
+                    id: textId,
+                    trigger: badgeText,
+                    content: this.buildBadgeTooltipContent(option)
                 });
-                uiLogger.debug(`[${this.instanceId}] Positioned tooltip "${uniqueId}" at x:${x}, y:${y}`, {
-                    placement: this.options.badgeTooltipPlacement || 'top',
-                    tooltipClasses: tooltip.className,
-                    tooltipDisplay: window.getComputedStyle(tooltip).display,
-                    tooltipOpacity: window.getComputedStyle(tooltip).opacity,
-                    tooltipVisibility: window.getComputedStyle(tooltip).visibility,
-                    tooltipZIndex: window.getComputedStyle(tooltip).zIndex,
-                    tooltipPosition: window.getComputedStyle(tooltip).position
-                });
+            }
+
+            const displayValue = this.getItemBadgeDisplayValue(option);
+            this.spawnTooltip({
+                id: removeId,
+                trigger: removeBtn,
+                content: this.buildRemoveButtonTooltipText(displayValue, option),
+                // Keep parent badge tooltip from overlapping the remove-button tooltip.
+                onBeforeShow: () => this.tooltips.get(textId)?.hideImmediate()
             });
         });
 
-        this.badgeTooltipCleanups.set(uniqueId, cleanup);
-    }
-
-    private cleanupBadgeTooltip(uniqueId: string): void {
-        // Clear any pending timeouts for this specific tooltip
-        const showTimeout = this.badgeTooltipShowTimeouts.get(uniqueId);
-        if (showTimeout) {
-            clearTimeout(showTimeout);
-            this.badgeTooltipShowTimeouts.delete(uniqueId);
-        }
-        const hideTimeout = this.badgeTooltipHideTimeouts.get(uniqueId);
-        if (hideTimeout) {
-            clearTimeout(hideTimeout);
-            this.badgeTooltipHideTimeouts.delete(uniqueId);
-        }
-
-        // Clean up Floating UI positioning
-        const cleanup = this.badgeTooltipCleanups.get(uniqueId);
-        if (cleanup) {
-            cleanup();
-            this.badgeTooltipCleanups.delete(uniqueId);
+        // "+X more" badge remove button (only relevant for the main badges container, not popover).
+        if (!isPopover) {
+            const moreBadge = this.badgesContainer.querySelector('.ms__badge--more');
+            const removeBtn = moreBadge?.querySelector('.ms__badge-remove') as HTMLElement | null;
+            if (removeBtn && removeBtn.dataset.action === 'remove-hidden') {
+                const maxVisible = this.options.badgesMaxVisible || 3;
+                const hiddenCount = this.selectedOptions.size - maxVisible;
+                this.spawnTooltip({
+                    id: 'more-badge-remove',
+                    trigger: removeBtn,
+                    content: this.buildRemoveButtonTooltipText(`${hiddenCount} hidden items`)
+                });
+            }
         }
     }
-
-    private destroyAllBadgeTooltips(): void {
-        // Clear all pending show/hide timeouts first to prevent orphaned callbacks
-        this.badgeTooltipShowTimeouts.forEach(timeout => clearTimeout(timeout));
-        this.badgeTooltipShowTimeouts.clear();
-        this.badgeTooltipHideTimeouts.forEach(timeout => clearTimeout(timeout));
-        this.badgeTooltipHideTimeouts.clear();
-
-        // Clean up all tooltip positioning (Floating UI cleanup)
-        this.badgeTooltipCleanups.forEach(cleanup => cleanup());
-        this.badgeTooltipCleanups.clear();
-
-        // Remove all tooltip elements from DOM
-        this.badgeTooltips.forEach(tooltip => tooltip.remove());
-        this.badgeTooltips.clear();
-    }
-
-    // ========================================================================
-    // ACTION BUTTON TOOLTIP METHODS
-    // ========================================================================
 
     private attachActionButtonTooltips(): void {
         const actionButtons = this.dropdown.querySelectorAll('.ms__action-btn');
-        uiLogger.debug(`[${this.instanceId}] Found ${actionButtons.length} action buttons to attach tooltips to`);
 
         actionButtons.forEach((button: Element) => {
             const buttonElement = button as HTMLElement;
             const action = buttonElement.dataset.action;
             if (!action) return;
 
-            // Find the action button config to get tooltip
-            const actionConfig = this.options.actionButtons?.find(btn => {
-                if (btn.action === 'custom') {
-                    return buttonElement.dataset.customAction === buttonElement.dataset.action;
-                }
-                return btn.action === action;
-            });
-
+            const buttonIndex = parseInt(buttonElement.dataset.buttonIndex || '-1');
+            const actionConfig = buttonIndex >= 0
+                ? this.options.actionButtons?.[buttonIndex]
+                : this.options.actionButtons?.find(btn => btn.action === action);
             if (!actionConfig) return;
 
-            // Get tooltip from callback or static property
-            let tooltipText: string | undefined;
-            if (actionConfig.getTooltipCallback) {
-                tooltipText = actionConfig.getTooltipCallback(this);
-                uiLogger.debug(`[${this.instanceId}] Using getTooltipCallback for action button "${action}": "${tooltipText}"`);
-            } else {
-                tooltipText = actionConfig.tooltip;
-                uiLogger.debug(`[${this.instanceId}] Using static tooltip for action button "${action}": "${tooltipText}"`);
-            }
+            const tooltipText = actionConfig.getTooltipCallback
+                ? actionConfig.getTooltipCallback(this)
+                : actionConfig.tooltip;
+            if (!tooltipText) return;
 
-            if (!tooltipText) {
-                uiLogger.debug(`[${this.instanceId}] No tooltip for action button "${action}"`);
-                return;
-            }
-
-            // Create unique ID for this button
-            const uniqueId = `action-${action}-${Date.now()}`;
-            this.createActionButtonTooltip(buttonElement, tooltipText, uniqueId);
+            const id = `action-${buttonIndex >= 0 ? buttonIndex : action}`;
+            this.spawnTooltip({ id, trigger: buttonElement, content: tooltipText });
         });
     }
 
-    private createActionButtonTooltip(button: HTMLElement, tooltipText: string, uniqueId: string): void {
-        const tooltip = document.createElement('div');
-        tooltip.className = 'ms__badge-tooltip'; // Reuse badge tooltip styling
-        tooltip.textContent = tooltipText;
-
-        const container = this.options.container || document.body;
-        container.appendChild(tooltip);
-        uiLogger.debug(`[${this.instanceId}] Tooltip element created for action button "${uniqueId}"`);
-
-        this.actionButtonTooltips.set(uniqueId, tooltip);
-
-        // Setup hover handlers
-        let showTimeout: number;
-        let hideTimeout: number;
-
-        const showTooltip = () => {
-            clearTimeout(hideTimeout);
-            uiLogger.debug(`[${this.instanceId}] Mouse entered action button "${uniqueId}", will show tooltip in ${this.options.badgeTooltipDelay ?? 100}ms`);
-            showTimeout = window.setTimeout(() => {
-                uiLogger.debug(`[${this.instanceId}] Showing tooltip for action button "${uniqueId}"`);
-                tooltip.classList.add('ms__badge-tooltip--visible');
-                this.positionActionButtonTooltip(button, tooltip, uniqueId);
-            }, this.options.badgeTooltipDelay ?? 100);
-        };
-
-        const hideTooltip = () => {
-            clearTimeout(showTimeout);
-            hideTimeout = window.setTimeout(() => {
-                tooltip.classList.remove('ms__badge-tooltip--visible');
-                this.cleanupActionButtonTooltip(uniqueId);
-            }, 100);
-        };
-
-        button.addEventListener('mouseenter', showTooltip);
-        button.addEventListener('mouseleave', hideTooltip);
-    }
-
-    private positionActionButtonTooltip(button: HTMLElement, tooltip: HTMLElement, uniqueId: string): void {
-        const cleanup = autoUpdate(button, tooltip, () => {
-            computePosition(button, tooltip, {
-                placement: this.options.badgeTooltipPlacement || 'top',
-                strategy: 'fixed',
-                middleware: [
-                    offset(this.options.badgeTooltipOffset || 8),
-                    flip(),
-                    shift({ padding: 8 })
-                ]
-            }).then(({ x, y }) => {
-                Object.assign(tooltip.style, {
-                    left: `${x}px`,
-                    top: `${y}px`
-                });
-                uiLogger.debug(`[${this.instanceId}] Positioned action button tooltip "${uniqueId}" at x:${x}, y:${y}`);
-            });
-        });
-
-        this.actionButtonTooltipCleanups.set(uniqueId, cleanup);
-    }
-
-    private cleanupActionButtonTooltip(uniqueId: string): void {
-        const cleanup = this.actionButtonTooltipCleanups.get(uniqueId);
-        if (cleanup) {
-            cleanup();
-            this.actionButtonTooltipCleanups.delete(uniqueId);
+    /**
+     * Destroy only the action-button tooltips. Called from `renderDropdown`/`renderDropdownVirtual`
+     * before rebuilding the actions row, so per-button tooltip state doesn't leak.
+     */
+    private destroyAllActionButtonTooltips(): void {
+        for (const id of Array.from(this.tooltips.keys())) {
+            if (id.startsWith('action-')) {
+                this.tooltips.get(id)?.destroy();
+                this.tooltips.delete(id);
+            }
         }
     }
 
-    private destroyAllActionButtonTooltips(): void {
-        // Clean up all tooltip positioning
-        this.actionButtonTooltipCleanups.forEach(cleanup => cleanup());
-        this.actionButtonTooltipCleanups.clear();
-
-        // Remove all tooltip elements
-        this.actionButtonTooltips.forEach(tooltip => tooltip.remove());
-        this.actionButtonTooltips.clear();
+    /**
+     * Destroy main-badges-container tooltips. Called before re-rendering the badges container.
+     * Popover tooltips (prefixed `popover-`) survive — they're owned by the popover lifecycle and
+     * cleaned up in `hideSelectedPopover`. Action-button tooltips (prefixed `action-`) survive too.
+     */
+    private destroyAllBadgeTooltips(): void {
+        for (const id of Array.from(this.tooltips.keys())) {
+            if (!id.startsWith('action-') && !id.startsWith('popover-')) {
+                this.tooltips.get(id)?.destroy();
+                this.tooltips.delete(id);
+            }
+        }
     }
 
     // ========================================================================
@@ -2531,8 +2109,7 @@ export class WebMultiSelect<T = any> {
     // ========================================================================
 
     public destroy(): void {
-        this.destroyAllBadgeTooltips();
-        this.destroyAllActionButtonTooltips();
+        this.destroyAllTooltips();
 
         if (this.dropdownCleanup) this.dropdownCleanup();
         if (this.hintCleanup) this.hintCleanup();

@@ -81,7 +81,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
             'lock-placement', 'dropdown-min-width', 'dropdown-max-width', 'badges-display-mode', 'badges-threshold', 'badges-max-visible',
             'badges-threshold-mode', 'badges-position', 'show-counter', 'keep-options-on-search', 'should-keep-search-on-close', 'max-height', 'empty-message',
             'loading-message', 'min-search-length', 'enable-search', 'search-input-mode', 'search-mode', 'actions-layout', 'allow-add-new',
-            'initial-values',
+            'initial-values', 'checkbox-align',
 
             // Virtual scroll options
             'enable-virtual-scroll', 'virtual-scroll-threshold', 'option-height', 'badge-height', 'virtual-scroll-buffer',
@@ -94,7 +94,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
             'name', 'value-format',
 
             // Tooltip options
-            'enable-badge-tooltips', 'badge-tooltip-placement', 'remove-button-tooltip-text',
+            'enable-badge-tooltips', 'badge-tooltip-placement', 'badge-tooltip-delay', 'badge-tooltip-offset', 'remove-button-tooltip-text',
 
             // Debug
             'show-debug-info'
@@ -473,11 +473,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
                     detail: {
                         option,
                         selectedOptions: this.picker?.getSelected(),
-                        selectedValues: (() => {
-                            const val = this.picker?.getValue();
-                            if (val == null) return [];
-                            return Array.isArray(val) ? val : [val];
-                        })()
+                        selectedValues: this.collectSelectedValues()
                     } as MultiSelectEventDetail<T>
                 }));
             },
@@ -487,11 +483,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
                     detail: {
                         option,
                         selectedOptions: this.picker?.getSelected(),
-                        selectedValues: (() => {
-                            const val = this.picker?.getValue();
-                            if (val == null) return [];
-                            return Array.isArray(val) ? val : [val];
-                        })()
+                        selectedValues: this.collectSelectedValues()
                     } as MultiSelectEventDetail<T>
                 }));
             },
@@ -500,11 +492,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
                 this.dispatchEvent(new CustomEvent('change', {
                     detail: {
                         selectedOptions,
-                        selectedValues: (() => {
-                            const val = this.picker?.getValue();
-                            if (val == null) return [];
-                            return Array.isArray(val) ? val : [val];
-                        })()
+                        selectedValues: this.collectSelectedValues()
                     } as MultiSelectEventDetail<T>
                 }));
             },
@@ -540,6 +528,13 @@ export class MultiSelectElement<T = any> extends BaseElement {
             this.picker.destroy();
             this.initializePicker();
         }
+    }
+
+    /** Normalize the picker's getValue() return into the array form expected by event detail. */
+    private collectSelectedValues(): (string | number)[] {
+        const val = this.picker?.getValue();
+        if (val == null) return [];
+        return Array.isArray(val) ? val : [val];
     }
 
     // ========================================================================

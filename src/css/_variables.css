@@ -262,7 +262,7 @@
      FLOATING HINT
      ========================================================================== */
   --ms-hint-padding: calc(0.8 * var(--ms-rem)) calc(1.2 * var(--ms-rem));
-  --ms-hint-border: var(--ms-border);
+  --ms-hint-border: 1px solid var(--ms-hint-border-color);
   --ms-hint-border-radius: var(--ms-border-radius-lg);
   --ms-hint-box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
   --ms-hint-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
@@ -270,7 +270,7 @@
   /* ==========================================================================
      DROPDOWN
      ========================================================================== */
-  --ms-dropdown-border: var(--base-dropdown-border, 1px solid var(--ms-border-color));
+  --ms-dropdown-border: var(--base-dropdown-border, 1px solid var(--ms-dropdown-border-color));
   --ms-dropdown-border-radius: var(--ms-border-radius-lg);
   --ms-dropdown-box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
   --ms-options-max-height: calc(32 * var(--ms-rem));
@@ -283,7 +283,7 @@
      ========================================================================== */
   --ms-actions-gap: calc(0.4 * var(--ms-rem));
   --ms-actions-padding: calc(0.8 * var(--ms-rem));
-  --ms-actions-border-bottom: var(--ms-border);
+  --ms-actions-border-bottom: 1px solid var(--ms-actions-border-color);
 
   /* Action Button */
   --ms-action-btn-padding: calc(0.4 * var(--ms-rem)) calc(0.8 * var(--ms-rem));
@@ -302,7 +302,7 @@
   --ms-options-padding: 0;
 
   /* Group */
-  --ms-group-border-top: var(--ms-border);
+  --ms-group-border-top: 1px solid var(--ms-group-border-color);
   --ms-group-margin-top: calc(0.4 * var(--ms-rem));
   --ms-group-padding-top: calc(0.4 * var(--ms-rem));
 
@@ -316,18 +316,17 @@
 
   /* ==========================================================================
      INDIVIDUAL OPTIONS
-     ========================================================================== */
+     ==========================================================================
+     Per-component theming colors live in the SEMANTIC VARIABLES block above
+     (--ms-option-bg, --ms-option-bg-hover, --ms-option-bg-focused,
+      --ms-option-bg-matched, --ms-option-bg-selected, --ms-option-outline-color-focused,
+      --ms-option-border-matched-color). This block holds layout-only sizing. */
   --ms-option-gap: calc(0.8 * var(--ms-rem));
   --ms-option-padding: calc(0.8 * var(--ms-rem)) calc(1.2 * var(--ms-rem));
   --ms-option-padding-h: calc(1.2 * var(--ms-rem));
-  --ms-option-bg: transparent;
-  --ms-option-bg-hover: var(--ms-primary-bg);
-  --ms-option-bg-focused: var(--ms-primary-bg);
-  --ms-option-outline-focused: 2px solid var(--ms-accent-color);
+  --ms-option-outline-focused: 2px solid var(--ms-option-outline-color-focused);
   --ms-option-focus-outline-offset: -2px;
-  --ms-option-bg-matched: color-mix(in srgb, var(--ms-accent-color) 8%, transparent);
-  --ms-option-border-matched: 3px solid color-mix(in srgb, var(--ms-accent-color) 40%, transparent);
-  --ms-option-bg-selected: color-mix(in srgb, var(--ms-accent-color) 10%, transparent);
+  --ms-option-border-matched: 3px solid var(--ms-option-border-matched-color);
 
   /* Option State Combinations */
   --ms-option-bg-focused-hover: var(--ms-primary-bg);
@@ -348,10 +347,8 @@
   --ms-option-icon-size: calc(2 * var(--ms-rem));
   --ms-option-icon-font-size: calc(var(--base-font-size-base, 1.6) * var(--ms-rem));
 
-  /* Option Title */
+  /* Option Title (--ms-option-mark-bg / --ms-option-mark-color live in the SEMANTIC VARIABLES block above) */
   --ms-option-title-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
-  --ms-option-mark-bg: color-mix(in srgb, var(--ms-accent-color) 20%, transparent);
-  --ms-option-mark-color: inherit;
   --ms-option-mark-font-weight: var(--base-font-weight-semibold, 600);
 
   /* Option Subtitle */
@@ -411,15 +408,12 @@
   /* Options: center (default), flex-start (top), flex-end (bottom) */
   --ms-inline-align: center;
 
-  /* Individual Badge */
+  /* Individual Badge (--ms-badge-bg / --ms-badge-bg-hover / --ms-badge-bg-active live in the SEMANTIC VARIABLES block above) */
   --ms-badge-gap: calc(0.8 * var(--ms-rem));
   --ms-badge-height: calc(2.7 * var(--ms-rem));
   --ms-badge-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
   --ms-badge-font-weight: var(--base-font-weight-semibold, 600);
   --ms-badge-border-radius: var(--ms-border-radius-sm);
-  --ms-badge-bg: var(--ms-accent-color-light);
-  --ms-badge-bg-hover: var(--ms-badge-bg-hover);
-  --ms-badge-bg-active: var(--ms-accent-color-light-hover);
   --ms-order-first: -1;
 
   /* ==========================================================================
@@ -443,7 +437,7 @@
 
   /* Badge Counter Indicator (layout-only properties, colors come from semantic section) */
   --ms-badge-counter-bg: transparent;
-  --ms-badge-counter-border: var(--ms-border);
+  --ms-badge-counter-border: 1px solid var(--ms-badge-counter-border-color);
   --ms-badge-counter-border-radius: var(--ms-border-radius-sm);
 
   /* ==========================================================================
@@ -506,14 +500,14 @@
   --ms-z-index-popover: 10000;
   --ms-selected-popover-width: calc(32 * var(--ms-rem));
   --ms-selected-popover-max-height: calc(32 * var(--ms-rem));
-  --ms-selected-popover-border: var(--ms-border);
+  --ms-selected-popover-border: 1px solid var(--ms-selected-popover-border-color);
   --ms-selected-popover-border-radius: var(--ms-border-radius-lg);
   --ms-selected-popover-box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 
   /* Popover Header */
   --ms-selected-popover-header-padding: calc(0.8 * var(--ms-rem)) calc(1.2 * var(--ms-rem));
   --ms-selected-popover-header-bg: color-mix(in srgb, var(--ms-accent-color) 10%, transparent);
-  --ms-selected-popover-header-border-bottom: var(--ms-border);
+  --ms-selected-popover-header-border-bottom: 1px solid var(--ms-selected-popover-header-border-color);
   --ms-selected-popover-header-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
   --ms-selected-popover-header-font-weight: var(--base-font-weight-semibold, 600);
   --ms-selected-popover-header-color: var(--ms-text-color-1);

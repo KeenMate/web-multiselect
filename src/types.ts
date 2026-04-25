@@ -45,11 +45,6 @@ export type SearchMode = 'filter' | 'navigate';
 export type ActionsLayout = 'nowrap' | 'wrap';
 
 /**
- * Support both object arrays and [key, value] tuples
- */
-export type MultiSelectDataItem<T> = T | [string | number, string];
-
-/**
  * Context provided to renderOptionContentCallback
  */
 export interface OptionContentRenderContext {
