@@ -446,6 +446,11 @@ export class WebMultiSelect<T = any> {
         } else {
             if (this.options.isGroupsAllowed) {
                 const groups = this.groupOptions(this.filteredOptions);
+                // Each option's index must be its position in `filteredOptions`, not its position
+                // within its group — `focusedIndex` is global, so per-group indices would make
+                // every group's Nth item appear focused at once.
+                const indexOf = new Map<T, number>();
+                this.filteredOptions.forEach((opt, i) => indexOf.set(opt, i));
                 Object.keys(groups).forEach(groupName => {
                     html += '<div class="ms__group">';
                     if (groupName !== '__ungrouped__') {
@@ -467,8 +472,8 @@ export class WebMultiSelect<T = any> {
                             html += `<div class="ms__group-label">${groupName}</div>`;
                         }
                     }
-                    groups[groupName].forEach((option, index) => {
-                        html += this.renderOption(option, index);
+                    groups[groupName].forEach(option => {
+                        html += this.renderOption(option, indexOf.get(option) ?? -1);
                     });
                     html += '</div>';
                 });
@@ -1917,6 +1922,69 @@ export class WebMultiSelect<T = any> {
         this.renderDropdown();
         this.renderBadges();
         this.updateHiddenInput();
+    }
+
+    /**
+     * Merge a partial config update into the live picker without tearing down the DOM.
+     *
+     * Handles the cheap structural toggles inline (no-checkboxes class, badges-position class,
+     * input placeholder, search-input mode) and re-renders dropdown + badges + hidden inputs.
+     *
+     * Returns `true` if the change could be applied in place. Returns `false` for changes that
+     * truly require rebuilding the DOM scaffolding (currently: adding/removing the `searchHint`
+     * element, since it's only created in `buildHTML` if a hint string was provided). The caller
+     * should fall back to destroy + re-init in that case.
+     */
+    public updateOptions(partial: Partial<MultiSelectConfig<T>>): boolean {
+        // Adding/removing the hint element after init isn't supported in place — buildHTML decides
+        // whether to create it. Force a rebuild.
+        const hintExists = !!this.hint;
+        const hintWanted = 'searchHint' in partial ? !!partial.searchHint : hintExists;
+        if (hintExists !== hintWanted) return false;
+
+        Object.assign(this.options, partial);
+
+        if ('options' in partial && partial.options !== undefined) {
+            this.allOptions = partial.options;
+            this.filteredOptions = this.searchTerm ? this.filteredOptions : [...this.allOptions];
+        }
+
+        // Structural class on host
+        this.element.classList.toggle('ms--no-checkboxes',
+            !this.options.isCheckboxesShown || !this.options.isMultipleEnabled);
+
+        // Badges position can change between block (top/bottom) and inline (left/right) layouts.
+        if ('badgesPosition' in partial) {
+            this.effectiveBadgesPosition = this.options.badgesPosition || 'bottom';
+            if (this.isRTL) {
+                if (this.effectiveBadgesPosition === 'left') this.effectiveBadgesPosition = 'right';
+                else if (this.effectiveBadgesPosition === 'right') this.effectiveBadgesPosition = 'left';
+            }
+            const wrapper = this.element.querySelector('.ms-wrapper');
+            wrapper?.classList.toggle('ms-wrapper--inline',
+                this.effectiveBadgesPosition === 'left' || this.effectiveBadgesPosition === 'right');
+        }
+
+        // Input placeholder (only safe to set when dropdown is closed; otherwise renderBadges takes over).
+        if ('searchPlaceholder' in partial && !this.isOpen) {
+            this.input.placeholder = this.options.searchPlaceholder;
+        }
+
+        // Search input display mode
+        if ('searchInputMode' in partial) {
+            this.input.readOnly = this.options.searchInputMode === 'readonly';
+            this.input.style.display = this.options.searchInputMode === 'hidden' ? 'none' : '';
+        }
+
+        // Hint text (element exists; just refresh content)
+        if ('searchHint' in partial && this.hint) {
+            this.hint.textContent = this.options.searchHint || '';
+        }
+
+        this.renderDropdown();
+        this.renderBadges();
+        this.updateHiddenInput();
+        return true;
     }
 
     public get selectedItem(): T | null {

@@ -201,7 +201,8 @@
   background: var(--ms-badge-remove-bg-hover);
 }
 
-.ms__badge-remove:focus {
+.ms__badge-remove:focus { outline: none; }
+.ms__badge-remove:focus-visible {
   outline: none;
   box-shadow: var(--ms-badge-remove-box-shadow-focus);
 }
@@ -247,5 +248,11 @@
 /* "+X more" badge variant (partial mode) */
 /* Now uses .ms__badge--counter for styling, this just adds cursor */
 .ms__badge--more {
+  cursor: pointer;
+}
+
+/* Any badge whose container itself opens the selected-items popover (compact mode, count mode,
+   "+X more" partial badge) should show a pointer cursor. */
+.ms__badge[data-action="show-selected"] {
   cursor: pointer;
 }

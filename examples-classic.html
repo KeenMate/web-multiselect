@@ -785,6 +785,7 @@
                         value-member="id"
                         display-value-member="name"
                         icon-member="flag"
+                        search-hint="Ctrl/Cmd + ↓ / ↑ to jump between matches · Enter to select · Esc to clear"
                         search-placeholder="Type to jump to country...">
                     </web-multiselect>
                     <small class="form-text">Keeps all options visible, jumps to matches (highlighted with left border)</small>
@@ -794,7 +795,18 @@
                 <p><strong>When to use each mode:</strong></p>
                 <ul>
                     <li><strong>Filter Mode</strong>: Large lists where you want to narrow down options (e.g., product catalogs, user lists)</li>
-                    <li><strong>Navigate Mode</strong>: Quick selection from known lists (e.g., country/state selectors, keyboard shortcuts)</li>
+                    <li><strong>Navigate Mode</strong>: Quick selection from known lists (e.g., country/state selectors)</li>
+                </ul>
+                <p><strong>Navigate-mode keyboard shortcuts:</strong></p>
+                <ul>
+                    <li><kbd>type</kbd> — first match becomes focused; all matches keep a left-border highlight</li>
+                    <li><kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>↓</kbd> — jump to next match</li>
+                    <li><kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>↑</kbd> — jump to previous match</li>
+                    <li><kbd>↑</kbd> / <kbd>↓</kbd> — move focus one option at a time</li>
+                    <li><kbd>Home</kbd> / <kbd>End</kbd> — jump to first / last option</li>
+                    <li><kbd>PageUp</kbd> / <kbd>PageDown</kbd> — move 10 options at a time</li>
+                    <li><kbd>Enter</kbd> — toggle selection of the focused option</li>
+                    <li><kbd>Esc</kbd> — clear the search (or close the dropdown if search is empty)</li>
                 </ul>
             </div>
         </div>
@@ -1619,17 +1631,27 @@
 
                 eventsSelect.addEventListener('select', (e) => {
                     console.log('select event:', e.detail);
-                    logEvent('select', { option: e.detail.option?.label });
+                    logEvent('select', {
+                        option: e.detail.option?.label,
+                        selectedValues: e.detail.selectedValues
+                    });
                 });
 
                 eventsSelect.addEventListener('deselect', (e) => {
                     console.log('deselect event:', e.detail);
-                    logEvent('deselect', { option: e.detail.option?.label });
+                    logEvent('deselect', {
+                        option: e.detail.option?.label,
+                        selectedValues: e.detail.selectedValues
+                    });
                 });
 
                 eventsSelect.addEventListener('change', (e) => {
                     console.log('change event:', e.detail);
-                    logEvent('change', { count: e.detail.selectedOptions?.length });
+                    logEvent('change', {
+                        count: e.detail.selectedOptions?.length,
+                        selectedValues: e.detail.selectedValues,
+                        selectedLabels: e.detail.selectedOptions?.map(o => o.label)
+                    });
                 });
             }
         });

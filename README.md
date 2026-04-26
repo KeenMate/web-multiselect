@@ -327,10 +327,14 @@ multiselect.addNewCallback = async (value) => {
 
 - **↑ ↓** - Navigate up/down through options
 - **Ctrl+↑ Ctrl+↓** - Jump between matched items (navigate mode only)
-- **Enter** - Select focused option
+- **Page Up / Page Down** - Move focus by 10 options at a time
+- **Home / End** - Jump to first / last option
+- **Enter** - Select focused option (or add new entry when `allow-add-new="true"` and the search has text)
 - **Escape** - Close popover → Clear search → Close dropdown (priority order)
 - **Tab** - Close dropdown and move to next field
 - **Type** - Filter options by search term
+
+> 💡 To surface these shortcuts to your users, set the `search-hint` attribute — the hint floats above the input when focused. Example: `<web-multiselect search-mode="navigate" search-hint="Ctrl/Cmd + ↓ / ↑ to jump between matches">`.
 
 ## Advanced Features
 

@@ -6,6 +6,40 @@ Total source: ~6.5k lines (TS: 4.4k, CSS: 2.0k).
 
 ---
 
+## Status (Phase 4 — attribute pipeline + granular updateOptions)
+
+**Done:**
+- ✅ §3.2 / §4 — Single `ATTRIBUTE_TABLE` in `web-component.ts` is now the source of truth. Each entry maps `{ attr, key, parser, default?, enumValues? }`. Drives `observedAttributes`, the initial parse in `initializePicker`, and `attributeChangedCallback`. Eliminated the hand-coded ~80-line attribute → option block in `initializePicker` and the parallel hand-listed `observedAttributes` array.
+- ✅ §3.1 / bug 1.7 — New `picker.updateOptions(partial)` on `WebMultiSelect`. Merges into `this.options`, applies cheap structural toggles in place (`ms--no-checkboxes` class, `ms-wrapper--inline` toggle for badges position, input.placeholder/readOnly/style.display, hint textContent), refreshes `allOptions` if `options` changed, and re-renders. Returns `true` on success, `false` for genuinely structural changes (the only one currently is adding/removing the hint element). Caller falls back to full reinit when it sees `false`.
+- ✅ `attributeChangedCallback` now goes through the table → `updateOptions` instead of always doing `destroy() + initializePicker()`. Changing `placeholder`, `max-height`, `badges-display-mode` etc. no longer tears down the dropdown / popover / virtual scroll state.
+- ✅ §3.3 — All 24 callback/data setters (e.g. `getValueCallback`, `renderBadgeContentCallback`, `actionButtons`, `options`, `searchCallback`) now route through `updatePicker(partial)` instead of `reinitialize()`. The full destroy + rebuild path is reserved for the `searchHint`-add-or-remove case via the `updateOptions` return value.
+- ✅ Bonus: `show-debug-info` attribute now toggles the debug panel without rebuilding the picker.
+- ✅ Build clean throughout. Dev server starts cleanly. No public API surface changed.
+
+**Honest line-count impact for Phase 4:**
+
+This phase **added** lines net (+189) — the architectural win is the point, not LOC. What grew:
+- `multiselect.ts`: 2125 → 2207 (+82) — `updateOptions` method (~75 lines)
+- `web-component.ts`: 1006 → 1113 (+107) — ATTRIBUTE_TABLE (~60 lines), `parseAttrValue` (~25), `MEMBER_PROPERTY_FALLBACKS` (~10), `parseAttributesFromTable` (~10), `updatePicker` helper (~10). Existing `initializePicker` shrank ~30 lines but the new infrastructure outweighs that.
+
+The setter boilerplate (24 × ~5 lines) wasn't reduced — each setter still needs to assign its `_field` and call `updatePicker`. A Proxy-based meta-pattern could collapse them, but that's much riskier and not worth it here. The architectural fix (live updates instead of destroy+rebuild) is what mattered.
+
+**Cumulative across Phase 1 + 2 + 3 + 4:**
+- `multiselect.ts`: 2567 → 2207 (**−360 lines**, −14%)
+- `web-component.ts`: 1011 → 1113 (**+102 lines** — table + helpers)
+- new `tooltip.ts`: 158 lines
+- `types.ts`: 371 → 366 (−5)
+- TS total: 4519 → 4415 (**−104 lines** net, with new infrastructure layered in)
+- UMD bundle: 136.71 → 134.53 kB (**−2.2 kB net**)
+
+**Behavioral changes worth knowing about:**
+- Changing an attribute via JS (`el.setAttribute('placeholder', ...)`) or via reactive framework binding no longer destroys and rebuilds the dropdown. Selection state, scroll position, focused index, virtual-scroll buffer all survive.
+- Setting a callback via JS property (`el.getValueCallback = fn`) likewise no longer rebuilds.
+- The two attributes that still trigger full reinit: any structural change involving the `searchHint` element (going from undefined to defined or vice versa), and `initial-values` continues to be init-time only.
+- The two parallel attribute parsers issue (§4) is half-resolved: the web-component layer now uses the table, but the `multiselect.ts` constructor still reads `dataset.*` directly when the core class is instantiated without the web component. Defaults could still drift between the two paths, just less so. Worth a follow-up to share a defaults table, but not urgent.
+
+---
+
 ## Status (Phase 3 — Tooltip class + Floating-UI position helper)
 
 **Done:**
@@ -121,7 +155,7 @@ Two issues: (a) two custom buttons with the same text label collide; (b) when `g
 
 **Resolution:** `selectAll` now fires `selectCallback` for each newly-added option (skipping items already selected and items disabled). `clearAll` fires `deselectCallback` for each removed option. `changeCallback` still fires once at the end (and is skipped entirely if nothing changed).
 
-### 1.7 `attributeChangedCallback` rebuilds the entire picker on any attribute change
+### 1.7 `attributeChangedCallback` rebuilds the entire picker on any attribute change — ✅ FIXED
 `src/web-component.ts:143-151` calls `picker.destroy()` + `initializePicker()` for any observed attribute except `initial-values`. Changing `placeholder` or `max-height` tears down all DOM, event listeners, virtual scroll state, the dropdown, and the popover. Selection state is preserved only because `_options` is held on the element — but `_declarativeSelectedValues` is **not** re-applied on rebuild (it's consumed in `connectedCallback` only), so reactive frameworks toggling attributes will lose initial selection.
 
 ---
@@ -192,7 +226,7 @@ Extract to a `private collectSelectedValues(): (string|number)[]` helper.
 
 ---
 
-## 3. `web-component.ts` boilerplate
+## 3. `web-component.ts` boilerplate — ✅ MOSTLY DONE (item 1 + 2 fixed; item 3 deferred)
 
 The file is 1,011 lines. About 700 of those are getter/setter pairs (~50 properties × ~14 lines each). Each callback-style setter calls `this.reinitialize()` (full destroy + rebuild).
 
@@ -204,7 +238,7 @@ The file is 1,011 lines. About 700 of those are getter/setter pairs (~50 propert
 
 ---
 
-## 4. Two parallel attribute parsers
+## 4. Two parallel attribute parsers — ⚠️ HALF DONE
 
 `web-component.ts` parses `getAttribute('xyz')` in `initializePicker`. `multiselect.ts` constructor (lines 226-264) ALSO parses `element.dataset.xyz` for nearly the same set of options. The web component then puts the resolved options into the constructor, which re-defaults them against the empty dataset. Two parsers, two default tables, two opportunities for drift.
 

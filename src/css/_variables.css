@@ -62,8 +62,11 @@
   --ms-text-primary: var(--ms-text-color-1);
   --ms-text-secondary: var(--ms-text-color-3);
 
-  /* Background Colors */
-  --ms-primary-bg: var(--base-main-bg, #f3f4f6);
+  /* Background Colors
+     --ms-primary-bg drives option hover/focus, action-button hover, counter-wrapper hover, etc.
+     Theme authors can override via either --base-primary-bg (semantic) or --base-main-bg (legacy);
+     direct --ms-primary-bg / --ms-option-bg-hover overrides take precedence over both. */
+  --ms-primary-bg: var(--base-primary-bg, var(--base-main-bg, #f3f4f6));
   --ms-primary-bg-hover: var(--base-hover-bg, #e5e7eb);
 
   /* Border Base Variables */

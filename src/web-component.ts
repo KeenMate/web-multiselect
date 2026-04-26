@@ -9,6 +9,152 @@ const BaseElement = (typeof HTMLElement !== 'undefined' ? HTMLElement : class {}
 // Type declarations for build-time constants
 declare const __VERSION__: string;
 
+// ============================================================================
+// ATTRIBUTE TABLE — single source of truth for HTML attribute → config option
+// ============================================================================
+// Drives:
+//   - static get observedAttributes()
+//   - initial parsing in initializePicker
+//   - attributeChangedCallback (to compute the partial options update)
+//
+// Boolean parser semantics (matches the original hand-coded behavior):
+//   - 'bool-default-true':  attribute missing, '', or anything other than 'false' → true.
+//                           Only the literal string 'false' makes it false.
+//   - 'bool-default-false': attribute missing or '' → false. Only 'true' makes it true.
+
+type AttrParser =
+    | 'string'                 // null/'' → default; otherwise raw
+    | 'string-or-undefined'    // null/'' → default (typically undefined)
+    | 'enum'                   // raw must be in enumValues, else default
+    | 'int'                    // parseInt; NaN/empty → default
+    | 'bool-default-true'
+    | 'bool-default-false';
+
+interface AttrSpec {
+    /** External (kebab-case) attribute name */
+    attr: string;
+    /** Internal MultiSelectConfig key */
+    key: keyof MultiSelectConfig;
+    parser: AttrParser;
+    /** Used when attribute is missing/empty/unparseable. */
+    default?: any;
+    /** Allowed values for 'enum' parser. */
+    enumValues?: readonly string[];
+}
+
+const ATTRIBUTE_TABLE: ReadonlyArray<AttrSpec> = [
+    // Strings
+    { attr: 'search-hint',                 key: 'searchHint',               parser: 'string-or-undefined' },
+    { attr: 'search-placeholder',          key: 'searchPlaceholder',        parser: 'string', default: 'Search...' },
+    { attr: 'dropdown-min-width',          key: 'dropdownMinWidth',         parser: 'string-or-undefined' },
+    { attr: 'dropdown-max-width',          key: 'dropdownMaxWidth',         parser: 'string-or-undefined' },
+    { attr: 'max-height',                  key: 'maxHeight',                parser: 'string', default: '20rem' },
+    { attr: 'empty-message',               key: 'emptyMessage',             parser: 'string', default: 'No results found' },
+    { attr: 'loading-message',             key: 'loadingMessage',           parser: 'string', default: 'Loading...' },
+    { attr: 'remove-button-tooltip-text',  key: 'removeButtonTooltipText',  parser: 'string-or-undefined' },
+    { attr: 'name',                        key: 'formFieldId',              parser: 'string-or-undefined' },
+
+    // Member properties (have programmatic fallback applied after parse)
+    { attr: 'value-member',                key: 'valueMember',              parser: 'string-or-undefined' },
+    { attr: 'display-value-member',        key: 'displayValueMember',       parser: 'string-or-undefined' },
+    { attr: 'search-value-member',         key: 'searchValueMember',        parser: 'string-or-undefined' },
+    { attr: 'icon-member',                 key: 'iconMember',               parser: 'string-or-undefined' },
+    { attr: 'subtitle-member',             key: 'subtitleMember',           parser: 'string-or-undefined' },
+    { attr: 'group-member',                key: 'groupMember',              parser: 'string-or-undefined' },
+    { attr: 'disabled-member',             key: 'disabledMember',           parser: 'string-or-undefined' },
+
+    // Enums
+    { attr: 'badges-display-mode',         key: 'badgesDisplayMode',        parser: 'enum',
+      enumValues: ['badges','count','compact','partial','none'], default: 'badges' },
+    { attr: 'badges-position',             key: 'badgesPosition',           parser: 'enum',
+      enumValues: ['top','bottom','left','right'], default: 'bottom' },
+    { attr: 'badges-threshold-mode',       key: 'badgesThresholdMode',      parser: 'enum',
+      enumValues: ['count','partial'], default: 'count' },
+    { attr: 'search-input-mode',           key: 'searchInputMode',          parser: 'enum',
+      enumValues: ['normal','readonly','hidden'], default: 'normal' },
+    { attr: 'search-mode',                 key: 'searchMode',               parser: 'enum',
+      enumValues: ['filter','navigate'], default: 'filter' },
+    { attr: 'actions-layout',              key: 'actionsLayout',            parser: 'enum',
+      enumValues: ['nowrap','wrap'], default: 'nowrap' },
+    { attr: 'checkbox-align',              key: 'checkboxAlign',            parser: 'enum',
+      enumValues: ['top','center','bottom'], default: 'center' },
+    { attr: 'value-format',                key: 'valueFormat',              parser: 'enum',
+      enumValues: ['json','csv','array'], default: 'json' },
+    { attr: 'badge-tooltip-placement',     key: 'badgeTooltipPlacement',    parser: 'enum',
+      enumValues: ['top','top-start','top-end','bottom','bottom-start','bottom-end','left','left-start','left-end','right','right-start','right-end'],
+      default: 'top' },
+
+    // Numbers
+    { attr: 'badges-threshold',            key: 'badgesThreshold',          parser: 'int' },
+    { attr: 'badges-max-visible',          key: 'badgesMaxVisible',         parser: 'int' },
+    { attr: 'min-search-length',           key: 'minSearchLength',          parser: 'int', default: 0 },
+    { attr: 'virtual-scroll-threshold',    key: 'virtualScrollThreshold',   parser: 'int', default: 100 },
+    { attr: 'option-height',               key: 'optionHeight',             parser: 'int', default: 50 },
+    { attr: 'badge-height',                key: 'badgeHeight',              parser: 'int', default: 36 },
+    { attr: 'virtual-scroll-buffer',       key: 'virtualScrollBuffer',      parser: 'int', default: 10 },
+    { attr: 'badge-tooltip-delay',         key: 'badgeTooltipDelay',        parser: 'int', default: 100 },
+    { attr: 'badge-tooltip-offset',        key: 'badgeTooltipOffset',       parser: 'int', default: 8 },
+
+    // Booleans (default true: presence/empty = true; only 'false' negates)
+    { attr: 'multiple',                    key: 'isMultipleEnabled',        parser: 'bool-default-true' },
+    { attr: 'allow-groups',                key: 'isGroupsAllowed',          parser: 'bool-default-true' },
+    { attr: 'show-checkboxes',             key: 'isCheckboxesShown',        parser: 'bool-default-true' },
+    { attr: 'sticky-actions',              key: 'isActionsSticky',          parser: 'bool-default-true' },
+    { attr: 'lock-placement',              key: 'isPlacementLocked',        parser: 'bool-default-true' },
+    { attr: 'enable-search',               key: 'isSearchEnabled',          parser: 'bool-default-true' },
+    { attr: 'keep-options-on-search',      key: 'isKeepOptionsOnSearch',    parser: 'bool-default-true' },
+    { attr: 'should-keep-search-on-close', key: 'shouldKeepSearchOnClose',  parser: 'bool-default-true' },
+
+    // Booleans (default false: only 'true' enables)
+    { attr: 'close-on-select',             key: 'isCloseOnSelect',          parser: 'bool-default-false' },
+    { attr: 'allow-add-new',               key: 'isAddNewAllowed',          parser: 'bool-default-false' },
+    { attr: 'show-counter',                key: 'isCounterShown',           parser: 'bool-default-false' },
+    { attr: 'enable-virtual-scroll',       key: 'isVirtualScrollEnabled',   parser: 'bool-default-false' },
+    { attr: 'enable-badge-tooltips',       key: 'isBadgeTooltipsEnabled',   parser: 'bool-default-false' }
+];
+
+const ATTRIBUTE_TABLE_BY_ATTR = new Map(ATTRIBUTE_TABLE.map(s => [s.attr, s]));
+
+/**
+ * Member-property attributes whose absence falls back to a programmatic getter.
+ * The map's value is the field name on the element instance to read when the attribute is absent.
+ */
+const MEMBER_PROPERTY_FALLBACKS: ReadonlyArray<{ key: keyof MultiSelectConfig; field: string }> = [
+    { key: 'valueMember',         field: '_valueMember' },
+    { key: 'displayValueMember',  field: '_displayValueMember' },
+    { key: 'searchValueMember',   field: '_searchValueMember' },
+    { key: 'iconMember',          field: '_iconMember' },
+    { key: 'subtitleMember',      field: '_subtitleMember' },
+    { key: 'groupMember',         field: '_groupMember' },
+    { key: 'disabledMember',      field: '_disabledMember' }
+];
+
+/** Parse a single attribute value through its spec. Used by both initial parse and live updates. */
+function parseAttrValue(spec: AttrSpec, raw: string | null): any {
+    // Treat null and empty string the same (so `<el foo>` and `<el foo="">` work like a missing attribute
+    // for everything except the boolean parsers, which already handle empty strings explicitly).
+    if (raw === null || raw === '') {
+        switch (spec.parser) {
+            case 'bool-default-true': return true;
+            case 'bool-default-false': return false;
+            default: return spec.default;
+        }
+    }
+    switch (spec.parser) {
+        case 'string':
+        case 'string-or-undefined':
+            return raw;
+        case 'enum':
+            return spec.enumValues!.includes(raw) ? raw : spec.default;
+        case 'int': {
+            const n = parseInt(raw);
+            return isNaN(n) ? spec.default : n;
+        }
+        case 'bool-default-true':  return raw !== 'false';
+        case 'bool-default-false': return raw === 'true';
+    }
+}
+
 // Instance tracking for global API
 const instances = new Set<MultiSelectElement>();
 
@@ -75,28 +221,9 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     static get observedAttributes() {
         return [
-            // Existing attributes (external names - standard/familiar)
-            'search-hint', 'search-placeholder', 'multiple', 'allow-groups',
-            'show-checkboxes', 'sticky-actions', 'close-on-select',
-            'lock-placement', 'dropdown-min-width', 'dropdown-max-width', 'badges-display-mode', 'badges-threshold', 'badges-max-visible',
-            'badges-threshold-mode', 'badges-position', 'show-counter', 'keep-options-on-search', 'should-keep-search-on-close', 'max-height', 'empty-message',
-            'loading-message', 'min-search-length', 'enable-search', 'search-input-mode', 'search-mode', 'actions-layout', 'allow-add-new',
-            'initial-values', 'checkbox-align',
-
-            // Virtual scroll options
-            'enable-virtual-scroll', 'virtual-scroll-threshold', 'option-height', 'badge-height', 'virtual-scroll-buffer',
-
-            // New member properties
-            'value-member', 'display-value-member', 'search-value-member',
-            'icon-member', 'subtitle-member', 'group-member', 'disabled-member',
-
-            // Form integration
-            'name', 'value-format',
-
-            // Tooltip options
-            'enable-badge-tooltips', 'badge-tooltip-placement', 'badge-tooltip-delay', 'badge-tooltip-offset', 'remove-button-tooltip-text',
-
-            // Debug
+            ...ATTRIBUTE_TABLE.map(s => s.attr),
+            // Out-of-table attributes (handled by special-case logic in attributeChangedCallback)
+            'initial-values',
             'show-debug-info'
         ];
     }
@@ -142,12 +269,36 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null) {
         if (oldValue === newValue) return;
+        if (!this.picker) return;
 
-        // Re-initialize picker if it exists and attributes changed
-        if (this.picker && name !== 'initial-values') {
-            this.picker.destroy();
-            this.initializePicker();
+        // initial-values is consumed only at init time (or via declarative <option selected> children).
+        // show-debug-info toggles the debug panel; rebuild not needed.
+        if (name === 'initial-values') return;
+        if (name === 'show-debug-info') {
+            // Re-render the debug panel without rebuilding the picker.
+            const existing = this.shadow.querySelector('.ms-debug-info');
+            if (existing) existing.remove();
+            if (newValue === 'true') this.renderDebugInfo();
+            return;
         }
+
+        // Table-driven update: parse the new value through the spec and feed it to the picker.
+        const spec = ATTRIBUTE_TABLE_BY_ATTR.get(name);
+        if (spec) {
+            const value = parseAttrValue(spec, newValue);
+            // Member properties keep the programmatic fallback.
+            const fallbackField = MEMBER_PROPERTY_FALLBACKS.find(f => f.key === spec.key)?.field;
+            const finalValue = (value === undefined && fallbackField)
+                ? (this as any)[fallbackField]
+                : value;
+            const partial = { [spec.key]: finalValue } as Partial<MultiSelectConfig<T>>;
+            const applied = this.picker.updateOptions(partial);
+            if (applied) return;
+            // Falls through to full reinit below if updateOptions returned false (structural change).
+        }
+
+        // Fallback: full destroy + re-init for attributes the picker can't apply in place.
+        this.reinitialize();
     }
 
     private render() {
@@ -341,6 +492,17 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     private _declarativeSelectedValues?: (string | number)[];
 
+    /** Parse all observed attributes via ATTRIBUTE_TABLE into a partial config object. */
+    private parseAttributesFromTable(): Partial<MultiSelectConfig<T>> {
+        const out: Partial<MultiSelectConfig<T>> = {};
+        for (const spec of ATTRIBUTE_TABLE) {
+            const value = parseAttrValue(spec, this.getAttribute(spec.attr));
+            // Only assign defined values so member-property fallback can detect "attribute not set".
+            if (value !== undefined) (out as any)[spec.key] = value;
+        }
+        return out;
+    }
+
     private initializePicker() {
         if (!this.containerElement) return;
 
@@ -363,64 +525,17 @@ export class MultiSelectElement<T = any> extends BaseElement {
             }
         }
 
-        // Map external attribute names to internal config (external → internal with 'is' prefix for booleans)
-        const options: Partial<MultiSelectConfig<T>> = {
-            // String options
-            searchHint: this.getAttribute('search-hint') || undefined,
-            searchPlaceholder: this.getAttribute('search-placeholder') || 'Search...',
-            dropdownMinWidth: this.getAttribute('dropdown-min-width') || undefined,
-            dropdownMaxWidth: this.getAttribute('dropdown-max-width') || undefined,
-            badgesDisplayMode: (this.getAttribute('badges-display-mode') as any) || 'badges',
-            badgesPosition: (this.getAttribute('badges-position') as any) || 'bottom',
-            badgesThresholdMode: (this.getAttribute('badges-threshold-mode') as any) || 'count',
-            maxHeight: this.getAttribute('max-height') || '20rem',
-            emptyMessage: this.getAttribute('empty-message') || 'No results found',
-            loadingMessage: this.getAttribute('loading-message') || 'Loading...',
-            searchInputMode: (this.getAttribute('search-input-mode') as any) || 'normal',
-            searchMode: (this.getAttribute('search-mode') as any) || 'filter',
-            actionsLayout: (this.getAttribute('actions-layout') as any) || 'nowrap',
+        // Build options from the attribute table, then layer on programmatic-only fields below.
+        const options: Partial<MultiSelectConfig<T>> = this.parseAttributesFromTable();
 
-            // Number options
-            badgesThreshold: this.getAttribute('badges-threshold') ? parseInt(this.getAttribute('badges-threshold')!) : undefined,
-            badgesMaxVisible: this.getAttribute('badges-max-visible') ? parseInt(this.getAttribute('badges-max-visible')!) : undefined,
-            minSearchLength: this.getAttribute('min-search-length') ? parseInt(this.getAttribute('min-search-length')!) : 0,
+        // Member properties: attribute wins, fall back to programmatic getter if attribute is unset.
+        for (const { key, field } of MEMBER_PROPERTY_FALLBACKS) {
+            if (options[key] === undefined) (options as any)[key] = (this as any)[field];
+        }
 
-            // Boolean options (map external to internal with 'is' prefix)
-            isMultipleEnabled: this.getAttribute('multiple') !== 'false',
-            isGroupsAllowed: this.getAttribute('allow-groups') !== 'false',
-            isCheckboxesShown: this.getAttribute('show-checkboxes') !== 'false',
-            isActionsSticky: this.getAttribute('sticky-actions') !== 'false',
-            isCloseOnSelect: this.getAttribute('close-on-select') === 'true',
-            isPlacementLocked: this.getAttribute('lock-placement') !== 'false',
-            isSearchEnabled: this.getAttribute('enable-search') !== 'false',
-            isAddNewAllowed: this.getAttribute('allow-add-new') === 'true',
-            isCounterShown: this.getAttribute('show-counter') === 'true',
-            isKeepOptionsOnSearch: this.getAttribute('keep-options-on-search') !== 'false',
-            shouldKeepSearchOnClose: this.getAttribute('should-keep-search-on-close') !== 'false',
-            isVirtualScrollEnabled: this.getAttribute('enable-virtual-scroll') === 'true',
-
-            // Action buttons
+        // Programmatic-only fields (no attribute equivalent).
+        Object.assign(options, {
             actionButtons: this._actionButtons,
-
-            // Checkbox options
-            checkboxAlign: (this.getAttribute('checkbox-align') as 'top' | 'center' | 'bottom') || 'center',
-
-            // Virtual scroll options
-            virtualScrollThreshold: this.getAttribute('virtual-scroll-threshold') ? parseInt(this.getAttribute('virtual-scroll-threshold')!) : 100,
-            optionHeight: this.getAttribute('option-height') ? parseInt(this.getAttribute('option-height')!) : 50,
-            badgeHeight: this.getAttribute('badge-height') ? parseInt(this.getAttribute('badge-height')!) : 36,
-            virtualScrollBuffer: this.getAttribute('virtual-scroll-buffer') ? parseInt(this.getAttribute('virtual-scroll-buffer')!) : 10,
-
-            // Member properties
-            valueMember: this.getAttribute('value-member') || this._valueMember,
-            displayValueMember: this.getAttribute('display-value-member') || this._displayValueMember,
-            searchValueMember: this.getAttribute('search-value-member') || this._searchValueMember,
-            iconMember: this.getAttribute('icon-member') || this._iconMember,
-            subtitleMember: this.getAttribute('subtitle-member') || this._subtitleMember,
-            groupMember: this.getAttribute('group-member') || this._groupMember,
-            disabledMember: this.getAttribute('disabled-member') || this._disabledMember,
-
-            // Callback properties (JavaScript only)
             getValueCallback: this._getValueCallback,
             getDisplayValueCallback: this._getDisplayValueCallback,
             getBadgeDisplayCallback: this._getBadgeDisplayCallback,
@@ -432,42 +547,23 @@ export class MultiSelectElement<T = any> extends BaseElement {
             getGroupCallback: this._getGroupCallback,
             renderGroupLabelContentCallback: this._renderGroupLabelContentCallback,
             getDisabledCallback: this._getDisabledCallback,
-
-            // Custom rendering callbacks
             renderOptionContentCallback: this._renderOptionContentCallback,
             renderBadgeContentCallback: this._renderBadgeContentCallback,
             renderSelectedItemContentCallback: this._renderSelectedItemContentCallback,
             getSelectedItemClassCallback: this._getSelectedItemClassCallback,
             renderSelectedContentCallback: this._renderSelectedContentCallback,
-
-            // Form integration & value formatting
-            formFieldId: this.getAttribute('name') || undefined,
-            valueFormat: (this.getAttribute('value-format') as any) || 'json',
             getValueFormatCallback: this._getValueFormatCallback,
-
-            // Tooltip options
-            isBadgeTooltipsEnabled: this.getAttribute('enable-badge-tooltips') === 'true',
             getBadgeTooltipCallback: this._getBadgeTooltipCallback,
             getRemoveButtonTooltipCallback: this._getRemoveButtonTooltipCallback,
-            removeButtonTooltipText: this.getAttribute('remove-button-tooltip-text') || undefined,
-            badgeTooltipPlacement: (this.getAttribute('badge-tooltip-placement') as any) || 'top',
-            badgeTooltipDelay: parseInt(this.getAttribute('badge-tooltip-delay') || '100'),
-            badgeTooltipOffset: parseInt(this.getAttribute('badge-tooltip-offset') || '8'),
-
-            // Count badge callback
             getCounterCallback: this._getCounterCallback || ((count: number, moreCount?: number) => {
-                if (moreCount !== undefined) {
-                    return `+${moreCount} more`;
-                }
+                if (moreCount !== undefined) return `+${moreCount} more`;
                 return `${count} selected`;
             }),
-
-            // Data and callbacks
             options: this._options,
             beforeSearchCallback: this._beforeSearchCallback,
             searchCallback: this._searchCallback,
             addNewCallback: this._addNewCallback,
-            selectCallback: (option) => {
+            selectCallback: (option: T) => {
                 if (this._selectCallback) this._selectCallback(option);
                 this.dispatchEvent(new CustomEvent('select', {
                     detail: {
@@ -500,7 +596,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
             container: this.shadow as unknown as HTMLElement,
             // Pass host element (this) for hidden inputs in light DOM
             hostElement: this
-        };
+        });
 
         // Set data attributes on container
         if (initialValues) {
@@ -530,6 +626,17 @@ export class MultiSelectElement<T = any> extends BaseElement {
         }
     }
 
+    /**
+     * Apply a partial config update to the live picker. Falls back to a full reinit if the
+     * picker can't apply the change in place (e.g. adding/removing the `searchHint` element).
+     * No-op if the picker hasn't been initialized yet — the next `initializePicker` will pick
+     * up the new programmatic state.
+     */
+    private updatePicker(partial: Partial<MultiSelectConfig<T>>): void {
+        if (!this.picker) return;
+        if (!this.picker.updateOptions(partial)) this.reinitialize();
+    }
+
     /** Normalize the picker's getValue() return into the array form expected by event detail. */
     private collectSelectedValues(): (string | number)[] {
         const val = this.picker?.getValue();
@@ -548,7 +655,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     set options(value: T[] | undefined) {
         this._options = value;
-        this.reinitialize();
+        this.updatePicker({ options: value });
     }
 
     // Member properties (can also be set via attributes)
@@ -625,7 +732,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
     // Callback properties (JavaScript only - no attributes)
     set getValueCallback(callback: ((item: T) => string | number) | undefined) {
         this._getValueCallback = callback;
-        this.reinitialize();
+        this.updatePicker({ getValueCallback: callback });
     }
 
     get getValueCallback() {
@@ -634,7 +741,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     set getDisplayValueCallback(callback: ((item: T) => string) | undefined) {
         this._getDisplayValueCallback = callback;
-        this.reinitialize();
+        this.updatePicker({ getDisplayValueCallback: callback });
     }
 
     get getDisplayValueCallback() {
@@ -643,7 +750,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     set getBadgeDisplayCallback(callback: ((item: T) => string) | undefined) {
         this._getBadgeDisplayCallback = callback;
-        this.reinitialize();
+        this.updatePicker({ getBadgeDisplayCallback: callback });
     }
 
     get getBadgeDisplayCallback() {
@@ -652,7 +759,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     set getBadgeClassCallback(callback: ((item: T) => string | string[]) | undefined) {
         this._getBadgeClassCallback = callback;
-        this.reinitialize();
+        this.updatePicker({ getBadgeClassCallback: callback });
     }
 
     get getBadgeClassCallback() {
@@ -688,7 +795,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     set getSearchValueCallback(callback: ((item: T) => string) | undefined) {
         this._getSearchValueCallback = callback;
-        this.reinitialize();
+        this.updatePicker({ getSearchValueCallback: callback });
     }
 
     get getSearchValueCallback() {
@@ -697,7 +804,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     set getIconCallback(callback: ((item: T) => string) | undefined) {
         this._getIconCallback = callback;
-        this.reinitialize();
+        this.updatePicker({ getIconCallback: callback });
     }
 
     get getIconCallback() {
@@ -706,7 +813,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     set getSubtitleCallback(callback: ((item: T) => string) | undefined) {
         this._getSubtitleCallback = callback;
-        this.reinitialize();
+        this.updatePicker({ getSubtitleCallback: callback });
     }
 
     get getSubtitleCallback() {
@@ -715,7 +822,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     set getGroupCallback(callback: ((item: T) => string) | undefined) {
         this._getGroupCallback = callback;
-        this.reinitialize();
+        this.updatePicker({ getGroupCallback: callback });
     }
 
     get getGroupCallback() {
@@ -724,7 +831,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     set renderGroupLabelContentCallback(callback: ((groupName: string) => string | HTMLElement) | undefined) {
         this._renderGroupLabelContentCallback = callback;
-        this.reinitialize();
+        this.updatePicker({ renderGroupLabelContentCallback: callback });
     }
 
     get renderGroupLabelContentCallback() {
@@ -733,7 +840,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     set getDisabledCallback(callback: ((item: T) => boolean) | undefined) {
         this._getDisabledCallback = callback;
-        this.reinitialize();
+        this.updatePicker({ getDisabledCallback: callback });
     }
 
     get getDisabledCallback() {
@@ -743,7 +850,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
     // Custom rendering callbacks
     set renderOptionContentCallback(callback: ((item: T, context: OptionContentRenderContext) => string | HTMLElement) | undefined) {
         this._renderOptionContentCallback = callback;
-        this.reinitialize();
+        this.updatePicker({ renderOptionContentCallback: callback });
     }
 
     get renderOptionContentCallback() {
@@ -752,7 +859,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     set renderBadgeContentCallback(callback: ((item: T, context: BadgeContentRenderContext) => string | HTMLElement) | undefined) {
         this._renderBadgeContentCallback = callback;
-        this.reinitialize();
+        this.updatePicker({ renderBadgeContentCallback: callback });
     }
 
     get renderBadgeContentCallback() {
@@ -761,7 +868,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     set renderSelectedItemContentCallback(callback: ((item: T) => string | HTMLElement) | undefined) {
         this._renderSelectedItemContentCallback = callback;
-        this.reinitialize();
+        this.updatePicker({ renderSelectedItemContentCallback: callback });
     }
 
     get renderSelectedItemContentCallback() {
@@ -770,7 +877,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     set getSelectedItemClassCallback(callback: ((item: T) => string | string[]) | undefined) {
         this._getSelectedItemClassCallback = callback;
-        this.reinitialize();
+        this.updatePicker({ getSelectedItemClassCallback: callback });
     }
 
     get getSelectedItemClassCallback() {
@@ -779,7 +886,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     set renderSelectedContentCallback(callback: ((item: T) => string) | undefined) {
         this._renderSelectedContentCallback = callback;
-        this.reinitialize();
+        this.updatePicker({ renderSelectedContentCallback: callback });
     }
 
     get renderSelectedContentCallback() {
@@ -807,7 +914,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     set getValueFormatCallback(callback: ((values: (string | number)[]) => string) | undefined) {
         this._getValueFormatCallback = callback;
-        this.reinitialize();
+        this.updatePicker({ getValueFormatCallback: callback });
     }
 
     get getValueFormatCallback() {
@@ -865,7 +972,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     set getBadgeTooltipCallback(callback: ((item: T) => string | HTMLElement) | undefined) {
         this._getBadgeTooltipCallback = callback;
-        this.reinitialize();
+        this.updatePicker({ getBadgeTooltipCallback: callback });
     }
 
     get getBadgeTooltipCallback() {
@@ -874,7 +981,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     set getRemoveButtonTooltipCallback(callback: ((item: T) => string) | undefined) {
         this._getRemoveButtonTooltipCallback = callback;
-        this.reinitialize();
+        this.updatePicker({ getRemoveButtonTooltipCallback: callback });
     }
 
     get getRemoveButtonTooltipCallback() {
@@ -895,7 +1002,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     set getCounterCallback(callback: ((count: number, moreCount?: number) => string) | undefined) {
         this._getCounterCallback = callback;
-        this.reinitialize();
+        this.updatePicker({ getCounterCallback: callback });
     }
 
     get getCounterCallback() {
@@ -909,7 +1016,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     set beforeSearchCallback(callback: ((searchTerm: string) => string | null) | undefined) {
         this._beforeSearchCallback = callback;
-        this.reinitialize();
+        this.updatePicker({ beforeSearchCallback: callback });
     }
 
     get searchCallback(): ((searchTerm: string) => Promise<T[]>) | undefined {
@@ -918,7 +1025,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     set searchCallback(callback: ((searchTerm: string) => Promise<T[]>) | undefined) {
         this._searchCallback = callback;
-        this.reinitialize();
+        this.updatePicker({ searchCallback: callback });
     }
 
     get addNewCallback(): ((value: string) => T | Promise<T>) | undefined {
@@ -927,7 +1034,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     set addNewCallback(callback: ((value: string) => T | Promise<T>) | undefined) {
         this._addNewCallback = callback;
-        this.reinitialize();
+        this.updatePicker({ addNewCallback: callback });
     }
 
     get selectCallback(): ((option: T) => void) | undefined {
@@ -961,7 +1068,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     set actionButtons(value: any[] | undefined) {
         this._actionButtons = value;
-        this.reinitialize();
+        this.updatePicker({ actionButtons: value });
     }
 
     // New public properties

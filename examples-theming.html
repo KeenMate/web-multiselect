@@ -106,7 +106,12 @@
             --base-popover-bg: #1a0a1a;
             --base-text-color-1: #00ffff;
             --base-accent-color: #ff00ff;
-            --base-primary-bg: rgba(255, 0, 255, 0.3);
+
+            /* Hover/focus on options. The multiselect's --ms-option-bg-hover cascades from
+               --ms-primary-bg, which falls back to --base-main-bg (NOT --base-primary-bg).
+               Override the option hover color directly so the punk vibe carries to interaction. */
+            --ms-option-bg-hover: rgba(255, 0, 255, 0.3);
+            --ms-option-bg-focused: rgba(255, 0, 255, 0.3);
 
             /* Component-specific overrides */
             --ms-dropdown-border: 1px solid #ff00ff;

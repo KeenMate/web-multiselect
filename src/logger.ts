@@ -41,54 +41,50 @@ const COLORS = {
     error: '#ef4444'   // Red
 };
 
-// Register prefix plugin with the root logger
+// Custom method factory: builds a colored prefix string + matching CSS-substitution args, then
+// invokes the underlying console method directly. Replaces the previous setup that combined the
+// loglevel-plugin-prefix with a separate %c-injecting wrapper — the wrapper ran BEFORE the
+// prefix added its %c codes, so the CSS args never got passed to console and the prefix
+// rendered as literal text. Doing both jobs in one factory avoids that ordering trap.
+//
+// Note: keeping prefix.reg(log) so any consumer who calls prefix APIs at runtime doesn't crash,
+// but we no longer call prefix.apply — we own the prefix layout here.
 prefix.reg(log);
 
-// Configure prefix plugin with color-coded formatting
-prefix.apply(log, {
-    format(level: string, name: string | undefined, timestamp: string) {
-        // Get color for the current log level
-        const color = COLORS[level.toLowerCase() as keyof typeof COLORS] || '#666';
+const formatTimestamp = (d: Date): string =>
+    d.toTimeString().split(' ')[0] + '.' + d.getMilliseconds().toString().padStart(3, '0');
 
-        // Return formatted prefix with color styling
-        return `%c[${timestamp}]%c %c[${level}]%c ${name ? `%c[${name}]%c ` : ''}`;
-    },
-    timestampFormatter(date: Date) {
-        // Format: HH:MM:SS.mmm
-        return date.toTimeString().split(' ')[0] + '.' + date.getMilliseconds().toString().padStart(3, '0');
-    }
-});
-
-// Apply color styling to console output using a custom method factory
 const originalFactory = log.methodFactory;
 log.methodFactory = function(methodName: string, logLevel: number, loggerName: string) {
     const rawMethod = originalFactory(methodName, logLevel, loggerName);
+    const color = COLORS[methodName as keyof typeof COLORS] || '#666';
+    const colorCss = `color: ${color}; font-weight: bold;`;
+    const resetCss = 'color: inherit;';
 
     return function(...args: any[]) {
-        // If first arg contains %c color codes, inject the colors
-        if (args.length > 0 && typeof args[0] === 'string' && args[0].includes('%c')) {
-            const color = COLORS[methodName as keyof typeof COLORS] || '#666';
-            const coloredArgs = [
-                args[0],
-                `color: ${color}; font-weight: bold;`,  // timestamp color
-                'color: inherit;',                        // reset
-                `color: ${color}; font-weight: bold;`,  // level color
-                'color: inherit;',                        // reset
-                ...(loggerName ? [
-                    `color: ${color}; font-weight: bold;`,  // name color
-                    'color: inherit;',                        // reset
-                ] : []),
-                ...args.slice(1)
-            ];
-            rawMethod(...coloredArgs);
-        } else {
-            rawMethod(...args);
-        }
+        const timestamp = formatTimestamp(new Date());
+        const levelLabel = methodName.toUpperCase();
+        // Build prefix with %c color regions matching the CSS args below.
+        const prefix = loggerName
+            ? `%c[${timestamp}]%c %c[${levelLabel}]%c %c[${loggerName}]%c`
+            : `%c[${timestamp}]%c %c[${levelLabel}]%c`;
+        const cssArgs = loggerName
+            ? [colorCss, resetCss, colorCss, resetCss, colorCss, resetCss]
+            : [colorCss, resetCss, colorCss, resetCss];
+
+        // The prefix string and its CSS args go first, then the caller's original args.
+        rawMethod(prefix, ...cssArgs, ...args);
     };
 };
 
-// Set default log level to silent (production mode)
-log.setLevel('silent');
+// Default to silent in production, but DON'T persist this default — `setDefaultLevel` only
+// applies when there's no persisted level (so a user who set 'info' last visit keeps 'info').
+// Using `setLevel('silent')` here would overwrite their persisted choice on every page load.
+if (typeof log.setDefaultLevel === 'function') {
+    log.setDefaultLevel('silent');
+} else {
+    log.setLevel('silent', false);
+}
 
 // Create category-specific loggers with hierarchical naming
 export const initLogger = log.getLogger('MULTISELECT:INIT');
@@ -110,10 +106,21 @@ export const LOGGING_CATEGORIES = [
 ];
 
 /**
+ * Propagate the root logger's level to every named child. The vendored loglevel needs this
+ * because `setLevel` only updates the logger it's called on (the source even has a comment:
+ * "in v2, this should call rebuild()"). Without this, named loggers created via getLogger
+ * keep whatever level they had when they were instantiated.
+ */
+function syncChildLevels() {
+    if (typeof log.rebuild === 'function') log.rebuild();
+}
+
+/**
  * Enable all logging (set to debug level)
  */
 export function enableLogging() {
     log.setLevel('debug');
+    syncChildLevels();
 }
 
 /**
@@ -121,6 +128,7 @@ export function enableLogging() {
  */
 export function disableLogging() {
     log.setLevel('silent');
+    syncChildLevels();
 }
 
 /**
@@ -129,13 +137,16 @@ export function disableLogging() {
  */
 export function setLogLevel(level: string) {
     log.setLevel(level);
+    syncChildLevels();
 }
 
 /**
- * Set log level for a specific category
- * @param category Category logger to configure (e.g., 'MULTISELECT:UI')
- * @param level Log level to set ('trace' | 'debug' | 'info' | 'warn' | 'error' | 'silent')
+ * Set log level for a specific category. Accepts either the full prefixed name
+ * (e.g. `MULTISELECT:UI`) or the bare suffix (`UI`) for convenience.
+ * @param category Category logger name; bare names (UI/DATA/INIT/INTERACTION) are normalized to the prefixed form.
+ * @param level Log level ('trace' | 'debug' | 'info' | 'warn' | 'error' | 'silent')
  */
 export function setCategoryLevel(category: string, level: string) {
-    log.getLogger(category).setLevel(level);
+    const fullName = category.includes(':') ? category : `MULTISELECT:${category}`;
+    log.getLogger(fullName).setLevel(level);
 }
