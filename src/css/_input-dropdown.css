@@ -137,7 +137,7 @@
 /* Floating search hint (appears above input) */
 .ms__hint {
   display: none;
-  position: absolute;
+  position: fixed;
   z-index: var(--ms-z-index-popover);
   padding: var(--ms-hint-padding);
   background: var(--ms-hint-bg);
@@ -162,7 +162,7 @@
 /* Floating dropdown (appears below input) */
 .ms__dropdown {
   display: none;
-  position: absolute;
+  position: fixed;
   font-family: inherit; /* Ensure font inherits from container */
   z-index: var(--ms-z-index-dropdown);
   background: var(--ms-dropdown-bg);

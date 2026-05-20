@@ -42,7 +42,7 @@
 /* Selected items popover (for count display mode) */
 .ms__selected-popover {
   display: none;
-  position: absolute;
+  position: fixed;
   z-index: var(--ms-z-index-popover);
   background: var(--ms-selected-popover-bg);
   border: var(--ms-selected-popover-border);

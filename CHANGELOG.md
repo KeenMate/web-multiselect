@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **Dropdown / hint / selected-popover clipped inside scrollable ancestors** - Reported by a SharePoint Framework workbench consumer whose web parts are wrapped in an `overflow-y: auto` canvas zone. Floating UI's `computePosition` was called without a `strategy`, defaulting to `'absolute'`, and the corresponding CSS rules used `position: absolute`. Absolute-positioned descendants are clipped by any ancestor with `overflow: hidden | auto | scroll`, regardless of whether that ancestor establishes a containing block. The dropdown, the floating search hint, and the selected-items popover all now use `strategy: 'fixed'` (with `position: fixed` written inline and as the CSS rule default), so they're positioned relative to the viewport and escape ancestor overflow. `autoUpdate` was already in place, so the panels still stay anchored to the trigger across scroll/resize. No behavior change for consumers whose multiselect lives in a non-scrolling parent. The in-flow `.ms__toggle` and `.ms__counter` icons (children of the input wrapper) deliberately remain `absolute`.
+
 ## [1.9.0] - PUBLISHED - 2026-04-26
 
 This release reworks substantial chunks of the internals (attribute pipeline, tooltip system, data extraction, render paths) without breaking the public API. The user-visible wins are: live attribute changes no longer tear down the dropdown, theming hooks that were previously dead now actually work, and a long list of bugs around custom action buttons, grouped options, badge interaction, and logging are fixed.

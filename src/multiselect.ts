@@ -1542,9 +1542,10 @@ export class WebMultiSelect<T = any> {
                 shift({ padding: 8 })
             ];
 
-            computePosition(this.input, panel, { placement, middleware }).then(({ x, y, placement: finalPlacement }) => {
+            computePosition(this.input, panel, { placement, strategy: 'fixed', middleware }).then(({ x, y, placement: finalPlacement }) => {
                 if (!current) opts.setPlacement(finalPlacement);
                 const styles: Record<string, string> = {
+                    position: 'fixed',
                     left: `${x}px`,
                     top: `${y}px`,
                     width: `${this.input.offsetWidth}px`
@@ -1595,6 +1596,7 @@ export class WebMultiSelect<T = any> {
 
                 computePosition(this.input, this.hint!, {
                     placement: hintPlacement,
+                    strategy: 'fixed',
                     middleware: [
                         offset(4),
                         // Don't use flip() - we want hint to stay opposite of dropdown
@@ -1602,6 +1604,7 @@ export class WebMultiSelect<T = any> {
                     ]
                 }).then(({ x, y }) => {
                     Object.assign(this.hint!.style, {
+                        position: 'fixed',
                         left: `${x}px`,
                         top: `${y}px`
                     });
