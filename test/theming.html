@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test — sizing & theming</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        web-multiselect { display: block; max-width: 320px; }
+    </style>
+</head>
+<body>
+    <h1>sizing & theming</h1>
+    <p>Targeted by <code>e2e/theming.spec.ts</code>.</p>
+
+    <div class="fixture">
+        <div class="fixture-label">default --ms-rem (10px)</div>
+        <web-multiselect id="default-rem" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">--ms-rem: 16px (1.6x larger)</div>
+        <web-multiselect id="big-rem" style="--ms-rem: 16px;" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">individual override: --ms-border-color: red (flows into input border)</div>
+        <web-multiselect id="custom-border" style="--ms-border-color: rgb(255, 0, 0);" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">--base-primary-bg drives accent</div>
+        <web-multiselect id="base-primary" style="--base-primary-bg: rgb(0, 255, 0);" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+
+        const items = [
+            { value: 'apple',  label: 'Apple' },
+            { value: 'banana', label: 'Banana' }
+        ];
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            for (const id of ['default-rem', 'big-rem', 'custom-border', 'base-primary']) {
+                document.getElementById(id).options = items;
+            }
+        });
+    </script>
+</body>
+</html>

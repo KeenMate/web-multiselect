@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test — selection & multiplicity</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        web-multiselect { display: block; max-width: 320px; }
+    </style>
+</head>
+<body>
+    <h1>selection & multiplicity</h1>
+    <p>Targeted by <code>e2e/selection.spec.ts</code>.</p>
+
+    <div class="fixture">
+        <div class="fixture-label">multi-select (default)</div>
+        <web-multiselect id="multi" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">single-select (multiple="false")</div>
+        <web-multiselect id="single" multiple="false" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">close-on-select</div>
+        <web-multiselect id="close-on-select" close-on-select="true" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">show-checkboxes="false"</div>
+        <web-multiselect id="no-checkboxes" show-checkboxes="false" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">initial-values via attribute</div>
+        <web-multiselect id="initial-attr"
+            value-member="value" display-value-member="label"
+            initial-values='["banana"]'></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">data-options + initial-values, no JS at all (HTML-only)</div>
+        <web-multiselect id="html-only"
+            value-member="value" display-value-member="label"
+            initial-values='["cherry"]'
+            data-options='[{"value":"apple","label":"Apple"},{"value":"banana","label":"Banana"},{"value":"cherry","label":"Cherry"}]'></web-multiselect>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+
+        const fruits = [
+            { value: 'apple',  label: 'Apple' },
+            { value: 'banana', label: 'Banana' },
+            { value: 'cherry', label: 'Cherry' },
+            { value: 'date',   label: 'Date' }
+        ];
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            for (const id of ['multi', 'single', 'close-on-select', 'no-checkboxes', 'initial-attr']) {
+                document.getElementById(id).options = fruits;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test — floating panels escape overflow</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        /*
+         * The scroll-clip container is the whole point of this fixture: it
+         * reproduces a SharePoint-workbench / micro-frontend-style ancestor
+         * that would clip an absolutely-positioned popover. With the fix
+         * (strategy: 'fixed' + position: fixed), each floating panel's
+         * bounding rect must extend past .clip's bottom edge.
+         */
+        .clip {
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ef4444;
+            padding: 12px;
+        }
+        .spacer { height: 600px; }
+        web-multiselect { display: block; max-width: 320px; }
+    </style>
+</head>
+<body>
+    <h1>floating panels escape overflow</h1>
+    <p>Targeted by <code>e2e/floating-panels.spec.ts</code>. Each picker lives inside a 200px scroll container.</p>
+
+    <div class="fixture">
+        <div class="fixture-label">dropdown — escapes overflow:auto ancestor</div>
+        <div id="dropdown-clip" class="clip">
+            <web-multiselect
+                id="dropdown-picker"
+                value-member="value"
+                display-value-member="label"
+                search-placeholder="Search..."></web-multiselect>
+            <div class="spacer"></div>
+        </div>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">search hint — escapes overflow:auto ancestor</div>
+        <div id="hint-clip" class="clip">
+            <web-multiselect
+                id="hint-picker"
+                value-member="value"
+                display-value-member="label"
+                search-hint="Type to search the list"
+                search-placeholder="Search..."></web-multiselect>
+            <div class="spacer"></div>
+        </div>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">selected-items popover (count mode) — escapes overflow:auto ancestor</div>
+        <div id="popover-clip" class="clip">
+            <web-multiselect
+                id="popover-picker"
+                value-member="value"
+                display-value-member="label"
+                badges-display-mode="count"
+                initial-values='["apple","banana","cherry"]'
+                search-placeholder="Search..."></web-multiselect>
+            <div class="spacer"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+
+        // Deterministic seed: 8 fruits. Stable across runs/machines.
+        const fruits = [
+            { value: 'apple',      label: 'Apple' },
+            { value: 'banana',     label: 'Banana' },
+            { value: 'cherry',     label: 'Cherry' },
+            { value: 'date',       label: 'Date' },
+            { value: 'elderberry', label: 'Elderberry' },
+            { value: 'fig',        label: 'Fig' },
+            { value: 'grape',      label: 'Grape' },
+            { value: 'honeydew',   label: 'Honeydew' }
+        ];
+
+        // Wait for upgrade, then assign options. The web component upgrades
+        // synchronously when the module loads, but we still queue this after
+        // microtask to be safe in case of race with definition.
+        customElements.whenDefined('web-multiselect').then(() => {
+            document.getElementById('dropdown-picker').options = fruits;
+            document.getElementById('hint-picker').options = fruits;
+            // popover-picker has badges-display-mode="count" with three
+            // pre-selected values so its count badge is clickable and the
+            // popover renders. (The body will show "Selected Items (3)" in
+            // the header — its body is empty due to a known issue with
+            // initial-values + late-set options; see NOTES.md.)
+            document.getElementById('popover-picker').options = fruits;
+        });
+    </script>
+</body>
+</html>

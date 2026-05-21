@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test — form integration</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        web-multiselect { display: block; max-width: 320px; }
+    </style>
+</head>
+<body>
+    <h1>form integration</h1>
+    <p>Targeted by <code>e2e/form.spec.ts</code>.</p>
+
+    <div class="fixture">
+        <div class="fixture-label">name="fruits-json" (default JSON format)</div>
+        <web-multiselect id="json-form" name="fruits-json" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">name="fruits-csv" + value-format="csv"</div>
+        <web-multiselect id="csv-form" name="fruits-csv" value-format="csv" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">name="fruits-arr" + value-format="array"</div>
+        <web-multiselect id="arr-form" name="fruits-arr" value-format="array" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">name="custom-fmt" + getValueFormatCallback (joins with |)</div>
+        <web-multiselect id="custom-fmt" name="custom-fmt" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">inside an actual &lt;form&gt; (reset test)</div>
+        <form id="real-form">
+            <web-multiselect id="form-in-form" name="form-field" value-member="value" display-value-member="label"></web-multiselect>
+            <button type="reset" id="reset-btn">Reset</button>
+        </form>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+
+        const items = [
+            { value: 'apple',  label: 'Apple' },
+            { value: 'banana', label: 'Banana' },
+            { value: 'cherry', label: 'Cherry' }
+        ];
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            for (const id of ['json-form', 'csv-form', 'arr-form', 'custom-fmt', 'form-in-form']) {
+                document.getElementById(id).options = items;
+            }
+
+            document.getElementById('custom-fmt').getValueFormatCallback = (values) => values.join('|');
+        });
+    </script>
+</body>
+</html>

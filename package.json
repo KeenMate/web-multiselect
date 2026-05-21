@@ -1,6 +1,6 @@
 {
   "name": "@keenmate/web-multiselect",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "description": "Lightweight multiselect web component with typeahead search, rich content support, and excellent keyboard navigation",
   "type": "module",
   "main": "./dist/multiselect.umd.js",
@@ -39,7 +39,11 @@
     "preview": "vite preview",
     "package": "npm run build && npm pack",
     "clean": "rimraf dist --glob \"*.tgz\"",
-    "clean:dist": "rimraf dist"
+    "clean:dist": "rimraf dist",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:install": "playwright install chromium"
   },
   "keywords": [
     "multiselect",
@@ -65,6 +69,7 @@
     "url": "https://github.com/keenmate/web-multiselect/issues"
   },
   "devDependencies": {
+    "@playwright/test": "^1.60.0",
     "rimraf": "^5.0.5",
     "typescript": "^5.3.3",
     "vite": "^5.0.8",

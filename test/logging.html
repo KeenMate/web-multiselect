@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test — logging</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        web-multiselect { display: block; max-width: 320px; }
+    </style>
+</head>
+<body>
+    <h1>logging</h1>
+    <p>Targeted by <code>e2e/logging.spec.ts</code>.</p>
+
+    <div class="fixture">
+        <div class="fixture-label">basic picker (interaction triggers logger calls)</div>
+        <web-multiselect id="log-picker" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+        import { enableLogging, disableLogging, setLogLevel, setCategoryLevel } from '/src/logger.ts';
+
+        const items = [
+            { value: 'apple',  label: 'Apple' },
+            { value: 'banana', label: 'Banana' }
+        ];
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            document.getElementById('log-picker').options = items;
+        });
+
+        // Expose helpers to the test.
+        window.__log = { enableLogging, disableLogging, setLogLevel, setCategoryLevel };
+    </script>
+</body>
+</html>

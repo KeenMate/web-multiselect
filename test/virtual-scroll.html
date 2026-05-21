@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test — virtual scrolling</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        web-multiselect { display: block; max-width: 320px; }
+    </style>
+</head>
+<body>
+    <h1>virtual scrolling</h1>
+    <p>Targeted by <code>e2e/virtual-scroll.spec.ts</code>. Each picker is seeded with 150 items.</p>
+
+    <div class="fixture">
+        <div class="fixture-label">virtual scroll enabled, threshold 50 (activates)</div>
+        <web-multiselect id="vs-on" enable-virtual-scroll="true" virtual-scroll-threshold="50" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">virtual scroll disabled (renders all)</div>
+        <web-multiselect id="vs-off" enable-virtual-scroll="false" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">option-height="60"</div>
+        <web-multiselect id="vs-height" enable-virtual-scroll="true" virtual-scroll-threshold="50" option-height="60" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">virtual-scroll-buffer="2" (small buffer)</div>
+        <web-multiselect id="vs-small-buffer" enable-virtual-scroll="true" virtual-scroll-threshold="50" virtual-scroll-buffer="2" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">virtual + count mode for popover virtualization (40 selected)</div>
+        <web-multiselect id="vs-popover"
+            enable-virtual-scroll="true"
+            virtual-scroll-threshold="20"
+            badges-display-mode="count"
+            badge-height="40"
+            value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+
+        // 150 numbered items for deterministic indexing.
+        const items = Array.from({ length: 150 }, (_, i) => ({
+            value: `item-${i}`,
+            label: `Item ${String(i).padStart(3, '0')}`
+        }));
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            for (const id of ['vs-on', 'vs-off', 'vs-height', 'vs-small-buffer', 'vs-popover']) {
+                document.getElementById(id).options = items;
+            }
+
+            // For vs-popover: select 40 items via the picker API so selectedOptions
+            // is populated (NOTES.md #1 means initial-values alone won't do it).
+            const vsPopover = document.getElementById('vs-popover');
+            // Wait one frame for the picker to initialize, then click to select.
+            requestAnimationFrame(() => {
+                // Open + bulk-select via input fill won't work. Use the host's
+                // helper if available, otherwise iterate.
+                // Easiest: dispatch a custom helper via the picker's API.
+                // Fall back to programmatic click is required after open.
+            });
+        });
+    </script>
+</body>
+</html>

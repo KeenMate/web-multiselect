@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test — RTL</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        web-multiselect { display: block; max-width: 320px; }
+    </style>
+</head>
+<body>
+    <h1>RTL</h1>
+    <p>Targeted by <code>e2e/rtl.spec.ts</code>.</p>
+
+    <div class="fixture">
+        <div class="fixture-label">dir="rtl" attribute on the element</div>
+        <web-multiselect id="rtl-explicit" dir="rtl" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">ancestor dir="rtl"</div>
+        <div dir="rtl">
+            <web-multiselect id="rtl-ancestor" value-member="value" display-value-member="label"></web-multiselect>
+        </div>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">LTR control</div>
+        <web-multiselect id="ltr-control" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+
+        const items = [
+            { value: 'apple',  label: 'Apple' },
+            { value: 'banana', label: 'Banana' }
+        ];
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            for (const id of ['rtl-explicit', 'rtl-ancestor', 'ltr-control']) {
+                document.getElementById(id).options = items;
+            }
+        });
+    </script>
+</body>
+</html>

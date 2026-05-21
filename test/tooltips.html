@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test — tooltips</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        web-multiselect { display: block; max-width: 320px; }
+    </style>
+</head>
+<body>
+    <h1>tooltips</h1>
+    <p>Targeted by <code>e2e/tooltips.spec.ts</code>. Default tooltip delay is 100ms.</p>
+
+    <div class="fixture">
+        <div class="fixture-label">enable-badge-tooltips with default text</div>
+        <web-multiselect id="default-tt"
+            enable-badge-tooltips="true"
+            badge-tooltip-delay="0"
+            value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">custom getBadgeTooltipCallback</div>
+        <web-multiselect id="custom-tt"
+            enable-badge-tooltips="true"
+            badge-tooltip-delay="0"
+            value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">remove button tooltip</div>
+        <web-multiselect id="remove-tt"
+            enable-badge-tooltips="true"
+            badge-tooltip-delay="0"
+            remove-button-tooltip-text="Drop {0}"
+            value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+
+        const items = [
+            { value: 'apple',  label: 'Apple',  description: 'A red fruit' },
+            { value: 'banana', label: 'Banana', description: 'A yellow fruit' },
+            { value: 'cherry', label: 'Cherry', description: 'A small red fruit' }
+        ];
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            for (const id of ['default-tt', 'custom-tt', 'remove-tt']) {
+                document.getElementById(id).options = items;
+            }
+
+            document.getElementById('custom-tt').getBadgeTooltipCallback = (item) =>
+                `${item.label}: ${item.description}`;
+        });
+    </script>
+</body>
+</html>

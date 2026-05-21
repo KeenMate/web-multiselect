@@ -164,9 +164,16 @@ export function getAllInstances(): MultiSelectElement[] {
 }
 
 export class MultiSelectElement<T = any> extends BaseElement {
+    // Opt into the form-associated custom element lifecycle. This is what
+    // makes `form.reset()`, `form.elements`, and (in the future) constraint
+    // validation actually do something. Without this flag the element is
+    // invisible to the form lifecycle even when it has a `name`.
+    static formAssociated = true;
+
     private picker?: WebMultiSelect<T>;
     private containerElement?: HTMLDivElement;
     private shadow: ShadowRoot;
+    private internals?: ElementInternals;
 
     // Properties for complex data (not attributes)
     private _options?: T[];
@@ -232,6 +239,17 @@ export class MultiSelectElement<T = any> extends BaseElement {
         super();
         this.shadow = this.attachShadow({ mode: 'open' });
 
+        // attachInternals() is only available in form-associated elements and
+        // older browsers may lack support entirely. Failing closed (without
+        // form integration) is better than throwing on construction.
+        if (typeof (this as any).attachInternals === 'function') {
+            try {
+                this.internals = (this as any).attachInternals();
+            } catch {
+                // jsdom or sandboxed environments may reject; ignore.
+            }
+        }
+
         // Inject styles immediately to prevent FOUC
         const styleSheet = document.createElement('style');
         styleSheet.textContent = styles;
@@ -241,6 +259,17 @@ export class MultiSelectElement<T = any> extends BaseElement {
         requestAnimationFrame(() => {
             this.setAttribute('data-ready', '');
         });
+    }
+
+    /**
+     * Called by the browser when the surrounding <form> is reset. Clears the
+     * picker's selection so the multiselect actually participates in the
+     * standard reset lifecycle. (Before form-association, reset was a no-op
+     * because the hidden inputs were re-stamped from internal state on every
+     * render.)
+     */
+    formResetCallback() {
+        this.picker?.clearAll();
     }
 
     connectedCallback() {
@@ -506,6 +535,20 @@ export class MultiSelectElement<T = any> extends BaseElement {
     private initializePicker() {
         if (!this.containerElement) return;
 
+        // Parse `data-options` from the host into a usable array. JS-property
+        // assignment (`element.options = [...]`) takes precedence; the
+        // attribute is the fallback for declarative / HTML-only usage where
+        // no inline <script> is practical (SSR, SharePoint, Office Add-ins).
+        let parsedDataOptions: T[] | undefined;
+        const dataOptionsAttr = this.getAttribute('data-options');
+        if (dataOptionsAttr && this._options === undefined) {
+            try {
+                parsedDataOptions = JSON.parse(dataOptionsAttr);
+            } catch (e) {
+                dataLogger.error('[MultiSelectElement] Failed to parse data-options:', e);
+            }
+        }
+
         // Parse initial values - prioritize declarative selected options
         let initialValues: (string | number)[] | undefined;
 
@@ -559,7 +602,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
                 if (moreCount !== undefined) return `+${moreCount} more`;
                 return `${count} selected`;
             }),
-            options: this._options,
+            options: this._options ?? parsedDataOptions,
             beforeSearchCallback: this._beforeSearchCallback,
             searchCallback: this._searchCallback,
             addNewCallback: this._addNewCallback,

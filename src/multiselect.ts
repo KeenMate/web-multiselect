@@ -1326,6 +1326,13 @@ export class WebMultiSelect<T = any> {
     }
 
     private toggleOption(option: T): void {
+        // Disabled options must not be toggled regardless of how we got here
+        // (click handler already filters disabled, but keyboard Enter used to
+        // bypass — centralize the check at the choke point).
+        if (this.getItemDisabled(option)) {
+            interactionLogger.debug(`[${this.instanceId}] toggleOption ignored — option is disabled`);
+            return;
+        }
         const value = this.getItemValue(option);
         const valueKey = String(value);
         interactionLogger.debug(`[${this.instanceId}] toggleOption called`, { value, multiple: this.options.isMultipleEnabled });
@@ -1414,7 +1421,7 @@ export class WebMultiSelect<T = any> {
         this.commit({ added });
     }
 
-    private clearAll(): void {
+    public clearAll(): void {
         const removed = Array.from(this.selectedOptions.values());
         this.selectedValues.clear();
         this.selectedOptions.clear();
@@ -1619,18 +1626,31 @@ export class WebMultiSelect<T = any> {
             try {
                 const values = JSON.parse(initialValues);
                 values.forEach((value: string | number) => {
-                    const valueKey = String(value);
-                    this.selectedValues.add(valueKey);
-                    const option = this.allOptions.find(opt => String(this.getItemValue(opt)) === valueKey);
-                    if (option) {
-                        this.selectedOptions.set(valueKey, option);
-                    }
+                    this.selectedValues.add(String(value));
                 });
+                this.reconcileSelectedOptions();
                 this.renderBadges();
             } catch (e) {
                 dataLogger.error(`[${this.instanceId}] Failed to parse initial values:`, e);
             }
         }
+    }
+
+    /**
+     * Resolve any `selectedValues` entries that don't yet have a matching
+     * `selectedOptions` object by looking them up in the current `allOptions`.
+     * Idempotent; safe to call after init *and* after `options` is replaced
+     * (e.g., async fetch, `searchCallback` result, or late `element.options =`
+     * assignment). Without this, `initial-values` declared before options
+     * arrive ends up with phantom values that `getValue()` can never report.
+     */
+    private reconcileSelectedOptions(): void {
+        if (this.selectedValues.size === 0 || this.allOptions.length === 0) return;
+        this.selectedValues.forEach(valueKey => {
+            if (this.selectedOptions.has(valueKey)) return;
+            const option = this.allOptions.find(opt => String(this.getItemValue(opt)) === valueKey);
+            if (option) this.selectedOptions.set(valueKey, option);
+        });
     }
 
     private toggleSelectedPopover(): void {
@@ -1950,6 +1970,7 @@ export class WebMultiSelect<T = any> {
         if ('options' in partial && partial.options !== undefined) {
             this.allOptions = partial.options;
             this.filteredOptions = this.searchTerm ? this.filteredOptions : [...this.allOptions];
+            this.reconcileSelectedOptions();
         }
 
         // Structural class on host

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test — badges display</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        web-multiselect { display: block; max-width: 480px; }
+    </style>
+</head>
+<body>
+    <h1>badges display</h1>
+    <p>Targeted by <code>e2e/badges.spec.ts</code>.</p>
+
+    <div class="fixture">
+        <div class="fixture-label">badges (default)</div>
+        <web-multiselect id="mode-badges" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">count</div>
+        <web-multiselect id="mode-count" badges-display-mode="count" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">compact (first + "+N more")</div>
+        <web-multiselect id="mode-compact" badges-display-mode="compact" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">partial (max 2 badges + more)</div>
+        <web-multiselect id="mode-partial" badges-display-mode="partial" badges-max-visible="2" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">none</div>
+        <web-multiselect id="mode-none" badges-display-mode="none" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">badges-position="top"</div>
+        <web-multiselect id="pos-top" badges-position="top" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">badges-position="bottom" (default)</div>
+        <web-multiselect id="pos-bottom" badges-position="bottom" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">badges-position="left"</div>
+        <web-multiselect id="pos-left" badges-position="left" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">badges-position="right"</div>
+        <web-multiselect id="pos-right" badges-position="right" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">badges-threshold=2 (badges → count when 3+ selected)</div>
+        <web-multiselect id="threshold-count" badges-threshold="2" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">badges-threshold=2 with badges-threshold-mode="partial"</div>
+        <web-multiselect id="threshold-partial" badges-threshold="2" badges-threshold-mode="partial" badges-max-visible="2" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+
+        const fruits = [
+            { value: 'apple',      label: 'Apple' },
+            { value: 'banana',     label: 'Banana' },
+            { value: 'cherry',     label: 'Cherry' },
+            { value: 'date',       label: 'Date' },
+            { value: 'elderberry', label: 'Elderberry' },
+            { value: 'fig',        label: 'Fig' }
+        ];
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            for (const id of [
+                'mode-badges', 'mode-count', 'mode-compact', 'mode-partial', 'mode-none',
+                'pos-top', 'pos-bottom', 'pos-left', 'pos-right',
+                'threshold-count', 'threshold-partial'
+            ]) {
+                document.getElementById(id).options = fruits;
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test — search behavior</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        web-multiselect { display: block; max-width: 320px; }
+    </style>
+</head>
+<body>
+    <h1>search behavior</h1>
+    <p>Targeted by <code>e2e/search.spec.ts</code>.</p>
+
+    <div class="fixture">
+        <div class="fixture-label">filter (default) — non-matches hidden</div>
+        <web-multiselect id="filter" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">navigate — all visible, focus jumps to match</div>
+        <web-multiselect id="navigate" search-mode="navigate" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">search-input-mode="readonly"</div>
+        <web-multiselect id="readonly" search-input-mode="readonly" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">search-input-mode="hidden"</div>
+        <web-multiselect id="hidden-input" search-input-mode="hidden" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">enable-search="false"</div>
+        <web-multiselect id="no-search" enable-search="false" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">empty-message customized</div>
+        <web-multiselect id="empty-msg" empty-message="nothing here" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">min-search-length="2" with async searchCallback</div>
+        <web-multiselect id="min-len" min-search-length="2" loading-message="loading..." value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">async searchCallback</div>
+        <web-multiselect id="async-search" value-member="value" display-value-member="label" loading-message="loading..."></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">keep-options-on-search + min-search-length="2" + async</div>
+        <web-multiselect id="keep-options" keep-options-on-search="true" min-search-length="2" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">should-keep-search-on-close="false" (clears on close)</div>
+        <web-multiselect id="clear-on-close" should-keep-search-on-close="false" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">beforeSearchCallback strips spaces</div>
+        <web-multiselect id="before-search" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+
+        const fruits = [
+            { value: 'apple',      label: 'Apple' },
+            { value: 'banana',     label: 'Banana' },
+            { value: 'cherry',     label: 'Cherry' },
+            { value: 'date',       label: 'Date' },
+            { value: 'elderberry', label: 'Elderberry' }
+        ];
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            for (const id of [
+                'filter', 'navigate', 'readonly', 'hidden-input', 'no-search',
+                'empty-msg', 'min-len', 'keep-options', 'clear-on-close', 'before-search'
+            ]) {
+                document.getElementById(id).options = fruits;
+            }
+
+            // keep-options picker — async; below threshold, the initial options stay.
+            const keepOptions = document.getElementById('keep-options');
+            keepOptions.searchCallback = async (term) => fruits.filter(f => f.label.toLowerCase().includes(term.toLowerCase()));
+
+            // Async search picker — searchCallback returns 1 item after 50ms.
+            const async = document.getElementById('async-search');
+            async.searchCallback = async (term) => {
+                await new Promise(r => setTimeout(r, 50));
+                return fruits.filter(f => f.label.toLowerCase().includes(term.toLowerCase()));
+            };
+
+            // min-len picker tracks calls so the spec can assert it didn't fire below threshold.
+            const minLen = document.getElementById('min-len');
+            window.__minLenCalls = [];
+            minLen.searchCallback = async (term) => {
+                window.__minLenCalls.push(term);
+                return fruits.filter(f => f.label.toLowerCase().includes(term.toLowerCase()));
+            };
+
+            // beforeSearchCallback strips spaces.
+            const before = document.getElementById('before-search');
+            before.beforeSearchCallback = (term) => term.replace(/\s+/g, '');
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test — keyboard navigation</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        web-multiselect { display: block; max-width: 320px; }
+    </style>
+</head>
+<body>
+    <h1>keyboard navigation</h1>
+    <p>Targeted by <code>e2e/keyboard.spec.ts</code>. Pickers seeded with 20 numbered items so paging is observable.</p>
+
+    <div class="fixture">
+        <div class="fixture-label">default filter mode</div>
+        <web-multiselect id="kb-filter" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">navigate mode (Ctrl+↓/↑ jumps between matches)</div>
+        <web-multiselect id="kb-navigate" search-mode="navigate" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">grouped items (regression: focus on multiple per-group)</div>
+        <web-multiselect id="kb-grouped"
+            value-member="value" display-value-member="label" group-member="group"></web-multiselect>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+
+        const items = Array.from({ length: 20 }, (_, i) => ({
+            value: `item-${i}`,
+            label: `Item ${String(i).padStart(2, '0')}`
+        }));
+
+        const grouped = [
+            { value: 'a1', label: 'Apple',  group: 'Fruits' },
+            { value: 'a2', label: 'Banana', group: 'Fruits' },
+            { value: 'a3', label: 'Cherry', group: 'Fruits' },
+            { value: 'v1', label: 'Carrot', group: 'Vegetables' },
+            { value: 'v2', label: 'Beet',   group: 'Vegetables' },
+            { value: 'v3', label: 'Kale',   group: 'Vegetables' }
+        ];
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            document.getElementById('kb-filter').options = items;
+            document.getElementById('kb-navigate').options = items;
+            document.getElementById('kb-grouped').options = grouped;
+        });
+    </script>
+</body>
+</html>

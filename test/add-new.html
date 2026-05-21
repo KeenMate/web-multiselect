@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test — add new</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        web-multiselect { display: block; max-width: 320px; }
+    </style>
+</head>
+<body>
+    <h1>add new</h1>
+    <p>Targeted by <code>e2e/add-new.spec.ts</code>.</p>
+
+    <div class="fixture">
+        <div class="fixture-label">allow-add-new + addNewCallback</div>
+        <web-multiselect id="adder" allow-add-new="true" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+
+        const items = [
+            { value: 'apple',  label: 'Apple' },
+            { value: 'banana', label: 'Banana' }
+        ];
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            const adder = document.getElementById('adder');
+            adder.options = items;
+            window.__addedNames = [];
+            adder.addNewCallback = (name) => {
+                window.__addedNames.push(name);
+                return { value: name.toLowerCase(), label: name };
+            };
+        });
+    </script>
+</body>
+</html>

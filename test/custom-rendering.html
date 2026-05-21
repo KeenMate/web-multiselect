@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test — custom rendering</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        web-multiselect { display: block; max-width: 320px; }
+    </style>
+</head>
+<body>
+    <h1>custom rendering</h1>
+    <p>Targeted by <code>e2e/custom-rendering.spec.ts</code>.</p>
+
+    <div class="fixture">
+        <div class="fixture-label">renderOptionContentCallback</div>
+        <web-multiselect id="opt-content" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">renderBadgeContentCallback</div>
+        <web-multiselect id="badge-content" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">getBadgeClassCallback</div>
+        <web-multiselect id="badge-class" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">customStylesCallback</div>
+        <web-multiselect id="custom-styles" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">icon-member + subtitle-member</div>
+        <web-multiselect id="icon-subtitle"
+            value-member="value" display-value-member="label"
+            icon-member="icon" subtitle-member="subtitle"></web-multiselect>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+
+        const items = [
+            { value: 'apple',  label: 'Apple',  icon: '🍎', subtitle: 'A red fruit' },
+            { value: 'banana', label: 'Banana', icon: '🍌', subtitle: 'A yellow fruit' },
+            { value: 'cherry', label: 'Cherry', icon: '🍒', subtitle: 'A small red fruit' }
+        ];
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            for (const id of ['opt-content', 'badge-content', 'badge-class', 'custom-styles', 'icon-subtitle']) {
+                document.getElementById(id).options = items;
+            }
+
+            document.getElementById('opt-content').renderOptionContentCallback = (item) =>
+                `<span class="js-opt-tag">[opt]</span>${item.label}`;
+
+            document.getElementById('badge-content').renderBadgeContentCallback = (item) =>
+                `<span class="js-badge-tag">[badge]</span>${item.label}`;
+
+            document.getElementById('badge-class').getBadgeClassCallback = (item) =>
+                `js-${item.value}-class`;
+
+            document.getElementById('custom-styles').customStylesCallback = () =>
+                `.ms__option { outline: 2px dashed magenta; }`;
+        });
+    </script>
+</body>
+</html>

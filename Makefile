@@ -1,8 +1,8 @@
-.PHONY: help setup dev build package publish publish-dry clean test lint
+.PHONY: help setup dev build package publish publish-dry clean lint test-e2e test-e2e-ui test-e2e-headed test-e2e-install
 
 help: ## Show this help message
 	@echo "Available targets:"
-	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-15s %s\n", $$1, $$2}'
+	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-18s %s\n", $$1, $$2}'
 
 setup: ## Install dependencies and prepare project
 	@echo "Installing dependencies..."
@@ -58,9 +58,17 @@ lint: ## Run linter (if configured)
 	@echo "Linting is not configured yet"
 	@echo "Consider adding ESLint in the future"
 
-test: ## Run tests (if configured)
-	@echo "Tests are not configured yet"
-	@echo "Consider adding tests in the future"
+test-e2e: ## Run Playwright e2e tests (headless)
+	npm run test:e2e
+
+test-e2e-ui: ## Run Playwright e2e tests in UI mode
+	npm run test:e2e:ui
+
+test-e2e-headed: ## Run Playwright e2e tests headed (watch the browser)
+	npm run test:e2e:headed
+
+test-e2e-install: ## Install chromium browser binary (one-time)
+	npm run test:e2e:install
 
 check-version: ## Show current package version
 	@echo "Current version:"

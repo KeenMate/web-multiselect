@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test — groups</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        web-multiselect { display: block; max-width: 320px; }
+    </style>
+</head>
+<body>
+    <h1>groups</h1>
+    <p>Targeted by <code>e2e/groups.spec.ts</code>.</p>
+
+    <div class="fixture">
+        <div class="fixture-label">grouped (group-member="group")</div>
+        <web-multiselect id="grouped" value-member="value" display-value-member="label" group-member="group"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">allow-groups="false" — flat list</div>
+        <web-multiselect id="flat" allow-groups="false" value-member="value" display-value-member="label" group-member="group"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">custom group label renderer</div>
+        <web-multiselect id="custom-label" value-member="value" display-value-member="label" group-member="group"></web-multiselect>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+
+        const items = [
+            { value: 'a1', label: 'Apple',  group: 'Fruits' },
+            { value: 'a2', label: 'Banana', group: 'Fruits' },
+            { value: 'a3', label: 'Cherry', group: 'Fruits' },
+            { value: 'v1', label: 'Carrot', group: 'Vegetables' },
+            { value: 'v2', label: 'Beet',   group: 'Vegetables' },
+            { value: 'v3', label: 'Kale',   group: 'Vegetables' }
+        ];
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            for (const id of ['grouped', 'flat', 'custom-label']) {
+                document.getElementById(id).options = items;
+            }
+
+            const custom = document.getElementById('custom-label');
+            custom.renderGroupLabelContentCallback = (name) => `<strong class="js-custom-label">[${name.toUpperCase()}]</strong>`;
+        });
+    </script>
+</body>
+</html>

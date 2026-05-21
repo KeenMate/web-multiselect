@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test — events & API</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        web-multiselect { display: block; max-width: 320px; }
+    </style>
+</head>
+<body>
+    <h1>events & API</h1>
+    <p>Targeted by <code>e2e/events-api.spec.ts</code>.</p>
+
+    <div class="fixture">
+        <div class="fixture-label">event capture (select / deselect / change)</div>
+        <web-multiselect id="events" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">callbacks (selectCallback / deselectCallback / changeCallback)</div>
+        <web-multiselect id="callbacks" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">options setter replaces options live</div>
+        <web-multiselect id="replace-opts" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">attribute change preserves selection</div>
+        <web-multiselect id="attr-change" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+
+        const fruits = [
+            { value: 'apple',  label: 'Apple' },
+            { value: 'banana', label: 'Banana' },
+            { value: 'cherry', label: 'Cherry' }
+        ];
+
+        const colors = [
+            { value: 'red',   label: 'Red' },
+            { value: 'green', label: 'Green' },
+            { value: 'blue',  label: 'Blue' }
+        ];
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            for (const id of ['events', 'callbacks', 'replace-opts', 'attr-change']) {
+                document.getElementById(id).options = fruits;
+            }
+
+            // Event capture
+            window.__events = { select: [], deselect: [], change: [] };
+            const events = document.getElementById('events');
+            events.addEventListener('select',   e => window.__events.select.push(e.detail));
+            events.addEventListener('deselect', e => window.__events.deselect.push(e.detail));
+            events.addEventListener('change',   e => window.__events.change.push(e.detail));
+
+            // Callbacks
+            window.__cb = { select: [], deselect: [], change: [] };
+            const cb = document.getElementById('callbacks');
+            cb.selectCallback   = item => window.__cb.select.push(item.value);
+            cb.deselectCallback = item => window.__cb.deselect.push(item.value);
+            cb.changeCallback   = opts => window.__cb.change.push(opts.length);
+
+            // Replace-opts: helper exposes a function on window
+            window.__replaceWithColors = () => {
+                document.getElementById('replace-opts').options = colors;
+            };
+        });
+    </script>
+</body>
+</html>

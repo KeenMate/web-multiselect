@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test — dropdown positioning</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        web-multiselect { display: block; max-width: 320px; }
+        .bottom-pinned {
+            /* Pins the picker near the bottom of the viewport so the
+               dropdown has to flip above by default. */
+            position: absolute;
+            bottom: 16px;
+            left: 16px;
+            right: 16px;
+        }
+        .anchor-scroll {
+            height: 300px;
+            overflow-y: auto;
+            border: 1px solid #d4d4d8;
+            padding: 12px;
+        }
+        .anchor-scroll .spacer { height: 800px; }
+    </style>
+</head>
+<body>
+    <h1>dropdown positioning</h1>
+    <p>Targeted by <code>e2e/positioning.spec.ts</code>.</p>
+
+    <div class="fixture">
+        <div class="fixture-label">default — opens below input</div>
+        <web-multiselect id="default-below" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">dropdown-min-width="500px"</div>
+        <web-multiselect id="min-width" dropdown-min-width="500px" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">dropdown-max-width="250px"</div>
+        <web-multiselect id="max-width" dropdown-max-width="250px" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">picker stays anchored when ancestor scrolls (non-clipping container)</div>
+        <div id="anchor-scroll" class="anchor-scroll">
+            <web-multiselect id="anchor-picker" value-member="value" display-value-member="label"></web-multiselect>
+            <div class="spacer"></div>
+        </div>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">outside-click closes</div>
+        <web-multiselect id="outside-click" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <!-- Bottom-pinned picker to force flip-above. Outside the .fixture flow. -->
+    <div id="bottom-fixture" class="bottom-pinned">
+        <div class="fixture-label">bottom-pinned — should flip above</div>
+        <web-multiselect id="flip-above" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+
+        const fruits = [
+            { value: 'apple',  label: 'Apple' },
+            { value: 'banana', label: 'Banana' },
+            { value: 'cherry', label: 'Cherry' },
+            { value: 'date',   label: 'Date' }
+        ];
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            for (const id of ['default-below', 'min-width', 'max-width', 'anchor-picker', 'outside-click', 'flip-above']) {
+                document.getElementById(id).options = fruits;
+            }
+        });
+    </script>
+</body>
+</html>

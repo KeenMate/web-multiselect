@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test — disabled options</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        web-multiselect { display: block; max-width: 320px; }
+    </style>
+</head>
+<body>
+    <h1>disabled options</h1>
+    <p>Targeted by <code>e2e/disabled.spec.ts</code>.</p>
+
+    <div class="fixture">
+        <div class="fixture-label">disabled-member="disabled"</div>
+        <web-multiselect id="dm"
+            value-member="value"
+            display-value-member="label"
+            disabled-member="disabled"></web-multiselect>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+
+        const items = [
+            { value: 'apple',  label: 'Apple' },
+            { value: 'banana', label: 'Banana', disabled: true },
+            { value: 'cherry', label: 'Cherry' },
+            { value: 'date',   label: 'Date' }
+        ];
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            document.getElementById('dm').options = items;
+        });
+    </script>
+</body>
+</html>

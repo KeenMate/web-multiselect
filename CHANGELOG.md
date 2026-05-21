@@ -5,11 +5,28 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.10.0] - PUBLISHED - 2026-05-20
+
+This release fixes five bugs surfaced while building the e2e test suite (`test/COVERAGE.md`, ~110 specs across 19 fixture pages). Three of them are end-to-end broken features that the docs claim work; the other two are smaller. All have regression tests added.
+
+### Added
+
+- **`data-options` attribute on `<web-multiselect>`** - The inner picker already supported `data-options` on its container, but the host element never forwarded it, so options could only be supplied via `element.options = [...]` JavaScript assignment. The host attribute is now parsed at init when no JS-set options are present, enabling pure-HTML / server-rendered / SharePoint workbench usage where running an inline script per picker isn't practical. JS-property assignment continues to take precedence when both are present.
+- **End-to-end test suite** - 114 Playwright specs across 19 fixture pages under `test/`, with a coverage tracker at `test/COVERAGE.md`. New `make` targets: `test-e2e`, `test-e2e-ui`, `test-e2e-headed`, `test-e2e-install`.
+- **`THEMING.md` reference doc** - Top-level reference (~480 lines, 18 sections) cataloguing every theme-able component state — options, checkbox, input, toggle, counter, dropdown, action buttons, badges (incl. counter variant), count display, tooltip, selected popover, scrollbar, global — with the `.ms__*` classes and `--ms-*` CSS variables that style each. Companion piece to `component-variables.manifest.json` for theme authors who want a human-readable map of the styling surface.
 
 ### Fixed
 
 - **Dropdown / hint / selected-popover clipped inside scrollable ancestors** - Reported by a SharePoint Framework workbench consumer whose web parts are wrapped in an `overflow-y: auto` canvas zone. Floating UI's `computePosition` was called without a `strategy`, defaulting to `'absolute'`, and the corresponding CSS rules used `position: absolute`. Absolute-positioned descendants are clipped by any ancestor with `overflow: hidden | auto | scroll`, regardless of whether that ancestor establishes a containing block. The dropdown, the floating search hint, and the selected-items popover all now use `strategy: 'fixed'` (with `position: fixed` written inline and as the CSS rule default), so they're positioned relative to the viewport and escape ancestor overflow. `autoUpdate` was already in place, so the panels still stay anchored to the trigger across scroll/resize. No behavior change for consumers whose multiselect lives in a non-scrolling parent. The in-flow `.ms__toggle` and `.ms__counter` icons (children of the input wrapper) deliberately remain `absolute`.
+- **`initial-values` was a no-op when `options` arrived later** - `parseInitialSelection()` ran once at init and only populated the internal `selectedOptions` map for values it could resolve in `allOptions` at that moment. When options were set via `element.options =` after construction (or arrived from `searchCallback` / async fetch), the initial values were stuck in `selectedValues` but never resolved — `getValue()` (which reads from `selectedOptions`) returned `[]`, badges didn't render, and the popover header showed phantom counts whose body was empty. Reconciliation now runs both at init *and* every time `options` is replaced, so `<web-multiselect initial-values='["x"]'>` works regardless of when options arrive.
+- **`form.reset()` did nothing** - The element wasn't form-associated, so the standard reset lifecycle never reached the picker. Hidden inputs got re-stamped from the picker's internal state on every render, undoing whatever the form thought it had cleared. The element now declares `static formAssociated = true`, attaches `ElementInternals`, and implements `formResetCallback()` to clear the selection — making the multiselect a first-class citizen of the form lifecycle (and unblocking proper constraint validation in future work).
+- **Keyboard Enter bypassed disabled state on options** - The click handler at `multiselect.ts:1157` correctly checked `.ms__option--disabled` before calling `toggleOption`, but the Enter-key handler called `toggleOption` directly. Mouse users couldn't select disabled options; keyboard users could. The check now lives inside `toggleOption` itself, so both code paths (and any future entry points) are covered.
+- **`searchHint` doc comment was wrong** - Said "shown above the input when focused" in `types.ts`; the code actually shows it only when the dropdown is open. Comment now matches behavior.
+
+### Internal
+
+- **`reconcileSelectedOptions()` helper** in `multiselect.ts` - factored out of `parseInitialSelection`; idempotent; safe to call after any `options` mutation. Walks `selectedValues`, looks up each unresolved entry in `allOptions`, and populates `selectedOptions`.
+- **`clearAll()` is now public** on the core `WebMultiSelect` class - previously private but conceptually a public operation. Used by the new `formResetCallback`; still drives the built-in Clear All action button.
 
 ## [1.9.0] - PUBLISHED - 2026-04-26
 

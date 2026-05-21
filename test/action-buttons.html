@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test — action buttons</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        web-multiselect { display: block; max-width: 320px; }
+    </style>
+</head>
+<body>
+    <h1>action buttons</h1>
+    <p>Targeted by <code>e2e/action-buttons.spec.ts</code>.</p>
+
+    <div class="fixture">
+        <div class="fixture-label">select-all / clear-all (built-ins)</div>
+        <web-multiselect id="builtins" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">custom action (counts clicks)</div>
+        <web-multiselect id="custom" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">dynamic visibility + disabled callbacks</div>
+        <web-multiselect id="dynamic" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">sticky actions</div>
+        <web-multiselect id="sticky" sticky-actions="true" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">actions-layout="wrap"</div>
+        <web-multiselect id="wrap" actions-layout="wrap" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">select-all + per-item selectCallback tracker</div>
+        <web-multiselect id="tracker" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+
+        const items = Array.from({ length: 8 }, (_, i) => ({
+            value: `item-${i}`,
+            label: `Item ${i}`
+        }));
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            for (const id of ['builtins', 'custom', 'dynamic', 'sticky', 'wrap', 'tracker']) {
+                document.getElementById(id).options = items;
+            }
+
+            // Built-ins
+            document.getElementById('builtins').actionButtons = [
+                { action: 'select-all', text: 'Select all' },
+                { action: 'clear-all',  text: 'Clear all'  }
+            ];
+
+            // Custom action — increments a counter on click
+            window.__customClicks = 0;
+            document.getElementById('custom').actionButtons = [
+                {
+                    action: 'custom',
+                    text: 'Click me',
+                    cssClass: 'js-custom',
+                    onClick: () => { window.__customClicks++; }
+                }
+            ];
+
+            // Dynamic visibility + disabled
+            window.__dynamicVisible = false;
+            window.__dynamicDisabled = true;
+            document.getElementById('dynamic').actionButtons = [
+                {
+                    action: 'custom',
+                    text: 'Maybe Visible',
+                    cssClass: 'js-maybe-visible',
+                    onClick: () => {},
+                    isVisibleCallback: () => window.__dynamicVisible
+                },
+                {
+                    action: 'custom',
+                    text: 'Maybe Disabled',
+                    cssClass: 'js-maybe-disabled',
+                    onClick: () => {},
+                    isDisabledCallback: () => window.__dynamicDisabled
+                }
+            ];
+
+            // Sticky and wrap
+            const stickyAndWrapButtons = [
+                { action: 'select-all', text: 'Select all' },
+                { action: 'clear-all',  text: 'Clear all'  }
+            ];
+            document.getElementById('sticky').actionButtons = stickyAndWrapButtons;
+
+            const manyButtons = [
+                { action: 'select-all', text: 'Select all' },
+                { action: 'clear-all',  text: 'Clear all'  },
+                { action: 'custom',     text: 'Button A', onClick: () => {} },
+                { action: 'custom',     text: 'Button B', onClick: () => {} },
+                { action: 'custom',     text: 'Button C', onClick: () => {} },
+                { action: 'custom',     text: 'Button D', onClick: () => {} }
+            ];
+            document.getElementById('wrap').actionButtons = manyButtons;
+
+            // Tracker — counts per-item selectCallback fires
+            const tracker = document.getElementById('tracker');
+            window.__trackerSelected = [];
+            window.__trackerDeselected = [];
+            tracker.selectCallback = (item) => { window.__trackerSelected.push(item.value); };
+            tracker.deselectCallback = (item) => { window.__trackerDeselected.push(item.value); };
+            tracker.actionButtons = [
+                { action: 'select-all', text: 'Select all' },
+                { action: 'clear-all',  text: 'Clear all'  }
+            ];
+        });
+    </script>
+</body>
+</html>

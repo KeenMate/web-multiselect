@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test — counter badge</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        web-multiselect { display: block; max-width: 320px; }
+    </style>
+</head>
+<body>
+    <h1>counter badge</h1>
+    <p>Targeted by <code>e2e/counter.spec.ts</code>. The "counter" here is the small badge next to the dropdown toggle icon (separate from the count display mode in the badges area).</p>
+
+    <div class="fixture">
+        <div class="fixture-label">show-counter="true"</div>
+        <web-multiselect id="counter-on" show-counter="true" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">show-counter="true" + count display mode + getCounterCallback (i18n)</div>
+        <web-multiselect id="counter-cb"
+            show-counter="true" badges-display-mode="count"
+            value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+
+        const items = [
+            { value: 'apple',  label: 'Apple' },
+            { value: 'banana', label: 'Banana' },
+            { value: 'cherry', label: 'Cherry' }
+        ];
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            for (const id of ['counter-on', 'counter-cb']) {
+                document.getElementById(id).options = items;
+            }
+
+            // Format function with pluralization
+            document.getElementById('counter-cb').getCounterCallback = (count) =>
+                count === 1 ? '1 item' : `${count} items`;
+        });
+    </script>
+</body>
+</html>

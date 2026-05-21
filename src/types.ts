@@ -224,7 +224,7 @@ export interface MultiSelectConfig<T = any> {
     /** Vertical alignment of checkboxes relative to option content */
     checkboxAlign?: 'top' | 'center' | 'bottom';
 
-    /** Hint text shown above the input when focused */
+    /** Hint text shown above the input while the dropdown is open. */
     searchHint?: string;
     /** Placeholder text for the search input */
     searchPlaceholder?: string;
