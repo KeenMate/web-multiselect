@@ -131,7 +131,13 @@
 }
 
 .ms__count-clear::before {
-  content: var(--ms-icon-clear);
+  content: "";
+  display: block;
+  width: var(--ms-count-clear-icon-size);
+  height: var(--ms-count-clear-icon-size);
+  background-color: currentColor;
+  -webkit-mask: var(--ms-icon-clear) center / contain no-repeat;
+          mask: var(--ms-icon-clear) center / contain no-repeat;
 }
 
 /* ==============================================================================
@@ -208,9 +214,13 @@
 }
 
 .ms__badge-remove::before {
-  content: var(--ms-icon-remove);
-  font-size: var(--ms-font-size-base);
-  line-height: var(--ms-line-height-none);
+  content: "";
+  display: block;
+  width: var(--ms-badge-remove-icon-size);
+  height: var(--ms-badge-remove-icon-size);
+  background-color: currentColor;
+  -webkit-mask: var(--ms-icon-remove) center / contain no-repeat;
+          mask: var(--ms-icon-remove) center / contain no-repeat;
 }
 
 /* ==============================================================================

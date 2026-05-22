@@ -436,7 +436,10 @@
   --ms-badge-remove-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
   --ms-badge-remove-bg-hover: var(--ms-accent-color-hover);
   --ms-badge-remove-box-shadow-focus: 0 0 0 2px color-mix(in srgb, var(--ms-accent-color) 50%, transparent);
-  --ms-icon-remove: "×";
+  --ms-badge-remove-icon-size: calc(1.0 * var(--ms-rem));
+  /* SVG X glyph — rendered via mask so it inherits --ms-badge-remove-color via currentColor.
+     Override this var to use a different shape; the value must be a CSS url() pointing to a mask-friendly SVG. */
+  --ms-icon-remove: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 6L18 18M18 6L6 18' stroke='black' stroke-width='2.5' stroke-linecap='round' fill='none'/></svg>");
 
   /* Badge Counter Indicator (layout-only properties, colors come from semantic section) */
   --ms-badge-counter-bg: transparent;
@@ -484,7 +487,8 @@
   --ms-count-clear-border-radius: 50%;
   --ms-count-clear-bg-hover: color-mix(in srgb, var(--ms-accent-color) 20%, transparent);
   --ms-count-clear-color-hover: var(--ms-accent-color);
-  --ms-icon-clear: "×";
+  --ms-count-clear-icon-size: calc(1.4 * var(--ms-rem));
+  --ms-icon-clear: var(--ms-icon-remove);
 
   /* ==========================================================================
      TOOLTIPS
@@ -525,6 +529,7 @@
   --ms-selected-popover-close-border-radius: 50%;
   --ms-selected-popover-close-bg-hover: color-mix(in srgb, var(--ms-accent-color) 20%, transparent);
   --ms-selected-popover-close-color-hover: var(--ms-accent-color);
+  --ms-selected-popover-close-icon-size: calc(1.4 * var(--ms-rem));
 
   /* ==========================================================================
      POPOVER BODY

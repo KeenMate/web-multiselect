@@ -1724,7 +1724,7 @@ export class WebMultiSelect<T = any> {
         this.selectedPopover.innerHTML = `
             <div class="ms__selected-popover-header">
                 <span>Selected Items (${count})</span>
-                <button type="button" class="ms__selected-popover-close" aria-label="Close">&times;</button>
+                <button type="button" class="ms__selected-popover-close" aria-label="Close"></button>
             </div>
             <div class="ms__selected-popover-body">
                 ${selectedOptions.map(option => this.renderBadgeHTML(option, { displayMode: this.options.badgesDisplayMode || 'badges', isInPopover: true })).join('')}
@@ -1742,7 +1742,7 @@ export class WebMultiSelect<T = any> {
             const html = `
                 <div class="ms__selected-popover-header">
                     <span>Selected Items (${count})</span>
-                    <button type="button" class="ms__selected-popover-close" aria-label="Close">&times;</button>
+                    <button type="button" class="ms__selected-popover-close" aria-label="Close"></button>
                 </div>
                 <div class="ms__selected-popover-body ms__selected-popover-body--virtual" style="height: 18rem; overflow-y: auto; position: relative; --ms-badge-height-virtual: ${badgeHeight}px;"></div>
             `;

@@ -190,7 +190,7 @@ Selected item badges displayed outside the dropdown.
 | **Badge** | `.ms__badge` | `--ms-badge-height`, `--ms-badge-font-size`, `--ms-badge-font-weight`, `--ms-badge-border-radius` |
 | **Badge Text** | `.ms__badge-text` | `--ms-badge-text-background`, `--ms-badge-text-color`, `--ms-badge-text-padding`, `--ms-badge-text-border` |
 | **Badge Hover** | `.ms__badge:hover .ms__badge-text` | `--ms-badge-text-background-hover`, `--ms-badge-text-color-hover` |
-| **Remove Button** | `.ms__badge-remove` | `--ms-badge-remove-background`, `--ms-badge-remove-color`, `--ms-badge-remove-border`, `--ms-badge-remove-width`, `--ms-badge-remove-font-size` |
+| **Remove Button** | `.ms__badge-remove` | `--ms-badge-remove-background`, `--ms-badge-remove-color`, `--ms-badge-remove-border`, `--ms-badge-remove-width`, `--ms-badge-remove-icon-size` |
 | **Remove Hover** | `.ms__badge-remove:hover` | `--ms-badge-remove-background-hover` |
 | **Remove Focus** | `.ms__badge-remove:focus` | `--ms-badge-remove-box-shadow-focus` |
 
@@ -243,7 +243,7 @@ Alternative to badges - shows "X selected" with clear button.
 | **Wrapper** | `.ms__counter-wrapper` | `--ms-counter-wrapper-background`, `--ms-counter-wrapper-border`, `--ms-counter-wrapper-border-radius`, `--ms-counter-wrapper-padding`, `--ms-counter-wrapper-gap` |
 | **Wrapper Hover** | `.ms__counter-wrapper:hover` | `--ms-counter-wrapper-background-hover`, `--ms-counter-wrapper-border-color-hover` |
 | **Text** | `.ms__count-text` | `--ms-count-text-color`, `--ms-count-text-font-size`, `--ms-count-text-bg`, `--ms-count-text-border` |
-| **Clear Button** | `.ms__count-clear` | `--ms-count-clear-background`, `--ms-count-clear-color`, `--ms-count-clear-size`, `--ms-count-clear-font-size`, `--ms-count-clear-border-radius` |
+| **Clear Button** | `.ms__count-clear` | `--ms-count-clear-background`, `--ms-count-clear-color`, `--ms-count-clear-size`, `--ms-count-clear-icon-size`, `--ms-count-clear-border-radius` |
 | **Clear Hover** | `.ms__count-clear:hover` | `--ms-count-clear-background-hover`, `--ms-count-clear-color-hover` |
 
 ---
@@ -267,7 +267,7 @@ Popover showing all selected items (for count display mode).
 |-------|----------|---------------|
 | **Container** | `.ms__selected-popover` | `--ms-selected-popover-background`, `--ms-selected-popover-border`, `--ms-selected-popover-border-radius`, `--ms-selected-popover-box-shadow`, `--ms-selected-popover-width`, `--ms-selected-popover-max-height`, `--ms-z-index-popover` |
 | **Header** | `.ms__selected-popover-header` | `--ms-selected-popover-header-background`, `--ms-selected-popover-header-color`, `--ms-selected-popover-header-border-bottom`, `--ms-selected-popover-header-font-size`, `--ms-selected-popover-header-font-weight`, `--ms-selected-popover-header-padding` |
-| **Close Button** | `.ms__selected-popover-close` | `--ms-selected-popover-close-background`, `--ms-selected-popover-close-color`, `--ms-selected-popover-close-font-size`, `--ms-selected-popover-close-border-radius`, `--ms-popover-close-size` |
+| **Close Button** | `.ms__selected-popover-close` | `--ms-selected-popover-close-background`, `--ms-selected-popover-close-color`, `--ms-selected-popover-close-icon-size`, `--ms-selected-popover-close-border-radius`, `--ms-popover-close-size` |
 | **Close Hover** | `.ms__selected-popover-close:hover` | `--ms-selected-popover-close-background-hover`, `--ms-selected-popover-close-color-hover` |
 | **Body** | `.ms__selected-popover-body` | `--ms-selected-popover-body-padding`, `--ms-selected-popover-body-gap`, `--ms-selected-popover-body-max-height` |
 

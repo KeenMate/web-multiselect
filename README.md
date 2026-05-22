@@ -1791,7 +1791,9 @@ For the complete list of all available CSS variables, see:
 | `--ms-badge-font-size` | `0.75rem` | Badge font size |
 | `--ms-badge-border-radius` | `0.375rem` | Badge border radius |
 | `--ms-badge-remove-bg` | `var(--ms-accent-color)` | Remove button background |
-| `--ms-badge-remove-color` | `var(--ms-text-color-on-accent)` | Remove button color |
+| `--ms-badge-remove-color` | `var(--ms-text-color-on-accent)` | Remove button (X) color — applied to the SVG via `currentColor` |
+| `--ms-badge-remove-icon-size` | `calc(1.0 * var(--ms-rem))` | Size of the X glyph inside the remove button |
+| `--ms-icon-remove` | (inline SVG `url(...)`) | The X mask SVG; override to swap the glyph shape (alpha-only — color comes from `--ms-badge-remove-color`) |
 | `--ms-badge-counter-text-bg` | `var(--ms-primary-bg)` | BadgeCounter text background ("+X more") |
 | `--ms-badge-counter-text-color` | `var(--ms-text-color-3)` | BadgeCounter text color |
 | `--ms-badge-counter-remove-bg` | `var(--ms-text-color-3)` | BadgeCounter remove button background |

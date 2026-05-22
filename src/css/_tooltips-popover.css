@@ -99,6 +99,16 @@
   color: var(--ms-selected-popover-close-color-hover);
 }
 
+.ms__selected-popover-close::before {
+  content: "";
+  display: block;
+  width: var(--ms-selected-popover-close-icon-size);
+  height: var(--ms-selected-popover-close-icon-size);
+  background-color: currentColor;
+  -webkit-mask: var(--ms-icon-remove) center / contain no-repeat;
+          mask: var(--ms-icon-remove) center / contain no-repeat;
+}
+
 .ms__selected-popover-body {
   display: flex;
   flex-direction: column;
