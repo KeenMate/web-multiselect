@@ -7,6 +7,30 @@ A lightweight, accessible multiselect web component with typeahead search, RTL l
 
 > **⚠️ Security Notice:** This component intentionally allows raw HTML in rendering callbacks to give developers full control over content display. If you display user-generated content, you must sanitize it yourself. See [HTML Injection (XSS) Notice](#html-injection-xss-notice) for the complete list of affected callbacks.
 
+## What's New
+
+### v1.10.0
+
+- **`data-options` attribute on `<web-multiselect>`** — set options declaratively from HTML, no JS bootstrap required (works alongside `initial-values` for pure-HTML / server-rendered / SharePoint workbench scenarios).
+- **`form.reset()` now clears the selection** — the element is now form-associated (`static formAssociated = true` + `ElementInternals` + `formResetCallback()`).
+- **Dropdown / hint / selected popover no longer clipped inside scrollable ancestors** — Floating UI now uses `strategy: 'fixed'` for all three panels, so they escape `overflow: hidden|auto|scroll` containers (e.g. SharePoint Framework workbenches).
+- **`initial-values` now works when options arrive after init** — values are reconciled on every `options` mutation, not just at construction.
+- **Remove / close (×) buttons render as SVG masks** — pixel-centered regardless of font; color still flows through the existing `--ms-*-color` variables via `currentColor`; three new `--ms-*-icon-size` variables for theming.
+- **Keyboard `Enter` respects disabled options** — previously only the click handler did.
+- **End-to-end test suite** — 114 Playwright specs across 19 fixture pages (`npm run test:e2e`).
+- **`THEMING.md`** — new reference cataloguing every theme-able component state and the CSS variables that drive it.
+
+### v1.9.0
+
+- **Live attribute / callback updates no longer rebuild the DOM** — `updateOptions(partial)` merges in place; selection state, scroll position, focus, and tooltips are preserved across attribute changes.
+- **9 previously-dead per-component CSS override hooks are now wired** — `--ms-hint-border-color`, `--ms-dropdown-border-color`, `--ms-actions-border-color`, `--ms-group-border-color`, `--ms-badge-counter-border-color`, `--ms-selected-popover-border-color`, `--ms-selected-popover-header-border-color`, `--ms-option-outline-color-focused`, `--ms-option-border-matched-color`.
+- **`selectAll` / `clearAll` now fire per-item `selectCallback` / `deselectCallback`** — consumers wiring per-item analytics or side effects no longer silently miss bulk operations.
+- **New `Tooltip` class** consolidating three previous tooltip implementations; fixes a handle leak and a popover-vs-main-container collision.
+- **`--base-primary-bg` theming variable** — `--ms-primary-bg` reads it first, then `--base-main-bg`, then a hardcoded default.
+- Plus many fixes across custom action buttons, grouped-option focus, badge cursors, focus rings, and logging.
+
+For the complete list (including bug fixes and internal changes), see [CHANGELOG.md](CHANGELOG.md).
+
 ## Features
 
 - 📝 **Declarative HTML** - Use standard `<option>` and `<optgroup>` elements - no JavaScript required for simple cases!
