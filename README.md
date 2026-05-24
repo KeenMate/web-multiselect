@@ -14,6 +14,7 @@ A lightweight, accessible multiselect web component with typeahead search, RTL l
 - **Dropdown / hint / selected popover no longer clipped inside scrollable ancestors** — Floating UI now uses `strategy: 'fixed'` for all three panels, so they escape `overflow: hidden|auto|scroll` containers (e.g. SharePoint Framework workbenches).
 - **`initial-values` now works when options arrive after init** — values are reconciled on every `options` mutation, not just at construction.
 - **Remove / close (×) buttons render as SVG masks** — pixel-centered regardless of font; color still flows through the existing `--ms-*-color` variables via `currentColor`; three new `--ms-*-icon-size` variables for theming.
+- **Count-clear / popover-close hover backdrop now matches the rest of the component** — was a circle (`border-radius: 50%`), now a small rounded rectangle (`--ms-border-radius-sm`) consistent with every other interactive element. Themes that prefer the circle can set `--ms-count-clear-border-radius` and `--ms-selected-popover-close-border-radius` back to `50%`.
 - **Keyboard `Enter` respects disabled options** — previously only the click handler did.
 - **End-to-end test suite** — 114 Playwright specs across 19 fixture pages (`npm run test:e2e`).
 - **`THEMING.md`** — new reference cataloguing every theme-able component state and the CSS variables that drive it.

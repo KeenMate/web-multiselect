@@ -484,7 +484,7 @@
   --ms-count-clear-bg: transparent;
   --ms-count-clear-color: var(--ms-text-color-3);
   --ms-count-clear-font-size: calc(var(--base-font-size-lg, 1.8) * var(--ms-rem));
-  --ms-count-clear-border-radius: 50%;
+  --ms-count-clear-border-radius: var(--ms-border-radius-sm);
   --ms-count-clear-bg-hover: color-mix(in srgb, var(--ms-accent-color) 20%, transparent);
   --ms-count-clear-color-hover: var(--ms-accent-color);
   --ms-count-clear-icon-size: calc(1.4 * var(--ms-rem));
@@ -526,7 +526,7 @@
   --ms-selected-popover-close-bg: transparent;
   --ms-selected-popover-close-color: var(--ms-text-color-3);
   --ms-selected-popover-close-font-size: calc(var(--base-font-size-xl, 2) * var(--ms-rem));
-  --ms-selected-popover-close-border-radius: 50%;
+  --ms-selected-popover-close-border-radius: var(--ms-border-radius-sm);
   --ms-selected-popover-close-bg-hover: color-mix(in srgb, var(--ms-accent-color) 20%, transparent);
   --ms-selected-popover-close-color-hover: var(--ms-accent-color);
   --ms-selected-popover-close-icon-size: calc(1.4 * var(--ms-rem));
