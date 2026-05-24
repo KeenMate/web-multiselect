@@ -1157,14 +1157,25 @@ export class WebMultiSelect<T = any> {
         if (option && !option.classList.contains('ms__option--disabled')) {
             e.preventDefault();
             const value = option.dataset.value!;
-            const optionData = this.filteredOptions.find(opt => String(this.getItemValue(opt)) === value);
+            const optionIndex = this.filteredOptions.findIndex(opt => String(this.getItemValue(opt)) === value);
             interactionLogger.debug(`[${this.instanceId}] Option clicked:`, {
                 value,
+                optionIndex,
                 closeOnSelect: this.options.isCloseOnSelect,
                 placeholder: this.options.searchPlaceholder
             });
-            if (optionData) {
-                this.toggleOption(optionData);
+            if (optionIndex >= 0) {
+                // Anchor keyboard focus to the clicked option so subsequent
+                // ArrowDown/ArrowUp move relative to where the user clicked.
+                this.focusedIndex = optionIndex;
+                this.toggleOption(this.filteredOptions[optionIndex]);
+                // Each option contains a focusable <input type="checkbox">, so
+                // clicking pulls focus off the search input — and the keydown
+                // listener is bound to the input. Put focus back so the user
+                // can keep navigating with the keyboard.
+                if (this.isOpen) {
+                    this.input.focus();
+                }
             }
         }
     }

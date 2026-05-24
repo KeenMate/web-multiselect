@@ -110,6 +110,25 @@ test.describe('Enter / Escape', () => {
     });
 });
 
+test.describe('click anchors keyboard focus', () => {
+    test('ArrowDown after click moves to the option below the clicked one', async ({ page }) => {
+        const p = picker(page, 'kb-filter');
+        await openWithKeyboard(p);
+
+        // Click Item 05 — the production code must do two things:
+        //   1) anchor focusedIndex to the clicked option (5), so ArrowDown
+        //      increments to 6 instead of jumping back to 0;
+        //   2) put focus back on the search input (which clicks knock loose
+        //      because each option contains a focusable checkbox), so the
+        //      keydown listener actually receives the next ArrowDown.
+        // No manual .focus() here — that's the production behavior under test.
+        await p.locator('.ms__option').filter({ hasText: 'Item 05' }).click();
+        await page.keyboard.press('ArrowDown');
+
+        await expect(focused(p)).toContainText('Item 06');
+    });
+});
+
 test.describe('navigate mode shortcuts', () => {
     test('Ctrl+ArrowDown jumps to next match', async ({ page }) => {
         const p = picker(page, 'kb-navigate');
