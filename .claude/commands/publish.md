@@ -1,5 +1,5 @@
 ---
-description: Prepare @keenmate/web-multiselect for npm publish — bump version, finalize CHANGELOG, build, test, commit
+description: Prepare @keenmate/web-multiselect for npm publish — bump version, finalize CHANGELOG/README, build, test, commit
 argument-hint: rc|release|patch|minor|major
 ---
 
@@ -27,7 +27,7 @@ Single-package repo, everything at root:
 
 - **`package.json`** — `version` field is the source of truth.
 - **`CHANGELOG.md`** — at the root. Topmost `## [X.Y.Z] - YYYY-MM-DD` heading **without** the `PUBLISHED` marker is the WIP section.
-- **`README.md`** — at the root. Does **not** carry a "What's New" section in this repo, so no per-release rename pass is required.
+- **`README.md`** — at the root. Carries `## What's New in vX.Y.Z` sections near the top (one per release, the **two most recent** retained). The current WIP cycle must already have a `## What's New in vWIP_VERSION` section in place before `/publish` runs — writing the highlights is curatorial, not mechanical.
 - **`dist/`** — gitignored. Produced by `npm run build` (Vite). Never staged.
 
 ## CHANGELOG convention in this repo
@@ -69,8 +69,9 @@ If `WIP_VERSION` ≠ `NEW_VERSION` (e.g. the WIP is `1.10.0-rc01` but the user a
 
 ### 1. Sanity checks
 
-- Run `git status`. The repo intentionally keeps `.claude/`, `test-results/`, and `nul` untracked — those are fine. If there are **other** uncommitted changes that aren't `CHANGELOG.md` or `package.json`, list them and ask the user before continuing. (Typical case: substantive source changes belonging in this release that haven't been committed yet — confirm they're intended for this version before bumping.)
+- Run `git status`. The repo intentionally keeps `.claude/`, `test-results/`, and `nul` untracked — those are fine. If there are **other** uncommitted changes that aren't `CHANGELOG.md`, `README.md`, or `package.json`, list them and ask the user before continuing. (Typical case: substantive source changes belonging in this release that haven't been committed yet — confirm they're intended for this version before bumping.)
 - Confirm the WIP CHANGELOG section has at least one bullet of substantive content under `### Added`, `### Changed`, `### Removed`, `### Fixed`, or `### Internal`. If empty, stop — there's nothing meaningful to release.
+- Confirm `./README.md` has a `## What's New in vWIP_VERSION` section. If it's missing, **stop and ask the user to add it** — the publish step shouldn't invent the highlights, that's a writing call.
 
 ### 2. Bump version (if needed)
 
@@ -88,7 +89,22 @@ In `./CHANGELOG.md`:
 - Leave all bullet content untouched.
 - **Do not** create an empty new WIP section — the next dev cycle's first CHANGELOG edit will create one.
 
-### 4. Validate CHANGELOG entries match recent work
+### 4. Update README "What's New" — only if version changed
+
+In `./README.md`:
+
+- If the existing `## What's New in vWIP_VERSION` section's version differs from `NEW_VERSION` (e.g. promoting `1.10.0-rc01` → `1.10.0`), rename its heading to `## What's New in vNEW_VERSION`. (No content rewrites — the text was already curated for this release.)
+- Then count the `## What's New in vX.Y.Z` headings. If there are more than **two**, delete the oldest ones so only the **two most recent** remain (the just-finalized one plus the one before it).
+
+For `rc` arg this is normally a no-op on the heading itself — only trims if someone left an extra-old section behind.
+
+### 5. Validate README reflects the release
+
+Read both the finalized CHANGELOG section and the matching `What's New in vNEW_VERSION` section. Every **Added** or **Changed** bullet in the CHANGELOG that represents a user-facing feature or behavior change should have a corresponding hit in the What's New section (paraphrased, not verbatim). Pure internal refactors and `Fixed`-only entries don't need coverage, though headline bug fixes worth advertising (e.g. "X used to silently fail; now works") are worth a bullet.
+
+If you find a significant CHANGELOG entry that isn't reflected in What's New, add a bullet for it. If the section ends up with more than ~8 bullets after this pass, condense — What's New should be scannable, not exhaustive.
+
+### 6. Validate CHANGELOG entries match recent work
 
 Find the previous `PUBLISHED` tag in CHANGELOG (the version just before NEW_VERSION) and locate the commit that bumped to it — usually a commit whose subject starts with `v<previous-version>` or `- v<previous-version>`. Run `git log --oneline <previous-publish-commit>..HEAD` to list commits since.
 
@@ -96,7 +112,7 @@ Also check `git diff` (or `git status`) for any uncommitted source/test work out
 
 For every substantive commit or uncommitted change, verify the WIP CHANGELOG section mentions it. If something significant is missing, **stop and ask the user** before finalizing — don't invent entries on their behalf. Pure example/doc tweaks and trivial typo fixes don't need entries.
 
-### 5. Run e2e tests
+### 7. Run e2e tests
 
 Run `npm run test:e2e` (or equivalently `make test-e2e`). All specs must pass.
 
@@ -104,7 +120,7 @@ If anything fails, **stop and report**. Do not proceed to build/commit. The user
 
 If Playwright complains that chromium isn't installed, suggest `make test-e2e-install` and stop.
 
-### 6. Build the package
+### 8. Build the package
 
 Run `npm run build` (or `make build`). This:
 - Cleans `dist/` (`npm run clean:dist`).
@@ -117,14 +133,15 @@ After build, do a quick smoke check on the emitted artifacts:
 - `dist/style.css` exists.
 - `dist/index.d.ts` (or whatever the `types` field points to) exists.
 
-### 7. Verify the package contents
+### 9. Verify the package contents
 
 Run `npm pack --dry-run` and confirm the file list includes `dist/`, `src/css/`, `component-variables.manifest.json`, `README.md`, `LICENSE`, and `package.json`. If anything user-facing is missing or anything private leaked in (e.g. `test/`, `e2e/`, `examples-*.html`), stop and report — the `files` field in `package.json` controls this and the leak needs fixing before publish.
 
-### 8. Commit
+### 10. Commit
 
 Stage:
 - `./CHANGELOG.md`
+- `./README.md`
 - `./package.json`
 
 Do **not** stage `dist/` — it's gitignored.
@@ -143,7 +160,7 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
 
 The `vX.Y.Z - …` subject style and the `Co-Authored-By: Claude Opus 4.7 (1M context)` trailer both match recent release commits in this repo.
 
-### 9. Report
+### 11. Report
 
 Report back with:
 
@@ -163,6 +180,8 @@ Report back with:
 - **Do not push to git remote.** The commit stays local until the user pushes.
 - **Do not create an empty `[Unreleased]` or new WIP heading** in CHANGELOG after finalizing — the next dev cycle's first edit creates the next heading.
 - **Do not retro-fix older CHANGELOG sections** that are missing the `PUBLISHED` tag — the convention isn't uniformly applied historically, and editing prior sections noises up the diff.
+- **Do not invent README "What's New" highlights.** If the WIP `## What's New in vWIP_VERSION` section is missing in Step 1, stop and ask the user — the writing call is theirs.
+- **Do not keep more than two `## What's New in vX.Y.Z` sections in the README.** Step 4 trims older ones; if you see three or more after Step 4, you missed one.
 - **Do not skip `npm run build`** — without it `dist/` is stale and the publish would ship outdated artifacts (or fail entirely if `dist/` was wiped by `make clean`).
 - **Do not skip the e2e run** — this repo's tests have caught real regressions during the 1.10.0 cycle, and the gate is explicit.
 - **Do not invent CHANGELOG entries** to cover commits you find; ask the user if something's missing.

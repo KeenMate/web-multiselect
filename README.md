@@ -7,9 +7,7 @@ A lightweight, accessible multiselect web component with typeahead search, RTL l
 
 > **⚠️ Security Notice:** This component intentionally allows raw HTML in rendering callbacks to give developers full control over content display. If you display user-generated content, you must sanitize it yourself. See [HTML Injection (XSS) Notice](#html-injection-xss-notice) for the complete list of affected callbacks.
 
-## What's New
-
-### v1.10.0
+## What's New in v1.10.0
 
 - **`data-options` attribute on `<web-multiselect>`** — set options declaratively from HTML, no JS bootstrap required (works alongside `initial-values` for pure-HTML / server-rendered / SharePoint workbench scenarios).
 - **`form.reset()` now clears the selection** — the element is now form-associated (`static formAssociated = true` + `ElementInternals` + `formResetCallback()`).
@@ -20,7 +18,7 @@ A lightweight, accessible multiselect web component with typeahead search, RTL l
 - **End-to-end test suite** — 114 Playwright specs across 19 fixture pages (`npm run test:e2e`).
 - **`THEMING.md`** — new reference cataloguing every theme-able component state and the CSS variables that drive it.
 
-### v1.9.0
+## What's New in v1.9.0
 
 - **Live attribute / callback updates no longer rebuild the DOM** — `updateOptions(partial)` merges in place; selection state, scroll position, focus, and tooltips are preserved across attribute changes.
 - **9 previously-dead per-component CSS override hooks are now wired** — `--ms-hint-border-color`, `--ms-dropdown-border-color`, `--ms-actions-border-color`, `--ms-group-border-color`, `--ms-badge-counter-border-color`, `--ms-selected-popover-border-color`, `--ms-selected-popover-header-border-color`, `--ms-option-outline-color-focused`, `--ms-option-border-matched-color`.
@@ -28,8 +26,6 @@ A lightweight, accessible multiselect web component with typeahead search, RTL l
 - **New `Tooltip` class** consolidating three previous tooltip implementations; fixes a handle leak and a popover-vs-main-container collision.
 - **`--base-primary-bg` theming variable** — `--ms-primary-bg` reads it first, then `--base-main-bg`, then a hardcoded default.
 - Plus many fixes across custom action buttons, grouped-option focus, badge cursors, focus rings, and logging.
-
-For the complete list (including bug fixes and internal changes), see [CHANGELOG.md](CHANGELOG.md).
 
 ## Features
 
