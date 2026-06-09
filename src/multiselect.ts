@@ -3,11 +3,93 @@
  * Comprehensive multiselect component with rich content support and floating hints
  */
 
-import { computePosition, flip, offset, autoUpdate, shift, type Placement } from '@floating-ui/dom';
+import { computePosition, flip, offset, autoUpdate, shift, platform, type Placement } from '@floating-ui/dom';
 import type { MultiSelectConfig, BadgesPosition, SearchInputMode, SearchMode, OptionContentRenderContext, BadgeContentRenderContext } from './types';
 import { initLogger, dataLogger, uiLogger, interactionLogger } from './logger';
 import { VirtualScroll } from './virtual-scroll';
 import { Tooltip } from './tooltip';
+
+/**
+ * Resolve the nearest ancestor that genuinely establishes a containing block for a
+ * `position: fixed` descendant — walking across shadow-DOM boundaries. Returns `window`
+ * if none is found, matching the browser's actual layout behavior.
+ *
+ * Per CSS specs, ONLY these properties cause the browser to anchor a fixed-positioned
+ * descendant to an ancestor (instead of the viewport):
+ *   - `transform` (non-none)
+ *   - `perspective` (non-none)
+ *   - `filter` / `backdrop-filter` (non-none)
+ *   - `will-change: transform | filter | perspective`
+ *
+ * Floating UI's default `getOffsetParent` ALSO treats `contain: layout|paint|strict|content`
+ * and `container-type` as containing-block-establishing for fixed positioning, but those
+ * properties only create a CB for *absolute* positioning — the browser keeps fixed elements
+ * anchored to the viewport. The mismatch surfaces as the panel landing `ancestor.x` pixels
+ * off from where Floating UI computed it.
+ *
+ * This function intentionally omits `contain` and `container-type` so the result agrees
+ * with what the browser actually does, regardless of where the panel lives in the tree
+ * (shadow DOM or light DOM).
+ */
+function getFixedPositionOffsetParent(el: Element): Element | Window {
+    let node: Node | null = el;
+    while (node) {
+        if (node === document.body || node === document.documentElement) break;
+        if (node instanceof Element) {
+            const cs = getComputedStyle(node);
+            if (cs.transform !== 'none') return node;
+            if (cs.perspective !== 'none') return node;
+            if (cs.filter !== 'none') return node;
+            const bdf = (cs as any).backdropFilter;
+            if (bdf && bdf !== 'none') return node;
+            if (cs.willChange && /\b(transform|filter|perspective)\b/.test(cs.willChange)) return node;
+        }
+        // Cross shadow root boundary so we see light-DOM ancestors of the host too.
+        const parent = (node as any).parentNode;
+        node = parent instanceof ShadowRoot ? parent.host : parent;
+    }
+    return window;
+}
+
+/**
+ * Given an observed drift of the panel from its expected viewport position, walk up from the
+ * input and find the first ancestor whose `getBoundingClientRect().{x,y}` matches the drift.
+ * That ancestor is the most likely containing block the browser actually anchored the fixed
+ * panel to. Returns null if no match is found (drift caused by something else — visual viewport,
+ * iframe, scrollbar gutter, etc.).
+ */
+function findDriftCulprit(el: Element, driftX: number, driftY: number): Element | null {
+    let node: Node | null = el;
+    while (node) {
+        if (node === document.body || node === document.documentElement) break;
+        if (node instanceof Element) {
+            const rect = node.getBoundingClientRect();
+            if (Math.abs(rect.x - driftX) < 2 && Math.abs(rect.y - driftY) < 2) return node;
+        }
+        const parent = (node as any).parentNode;
+        node = parent instanceof ShadowRoot ? parent.host : parent;
+    }
+    return null;
+}
+
+/**
+ * Report which CB-establishing properties (per Floating UI's `isContainingBlock`) are set on
+ * the given element. Used by the drift warning to point at the specific CSS that's likely
+ * responsible — so the developer doesn't have to manually inspect computed styles.
+ */
+function listContainingBlockProps(el: Element): string {
+    const cs = getComputedStyle(el);
+    const props: string[] = [];
+    if (cs.transform !== 'none') props.push(`transform: ${cs.transform}`);
+    if (cs.perspective !== 'none') props.push(`perspective: ${cs.perspective}`);
+    if (cs.filter !== 'none') props.push(`filter: ${cs.filter}`);
+    const bdf = (cs as any).backdropFilter;
+    if (bdf && bdf !== 'none') props.push(`backdrop-filter: ${bdf}`);
+    if (cs.willChange && /\b(transform|filter|perspective)\b/.test(cs.willChange)) props.push(`will-change: ${cs.willChange}`);
+    if (cs.contain && /\b(paint|layout|strict|content)\b/.test(cs.contain)) props.push(`contain: ${cs.contain}`);
+    if ((cs as any).containerType && (cs as any).containerType !== 'normal') props.push(`container-type: ${(cs as any).containerType}`);
+    return props.join('; ');
+}
 
 export class WebMultiSelect<T = any> {
     private element: HTMLElement;
@@ -30,6 +112,7 @@ export class WebMultiSelect<T = any> {
     private isRTL = false;
     private effectiveBadgesPosition: BadgesPosition = 'bottom';
     private justClosedViaClick = false;
+    private positioningDriftWarned = false;
 
     // Floating UI cleanup functions
     private dropdownCleanup: (() => void) | null = null;
@@ -1550,7 +1633,36 @@ export class WebMultiSelect<T = any> {
         applyMaxWidth?: boolean;
         afterPosition?: () => void;
     }): () => void {
+        // Floating UI's default `getOffsetParent` walks ancestors looking for any element with
+        // a CB-establishing property, including `contain: layout|paint|strict|content` and
+        // `container-type: <non-normal>`. In some real-world shadow-DOM layouts (e.g. a
+        // <web-multiselect> nested under `.pa-layout__main { container-type: inline-size }`)
+        // the browser does NOT actually anchor the panel to that ancestor, and Floating UI's
+        // resulting coordinates end up offset by the ancestor's viewport-x.
+        //
+        // To match what the browser reliably does for `position: fixed`, this override
+        // narrows the heuristic to the properties that every browser definitively honors
+        // as a fixed-positioning CB: `transform`, `perspective`, `filter`, `backdrop-filter`,
+        // and qualifying `will-change`. For other CB-establishing properties (contain,
+        // container-type) we fall back to `window` and trust the browser's actual layout.
+        // The `verifyPanelLanded` check below catches the inverse edge case — if a consumer's
+        // ancestor genuinely anchors fixed (browser-side) but we returned `window`, the panel
+        // would drift, and we surface a console.warn pointing at the likely culprit.
+        const customPlatform = {
+            ...platform,
+            getOffsetParent: () => getFixedPositionOffsetParent(this.input)
+        };
+
         return autoUpdate(this.input, panel, () => {
+            // Clamp panel size BEFORE computePosition so shift() measures the final width.
+            // Otherwise shift() sees the panel's natural content width (which can be wider than
+            // the input — e.g. long option labels), pushes x left to keep the natural-width
+            // panel in viewport, and the subsequent `width: input.offsetWidth` clamp leaves
+            // the panel stranded to the left of the input.
+            panel.style.width = `${this.input.offsetWidth}px`;
+            if (this.options.dropdownMinWidth) panel.style.minWidth = this.options.dropdownMinWidth;
+            if (opts.applyMaxWidth && this.options.dropdownMaxWidth) panel.style.maxWidth = this.options.dropdownMaxWidth;
+
             const locked = opts.isLocked?.() ?? true;
             const current = opts.getPlacement();
             const placement: Placement = (locked && current) ? current : 'bottom-start';
@@ -1560,20 +1672,53 @@ export class WebMultiSelect<T = any> {
                 shift({ padding: 8 })
             ];
 
-            computePosition(this.input, panel, { placement, strategy: 'fixed', middleware }).then(({ x, y, placement: finalPlacement }) => {
+            computePosition(this.input, panel, { placement, strategy: 'fixed', middleware, platform: customPlatform }).then(({ x, y, placement: finalPlacement }) => {
                 if (!current) opts.setPlacement(finalPlacement);
-                const styles: Record<string, string> = {
+                Object.assign(panel.style, {
                     position: 'fixed',
                     left: `${x}px`,
-                    top: `${y}px`,
-                    width: `${this.input.offsetWidth}px`
-                };
-                if (this.options.dropdownMinWidth) styles.minWidth = this.options.dropdownMinWidth;
-                if (opts.applyMaxWidth && this.options.dropdownMaxWidth) styles.maxWidth = this.options.dropdownMaxWidth;
-                Object.assign(panel.style, styles);
+                    top: `${y}px`
+                });
+                this.verifyPanelLanded(panel, x, y);
                 opts.afterPosition?.();
             });
         });
+    }
+
+    /**
+     * Sanity-check that the browser placed the panel where we told it to. With `position: fixed`
+     * and no transformed/perspective/filter ancestor, `left: ${x}px` must render at viewport-x = x.
+     * If the rendered position drifts, the consumer has an ancestor that establishes a fixed
+     * containing block but isn't on our reliable-anchors list (likely `contain: paint|layout|strict`
+     * or `container-type` — which the spec says creates a CB but the browser's actual behavior
+     * varies across shadow-DOM scenarios). We can't fix it from inside the library, but we can
+     * surface a clear warning so the developer knows where to look.
+     *
+     * Fires at most once per multiselect instance to avoid flooding the console during autoUpdate.
+     */
+    private verifyPanelLanded(panel: HTMLElement, expectedX: number, expectedY: number): void {
+        if (this.positioningDriftWarned) return;
+        const rect = panel.getBoundingClientRect();
+        const driftX = rect.x - expectedX;
+        const driftY = rect.y - expectedY;
+        if (Math.abs(driftX) < 1 && Math.abs(driftY) < 1) return;
+
+        this.positioningDriftWarned = true;
+        const culprit = findDriftCulprit(this.input, driftX, driftY);
+        const culpritDescription = culprit
+            ? `<${culprit.tagName.toLowerCase()}${culprit.id ? '#' + culprit.id : ''}${typeof culprit.className === 'string' && culprit.className ? '.' + culprit.className.split(/\s+/).filter(Boolean).slice(0, 2).join('.') : ''}>`
+            : 'an ancestor element (could not auto-identify)';
+        const culpritCss = culprit ? listContainingBlockProps(culprit) : '';
+
+        console.warn(
+            `[@keenmate/web-multiselect] Dropdown panel rendered ${driftX.toFixed(0)}px / ${driftY.toFixed(0)}px ` +
+            `away from where the library positioned it. Most likely culprit: ${culpritDescription}` +
+            (culpritCss ? ` (has ${culpritCss})` : '') + `.\n` +
+            `An ancestor of <web-multiselect> establishes a fixed-positioning containing block that the library's ` +
+            `heuristic doesn't recognize. Fix on your side: replace the property with \`transform: translateZ(0)\` ` +
+            `on that ancestor, OR move the trigger out of that ancestor's subtree. If neither is acceptable, ` +
+            `please file an issue at https://github.com/keenmate/web-multiselect/issues with the ancestor's computed CSS.`
+        );
     }
 
     private positionDropdown(): void {

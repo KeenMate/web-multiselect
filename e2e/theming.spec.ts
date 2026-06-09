@@ -27,9 +27,10 @@ test('individual --ms-* override flows through to the rendered border', async ({
     expect(borderColor).toBe('rgb(255, 0, 0)');
 });
 
-test('--base-primary-bg flows through to --ms-primary-bg (accent)', async ({ page }) => {
-    const p = picker(page, 'base-primary');
-    // Read --ms-primary-bg from the picker host.
-    const accent = await p.evaluate(el => getComputedStyle(el).getPropertyValue('--ms-primary-bg').trim());
-    expect(accent).toMatch(/^rgb\(0,\s*255,\s*0\)$/);
+test('--base-hover-bg flows through to --ms-primary-bg (option hover)', async ({ page }) => {
+    const p = picker(page, 'base-hover');
+    // --ms-primary-bg paints option hover / focus / action-button hover. With --base-hover-bg
+    // set, --ms-primary-bg resolves to it directly (no color-mix fallback).
+    const hoverBg = await p.evaluate(el => getComputedStyle(el).getPropertyValue('--ms-primary-bg').trim());
+    expect(hoverBg).toMatch(/^rgb\(0,\s*255,\s*0\)$/);
 });

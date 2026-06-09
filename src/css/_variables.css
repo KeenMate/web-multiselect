@@ -15,6 +15,28 @@
 
 :host {
   /* ==========================================================================
+     COLOR SCHEME
+     ==========================================================================
+     `color-scheme` is INHERITED on this element — we deliberately do NOT
+     declare it on `:host`. Reason: every hardcoded color fallback below is
+     wrapped in `light-dark(<light>, <dark>)`, which picks one of the two
+     based on the host's used color-scheme. Declaring `color-scheme: light dark`
+     here would *override* whatever the consumer's app declared on <html>,
+     <body>, or an ancestor — flipping forced-dark apps back to "follow OS",
+     and breaking visual coherence with the surrounding page.
+     By letting it inherit:
+       - dhl-style apps that set `body { color-scheme: dark }` propagate it
+         into our shadow DOM unchanged, and `light-dark()` resolves to dark.
+       - apps that set `html { color-scheme: light dark }` get OS-preference
+         switching, end-to-end.
+       - apps that declare nothing get the historical default (light), same
+         as before this fallback set was introduced — no behavior change.
+     Consumers who want explicit per-multiselect control can still set
+     `style="color-scheme: dark"` on the <web-multiselect> element.
+
+     ========================================================================== */
+
+  /* ==========================================================================
      BASE SIZING UNIT
      ==========================================================================
      All sizing values are based on this unit for consistent scaling.
@@ -47,15 +69,21 @@
   --ms-accent-color-hover: var(--base-accent-color-hover, #2563eb);
   --ms-accent-color-active: var(--base-accent-color-active, #1d4ed8);
 
-  /* Accent Color Light Variants (for backgrounds) */
-  --ms-accent-color-light: var(--base-accent-color-light, #eff6ff);
-  --ms-accent-color-light-hover: var(--base-accent-color-light-hover, #e0f2fe);
+  /* Accent Color Light Variants (for backgrounds)
+     Dark variants are muted dark-blue tints that read like "accent-tinted dark surface" rather than
+     "near-white", keeping badge / +X more / popover-header backgrounds visible on a dark page. */
+  --ms-accent-color-light: var(--base-accent-color-light, light-dark(#eff6ff, #1e3a5f));
+  --ms-accent-color-light-hover: var(--base-accent-color-light-hover, light-dark(#e0f2fe, #264a73));
 
-  /* Text Color Levels (FluentUI-style hierarchy) */
-  --ms-text-color-1: var(--base-text-color-1, #111827);
-  --ms-text-color-2: var(--base-text-color-2, #353b47);
-  --ms-text-color-3: var(--base-text-color-3, #6b7280);
-  --ms-text-color-4: var(--base-text-color-4, #a0a3a9);
+  /* Text Color Levels (FluentUI-style hierarchy)
+     Light mode = the original dark-on-light palette (#111827 → #a0a3a9).
+     Dark mode  = the same hierarchy inverted (#f5f5f5 → #737373) so heading/body/secondary/disabled
+     keep the same relative contrast steps. text-color-on-accent stays white in both modes — the
+     accent color is the same blue in both, and white-on-blue reads in both. */
+  --ms-text-color-1: var(--base-text-color-1, light-dark(#111827, #f5f5f5));
+  --ms-text-color-2: var(--base-text-color-2, light-dark(#353b47, #d4d4d4));
+  --ms-text-color-3: var(--base-text-color-3, light-dark(#6b7280, #a3a3a3));
+  --ms-text-color-4: var(--base-text-color-4, light-dark(#a0a3a9, #737373));
   --ms-text-color-on-accent: var(--base-text-color-on-accent, #ffffff);
 
   /* Legacy aliases (for backward compatibility) */
@@ -63,14 +91,15 @@
   --ms-text-secondary: var(--ms-text-color-3);
 
   /* Background Colors
-     --ms-primary-bg drives option hover/focus, action-button hover, counter-wrapper hover, etc.
-     Theme authors can override via either --base-primary-bg (semantic) or --base-main-bg (legacy);
-     direct --ms-primary-bg / --ms-option-bg-hover overrides take precedence over both. */
-  --ms-primary-bg: var(--base-primary-bg, var(--base-main-bg, #f3f4f6));
-  --ms-primary-bg-hover: var(--base-hover-bg, #e5e7eb);
+     --ms-primary-bg paints hover/focus states (option hover, action-button hover, counter
+     hover, etc.); --ms-primary-bg-hover is one step stronger (selected-active, counter badge).
+     The color-mix fallback keeps the hover visible on dark themes — a flat var(--base-main-bg)
+     substrate used to make hover collapse onto the panel background. */
+  --ms-primary-bg: var(--base-hover-bg, color-mix(in srgb, var(--ms-text-color-1) 8%, var(--base-main-bg, light-dark(#ffffff, #1a1a1a))));
+  --ms-primary-bg-hover: var(--base-active-bg, color-mix(in srgb, var(--ms-text-color-1) 14%, var(--base-main-bg, light-dark(#ffffff, #1a1a1a))));
 
   /* Border Base Variables */
-  --ms-border-color: var(--base-border-color, #e5e7eb);
+  --ms-border-color: var(--base-border-color, light-dark(#e5e7eb, #3a3a3a));
   --ms-border: var(--base-border, 1px solid var(--ms-border-color));
 
   /* ==========================================================================
@@ -80,7 +109,7 @@
      Example: --ms-input-bg, --ms-option-text-color-hover */
 
   /* Input Component Semantic Variables */
-  --ms-input-bg: var(--base-input-bg, #ffffff);
+  --ms-input-bg: var(--base-input-bg, light-dark(#ffffff, #1a1a1a));
   --ms-input-color: var(--base-input-color, var(--ms-text-color-1));
   --ms-input-border: var(--base-input-border, 1px solid var(--ms-border-color));
   --ms-input-border-hover: var(--base-input-border-hover, 1px solid var(--ms-accent-color));
@@ -98,18 +127,18 @@
   --ms-counter-badge-color: var(--ms-text-color-on-accent);
 
   /* Floating Hint Semantic Variables */
-  --ms-hint-bg: var(--base-main-bg, #ffffff);
+  --ms-hint-bg: var(--base-main-bg, light-dark(#ffffff, #1a1a1a));
   --ms-hint-color: var(--ms-text-color-4);
   --ms-hint-border-color: var(--ms-border-color);
 
   /* Dropdown Semantic Variables */
-  --ms-dropdown-bg: var(--base-dropdown-bg, #ffffff);
+  --ms-dropdown-bg: var(--base-dropdown-bg, var(--base-elevated-bg, light-dark(#ffffff, #1a1a1a)));
   --ms-dropdown-text-color: var(--ms-text-color-1);
   --ms-dropdown-border-color: var(--ms-border-color);
   --ms-dropdown-box-shadow-semantic: var(--base-dropdown-box-shadow, 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1));
 
   /* Dropdown Actions Semantic Variables */
-  --ms-actions-bg: var(--base-main-bg, #ffffff);
+  --ms-actions-bg: var(--base-main-bg, light-dark(#ffffff, #1a1a1a));
   --ms-actions-border-color: var(--ms-border-color);
 
   /* Action Button Semantic Variables */
@@ -182,12 +211,14 @@
   --ms-count-clear-color: var(--ms-text-color-3);
   --ms-count-clear-color-hover: var(--ms-accent-color);
 
-  /* Tooltip Semantic Variables */
-  --ms-tooltip-bg: var(--base-tooltip-bg, #333333);
-  --ms-tooltip-text-color: var(--base-tooltip-text-color, #ffffff);
+  /* Tooltip Semantic Variables
+     Tooltips invert relative to the page: dark tooltip on light page, light tooltip on dark page.
+     This keeps the tooltip distinct from its surrounding surface in both modes. */
+  --ms-tooltip-bg: var(--base-tooltip-bg, var(--base-inverse-bg, light-dark(#333333, #f5f5f5)));
+  --ms-tooltip-text-color: var(--base-tooltip-text-color, light-dark(#ffffff, #1a1a1a));
 
   /* Selected Popover Semantic Variables */
-  --ms-selected-popover-bg: var(--base-dropdown-bg, #ffffff);
+  --ms-selected-popover-bg: var(--base-dropdown-bg, var(--base-elevated-bg, light-dark(#ffffff, #1a1a1a)));
   --ms-selected-popover-border-color: var(--ms-border-color);
   --ms-selected-popover-header-bg: color-mix(in srgb, var(--ms-accent-color) 10%, transparent);
   --ms-selected-popover-header-color: var(--ms-text-color-1);

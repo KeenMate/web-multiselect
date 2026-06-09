@@ -54,7 +54,7 @@
             --base-text-color-3: #808080;
             --base-border-color: #404040;
             --base-border: 1px solid #404040; /* Sets all component borders at once */
-            --base-primary-bg: #3a3a3a;
+            --base-hover-bg: #3a3a3a;
             --base-accent-color: #667eea;
 
             /* Component-specific overrides */
@@ -107,9 +107,9 @@
             --base-text-color-1: #00ffff;
             --base-accent-color: #ff00ff;
 
-            /* Hover/focus on options. The multiselect's --ms-option-bg-hover cascades from
-               --ms-primary-bg, which falls back to --base-main-bg (NOT --base-primary-bg).
-               Override the option hover color directly so the punk vibe carries to interaction. */
+            /* Hover/focus on options. --ms-option-bg-hover cascades from --ms-primary-bg,
+               which reads --base-hover-bg (or falls back to a color-mix tint of --base-main-bg).
+               This theme overrides the option hover directly so the magenta carries to interaction. */
             --ms-option-bg-hover: rgba(255, 0, 255, 0.3);
             --ms-option-bg-focused: rgba(255, 0, 255, 0.3);
 
@@ -161,7 +161,7 @@
             --base-text-color-1: #333333;
             --base-text-color-3: #666666;
             --base-border-color: #d0d0d0;
-            --base-primary-bg: #f5f5f5;
+            --base-hover-bg: #f5f5f5;
             --base-accent-color: #bb0a30;
 
             /* Component-specific overrides */
@@ -193,7 +193,7 @@
             /* Base theme variables */
             --base-text-color-1: #5a3e36;
             --base-border-color: #f0d0c0;
-            --base-primary-bg: #fff5f0;
+            --base-hover-bg: #fff5f0;
             --base-accent-color: #ff6b9d;
             --base-accent-color-light: #ffe5f0;
 
@@ -226,7 +226,7 @@
             /* Base theme variables */
             --base-text-color-1: #000000;
             --base-border-color: #000000;
-            --base-primary-bg: #f0f0f0;
+            --base-hover-bg: #f0f0f0;
             --base-accent-color: #000000;
 
             /* Component-specific overrides */
@@ -265,7 +265,7 @@
             /* Base theme variables */
             --base-text-color-1: #212121;
             --base-text-color-3: #757575;
-            --base-primary-bg: #f5f5f5;
+            --base-hover-bg: #f5f5f5;
             --base-accent-color: #1976d2;
             --base-accent-color-light: #e3f2fd;
 
@@ -319,7 +319,7 @@
             --base-text-color-1: #ffffff;
             --base-text-color-3: rgba(255, 255, 255, 0.7);
             --base-border-color: rgba(255, 255, 255, 0.3);
-            --base-primary-bg: rgba(255, 255, 255, 0.25);
+            --base-hover-bg: rgba(255, 255, 255, 0.25);
             --base-accent-color: #667eea;
 
             /* Component-specific overrides */

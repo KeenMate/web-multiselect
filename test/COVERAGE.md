@@ -202,7 +202,7 @@ When a row is marked `✓`/`△`, the **Spec** column points at the file under
 | `--ms-rem` scales the whole component                         | ✓      | `theming.spec.ts`            | `theming.html`            |
 | Individual `--ms-*` variable overrides                        | ✓      | `theming.spec.ts`            | `theming.html`            |
 | `--base-*` theme variables flow through                       | ✓      | `theming.spec.ts`            | `theming.html`            |
-| `--base-primary-bg` drives accent color                       | ✓      | `theming.spec.ts`            | `theming.html`            |
+| `--base-hover-bg` drives `--ms-primary-bg` (option hover)     | ✓      | `theming.spec.ts`            | `theming.html`            |
 | `customStylesCallback` injects valid Shadow-DOM styles        | ✓      | `custom-rendering.spec.ts`   | `custom-rendering.html`   |
 
 ## 17. RTL

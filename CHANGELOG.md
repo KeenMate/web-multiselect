@@ -5,6 +5,42 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.11.0] - 2026-06-09
+
+This release strengthens dropdown positioning across containing-block edge cases, adopts OS-aware light/dark defaults via the CSS `light-dark()` function, and realigns the `--base-*` theming hooks with the cleaner taxonomy used across other KeenMate components.
+
+### Added
+
+- **`light-dark()` defaults across the color palette** — Every `--base-*` fallback that previously held a hardcoded light color now resolves via `light-dark(<light>, <dark>)`. When the consumer's page declares `color-scheme: dark` anywhere in the ancestor chain (`:root`, `body`, etc.), the multiselect picks up readable dark defaults automatically — no need to enumerate ~15 variable overrides. Affected variables: `--ms-text-color-1..4`, `--ms-accent-color-light(-hover)`, `--ms-border-color`, `--ms-input-bg`, `--ms-hint-bg`, `--ms-dropdown-bg`, `--ms-actions-bg`, `--ms-tooltip-bg`, `--ms-tooltip-text-color`, `--ms-selected-popover-bg`.
+- **Drift-detection warning for positioning edge cases** — Every dropdown position pass verifies the panel landed where the library told the browser to put it. If it drifts (e.g. an ancestor establishes a fixed-positioning containing block via a CSS property the library's heuristic doesn't recognize), a `console.warn` fires once per multiselect instance naming the likely culprit element and its responsible CSS, plus an actionable fix: replace `contain:` / `container-type:` on the ancestor with `transform: translateZ(0)`, or move the trigger out of that subtree.
+- **`examples-positioning.html`** — new demo page walking through baseline / transformed-ancestor / container-type-ancestor scenarios and an interactive toggle to trigger the drift warning.
+- **`test/dark-mode.html` + `e2e/dark-mode.spec.ts`** — fixture and 4-spec contrast suite. Verifies option hover, keyboard-focused, and selected states all maintain WCAG-AA contrast (≥ 3:1) on a dark page across three configurations: fully-themed, minimal-override, and pure OS-color-scheme inheritance with zero overrides.
+
+### Changed
+
+- **`--base-*` theming taxonomy aligned with cross-component naming.** The multiselect now reads the more specific hover/active/elevated/inverse vars instead of the legacy `--base-primary-bg*`. Consumer-side migration table:
+
+  | Read until 1.10.x | Now (1.11.0) |
+  |---|---|
+  | `--base-primary-bg` | `--base-hover-bg` |
+  | `--base-primary-bg-hover` | `--base-active-bg` |
+  | `--base-dropdown-bg` | `--base-dropdown-bg` → `--base-elevated-bg` (chain) |
+  | `--base-tooltip-bg` | `--base-tooltip-bg` → `--base-inverse-bg` (chain) |
+
+  Consumers overriding `--base-primary-bg` or `--base-primary-bg-hover` on a `<web-multiselect>` should switch to `--base-hover-bg` / `--base-active-bg`. `--base-dropdown-bg` and `--base-tooltip-bg` continue to work as primary overrides; the new chain only adds a second-tier fallback. All seven theme demos in `examples-theming.html`, the theming e2e fixture, and `test/COVERAGE.md` are updated to match.
+- **`--ms-primary-bg` hover color now stays visible on dark themes without extra overrides.** It used to fall back to a flat `var(--base-main-bg, #f3f4f6)`, which made the hover state collapse onto the panel background on dark themes (illegible). Now mixes 8% of `--ms-text-color-1` into `--base-main-bg`, so the hover is always a visible step toward the text — darker on light themes, lighter on dark. `--ms-primary-bg-hover` uses the same pattern with 14%.
+
+### Fixed
+
+- **Dropdown opened shifted away from its input when content was wider than the input.** The dropdown's `width` was being clamped to `input.offsetWidth` *after* `computePosition` had already run, so Floating UI's `shift({ padding: 8 })` middleware measured the panel at its (wider) natural content width and pushed it left to keep the panel in the viewport. The subsequent width clamp then left the dropdown stranded to the left of the input — most visible when the input sat near the right edge of the viewport, but any input narrower than the longest option label would drift. The width / min-width / max-width inline styles are now applied to the panel *before* `computePosition` runs in `anchorFloatingPanel`, so `shift` measures the final clamped size and only adjusts when actually necessary. The same helper drives the selected-items popover, so that's fixed too.
+- **Dropdown positioned to the side of its input when an ancestor used `container-type` (or `contain:`)** — separate from the width-clamp issue above. Floating UI's default `getOffsetParent` walks up to a `container-type: inline-size` ancestor (per spec it establishes a containing block for fixed-positioned descendants), but in some shadow-DOM layouts the browser does *not* actually anchor the fixed panel there, leaving Floating UI's coordinates offset by the wrapper's viewport-x. The library now installs a custom `getOffsetParent` that only walks up through properties the browser reliably honors for fixed positioning (`transform`, `perspective`, `filter`, `backdrop-filter`, qualifying `will-change`), ignoring `container-type` and `contain`. Most visible in apps built on pure-admin's `.pa-layout__main` wrapper.
+- **`:host { color-scheme: light dark }` overrode the consumer's `color-scheme: dark`.** The multiselect previously declared `color-scheme: light dark` on `:host` so its OWN `light-dark()` defaults would resolve when no consumer override existed. But that declaration also blocked an outer `body { color-scheme: dark }` from inheriting into the shadow root, so the multiselect always resolved to light defaults even when the page was dark. The declaration is removed; `color-scheme` now inherits normally from the consumer's page.
+
+### Internal
+
+- **Custom `getOffsetParent` helper + drift detector** in `multiselect.ts` — `getFixedPositionOffsetParent`, `findDriftCulprit`, `listContainingBlockProps`. The drift detector measures `panelRect.x - input.x` (and y) after every position pass and warns when |drift| ≥ 1px.
+- **Manifest updated** — `component-variables.manifest.json` now lists `--base-active-bg`, `--base-elevated-bg`, `--base-inverse-bg` as consumed base variables, with updated descriptions for `--base-hover-bg`, `--base-dropdown-bg`, and `--base-tooltip-bg` to reflect the new cascade roles.
+
 ## [1.10.0] - PUBLISHED - 2026-05-24
 
 This release fixes five bugs surfaced while building the e2e test suite (`test/COVERAGE.md`, ~110 specs across 19 fixture pages). Three of them are end-to-end broken features that the docs claim work; the other two are smaller. All have regression tests added.

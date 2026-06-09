@@ -7,6 +7,17 @@ A lightweight, accessible multiselect web component with typeahead search, RTL l
 
 > **⚠️ Security Notice:** This component intentionally allows raw HTML in rendering callbacks to give developers full control over content display. If you display user-generated content, you must sanitize it yourself. See [HTML Injection (XSS) Notice](#html-injection-xss-notice) for the complete list of affected callbacks.
 
+## What's New in v1.11.0
+
+- **OS-aware light/dark defaults via `light-dark()`** — set `color-scheme: dark` on your page (`:root`, `body`, etc.) and the multiselect picks readable dark text/background colors automatically. No more enumerating ~15 `--base-*` overrides just to get usable defaults on a dark theme.
+- **Drift-detection warning for positioning edge cases** — if an exotic ancestor CSS property (e.g. `contain: paint`, or `container-type` in certain shadow-DOM layouts) makes the dropdown land somewhere other than where the library told the browser to put it, a `console.warn` fires once with the likely culprit element and an actionable fix suggestion.
+- **Dropdown no longer stranded to the side when an ancestor uses `container-type`** — Floating UI was walking up to a `container-type: inline-size` ancestor (notably pure-admin's `.pa-layout__main`), but the browser wouldn't actually anchor the fixed panel there. The library now uses a custom `getOffsetParent` that only walks up properties browsers reliably honor for fixed positioning.
+- **Dropdown no longer opens shifted to the side of its input** — when the dropdown's natural content was wider than the input, Floating UI's `shift()` middleware was measuring the unclamped panel and pushing it left, then the subsequent width clamp left it stranded next to the input. Panel sizing now happens before positioning. Same fix applies to the selected-items popover.
+- **`--base-*` taxonomy aligned with KeenMate cross-component naming** (theming change — see CHANGELOG migration table): `--base-primary-bg` → `--base-hover-bg`, `--base-primary-bg-hover` → `--base-active-bg`. `--base-dropdown-bg` and `--base-tooltip-bg` continue to work; new chain fallbacks to `--base-elevated-bg` / `--base-inverse-bg`.
+- **Option hover stays visible on dark themes** — `--ms-primary-bg` now mixes 8% of the text color into the main background by default, so the hover is always a visible step toward the text. No more invisible hover when the consumer forgets to override `--base-hover-bg`.
+- **New `examples-positioning.html`** — walks through baseline / transformed-ancestor / container-type / drift-detection scenarios.
+- **New dark-mode e2e suite** — 4 specs verifying WCAG-AA option contrast on a dark page across fully-themed, minimal-override, and pure OS-inheritance configurations.
+
 ## What's New in v1.10.0
 
 - **`data-options` attribute on `<web-multiselect>`** — set options declaratively from HTML, no JS bootstrap required (works alongside `initial-values` for pure-HTML / server-rendered / SharePoint workbench scenarios).
@@ -19,15 +30,6 @@ A lightweight, accessible multiselect web component with typeahead search, RTL l
 - **Keyboard `Enter` respects disabled options** — previously only the click handler did.
 - **End-to-end test suite** — 114 Playwright specs across 19 fixture pages (`npm run test:e2e`).
 - **`THEMING.md`** — new reference cataloguing every theme-able component state and the CSS variables that drive it.
-
-## What's New in v1.9.0
-
-- **Live attribute / callback updates no longer rebuild the DOM** — `updateOptions(partial)` merges in place; selection state, scroll position, focus, and tooltips are preserved across attribute changes.
-- **9 previously-dead per-component CSS override hooks are now wired** — `--ms-hint-border-color`, `--ms-dropdown-border-color`, `--ms-actions-border-color`, `--ms-group-border-color`, `--ms-badge-counter-border-color`, `--ms-selected-popover-border-color`, `--ms-selected-popover-header-border-color`, `--ms-option-outline-color-focused`, `--ms-option-border-matched-color`.
-- **`selectAll` / `clearAll` now fire per-item `selectCallback` / `deselectCallback`** — consumers wiring per-item analytics or side effects no longer silently miss bulk operations.
-- **New `Tooltip` class** consolidating three previous tooltip implementations; fixes a handle leak and a popover-vs-main-container collision.
-- **`--base-primary-bg` theming variable** — `--ms-primary-bg` reads it first, then `--base-main-bg`, then a hardcoded default.
-- Plus many fixes across custom action buttons, grouped-option focus, badge cursors, focus rings, and logging.
 
 ## Features
 
@@ -1662,8 +1664,9 @@ KeenMate components support a **two-layer theming architecture**:
 :root {
   /* Base layer - single source of truth */
   --base-accent-color: #3b82f6;
-  --base-primary-bg: #ffffff;
-  --base-text-primary: #111827;
+  --base-main-bg: #ffffff;
+  --base-hover-bg: #f3f4f6;
+  --base-text-color-1: #111827;
 
   /* Components reference base layer */
   --ms-accent-color: var(--base-accent-color);
@@ -1788,7 +1791,7 @@ For the complete list of all available CSS variables, see:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--ms-dropdown-bg` | `var(--base-dropdown-bg, #ffffff)` | Dropdown background |
+| `--ms-dropdown-bg` | `var(--base-dropdown-bg, var(--base-elevated-bg, light-dark(#ffffff, #1a1a1a)))` | Dropdown background (auto-adapts to OS dark mode) |
 | `--ms-dropdown-border` | `var(--ms-border-color)` | Dropdown border color |
 | `--ms-dropdown-shadow` | (box shadow) | Dropdown shadow |
 | `--ms-dropdown-max-height` | `20rem` | Max height of dropdown |
@@ -1860,7 +1863,7 @@ For the complete list of all available CSS variables, see:
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `--ms-tooltip-bg` | `var(--base-tooltip-bg, #333333)` | Tooltip background color |
+| `--ms-tooltip-bg` | `var(--base-tooltip-bg, var(--base-inverse-bg, light-dark(#333333, #f5f5f5)))` | Tooltip background (auto-adapts to OS dark mode) |
 | `--ms-tooltip-color` | `var(--ms-tooltip-text-color)` | Tooltip text color |
 | `--ms-tooltip-padding` | `0.5rem 0.75rem` | Tooltip padding |
 | `--ms-tooltip-border-radius` | `0.375rem` | Tooltip border radius |

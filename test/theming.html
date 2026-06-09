@@ -28,8 +28,8 @@
     </div>
 
     <div class="fixture">
-        <div class="fixture-label">--base-primary-bg drives accent</div>
-        <web-multiselect id="base-primary" style="--base-primary-bg: rgb(0, 255, 0);" value-member="value" display-value-member="label"></web-multiselect>
+        <div class="fixture-label">--base-hover-bg drives --ms-primary-bg (option hover)</div>
+        <web-multiselect id="base-hover" style="--base-hover-bg: rgb(0, 255, 0);" value-member="value" display-value-member="label"></web-multiselect>
     </div>
 
     <script type="module">
@@ -41,7 +41,7 @@
         ];
 
         customElements.whenDefined('web-multiselect').then(() => {
-            for (const id of ['default-rem', 'big-rem', 'custom-border', 'base-primary']) {
+            for (const id of ['default-rem', 'big-rem', 'custom-border', 'base-hover']) {
                 document.getElementById(id).options = items;
             }
         });

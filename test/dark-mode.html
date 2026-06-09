@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test — dark-mode contrast</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        body {
+            background: #1a1a1a;
+            color: #f5f5f5;
+            /* This is the key declaration: tells the browser "I'm a dark surface",
+               which propagates into shadow DOMs and drives `light-dark()` to the
+               dark branch. Mirrors how dhl-rdm-organiogram sets it on <body>. */
+            color-scheme: dark;
+        }
+        .fixture { max-width: 320px; }
+        .fixture-label { color: #c0c0c0; }
+        p { color: #c0c0c0; }
+    </style>
+</head>
+<body>
+    <h1>dark-mode contrast</h1>
+    <p>Targeted by <code>e2e/dark-mode.spec.ts</code>. A multiselect themed for a dark page via the documented <code>--base-*</code> override set. The specs verify that interactive states (hover, keyboard-focused, selected) maintain readable text-vs-background contrast.</p>
+
+    <div class="fixture">
+        <div class="fixture-label">fully-configured dark theme</div>
+        <web-multiselect
+            id="ms-dark"
+            style="
+                --base-text-color-1: #f5f5f5;
+                --base-text-color-2: #d4d4d4;
+                --base-text-color-3: #a3a3a3;
+                --base-text-color-4: #737373;
+                --base-input-bg: #2a2a2a;
+                --base-input-color: #f5f5f5;
+                --base-dropdown-bg: #2a2a2a;
+                --base-hover-bg: #3a3a3a;
+                --base-border-color: #4a4a4a;
+                --base-main-bg: #2a2a2a;
+            "
+            value-member="value"
+            display-value-member="label">
+        </web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">consumer-minimal dark theme (only text + bg)</div>
+        <web-multiselect
+            id="ms-dark-minimal"
+            style="
+                --base-text-color-1: #f5f5f5;
+                --base-input-bg: #2a2a2a;
+                --base-dropdown-bg: #2a2a2a;
+                --base-main-bg: #2a2a2a;
+            "
+            value-member="value"
+            display-value-member="label">
+        </web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">no overrides at all — only the OS color-scheme preference</div>
+        <web-multiselect
+            id="ms-dark-auto"
+            value-member="value"
+            display-value-member="label">
+        </web-multiselect>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+
+        const items = [
+            { value: 'apple',      label: 'Apple' },
+            { value: 'banana',     label: 'Banana' },
+            { value: 'cherry',     label: 'Cherry' },
+            { value: 'date',       label: 'Date' },
+            { value: 'elderberry', label: 'Elderberry' }
+        ];
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            for (const id of ['ms-dark', 'ms-dark-minimal', 'ms-dark-auto']) {
+                document.getElementById(id).options = items;
+            }
+        });
+    </script>
+</body>
+</html>
