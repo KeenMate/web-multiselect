@@ -7,6 +7,15 @@ A lightweight, accessible multiselect web component with typeahead search, RTL l
 
 > **⚠️ Security Notice:** This component intentionally allows raw HTML in rendering callbacks to give developers full control over content display. If you display user-generated content, you must sanitize it yourself. See [HTML Injection (XSS) Notice](#html-injection-xss-notice) for the complete list of affected callbacks.
 
+## What's New in v1.12.0
+
+- **CSS cascade layers (`@layer variables, component, overrides`)** — every internal rule lives in a named layer, so consumer CSS in the light DOM can override any component rule without `!important` or specificity arms races. Document any unlayered rule in your app's CSS and it wins automatically.
+- **CSS source files no longer have underscore prefix** — `_variables.css` → `variables.css`, etc. The underscore was a leftover SASS partial convention; these are plain CSS modules. Only affects deep imports of source files; the published `dist/style.css` bundle is unchanged.
+- **BEM-aligned class names** — `.ms-wrapper` → `.ms__wrapper`, `.ms-debug-info` → `.ms__debug-info`, `.ms-debug-stats` → `.ms__debug-stats`. The wrapper class is internal layout chrome; debug classes are dev-only. See CHANGELOG migration table if you'd styled any of these externally.
+- **Debug panel now fully themeable** — 11 new `--ms-debug-*` variables (was hardcoded hex literals).
+- **`"./manifest"` short-import** — `import manifest from '@keenmate/web-multiselect/manifest'` for tooling that reads the variable catalog.
+- **`test/AUDIT.md`** — living compliance tracker against the BlissFramework web-component guidelines (CSS structure, base variables, color scheme).
+
 ## What's New in v1.11.0
 
 - **OS-aware light/dark defaults via `light-dark()`** — set `color-scheme: dark` on your page (`:root`, `body`, etc.) and the multiselect picks readable dark text/background colors automatically. No more enumerating ~15 `--base-*` overrides just to get usable defaults on a dark theme.
@@ -17,19 +26,6 @@ A lightweight, accessible multiselect web component with typeahead search, RTL l
 - **Option hover stays visible on dark themes** — `--ms-primary-bg` now mixes 8% of the text color into the main background by default, so the hover is always a visible step toward the text. No more invisible hover when the consumer forgets to override `--base-hover-bg`.
 - **New `examples-positioning.html`** — walks through baseline / transformed-ancestor / container-type / drift-detection scenarios.
 - **New dark-mode e2e suite** — 4 specs verifying WCAG-AA option contrast on a dark page across fully-themed, minimal-override, and pure OS-inheritance configurations.
-
-## What's New in v1.10.0
-
-- **`data-options` attribute on `<web-multiselect>`** — set options declaratively from HTML, no JS bootstrap required (works alongside `initial-values` for pure-HTML / server-rendered / SharePoint workbench scenarios).
-- **`form.reset()` now clears the selection** — the element is now form-associated (`static formAssociated = true` + `ElementInternals` + `formResetCallback()`).
-- **Dropdown / hint / selected popover no longer clipped inside scrollable ancestors** — Floating UI now uses `strategy: 'fixed'` for all three panels, so they escape `overflow: hidden|auto|scroll` containers (e.g. SharePoint Framework workbenches).
-- **`initial-values` now works when options arrive after init** — values are reconciled on every `options` mutation, not just at construction.
-- **Remove / close (×) buttons render as SVG masks** — pixel-centered regardless of font; color still flows through the existing `--ms-*-color` variables via `currentColor`; three new `--ms-*-icon-size` variables for theming.
-- **Keyboard navigation now keeps working after a mouse click on an option** — previously, clicking an option moved focus from the search input to the option's checkbox (knocking the `keydown` listener offline) *and* left `focusedIndex` at its pre-click value, so subsequent ArrowDown / ArrowUp / Enter went nowhere visible. Click now anchors `focusedIndex` to the clicked option and refocuses the search input, so arrow keys continue from where you clicked and Enter toggles the option under the cursor.
-- **Count-clear / popover-close hover backdrop now matches the rest of the component** — was a circle (`border-radius: 50%`), now a small rounded rectangle (`--ms-border-radius-sm`) consistent with every other interactive element. Themes that prefer the circle can set `--ms-count-clear-border-radius` and `--ms-selected-popover-close-border-radius` back to `50%`.
-- **Keyboard `Enter` respects disabled options** — previously only the click handler did.
-- **End-to-end test suite** — 114 Playwright specs across 19 fixture pages (`npm run test:e2e`).
-- **`THEMING.md`** — new reference cataloguing every theme-able component state and the CSS variables that drive it.
 
 ## Features
 
@@ -1759,7 +1755,7 @@ All CSS custom properties are now defined at the `:host` level in the compiled C
 ```
 
 For the complete list of all available CSS variables, see:
-- [_variables.css](./src/css/_variables.css) - All 150+ CSS custom properties at `:host` level
+- [variables.css](./src/css/variables.css) - All 150+ CSS custom properties at `:host` level
 
 #### Colors
 
@@ -1893,6 +1889,25 @@ For the complete list of all available CSS variables, see:
 | `--ms-shadow-xl` | (box shadow) | Extra large shadow |
 | `--ms-disabled-opacity` | `0.5` | Opacity for disabled state |
 
+### Cascade layers / override contract
+
+Since v1.12.0, the component's internal CSS is organized into named `@layer`s:
+
+```css
+@layer variables, component, overrides;
+```
+
+This gives consumers a predictable escape hatch when they need to override a rule from outside the shadow DOM (e.g. via `web-multiselect ::part(...)` or descendant selectors that reach into composed light DOM):
+
+| Where your rule lives | Wins against |
+|---|---|
+| Unlayered consumer rule | Every internal layer (no `!important` needed) |
+| Consumer `@layer overrides` block | Component's `overrides` layer if loaded later in the stylesheet stack |
+| `:root { --base-* }` declaration | Component's `variables` layer trivially |
+| `web-multiselect { --ms-* }` element selector | Same as above, with higher specificity |
+
+In practice you rarely need to think about layers — variables-first theming (`--ms-*` and `--base-*` overrides) covers ~95% of customization. Layers exist for the residual 5% where you need to flip a property the variable system doesn't expose.
+
 ### Advanced: Direct CSS Import
 
 For users who want to import the raw CSS source files:
@@ -1902,8 +1917,8 @@ For users who want to import the raw CSS source files:
 @import '@keenmate/web-multiselect/css';
 
 /* Or import individual partials */
-@import '@keenmate/web-multiselect/src/css/_variables.css';
-@import '@keenmate/web-multiselect/src/css/_base.css';
+@import '@keenmate/web-multiselect/src/css/variables.css';
+@import '@keenmate/web-multiselect/src/css/base.css';
 /* ... etc */
 ```
 

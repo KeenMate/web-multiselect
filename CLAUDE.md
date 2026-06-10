@@ -41,16 +41,16 @@ A feature-rich multiselect web component with typeahead search, virtual scrollin
 
 The styles are plain CSS (no SCSS / no preprocessor). All theming is done via CSS custom properties.
 
-**src/css/main.css** - Entry point that `@import`s all partials:
-- `_variables.css` - All `--ms-*` CSS custom properties at `:host` level (base primitives, semantic per-component theming hooks, sizing)
-- `_base.css` - FOUC prevention + layout containers
-- `_input-dropdown.css` - Input, toggle, counter, hint, dropdown, actions
-- `_options.css` - Options list, groups, checkbox, content, states
-- `_badges-display.css` - Badges, count display, individual badges
-- `_tooltips-popover.css` - Badge tooltips + selected items popover
-- `_rtl.css` - RTL language support
-- `_modifiers.css` - State modifiers (disabled, no-checkboxes)
-- `_debug.css` - Debug information panel
+**src/css/main.css** - Entry point that declares `@layer variables, component, overrides` and `@import`s all partials with explicit layer bindings:
+- `variables.css` - All `--ms-*` CSS custom properties at `:host` level (base primitives, semantic per-component theming hooks, sizing)
+- `base.css` - FOUC prevention + layout containers
+- `input-dropdown.css` - Input, toggle, counter, hint, dropdown, actions
+- `options.css` - Options list, groups, checkbox, content, states
+- `badges-display.css` - Badges, count display, individual badges
+- `tooltips-popover.css` - Badge tooltips + selected items popover
+- `rtl.css` - RTL language support
+- `modifiers.css` - State modifiers (disabled, no-checkboxes)
+- `debug.css` - Debug information panel
 
 ### Naming Conventions
 
@@ -127,9 +127,9 @@ This enables integration with theme-designer's `--base-*` variables:
 
 ### Adding New CSS Variables
 
-1. Declare the variable in `src/css/_variables.css` at `:host` level. Per-component theming hooks default to a base variable, e.g.
+1. Declare the variable in `src/css/variables.css` at `:host` level. Per-component theming hooks default to a base variable, e.g.
    `--ms-myComponent-border-color: var(--ms-border-color);`
-2. Reference the new variable from the actual rule in the relevant `_*.css` partial — e.g.
+2. Reference the new variable from the actual rule in the relevant feature file — e.g.
    `.ms__myComponent { border: 1px solid var(--ms-myComponent-border-color); }`
 3. Always wire a declared variable into at least one rule. A declaration with no `var()` reader is dead theming surface.
 

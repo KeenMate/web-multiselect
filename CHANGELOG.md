@@ -5,6 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.0] - 2026-06-10
+
+This release aligns the component with the BlissFramework web-component guidelines (CSS structure, cascade layers, BEM naming, theming-variable hygiene). User-visible changes are limited to one BEM class rename; the rest is internal refactor and improved consumer override surface.
+
+### Added
+
+- **CSS cascade layers (`@layer variables, component, overrides`)** — `main.css` now declares the layer order and every internal `@import` is bound to its layer. Consumers can override any component rule with an unlayered rule (no `!important` required) or by declaring their own `@layer overrides` block that lands after the component's. The override contract is documented in the README.
+- **Debug-panel theming variables** — 11 new `--ms-debug-*` variables (`--ms-debug-bg`, `--ms-debug-border-color`, `--ms-debug-text-color`, `--ms-debug-border-radius`, `--ms-debug-summary-color`, `--ms-debug-summary-bg-hover`, `--ms-debug-summary-outline-color`, `--ms-debug-summary-border-radius`, `--ms-debug-stats-bg`, `--ms-debug-stats-border-radius`, `--ms-debug-bullet-color`) on `:host`. Previously the debug panel had hardcoded hex literals and read `--base-border-radius-*` directly in rules; both are now routed through the standard `--ms-*` two-layer pattern.
+- **`"./manifest"` short-import in package.json exports** — consumers can now `import manifest from '@keenmate/web-multiselect/manifest'` to read the variable manifest (still also reachable via the full filename for backward compatibility).
+- **`test/AUDIT.md`** — living document tracking compliance against BlissFramework guideline checklists (`css-structure.checks.md`, `base-variables.checks.md`, `color-scheme.checks.md`).
+
+### Changed
+
+- **CSS filenames lose underscore prefix** — `_variables.css` → `variables.css`, `_base.css` → `base.css`, `_input-dropdown.css` → `input-dropdown.css`, `_options.css` → `options.css`, `_badges-display.css` → `badges-display.css`, `_tooltips-popover.css` → `tooltips-popover.css`, `_rtl.css` → `rtl.css`, `_modifiers.css` → `modifiers.css`, `_debug.css` → `debug.css`. Underscore prefix is a SASS partial convention; these are plain CSS modules. Only affects consumers who deep-imported a specific source file via `@keenmate/web-multiselect/src/css/*` — the published `dist/style.css` bundle is unaffected.
+- **BEM-aligned class names** — `.ms-wrapper` → `.ms__wrapper`, `.ms-wrapper--inline` → `.ms__wrapper--inline`, `.ms-debug-info` → `.ms__debug-info`, `.ms-debug-stats` → `.ms__debug-stats`. Brings them in line with the `.ms__*` BEM convention used elsewhere in the component. **Breaking** for anyone who styled these classes externally — see migration note below.
+
+### Internal
+
+- Updated `component-variables.manifest.json` with the 11 new `--ms-debug-*` entries under category `debug`.
+- e2e suite updated to use the renamed BEM classes; all 120 tests pass.
+- Resolves audit items C-CSS-2, C-CSS-3, C-CSS-7, C-CSS-8, C-CSS-10, C-BV-1, C-BV-5, C-BV-9 from the BlissFramework guideline checklists.
+
+### Migration notes
+
+| What you wrote | What to write now |
+|---|---|
+| `web-multiselect .ms-wrapper { ... }` | `web-multiselect .ms__wrapper { ... }` |
+| `web-multiselect .ms-wrapper--inline` | `web-multiselect .ms__wrapper--inline` |
+| `web-multiselect .ms-debug-info` | `web-multiselect .ms__debug-info` |
+| `web-multiselect .ms-debug-stats` | `web-multiselect .ms__debug-stats` |
+| `import '@keenmate/web-multiselect/src/css/_variables.css'` | `import '@keenmate/web-multiselect/src/css/variables.css'` |
+| (any other underscore-prefixed deep import) | drop the underscore |
+
+The wrapper class is internal layout chrome and rarely styled externally; the debug-* classes are dev-only.
+
 ## [1.11.0] - PUBLISHED - 2026-06-09
 
 This release strengthens dropdown positioning across containing-block edge cases, adopts OS-aware light/dark defaults via the CSS `light-dark()` function, and realigns the `--base-*` theming hooks with the cleaner taxonomy used across other KeenMate components.

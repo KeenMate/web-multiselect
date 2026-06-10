@@ -36,7 +36,7 @@ multi-select:not(:defined) {
 }
 
 /* Main container */
-/* Note: font-family is set on :host in _variables.css so all shadow DOM content inherits */
+/* Note: font-family is set on :host in variables.css so all shadow DOM content inherits */
 .ms {
   position: relative;
   width: 100%;

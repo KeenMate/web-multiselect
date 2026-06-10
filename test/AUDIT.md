@@ -18,15 +18,15 @@ Baseline state: shipped 1.11.0 (taxonomy swap, OS-aware dark mode).
 | ID | Check | Status | Notes |
 |----|-------|--------|-------|
 | C-CSS-1  | Canonical file set | FAIL | No `dark-mode.css`. Missing Tier-2 stubs (`controls.css`, `floating.css`, `states.css`, `animations.css`). |
-| C-CSS-2  | No underscore prefix | FAIL | All 9 source files use `_*.css`. |
-| C-CSS-3  | `@layer` declared & used | FAIL | `main.css:18-27` plain `@import`, no `@layer variables, component, overrides;`. |
+| C-CSS-2  | No underscore prefix | PASS [fixed] | All 9 source files renamed via `git mv` to drop the underscore prefix. `main.css` imports updated. |
+| C-CSS-3  | `@layer` declared & used | PASS [fixed] | `main.css:15` declares `@layer variables, component, overrides;`. Every `@import` bound to its layer with `layer(...)`. |
 | C-CSS-4  | Empty file stub comment | N/A | No empty canonical files exist yet. |
 | C-CSS-5  | Every file imported | PASS | All 9 imported by `main.css`. |
 | C-CSS-6  | Section banners > 100 lines | PASS | All large files have `===` banners. |
 | C-CSS-7  | BEM convention | PASS [fixed] | Renamed `.ms-wrapper` → `.ms__wrapper`, `.ms-debug-info` → `.ms__debug-info`, `.ms-debug-stats` → `.ms__debug-stats` across CSS + TS + e2e. |
-| C-CSS-8  | No hardcoded colors in feature files | PASS [fixed] | `_debug.css` colors now route through `--ms-debug-*` variables defined on `:host`. |
-| C-CSS-9  | No mixed-bag files | FAIL | `_input-dropdown.css` mixes input + dropdown + counter + hint + actions. `_badges-display.css` mixes badges + count display. `_tooltips-popover.css` mixes two floating elements. |
-| C-CSS-10 | Layer contract in README | FAIL | No mention of `@layer` (because not yet declared). |
+| C-CSS-8  | No hardcoded colors in feature files | PASS [fixed] | `debug.css` colors now route through `--ms-debug-*` variables defined on `:host`. |
+| C-CSS-9  | No mixed-bag files | FAIL | `input-dropdown.css` mixes input + dropdown + counter + hint + actions. `badges-display.css` mixes badges + count display. `tooltips-popover.css` mixes two floating elements. |
+| C-CSS-10 | Layer contract in README | PASS [fixed] | New "Cascade layers / override contract" section near the theming docs documents the three `@layer` names + override priority table. |
 | C-CSS-11 | `main.css` has no rules | PASS | Only `@import` + comments. |
 | C-CSS-12 | Bundle size sanity | N/A | Re-check after canonical files added. |
 
@@ -34,15 +34,15 @@ Baseline state: shipped 1.11.0 (taxonomy swap, OS-aware dark mode).
 
 | ID | Check | Status | Notes |
 |----|-------|--------|-------|
-| C-BV-1  | Every visible color → variable | PASS [fixed] | `_debug.css` now consumes `--ms-debug-*` vars instead of hex literals. |
-| C-BV-2  | Every `var()` has a fallback | PARTIAL | Spirit: PASS. All `--base-*` reads have fallbacks (only hits in `_variables.css` are inside comments). Letter: ~574 `var(--ms-*)` reads without fallback in feature files — but `:host` defines them, so no broken-render risk. |
+| C-BV-1  | Every visible color → variable | PASS [fixed] | `debug.css` now consumes `--ms-debug-*` vars instead of hex literals. |
+| C-BV-2  | Every `var()` has a fallback | PARTIAL | Spirit: PASS. All `--base-*` reads have fallbacks (only hits in `variables.css` are inside comments). Letter: ~574 `var(--ms-*)` reads without fallback in feature files — but `:host` defines them, so no broken-render risk. |
 | C-BV-3  | `:host` declares every local var | PASS (assumed) | Not exhaustively diffed; spot checks clean. |
 | C-BV-4  | Prefix unique & reserved | PASS | `ms` listed in `base-variables.md` prefix table. |
 | C-BV-5  | Manifest exists & exported | PASS [fixed] | Added `"./manifest"` short-import key to `package.json` exports. |
 | C-BV-6  | Manifest matches code | PASS (assumed) | Updated as part of 1.11.0. Spot-check OK. |
 | C-BV-7  | Fallback chains canonical | PASS | `--ms-dropdown-bg`, `--ms-tooltip-bg`, `--ms-primary-bg`, `--ms-primary-bg-hover` use the canonical patterns from `base-variables.md`. |
 | C-BV-8  | README documents contract | PASS | Theming section + manifest reference exists. |
-| C-BV-9  | No `--base-*` outside `:host` | PASS [fixed] | `_debug.css` border-radius reads now go through `--ms-debug-border-radius` / `--ms-debug-summary-border-radius` / `--ms-debug-stats-border-radius`. |
+| C-BV-9  | No `--base-*` outside `:host` | PASS [fixed] | `debug.css` border-radius reads now go through `--ms-debug-border-radius` / `--ms-debug-summary-border-radius` / `--ms-debug-stats-border-radius`. |
 | C-BV-10 | Standalone render works | PASS | Verified by 1.11.0 fallback-chain rewrite + e2e suite. |
 | C-BV-11 | Theme override works e2e | PASS | `e2e/theming.spec.ts` covers this. |
 | C-BV-12 | CHANGELOG entry | PASS | `## [1.11.0]` documents Added/Changed for the taxonomy work. |
@@ -51,7 +51,7 @@ Baseline state: shipped 1.11.0 (taxonomy swap, OS-aware dark mode).
 
 | ID | Check | Status | Notes |
 |----|-------|--------|-------|
-| C-CS-1 | No `:host { color-scheme }` | PASS | Only mentioned in explanatory comments at `_variables.css:18-37`. |
+| C-CS-1 | No `:host { color-scheme }` | PASS | Only mentioned in explanatory comments at `variables.css:18-37`. |
 | C-CS-2 | `light-dark()` in fallbacks | PASS | Every color fallback uses `light-dark()` or is an intentional same-in-both-modes literal (`#3b82f6` accent, `#ffffff` text-on-accent — documented exception). |
 | C-CS-3 | Framework class selectors | FAIL | No `:host-context([data-bs-theme="dark"])`, no `:host-context(.dark)`, no `:host-context([data-theme="dark"])`. Multiselect explicitly chose "position (1)" (light-dark()-only) — `color-scheme.md:312-313` cites it as the reference for that position — but the mandatory checklist requires the framework selectors. Tension between guideline and audit. |
 | C-CS-4 | Per-instance override | FAIL | No `:host([data-theme="dark"])` / `:host([data-theme="light"])`. Same tension as C-CS-3. |
@@ -67,7 +67,7 @@ Baseline state: shipped 1.11.0 (taxonomy swap, OS-aware dark mode).
 
 ### Quick wins (small, low-risk, can bundle into one patch release)
 
-1. **`_debug.css` cleanup** — convert 6 hex literals to `var()` declarations and stop reading `--base-border-radius-*` directly. Fixes C-CSS-8, C-BV-1, C-BV-9.
+1. **`debug.css` cleanup** — convert 6 hex literals to `var()` declarations and stop reading `--base-border-radius-*` directly. Fixes C-CSS-8, C-BV-1, C-BV-9.
 2. **Manifest short-import** — add `"./manifest": "./component-variables.manifest.json"` to `package.json` `exports`. Fixes C-BV-5.
 3. **BEM renames** — `.ms-wrapper` → `.ms__wrapper`, `.ms-wrapper--inline` → `.ms__wrapper--inline`, `.ms-debug-info` → `.ms__debug-info`, `.ms-debug-stats` → `.ms__debug-stats` in CSS + TS. Fixes C-CSS-7.
 
@@ -78,7 +78,7 @@ Baseline state: shipped 1.11.0 (taxonomy swap, OS-aware dark mode).
 
 ### Bigger refactor (probably its own minor version)
 
-6. **Canonical file structure** — split `_input-dropdown.css`, `_badges-display.css`, `_tooltips-popover.css` into single-feature files. Move floating-anchored rules into `floating.css`. Move state modifiers into `states.css`. Add empty `controls.css` / `animations.css` stubs. Add `dark-mode.css` (even if just framework selectors). Fixes C-CSS-1, C-CSS-9.
+6. **Canonical file structure** — split `input-dropdown.css`, `badges-display.css`, `tooltips-popover.css` into single-feature files. Move floating-anchored rules into `floating.css`. Move state modifiers into `states.css`. Add empty `controls.css` / `animations.css` stubs. Add `dark-mode.css` (even if just framework selectors). Fixes C-CSS-1, C-CSS-9.
 
 ### Policy call (guideline-vs-guideline tension)
 
