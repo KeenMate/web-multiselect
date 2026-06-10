@@ -1,13 +1,10 @@
 /* ==============================================================================
-   MODIFIERS & VARIANTS
+   STATES — cross-feature state modifiers
    ==============================================================================
-   State modifiers (disabled, no-checkboxes)
-   Note: Size variants removed - use --ms-rem for global scaling instead
-*/
-
-/* ==============================================================================
-   STATE MODIFIERS
-   ==============================================================================
+   Block-level state classes that affect multiple feature areas. Per-element
+   states (`.ms__input:focus`, `.ms__option--focused`, `.ms__badges:empty`,
+   etc.) stay in their feature files; this file is for state classes set on
+   the `.ms` block that flow through to multiple internal elements.
 */
 
 /* Disabled state */

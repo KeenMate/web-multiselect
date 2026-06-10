@@ -1,22 +1,22 @@
 /* ==============================================================================
-   INPUT & DROPDOWN COMPONENTS
+   CONTROLS — interactive input chrome
    ==============================================================================
-   Input field, toggle icon, count badge, floating hint, dropdown container, and actions
+   The search input, toggle icon, in-input count badge, dropdown action bar,
+   and individual action buttons. Floating panels (dropdown, hint, tooltip,
+   popover) live in floating.css; state modifiers (.ms--disabled, etc.) live
+   in states.css.
 */
 
 /* ==============================================================================
-   INPUT COMPONENT
-   ==============================================================================
-*/
+   INPUT
+   ============================================================================== */
 
-/* Input wrapper */
 .ms__input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
 }
 
-/* Search input */
 .ms__input {
   box-sizing: border-box;
   width: 100%;
@@ -53,7 +53,10 @@
   opacity: var(--ms-placeholder-opacity);
 }
 
-/* Size variants */
+/* ==============================================================================
+   INPUT SIZE VARIANTS
+   ============================================================================== */
+
 .ms__input.ms__input--xs {
   font-size: var(--ms-input-size-xs-font);
   padding: var(--ms-input-size-xs-padding-v) var(--ms-input-size-xs-padding-h);
@@ -84,10 +87,8 @@
 
 /* ==============================================================================
    TOGGLE ICON
-   ==============================================================================
-*/
+   ============================================================================== */
 
-/* Dropdown toggle icon */
 .ms__toggle {
   position: absolute;
   right: var(--ms-toggle-right);
@@ -104,11 +105,9 @@
 }
 
 /* ==============================================================================
-   COUNT BADGE (IN INPUT)
-   ==============================================================================
-*/
+   IN-INPUT COUNT BADGE
+   ============================================================================== */
 
-/* Count badge (appears next to toggle icon) */
 .ms__counter {
   position: absolute;
   right: var(--ms-counter-offset); /* Space for toggle icon */
@@ -130,100 +129,9 @@
 }
 
 /* ==============================================================================
-   FLOATING HINT
-   ==============================================================================
-*/
+   DROPDOWN ACTION BAR
+   ============================================================================== */
 
-/* Floating search hint (appears above input) */
-.ms__hint {
-  display: none;
-  position: fixed;
-  z-index: var(--ms-z-index-popover);
-  padding: var(--ms-hint-padding);
-  background: var(--ms-hint-bg);
-  border: var(--ms-hint-border);
-  border-radius: var(--ms-hint-border-radius);
-  box-shadow: var(--ms-hint-box-shadow);
-  font-size: var(--ms-hint-font-size);
-  color: var(--ms-hint-color);
-  line-height: var(--ms-line-height-relaxed);
-  max-width: 100%;
-}
-
-.ms__hint--visible {
-  display: block;
-}
-
-/* ==============================================================================
-   DROPDOWN CONTAINER
-   ==============================================================================
-*/
-
-/* Floating dropdown (appears below input) */
-.ms__dropdown {
-  display: none;
-  position: fixed;
-  font-family: inherit; /* Ensure font inherits from container */
-  z-index: var(--ms-z-index-dropdown);
-  background: var(--ms-dropdown-bg);
-  border: var(--ms-dropdown-border);
-  border-radius: var(--ms-dropdown-border-radius);
-  box-shadow: var(--ms-dropdown-box-shadow);
-  max-height: var(--ms-options-max-height);
-  overflow: hidden; /* Clips content to border-radius, inner container handles scrolling */
-  color: var(--ms-dropdown-text-color);
-}
-
-.ms__dropdown--visible {
-  display: flex;
-  flex-direction: column;
-}
-
-/* Inner scrolling container - clips scrollbar to rounded corners */
-.ms__dropdown-inner {
-  flex: 1;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  touch-action: pan-y;
-  -webkit-overflow-scrolling: touch;
-
-  /* Scrollbar styling */
-  scrollbar-width: thin;  /* Firefox */
-  scrollbar-color: var(--ms-scrollbar-thumb-bg) var(--ms-scrollbar-track-bg);
-}
-
-.ms__dropdown-inner::-webkit-scrollbar {
-  width: var(--ms-scrollbar-width);
-}
-
-.ms__dropdown-inner::-webkit-scrollbar-track {
-  background: var(--ms-scrollbar-track-bg);
-}
-
-.ms__dropdown-inner::-webkit-scrollbar-thumb {
-  background: var(--ms-scrollbar-thumb-bg);
-  border-radius: var(--ms-scrollbar-thumb-border-radius);
-}
-
-.ms__dropdown-inner::-webkit-scrollbar-thumb:hover {
-  background: var(--ms-scrollbar-thumb-bg-hover);
-}
-
-.ms__dropdown--virtual {
-  /* In virtual scroll mode, let the options container handle scrolling */
-  max-height: none;
-}
-
-.ms__dropdown--virtual .ms__dropdown-inner {
-  overflow-y: visible;
-}
-
-/* ==============================================================================
-   DROPDOWN ACTIONS
-   ==============================================================================
-*/
-
-/* Dropdown actions (Select All / Clear All) */
 .ms__actions {
   display: flex;
   flex-wrap: nowrap;

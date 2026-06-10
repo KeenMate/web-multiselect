@@ -20,14 +20,22 @@ This release aligns the component with the BlissFramework web-component guidelin
 
 ### Changed
 
-- **CSS filenames lose underscore prefix** — `_variables.css` → `variables.css`, `_base.css` → `base.css`, `_input-dropdown.css` → `input-dropdown.css`, `_options.css` → `options.css`, `_badges-display.css` → `badges-display.css`, `_tooltips-popover.css` → `tooltips-popover.css`, `_rtl.css` → `rtl.css`, `_modifiers.css` → `modifiers.css`, `_debug.css` → `debug.css`. Underscore prefix is a SASS partial convention; these are plain CSS modules. Only affects consumers who deep-imported a specific source file via `@keenmate/web-multiselect/src/css/*` — the published `dist/style.css` bundle is unaffected.
+- **CSS file structure aligned with BlissFramework canonical Tier 1+2+3** — every Tier 1 (skeleton) and Tier 2 (canonical concerns) file now exists, and feature files are single-purpose:
+  - Tier 2 `controls.css` carries input chrome (`.ms__input`, `.ms__toggle`, `.ms__counter`, `.ms__actions`, `.ms__action-btn`).
+  - Tier 2 `floating.css` carries every Floating-UI-anchored panel (`.ms__hint`, `.ms__dropdown`, `.ms__badge-tooltip`, `.ms__selected-popover`).
+  - Tier 2 `states.css` carries block-level state modifiers (`.ms--disabled`, `.ms--no-checkboxes`).
+  - Tier 2 `animations.css` exists as an intentional stub (component has no `@keyframes`).
+  - Tier 3 `badges.css` and `count-display.css` replace the old mixed-bag `badges-display.css`.
+  - Removed: `input-dropdown.css`, `tooltips-popover.css`, `modifiers.css`, `badges-display.css` (content moved into the files above).
+  Only affects consumers who deep-imported specific source files; the published `dist/style.css` bundle is unchanged.
+- **CSS filenames lose underscore prefix** — `_variables.css` → `variables.css`, `_base.css` → `base.css`, `_options.css` → `options.css`, `_rtl.css` → `rtl.css`, `_debug.css` → `debug.css`. Underscore prefix is a SASS partial convention; these are plain CSS modules. Only affects consumers who deep-imported a specific source file via `@keenmate/web-multiselect/src/css/*` — the published `dist/style.css` bundle is unaffected.
 - **BEM-aligned class names** — `.ms-wrapper` → `.ms__wrapper`, `.ms-wrapper--inline` → `.ms__wrapper--inline`, `.ms-debug-info` → `.ms__debug-info`, `.ms-debug-stats` → `.ms__debug-stats`. Brings them in line with the `.ms__*` BEM convention used elsewhere in the component. **Breaking** for anyone who styled these classes externally — see migration note below.
 
 ### Internal
 
 - Updated `component-variables.manifest.json` with the 11 new `--ms-debug-*` entries under category `debug`.
-- e2e suite updated to use the renamed BEM classes; all 120 tests pass.
-- Resolves audit items C-CSS-2, C-CSS-3, C-CSS-7, C-CSS-8, C-CSS-10, C-BV-1, C-BV-5, C-BV-9 from the BlissFramework guideline checklists.
+- e2e suite updated to use the renamed BEM classes; all 126 tests pass.
+- Resolves audit items C-CSS-1, C-CSS-2, C-CSS-3, C-CSS-7, C-CSS-8, C-CSS-9, C-CSS-10, C-BV-1, C-BV-5, C-BV-9, C-CS-3, C-CS-4, C-CS-5, C-CS-6, C-CS-8 from the BlissFramework guideline checklists.
 
 ### Migration notes
 
@@ -38,6 +46,10 @@ This release aligns the component with the BlissFramework web-component guidelin
 | `web-multiselect .ms-debug-info` | `web-multiselect .ms__debug-info` |
 | `web-multiselect .ms-debug-stats` | `web-multiselect .ms__debug-stats` |
 | `import '@keenmate/web-multiselect/src/css/_variables.css'` | `import '@keenmate/web-multiselect/src/css/variables.css'` |
+| `import '@keenmate/web-multiselect/src/css/_input-dropdown.css'` | split — see `controls.css` (input/toggle/counter/actions) + `floating.css` (dropdown/hint) |
+| `import '@keenmate/web-multiselect/src/css/_tooltips-popover.css'` | `import '@keenmate/web-multiselect/src/css/floating.css'` |
+| `import '@keenmate/web-multiselect/src/css/_badges-display.css'` | split — see `badges.css` + `count-display.css` |
+| `import '@keenmate/web-multiselect/src/css/_modifiers.css'` | `import '@keenmate/web-multiselect/src/css/states.css'` |
 | (any other underscore-prefixed deep import) | drop the underscore |
 
 The wrapper class is internal layout chrome and rarely styled externally; the debug-* classes are dev-only.

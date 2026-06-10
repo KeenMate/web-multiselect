@@ -1,0 +1,108 @@
+/* ==============================================================================
+   COUNT-DISPLAY MODE
+   ==============================================================================
+   Alternative selection-summary UI: a single counter pill ("3 selected") with
+   an inline clear button, instead of one badge per item. Activated via the
+   `badges-display-mode="count"` attribute. The clickable badge that opens the
+   selected-items popover lives in badges.css.
+*/
+
+/* ==============================================================================
+   COUNT-DISPLAY CONTAINER
+   ============================================================================== */
+
+.ms__count-display {
+  display: flex;
+  align-items: center;
+}
+
+.ms__count-display:empty {
+  display: none;
+}
+
+/* Position variants */
+.ms__count-display--bottom {
+  margin-top: var(--ms-count-display-margin-bottom);
+}
+
+.ms__count-display--top {
+  margin-bottom: var(--ms-count-display-margin-top);
+  order: var(--ms-order-first); /* Place before multiselect in flex container */
+}
+
+.ms__count-display--left {
+  order: var(--ms-order-first); /* Place before multiselect */
+  margin-right: var(--ms-count-display-margin-left);
+  justify-content: flex-start;
+}
+
+.ms__count-display--right {
+  margin-left: var(--ms-count-display-margin-right);
+  justify-content: flex-end;
+}
+
+/* ==============================================================================
+   COUNTER PILL (text + clear button)
+   ============================================================================== */
+
+/* Wrapper containing count text and clear button */
+.ms__counter-wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ms-counter-wrapper-gap);
+  background: var(--ms-counter-wrapper-bg);
+  border: var(--ms-counter-wrapper-border);
+  border-radius: var(--ms-counter-wrapper-border-radius);
+  padding: var(--ms-counter-wrapper-padding);
+  transition: all var(--ms-transition-fast) var(--ms-easing-snappy);
+}
+
+.ms__counter-wrapper:hover {
+  background: var(--ms-counter-wrapper-bg-hover);
+  border-color: var(--ms-counter-wrapper-border-color-hover);
+}
+
+.ms__count-text {
+  display: inline-flex;
+  align-items: center;
+  background: var(--ms-count-text-bg);
+  border: var(--ms-count-text-border);
+  padding: 0;
+  font-size: var(--ms-count-text-font-size);
+  color: var(--ms-count-text-color);
+  cursor: pointer;
+  transition: color var(--ms-transition-fast) var(--ms-easing-snappy);
+}
+
+.ms__count-clear {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ms-count-clear-size);
+  height: var(--ms-count-clear-size);
+  padding: 0;
+  border: none;
+  background: var(--ms-count-clear-bg);
+  color: var(--ms-count-clear-color);
+  font-size: var(--ms-count-clear-font-size);
+  line-height: var(--ms-line-height-none);
+  cursor: pointer;
+  border-radius: var(--ms-count-clear-border-radius);
+  transition: all var(--ms-transition-fast) var(--ms-easing-snappy);
+}
+
+.ms__count-clear:hover {
+  background: var(--ms-count-clear-bg-hover);
+  color: var(--ms-count-clear-color-hover);
+}
+
+.ms__count-clear::before {
+  content: "";
+  display: block;
+  width: var(--ms-count-clear-icon-size);
+  height: var(--ms-count-clear-icon-size);
+  background-color: currentColor;
+  -webkit-mask: var(--ms-icon-clear) center / contain no-repeat;
+          mask: var(--ms-icon-clear) center / contain no-repeat;
+}

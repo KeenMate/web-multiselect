@@ -41,16 +41,25 @@ A feature-rich multiselect web component with typeahead search, virtual scrollin
 
 The styles are plain CSS (no SCSS / no preprocessor). All theming is done via CSS custom properties.
 
-**src/css/main.css** - Entry point that declares `@layer variables, component, overrides` and `@import`s all partials with explicit layer bindings:
+**src/css/main.css** - Entry point that declares `@layer variables, component, overrides` and `@import`s all partials with explicit layer bindings. Follows the BlissFramework canonical Tier 1+2+3 file structure:
+
+Tier 1 (skeleton, always non-empty):
 - `variables.css` - All `--ms-*` CSS custom properties at `:host` level (base primitives, semantic per-component theming hooks, sizing)
-- `base.css` - FOUC prevention + layout containers
-- `input-dropdown.css` - Input, toggle, counter, hint, dropdown, actions
-- `options.css` - Options list, groups, checkbox, content, states
-- `badges-display.css` - Badges, count display, individual badges
-- `tooltips-popover.css` - Badge tooltips + selected items popover
+- `base.css` - FOUC prevention + `.ms__wrapper` / `.ms` layout containers
+- `dark-mode.css` - Framework class + per-instance `data-theme` selectors (loaded under `@layer overrides`)
+
+Tier 2 (canonical concerns, always created, may be empty):
+- `controls.css` - `.ms__input`, `.ms__toggle`, `.ms__counter` (in-input badge), `.ms__actions`, `.ms__action-btn`
+- `floating.css` - `.ms__hint`, `.ms__dropdown`, `.ms__badge-tooltip`, `.ms__selected-popover` (everything Floating-UI-anchored)
+- `states.css` - `.ms--disabled`, `.ms--no-checkboxes` (block-level state modifiers)
+- `animations.css` - empty stub (no `@keyframes` in this component)
+
+Tier 3 (component-specific features):
+- `badges.css` - `.ms__badges`, `.ms__badge`, `.ms__badge--counter`, `.ms__badge--more`
+- `count-display.css` - `.ms__count-display`, `.ms__counter-wrapper`, `.ms__count-text`, `.ms__count-clear`
+- `debug.css` - `.ms__debug-info`, `.ms__debug-stats` (dev-only)
+- `options.css` - Options list, groups, checkbox, content, per-state styling
 - `rtl.css` - RTL language support
-- `modifiers.css` - State modifiers (disabled, no-checkboxes)
-- `debug.css` - Debug information panel
 
 ### Naming Conventions
 

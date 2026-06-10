@@ -17,7 +17,7 @@ Baseline state: shipped 1.11.0 (taxonomy swap, OS-aware dark mode).
 
 | ID | Check | Status | Notes |
 |----|-------|--------|-------|
-| C-CSS-1  | Canonical file set | FAIL | No `dark-mode.css`. Missing Tier-2 stubs (`controls.css`, `floating.css`, `states.css`, `animations.css`). |
+| C-CSS-1  | Canonical file set | PASS [fixed] | All Tier 1+2 files present: `main.css`, `variables.css`, `base.css`, `dark-mode.css`, `controls.css`, `floating.css`, `states.css`, `animations.css`. Tier 3: `badges.css`, `count-display.css`, `debug.css`, `options.css`, `rtl.css`. |
 | C-CSS-2  | No underscore prefix | PASS [fixed] | All 9 source files renamed via `git mv` to drop the underscore prefix. `main.css` imports updated. |
 | C-CSS-3  | `@layer` declared & used | PASS [fixed] | `main.css:15` declares `@layer variables, component, overrides;`. Every `@import` bound to its layer with `layer(...)`. |
 | C-CSS-4  | Empty file stub comment | N/A | No empty canonical files exist yet. |
@@ -25,7 +25,7 @@ Baseline state: shipped 1.11.0 (taxonomy swap, OS-aware dark mode).
 | C-CSS-6  | Section banners > 100 lines | PASS | All large files have `===` banners. |
 | C-CSS-7  | BEM convention | PASS [fixed] | Renamed `.ms-wrapper` → `.ms__wrapper`, `.ms-debug-info` → `.ms__debug-info`, `.ms-debug-stats` → `.ms__debug-stats` across CSS + TS + e2e. |
 | C-CSS-8  | No hardcoded colors in feature files | PASS [fixed] | `debug.css` colors now route through `--ms-debug-*` variables defined on `:host`. |
-| C-CSS-9  | No mixed-bag files | FAIL | `input-dropdown.css` mixes input + dropdown + counter + hint + actions. `badges-display.css` mixes badges + count display. `tooltips-popover.css` mixes two floating elements. |
+| C-CSS-9  | No mixed-bag files | PASS [fixed] | `input-dropdown.css` split into `controls.css` (input/toggle/counter/actions) + `floating.css` (dropdown, hint). `badges-display.css` split into `badges.css` + `count-display.css`. `tooltips-popover.css` absorbed into `floating.css`. Each file now owns one logical concern. |
 | C-CSS-10 | Layer contract in README | PASS [fixed] | New "Cascade layers / override contract" section near the theming docs documents the three `@layer` names + override priority table. |
 | C-CSS-11 | `main.css` has no rules | PASS | Only `@import` + comments. |
 | C-CSS-12 | Bundle size sanity | N/A | Re-check after canonical files added. |

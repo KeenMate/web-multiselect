@@ -1,15 +1,16 @@
 /* ==============================================================================
-   BADGES & DISPLAY MODES
+   BADGES
    ==============================================================================
-   Badges container, count display, individual badges, and remove buttons
+   Selected-item badges (.ms__badges container + individual .ms__badge), the
+   counter / "+X more" variants, and the data-action badge cursor.
+   Count-display mode (a single counter badge instead of one-per-item) lives
+   in count-display.css.
 */
 
 /* ==============================================================================
    BADGES CONTAINER
-   ==============================================================================
-*/
+   ============================================================================== */
 
-/* Selected badges container */
 .ms__badges {
   display: flex;
   flex-wrap: wrap;
@@ -43,107 +44,8 @@
 }
 
 /* ==============================================================================
-   COUNT DISPLAY MODE
-   ==============================================================================
-*/
-
-/* Count display (alternative to badges) */
-.ms__count-display {
-  display: flex;
-  align-items: center;
-}
-
-.ms__count-display:empty {
-  display: none;
-}
-
-/* Position variants */
-.ms__count-display--bottom {
-  margin-top: var(--ms-count-display-margin-bottom);
-}
-
-.ms__count-display--top {
-  margin-bottom: var(--ms-count-display-margin-top);
-  order: var(--ms-order-first); /* Place before multiselect in flex container */
-}
-
-.ms__count-display--left {
-  order: var(--ms-order-first); /* Place before multiselect */
-  margin-right: var(--ms-count-display-margin-left);
-  justify-content: flex-start;
-}
-
-.ms__count-display--right {
-  margin-left: var(--ms-count-display-margin-right);
-  justify-content: flex-end;
-}
-
-/* Wrapper containing count text and clear button */
-.ms__counter-wrapper {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--ms-counter-wrapper-gap);
-  background: var(--ms-counter-wrapper-bg);
-  border: var(--ms-counter-wrapper-border);
-  border-radius: var(--ms-counter-wrapper-border-radius);
-  padding: var(--ms-counter-wrapper-padding);
-  transition: all var(--ms-transition-fast) var(--ms-easing-snappy);
-}
-
-.ms__counter-wrapper:hover {
-  background: var(--ms-counter-wrapper-bg-hover);
-  border-color: var(--ms-counter-wrapper-border-color-hover);
-}
-
-.ms__count-text {
-  display: inline-flex;
-  align-items: center;
-  background: var(--ms-count-text-bg);
-  border: var(--ms-count-text-border);
-  padding: 0;
-  font-size: var(--ms-count-text-font-size);
-  color: var(--ms-count-text-color);
-  cursor: pointer;
-  transition: color var(--ms-transition-fast) var(--ms-easing-snappy);
-}
-
-.ms__count-clear {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--ms-count-clear-size);
-  height: var(--ms-count-clear-size);
-  padding: 0;
-  border: none;
-  background: var(--ms-count-clear-bg);
-  color: var(--ms-count-clear-color);
-  font-size: var(--ms-count-clear-font-size);
-  line-height: var(--ms-line-height-none);
-  cursor: pointer;
-  border-radius: var(--ms-count-clear-border-radius);
-  transition: all var(--ms-transition-fast) var(--ms-easing-snappy);
-}
-
-.ms__count-clear:hover {
-  background: var(--ms-count-clear-bg-hover);
-  color: var(--ms-count-clear-color-hover);
-}
-
-.ms__count-clear::before {
-  content: "";
-  display: block;
-  width: var(--ms-count-clear-icon-size);
-  height: var(--ms-count-clear-icon-size);
-  background-color: currentColor;
-  -webkit-mask: var(--ms-icon-clear) center / contain no-repeat;
-          mask: var(--ms-icon-clear) center / contain no-repeat;
-}
-
-/* ==============================================================================
-   INDIVIDUAL BADGES
-   ==============================================================================
-*/
+   INDIVIDUAL BADGE
+   ============================================================================== */
 
 /* Individual badge (styled like Pure Admin composite badge) */
 .ms__badge {
@@ -224,9 +126,9 @@
 }
 
 /* ==============================================================================
-   INDICATOR BADGE VARIANT (for "+ X more", "3 selected", compact mode)
+   COUNTER BADGE VARIANT (for "+X more", "3 selected", compact mode)
    ==============================================================================
-   Gray/neutral styling to distinguish from regular blue badges
+   Gray/neutral styling to distinguish from regular accent-colored badges
 */
 .ms__badge--counter {
   cursor: pointer;
@@ -252,8 +154,7 @@
 
 /* ==============================================================================
    "+X MORE" BADGE VARIANT
-   ==============================================================================
-*/
+   ============================================================================== */
 
 /* "+X more" badge variant (partial mode) */
 /* Now uses .ms__badge--counter for styling, this just adds cursor */
