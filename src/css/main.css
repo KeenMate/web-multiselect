@@ -22,3 +22,4 @@
 @import url('./rtl.css')               layer(component);
 @import url('./modifiers.css')         layer(component);
 @import url('./debug.css')             layer(component);
+@import url('./dark-mode.css')         layer(overrides);

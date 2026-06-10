@@ -189,3 +189,75 @@ test('selected option stays readable on a dark page', async ({ page }) => {
     const ratio = await measureOptionContrast(selected, p.locator('.ms__dropdown'));
     expect(ratio, `selected contrast ratio was ${ratio.toFixed(2)}:1 — needs at least 3:1`).toBeGreaterThanOrEqual(3);
 });
+
+// ============================================================================
+// Framework class + per-instance signals
+// ============================================================================
+// These tests run on a LIGHT page (`test/dark-mode-signals.html`). Each
+// multiselect is asked to render dark via a single signal: either a framework
+// theme class on an ancestor (`data-theme="dark"`, `data-bs-theme="dark"`,
+// `.dark`) or a per-instance attribute on the host (`data-theme="dark"`).
+// If the dark-mode.css selectors don't fire, the picker renders light and the
+// "is rendering dark" assertion fails — that's the regression gate.
+
+const SIGNALS_PAGE = '/test/dark-mode-signals.html';
+
+/** Returns the relative luminance (0-1) of the rendered input background. */
+async function inputBgLuminance(p: Locator): Promise<number> {
+    const bgString = await input(p).evaluate(el => getComputedStyle(el).backgroundColor);
+    const [r, g, b] = parseColor(bgString);
+    return relativeLuminance([r, g, b]);
+}
+
+test.describe('framework class + per-instance signals', () => {
+    test.beforeEach(async ({ page }) => {
+        await page.goto(SIGNALS_PAGE);
+    });
+
+    test('per-instance data-theme="dark" forces the host to render dark on a light page', async ({ page }) => {
+        const p = picker(page, 'ms-instance-dark');
+        const lum = await inputBgLuminance(p);
+        expect(lum, `input bg luminance was ${lum.toFixed(3)} — expected dark (< 0.2)`).toBeLessThan(0.2);
+    });
+
+    test('Bootstrap data-bs-theme="dark" on an ancestor forces dark rendering', async ({ page }) => {
+        const p = picker(page, 'ms-ancestor-bs-dark');
+        const lum = await inputBgLuminance(p);
+        expect(lum, `input bg luminance was ${lum.toFixed(3)} — expected dark (< 0.2)`).toBeLessThan(0.2);
+    });
+
+    test('Tailwind .dark class on an ancestor forces dark rendering', async ({ page }) => {
+        const p = picker(page, 'ms-ancestor-tailwind-dark');
+        const lum = await inputBgLuminance(p);
+        expect(lum, `input bg luminance was ${lum.toFixed(3)} — expected dark (< 0.2)`).toBeLessThan(0.2);
+    });
+
+    test('data-theme="dark" on an ancestor forces dark rendering', async ({ page }) => {
+        const p = picker(page, 'ms-ancestor-data-theme-dark');
+        const lum = await inputBgLuminance(p);
+        expect(lum, `input bg luminance was ${lum.toFixed(3)} — expected dark (< 0.2)`).toBeLessThan(0.2);
+    });
+
+    test('per-instance data-theme="light" wins over ancestor data-theme="dark"', async ({ page }) => {
+        // The host has data-theme="light" inside a wrapper with data-theme="dark".
+        // Per-instance attribute has higher specificity than :host-context, so the
+        // host should render light. If the precedence is wrong, this picker renders dark.
+        const p = picker(page, 'ms-precedence-light');
+        const lum = await inputBgLuminance(p);
+        expect(lum, `input bg luminance was ${lum.toFixed(3)} — expected light (> 0.8)`).toBeGreaterThan(0.8);
+    });
+
+    test('hover contrast stays AA on the per-instance dark picker', async ({ page }) => {
+        // Once the dark theme is applied, the hover state must still meet WCAG-AA
+        // contrast just like in the page-color-scheme dark tests above.
+        const p = picker(page, 'ms-instance-dark');
+        await input(p).click();
+        await expect(p.locator('.ms__dropdown')).toBeVisible();
+
+        const firstOption = options(p).first();
+        await firstOption.hover();
+
+        const ratio = await measureOptionContrast(firstOption, p.locator('.ms__dropdown'));
+        expect(ratio, `hover contrast was ${ratio.toFixed(2)}:1 — needs at least 3:1`).toBeGreaterThanOrEqual(3);
+    });
+});

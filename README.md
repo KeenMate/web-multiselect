@@ -9,6 +9,7 @@ A lightweight, accessible multiselect web component with typeahead search, RTL l
 
 ## What's New in v1.12.0
 
+- **Dark mode now responds to framework theme classes** — `data-bs-theme="dark"` (Bootstrap 5.3+), `.dark` (Tailwind), and `data-theme="dark"` on any ancestor flip the component to dark, even on apps that flip classes without declaring `color-scheme`. Symmetric `light` selectors let you force one widget back to light on a dark page. Per-instance `<web-multiselect data-theme="dark">` works as the highest-priority escape hatch.
 - **CSS cascade layers (`@layer variables, component, overrides`)** — every internal rule lives in a named layer, so consumer CSS in the light DOM can override any component rule without `!important` or specificity arms races. Document any unlayered rule in your app's CSS and it wins automatically.
 - **CSS source files no longer have underscore prefix** — `_variables.css` → `variables.css`, etc. The underscore was a leftover SASS partial convention; these are plain CSS modules. Only affects deep imports of source files; the published `dist/style.css` bundle is unchanged.
 - **BEM-aligned class names** — `.ms-wrapper` → `.ms__wrapper`, `.ms-debug-info` → `.ms__debug-info`, `.ms-debug-stats` → `.ms__debug-stats`. The wrapper class is internal layout chrome; debug classes are dev-only. See CHANGELOG migration table if you'd styled any of these externally.
@@ -1728,6 +1729,31 @@ You can customize the component using CSS variables even with just a `<script>` 
   }
 </style>
 ```
+
+### Dark mode — supported signals
+
+Since v1.12.0 the multiselect honors **five different signals** for switching to dark mode. Pick whichever fits your app; you don't need to wire them all up.
+
+| # | Signal | Set by | Example |
+|---|--------|--------|---------|
+| 1 | OS preference + page `color-scheme` | App author | `html { color-scheme: light dark }` — multiselect picks the OS branch automatically. |
+| 2 | Page-level `color-scheme: dark` | App author | `body { color-scheme: dark }` — flips every multiselect on the page to dark. |
+| 3 | Framework data-attribute on ancestor | Bootstrap, Pure Admin, custom apps | `<html data-bs-theme="dark">` or `<div data-theme="dark">…</div>` |
+| 4 | Framework class on ancestor | Tailwind, hand-rolled toggles | `<html class="dark">` |
+| 5 | Per-instance attribute on host | App author, for one widget | `<web-multiselect data-theme="dark">` |
+
+**Precedence** (highest wins): per-instance (#5) → framework ancestor (#3, #4) → page color-scheme (#1, #2).
+
+#### Forcing a single widget back to light
+
+If your page is dark but you want one multiselect to render light:
+
+```html
+<!-- on a body { color-scheme: dark } page -->
+<web-multiselect data-theme="light"></web-multiselect>
+```
+
+This works for any of signals #3–#5. The symmetric `data-theme="light"`, `data-bs-theme="light"`, `.light` selectors restore the light palette inside the affected scope.
 
 ### Available CSS Variables
 

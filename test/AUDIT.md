@@ -53,12 +53,12 @@ Baseline state: shipped 1.11.0 (taxonomy swap, OS-aware dark mode).
 |----|-------|--------|-------|
 | C-CS-1 | No `:host { color-scheme }` | PASS | Only mentioned in explanatory comments at `variables.css:18-37`. |
 | C-CS-2 | `light-dark()` in fallbacks | PASS | Every color fallback uses `light-dark()` or is an intentional same-in-both-modes literal (`#3b82f6` accent, `#ffffff` text-on-accent — documented exception). |
-| C-CS-3 | Framework class selectors | FAIL | No `:host-context([data-bs-theme="dark"])`, no `:host-context(.dark)`, no `:host-context([data-theme="dark"])`. Multiselect explicitly chose "position (1)" (light-dark()-only) — `color-scheme.md:312-313` cites it as the reference for that position — but the mandatory checklist requires the framework selectors. Tension between guideline and audit. |
-| C-CS-4 | Per-instance override | FAIL | No `:host([data-theme="dark"])` / `:host([data-theme="light"])`. Same tension as C-CS-3. |
-| C-CS-5 | Contrast test fixture | PASS | `test/dark-mode.html` covers 3 of 5 signals (page `color-scheme: dark`, partial `--base-*`, no overrides). Signals 4 (framework class) and 5 (per-instance) absent — moot until C-CS-3/C-CS-4 land. |
-| C-CS-6 | Playwright contrast assertions | PASS | `e2e/dark-mode.spec.ts` runs WCAG-AA assertions; passes. |
+| C-CS-3 | Framework class selectors | PASS [fixed] | New `dark-mode.css` declares `:host-context([data-theme="dark"])`, `:host-context([data-bs-theme="dark"])`, `:host-context(.dark)` and symmetric `light` selectors. Moved from position (1) to position (3) per `color-scheme.md` recommendation for components with existing adoption. |
+| C-CS-4 | Per-instance override | PASS [fixed] | `:host([data-theme="dark"])` and `:host([data-theme="light"])` blocks added in `dark-mode.css`. Per-instance attribute wins over framework class on ancestor (specificity). |
+| C-CS-5 | Contrast test fixture | PASS [fixed] | `test/dark-mode.html` covers signals #1-#3; new `test/dark-mode-signals.html` covers signals #4-#5 (framework class + per-instance). |
+| C-CS-6 | Playwright contrast assertions | PASS [fixed] | `e2e/dark-mode.spec.ts` runs 11 specs (was 5) — adds 6 specs for the new signals, including a precedence test. All pass. |
 | C-CS-7 | Visual smoke test | N/A | Manual gate. |
-| C-CS-8 | README documents contract | PARTIAL | `README.md:12` documents `color-scheme` only. No `data-theme` / `data-bs-theme` / `.dark` because they're not supported. Will need expansion if C-CS-3/C-CS-4 are addressed. |
+| C-CS-8 | README documents contract | PASS [fixed] | New "Dark mode — supported signals" section in README lists all five signals with examples, precedence rules, and the force-light-on-dark-page recipe. |
 | C-CS-9 | CHANGELOG entry | PASS | 1.11.0 has dark-mode entries under Added. |
 
 ---
