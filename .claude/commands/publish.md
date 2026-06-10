@@ -13,7 +13,7 @@ The release type: **$ARGUMENTS**
 
 Must be one of:
 
-- `rc` — ship the WIP rc as-is. The topmost CHANGELOG heading (e.g. `## [1.10.0-rc02] - 2026-05-20`) gets the `PUBLISHED` tag inserted. Rare in this repo today — the last rc was `1.5.0-rc01` — but supported for future use.
+- `rc` — ship the WIP rc as-is. The topmost CHANGELOG heading (e.g. `## [1.10.0-rc02] - 2026-05-20`) gets ` [PUBLISHED]` appended. Rare in this repo today — the last rc was `1.5.0-rc01` — but supported for future use.
 - `release` — promote a WIP rc to a final release. `1.10.0-rcN` → `1.10.0`. CHANGELOG heading is renamed to match the new version.
 - `patch` — SemVer patch bump. Drops any `-rc` suffix. `1.10.1-rcN` → `1.10.1`, `1.10.0` → `1.10.1`.
 - `minor` — SemVer minor bump. Drops `-rc`. Resets patch.
@@ -32,21 +32,21 @@ Single-package repo, everything at root:
 
 ## CHANGELOG convention in this repo
 
-There is **no `## [Unreleased]` section**. The WIP section is the topmost `## [X.Y.Z] - YYYY-MM-DD` heading without `PUBLISHED`. Already-released sections insert ` - PUBLISHED ` between the version and the date:
+There is **no `## [Unreleased]` section**. The WIP section is the topmost `## [X.Y.Z] - YYYY-MM-DD` heading without a `[PUBLISHED]` tag. Already-released sections carry `[PUBLISHED]` at the end of their heading:
 
 ```
-## [1.10.0] - 2026-05-20                  ← WIP, the one you're shipping
+## [1.12.0] - 2026-06-10                  ← WIP, the one you're shipping
 ### Added
 - ...
 
-## [1.9.0] - PUBLISHED - 2026-04-26
+## [1.11.0] - 2026-06-09 [PUBLISHED]
 ### Added
 - ...
 ```
 
-Publishing the WIP section means inserting ` - PUBLISHED` between the `[X.Y.Z]` bracket and the date — exact format: `## [X.Y.Z] - PUBLISHED - YYYY-MM-DD`. The next development cycle creates a fresh `## [next-version] - <date>` heading on its first CHANGELOG edit.
+Publishing the WIP section means **appending ` [PUBLISHED]`** to its heading — exact format: `## [X.Y.Z] - YYYY-MM-DD [PUBLISHED]`. The next development cycle creates a fresh `## [next-version] - <date>` heading on its first CHANGELOG edit.
 
-Older sections (1.8.5, 1.8.4, etc.) are inconsistent — some carry the `PUBLISHED` marker, some don't. Don't try to retro-fix them; only finalize the section you're shipping.
+Historical sections through 1.11.0 use a different format (`## [X.Y.Z] - PUBLISHED - YYYY-MM-DD`) — that was the pre-1.12 convention. Don't retro-fix them; only finalize the section you're shipping using the new format. Substring searches for `PUBLISHED` still work across both formats.
 
 ## Resolve versions
 
@@ -70,8 +70,13 @@ If `WIP_VERSION` ≠ `NEW_VERSION` (e.g. the WIP is `1.10.0-rc01` but the user a
 ### 1. Sanity checks
 
 - Run `git status`. The repo intentionally keeps `.claude/`, `test-results/`, and `nul` untracked — those are fine. If there are **other** uncommitted changes that aren't `CHANGELOG.md`, `README.md`, or `package.json`, list them and ask the user before continuing. (Typical case: substantive source changes belonging in this release that haven't been committed yet — confirm they're intended for this version before bumping.)
+- **Verify the new version isn't already on npm.** Run `npm view @keenmate/web-multiselect@<NEW_VERSION> version 2>/dev/null` — if it returns the version string, that version is already published and **stop**: bumping over it would fail at publish time and pollute the commit. Also run `npm view @keenmate/web-multiselect version` to fetch the latest published version; if it's higher than `NEW_VERSION`, warn the user (mismatch between local package.json history and the registry) and ask before continuing.
 - Confirm the WIP CHANGELOG section has at least one bullet of substantive content under `### Added`, `### Changed`, `### Removed`, `### Fixed`, or `### Internal`. If empty, stop — there's nothing meaningful to release.
-- Confirm `./README.md` has a `## What's New in vWIP_VERSION` section. If it's missing, **stop and ask the user to add it** — the publish step shouldn't invent the highlights, that's a writing call.
+- Confirm `./README.md` has a `## What's New in vWIP_VERSION` section. If it's missing, draft one from the CHANGELOG and present it to the user for approval before continuing:
+  - Read the WIP CHANGELOG section, distill it to 5–8 scannable bullets covering the Added/Changed themes (paraphrase, don't copy CHANGELOG bullets verbatim — those are exhaustive; What's New is the highlight reel). Pure internal refactors and Fixed-only entries don't need coverage, though headline bug fixes worth advertising are worth a bullet. Follow the formatting of existing `## What's New in vX.Y.Z` sections in the README (bold lead phrase + em-dash + 1–2 sentence explanation).
+  - Show the user the proposed draft as plain markdown in your reply. Ask whether to (a) insert as-is, (b) edit, or (c) abort so they can write it themselves.
+  - Only proceed past step 1 once the user approves the draft (or supplies their own). On approval, insert the section directly above the current top `## What's New in vX.Y.Z` heading in `README.md`, then continue.
+  - Do not silently insert the draft without confirmation — release highlights are a writing call and the user owns the voice.
 
 ### 2. Bump version (if needed)
 
@@ -85,7 +90,7 @@ In `./CHANGELOG.md`:
 
 - If `WIP_VERSION` ≠ `NEW_VERSION` (e.g. promoting `1.10.0-rc01` → `1.10.0`), rename the WIP heading from `## [WIP_VERSION] - <date>` to `## [NEW_VERSION] - <today>` (today's date from system context).
 - If `WIP_VERSION` == `NEW_VERSION`, leave the bracketed version alone but update the date to today **if** the existing date is stale (more than a few days old). The WIP date is usually whatever the day the section was opened; refresh it so the changelog reflects the actual ship date.
-- In either case, insert ` - PUBLISHED` between the `[X.Y.Z]` bracket and the date, so the heading reads exactly: `## [NEW_VERSION] - PUBLISHED - YYYY-MM-DD`.
+- In either case, **append ` [PUBLISHED]`** to the heading so it reads exactly: `## [NEW_VERSION] - YYYY-MM-DD [PUBLISHED]`.
 - Leave all bullet content untouched.
 - **Do not** create an empty new WIP section — the next dev cycle's first CHANGELOG edit will create one.
 
@@ -180,7 +185,7 @@ Report back with:
 - **Do not push to git remote.** The commit stays local until the user pushes.
 - **Do not create an empty `[Unreleased]` or new WIP heading** in CHANGELOG after finalizing — the next dev cycle's first edit creates the next heading.
 - **Do not retro-fix older CHANGELOG sections** that are missing the `PUBLISHED` tag — the convention isn't uniformly applied historically, and editing prior sections noises up the diff.
-- **Do not invent README "What's New" highlights.** If the WIP `## What's New in vWIP_VERSION` section is missing in Step 1, stop and ask the user — the writing call is theirs.
+- **Do not silently insert a drafted What's New section.** If you draft one in Step 1 because it's missing, you must present it and wait for explicit approval (or edits) before inserting — the writing voice is the user's call, even when you're handing them a starting point.
 - **Do not keep more than two `## What's New in vX.Y.Z` sections in the README.** Step 4 trims older ones; if you see three or more after Step 4, you missed one.
 - **Do not skip `npm run build`** — without it `dist/` is stale and the publish would ship outdated artifacts (or fail entirely if `dist/` was wiped by `make clean`).
 - **Do not skip the e2e run** — this repo's tests have caught real regressions during the 1.10.0 cycle, and the gate is explicit.

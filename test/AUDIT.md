@@ -35,7 +35,7 @@ Baseline state: shipped 1.11.0 (taxonomy swap, OS-aware dark mode).
 | ID | Check | Status | Notes |
 |----|-------|--------|-------|
 | C-BV-1  | Every visible color → variable | PASS [fixed] | `debug.css` now consumes `--ms-debug-*` vars instead of hex literals. |
-| C-BV-2  | Every `var()` has a fallback | PARTIAL | Spirit: PASS. All `--base-*` reads have fallbacks (only hits in `variables.css` are inside comments). Letter: ~574 `var(--ms-*)` reads without fallback in feature files — but `:host` defines them, so no broken-render risk. |
+| C-BV-2  | Every `var(--base-*)` read has a fallback | PASS | Verify grep `var\(--base-[a-z-]+\)` returns only matches inside comments in `variables.css`. The rule explicitly exempts `--ms-*` reads from needing inline fallbacks (two-layer pattern — fallback lives at the `:host` definition site, not the call site). |
 | C-BV-3  | `:host` declares every local var | PASS (assumed) | Not exhaustively diffed; spot checks clean. |
 | C-BV-4  | Prefix unique & reserved | PASS | `ms` listed in `base-variables.md` prefix table. |
 | C-BV-5  | Manifest exists & exported | PASS [fixed] | Added `"./manifest"` short-import key to `package.json` exports. |

@@ -1,109 +1,58 @@
 /* ==============================================================================
    DARK MODE — framework class + per-instance signal handling
    ==============================================================================
-   This file catches dark-mode signals that `light-dark()` in variables.css
-   would miss on its own — specifically: consumers using a framework theme
-   class WITHOUT declaring `color-scheme` on the page (e.g. Tailwind's `.dark`
-   class, hand-rolled theme toggles), and per-instance overrides via the
-   `data-theme` attribute on the host element.
+   Sets `color-scheme` on the host when the consumer signals dark/light via a
+   framework class (signal #4) or a per-instance attribute (signal #5). Every
+   `--ms-*` color in variables.css resolves through `light-dark(<light>, <dark>)`,
+   so flipping `color-scheme` on the host picks the correct branch without us
+   touching any `--base-*` value.
 
-   Strategy: instead of redeclaring every `--ms-*` variable here, we override
-   the `--base-*` values at the host scope. variables.css already reads each
-   `--ms-*` via `var(--base-*, light-dark(...))`, so setting `--base-*` here
-   causes every dependent `--ms-*` to recompute correctly via CSS variable
-   inheritance — keeps this file ~30 lines instead of ~80.
+   Why we don't override `--base-*` here:
+   Setting e.g. `--base-input-bg: #1a1a1a` on `:host` shadows the consumer's
+   `:root { --base-input-bg: ... }` for resolution inside the shadow root, so
+   their themed value (e.g. pure-admin's #163768) would be silently replaced
+   by our hardcoded default. Setting `color-scheme` instead leaves the
+   consumer's `--base-*` chain intact — they remain the source of truth, and
+   we only pick the dark branch of our own fallbacks.
 
-   Values mirror the dark / light branches of the `light-dark()` fallbacks in
-   variables.css. Keep them in sync — if you change a dark literal there,
-   change it here too.
+   Why `color-scheme` on `:host` is fine *here* (but not in variables.css):
+   variables.css avoids it because an unconditional declaration would override
+   whatever the consumer's <html>/<body>/ancestor set. Here we declare it only
+   when the consumer's own signal matches, so we're amplifying their intent
+   rather than fighting it. Frameworks that already set `color-scheme`
+   alongside their class (Bootstrap 5.3+) get a redundant no-op; frameworks
+   that don't (Tailwind `.dark`, hand-rolled toggles) get filled in.
 
    Signals handled:
      #4 Framework theme class on an ancestor — `:host-context([data-theme="dark"])`,
         `:host-context([data-bs-theme="dark"])`, `:host-context(.dark)`.
-        Bootstrap 5.3+ sets `color-scheme` alongside its class so light-dark()
-        already resolves correctly — but we keep the selector as a safety net
-        for older framework versions and Tailwind / hand-rolled toggles that
-        flip a class but forget color-scheme.
      #5 Per-instance attribute on the host — `:host([data-theme="dark"])`,
-        `:host([data-theme="light"])`. Highest specificity — wins over any
+        `:host([data-theme="light"])`. Highest specificity, wins over any
         framework class on an ancestor.
 
    See [color-scheme.md](BlissFramework guidelines) for the full pattern. */
 
-/* ==============================================================================
-   DARK — framework class on ancestor (signal #4)
-   ============================================================================== */
+/* DARK — framework class on ancestor (signal #4) */
 :host-context([data-theme="dark"]),
 :host-context([data-bs-theme="dark"]),
 :host-context(.dark) {
-  --base-text-color-1: #f5f5f5;
-  --base-text-color-2: #d4d4d4;
-  --base-text-color-3: #a3a3a3;
-  --base-text-color-4: #737373;
-  --base-main-bg: #1a1a1a;
-  --base-elevated-bg: #2b2b2b;
-  --base-inverse-bg: #f5f5f5;
-  --base-border-color: #3a3a3a;
-  --base-input-bg: #1a1a1a;
-  --base-accent-color-light: #1e3a5f;
-  --base-accent-color-light-hover: #264a73;
+  color-scheme: dark;
 }
 
-/* ==============================================================================
-   LIGHT — framework class on ancestor (signal #4, safety net)
-   ==============================================================================
-   Lets consumers on a dark page force one section back to light without
-   touching the multiselect itself, by wrapping it in `[data-theme="light"]`
-   or `.light`. */
+/* LIGHT — framework class on ancestor (signal #4, safety net for
+   "force one section back to light on a dark page"). */
 :host-context([data-theme="light"]),
 :host-context([data-bs-theme="light"]),
 :host-context(.light) {
-  --base-text-color-1: #111827;
-  --base-text-color-2: #353b47;
-  --base-text-color-3: #6b7280;
-  --base-text-color-4: #a0a3a9;
-  --base-main-bg: #ffffff;
-  --base-elevated-bg: #f9fafb;
-  --base-inverse-bg: #333333;
-  --base-border-color: #e5e7eb;
-  --base-input-bg: #ffffff;
-  --base-accent-color-light: #eff6ff;
-  --base-accent-color-light-hover: #e0f2fe;
+  color-scheme: light;
 }
 
-/* ==============================================================================
-   DARK — per-instance attribute on the host (signal #5)
-   ==============================================================================
-   Highest specificity. Wins over any framework class on an ancestor — useful
-   for "dark dropdown on a light dashboard" or "light dropdown on a dark page"
-   scenarios. */
+/* DARK — per-instance attribute on the host (signal #5). */
 :host([data-theme="dark"]) {
-  --base-text-color-1: #f5f5f5;
-  --base-text-color-2: #d4d4d4;
-  --base-text-color-3: #a3a3a3;
-  --base-text-color-4: #737373;
-  --base-main-bg: #1a1a1a;
-  --base-elevated-bg: #2b2b2b;
-  --base-inverse-bg: #f5f5f5;
-  --base-border-color: #3a3a3a;
-  --base-input-bg: #1a1a1a;
-  --base-accent-color-light: #1e3a5f;
-  --base-accent-color-light-hover: #264a73;
+  color-scheme: dark;
 }
 
-/* ==============================================================================
-   LIGHT — per-instance attribute on the host (signal #5)
-   ============================================================================== */
+/* LIGHT — per-instance attribute on the host (signal #5). */
 :host([data-theme="light"]) {
-  --base-text-color-1: #111827;
-  --base-text-color-2: #353b47;
-  --base-text-color-3: #6b7280;
-  --base-text-color-4: #a0a3a9;
-  --base-main-bg: #ffffff;
-  --base-elevated-bg: #f9fafb;
-  --base-inverse-bg: #333333;
-  --base-border-color: #e5e7eb;
-  --base-input-bg: #ffffff;
-  --base-accent-color-light: #eff6ff;
-  --base-accent-color-light-hover: #e0f2fe;
+  color-scheme: light;
 }
