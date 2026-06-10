@@ -1,4 +1,4 @@
-.PHONY: help setup dev build package publish publish-dry clean lint test-e2e test-e2e-ui test-e2e-headed test-e2e-install
+.PHONY: help setup dev build package publish publish-rc publish-dry clean lint test-e2e test-e2e-ui test-e2e-headed test-e2e-install
 
 help: ## Show this help message
 	@echo "Available targets:"
@@ -30,8 +30,9 @@ publish-dry: ## Publish to npm (dry run) - cleans dist first
 	npm publish --dry-run
 	@echo "Dry-run complete - Review the output above"
 
-publish: ## Publish to npm - cleans dist first
-	@echo "WARNING: This will publish to npm registry"
+publish: ## Publish to npm as 'latest' - cleans dist first (use for release/patch/minor/major)
+	@echo "WARNING: This will publish to npm registry as the 'latest' dist-tag"
+	@echo "Use 'make publish-rc' instead if you're shipping a pre-release version."
 	@echo "Press Ctrl+C to cancel, or Enter to continue..."
 	@powershell -Command "Read-Host | Out-Null"
 	@echo "Publishing to npm..."
@@ -39,6 +40,17 @@ publish: ## Publish to npm - cleans dist first
 	npm run build
 	npm publish
 	@echo "Published successfully"
+
+publish-rc: ## Publish to npm under the 'rc' dist-tag (does NOT touch 'latest')
+	@echo "WARNING: This will publish to npm registry under the 'rc' dist-tag"
+	@echo "The 'latest' tag will be untouched - consumers must opt in with @rc or @<version>."
+	@echo "Press Ctrl+C to cancel, or Enter to continue..."
+	@powershell -Command "Read-Host | Out-Null"
+	@echo "Publishing to npm under 'rc' tag..."
+	npm run clean:dist
+	npm run build
+	npm publish --tag rc
+	@echo "Published successfully under 'rc' tag"
 
 clean: ## Clean build artifacts and node_modules
 	@echo "Cleaning build artifacts..."

@@ -171,13 +171,20 @@ Report back with:
 
 - The new version number
 - The commit SHA
-- The exact commands to publish:
-  ```
-  npm login          # if not already logged in
-  npm publish
-  ```
-  (Or `make publish` if the user prefers the prompt-wrapped Makefile target — note that this re-runs the build inside the Makefile, which is harmless but redundant.)
-- A reminder that the CHANGELOG `PUBLISHED` tag is now in place — if `npm publish` fails, the user should revert both the tag (CHANGELOG heading) and the version bump (package.json) before retrying, since the registry will refuse to re-publish the same version.
+- The exact commands to publish. **Pick the right one for the arg type:**
+  - For `rc` (publishing a pre-release):
+    ```
+    npm login          # if not already logged in
+    npm publish --tag rc
+    ```
+    Or `make publish-rc` (prompt-wrapped Makefile target). The `--tag rc` is critical — without it npm assigns the `latest` dist-tag, which would make the pre-release the default install for everyone running `npm install @keenmate/web-multiselect`. With `--tag rc`, the `latest` tag stays put and consumers opt in via `@rc` or pinning the exact version.
+  - For `release` / `patch` / `minor` / `major` (publishing a stable release):
+    ```
+    npm login          # if not already logged in
+    npm publish
+    ```
+    Or `make publish`. No `--tag` needed — it correctly lands as `latest`.
+- A reminder that the CHANGELOG `[PUBLISHED]` tag is now in place — if `npm publish` fails, the user should revert both the tag (CHANGELOG heading) and the version bump (package.json) before retrying, since the registry will refuse to re-publish the same version.
 
 ## Things not to do
 
