@@ -23,14 +23,14 @@ multi-select:not(:defined) {
 */
 
 /* Wrapper (contains multiselect + badges) */
-.ms-wrapper {
+.ms__wrapper {
   display: flex;
   flex-direction: column; /* Default: badges above/below input */
   align-items: stretch;
 }
 
 /* Inline layout for left/right positioning */
-.ms-wrapper--inline {
+.ms__wrapper--inline {
   flex-direction: row;
   align-items: var(--ms-inline-align, center);
 }

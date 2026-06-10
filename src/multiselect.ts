@@ -428,11 +428,11 @@ export class WebMultiSelect<T = any> {
 
         // Create wrapper for input and badges (needed for positioning)
         const wrapper = document.createElement('div');
-        wrapper.className = 'ms-wrapper';
+        wrapper.className = 'ms__wrapper';
 
         // Add layout modifier based on badges position
         if (this.effectiveBadgesPosition === 'left' || this.effectiveBadgesPosition === 'right') {
-            wrapper.classList.add('ms-wrapper--inline');
+            wrapper.classList.add('ms__wrapper--inline');
         }
 
         // Build the structure: element contains wrapper, which contains inputWrapper and badgesContainer
@@ -2140,8 +2140,8 @@ export class WebMultiSelect<T = any> {
                 if (this.effectiveBadgesPosition === 'left') this.effectiveBadgesPosition = 'right';
                 else if (this.effectiveBadgesPosition === 'right') this.effectiveBadgesPosition = 'left';
             }
-            const wrapper = this.element.querySelector('.ms-wrapper');
-            wrapper?.classList.toggle('ms-wrapper--inline',
+            const wrapper = this.element.querySelector('.ms__wrapper');
+            wrapper?.classList.toggle('ms__wrapper--inline',
                 this.effectiveBadgesPosition === 'left' || this.effectiveBadgesPosition === 'right');
         }
 

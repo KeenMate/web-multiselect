@@ -4,45 +4,45 @@
    Debug information display for development and troubleshooting
 */
 
-.ms-debug-info {
+.ms__debug-info {
   margin-top: calc(0.4 * var(--ms-rem));
   padding: calc(0.4 * var(--ms-rem));
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: calc(var(--base-border-radius-md, 0.6) * var(--ms-rem));
+  background-color: var(--ms-debug-bg);
+  border: 1px solid var(--ms-debug-border-color);
+  border-radius: var(--ms-debug-border-radius);
   font-size: calc(1.2 * var(--ms-rem));
-  color: #111827;
+  color: var(--ms-debug-text-color);
 }
 
-.ms-debug-info details summary {
+.ms__debug-info details summary {
   cursor: pointer;
   font-weight: 600;
-  color: #2563eb;
+  color: var(--ms-debug-summary-color);
   user-select: none;
   padding: calc(0.4 * var(--ms-rem));
-  border-radius: calc(var(--base-border-radius-sm, 0.4) * var(--ms-rem));
+  border-radius: var(--ms-debug-summary-border-radius);
 }
 
-.ms-debug-info details summary:hover {
-  background-color: #f3f4f6;
+.ms__debug-info details summary:hover {
+  background-color: var(--ms-debug-summary-bg-hover);
 }
 
-.ms-debug-info details summary:focus {
-  outline: 2px solid #3b82f6;
+.ms__debug-info details summary:focus {
+  outline: 2px solid var(--ms-debug-summary-outline-color);
   outline-offset: 2px;
 }
 
-.ms-debug-info .ms-debug-stats {
+.ms__debug-info .ms__debug-stats {
   display: flex;
   flex-direction: column;
   gap: calc(0.4 * var(--ms-rem));
   margin-top: calc(0.4 * var(--ms-rem));
   padding: calc(0.4 * var(--ms-rem));
-  background-color: #ffffff;
-  border-radius: calc(var(--base-border-radius-sm, 0.4) * var(--ms-rem));
+  background-color: var(--ms-debug-stats-bg);
+  border-radius: var(--ms-debug-stats-border-radius);
 }
 
-.ms-debug-info .ms-debug-stats span {
+.ms__debug-info .ms__debug-stats span {
   display: flex;
   justify-content: space-between;
   padding: 2px 4px;
@@ -50,8 +50,8 @@
   font-size: calc(1 * var(--ms-rem));
 }
 
-.ms-debug-info .ms-debug-stats span::before {
+.ms__debug-info .ms__debug-stats span::before {
   content: '•';
   margin-right: calc(0.4 * var(--ms-rem));
-  color: #3b82f6;
+  color: var(--ms-debug-bullet-color);
 }

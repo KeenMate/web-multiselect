@@ -305,7 +305,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
         if (name === 'initial-values') return;
         if (name === 'show-debug-info') {
             // Re-render the debug panel without rebuilding the picker.
-            const existing = this.shadow.querySelector('.ms-debug-info');
+            const existing = this.shadow.querySelector('.ms__debug-info');
             if (existing) existing.remove();
             if (newValue === 'true') this.renderDebugInfo();
             return;
@@ -350,21 +350,21 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     private renderDebugInfo() {
         // Remove existing debug info if present
-        const existingDebug = this.shadow.querySelector('.ms-debug-info');
+        const existingDebug = this.shadow.querySelector('.ms__debug-info');
         if (existingDebug) {
             existingDebug.remove();
         }
 
         // Create debug info container
         const debugContainer = document.createElement('div');
-        debugContainer.className = 'ms-debug-info';
+        debugContainer.className = 'ms__debug-info';
 
         const details = document.createElement('details');
         const summary = document.createElement('summary');
         summary.textContent = 'Debug Info';
 
         const statsDiv = document.createElement('div');
-        statsDiv.className = 'ms-debug-stats';
+        statsDiv.className = 'ms__debug-stats';
 
         details.appendChild(summary);
         details.appendChild(statsDiv);
@@ -377,7 +377,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
     }
 
     private updateDebugInfo() {
-        const statsDiv = this.shadow.querySelector('.ms-debug-stats');
+        const statsDiv = this.shadow.querySelector('.ms__debug-stats');
         if (!statsDiv || !this.picker) return;
 
         const version = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'unknown';

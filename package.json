@@ -19,6 +19,7 @@
     "./dist/*": "./dist/*",
     "./src/css/*": "./src/css/*",
     "./package.json": "./package.json",
+    "./manifest": "./component-variables.manifest.json",
     "./component-variables.manifest.json": "./component-variables.manifest.json"
   },
   "sideEffects": [

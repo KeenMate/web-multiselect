@@ -113,8 +113,8 @@ test.describe('positions', () => {
         await select(p, 'apple');
         await closeDropdown(page, p);
 
-        const wrapper = p.locator('.ms-wrapper');
-        await expect(wrapper).toHaveClass(/ms-wrapper--inline/);
+        const wrapper = p.locator('.ms__wrapper');
+        await expect(wrapper).toHaveClass(/ms__wrapper--inline/);
     });
 
     test('position="right" uses inline layout', async ({ page }) => {
@@ -122,8 +122,8 @@ test.describe('positions', () => {
         await select(p, 'apple');
         await closeDropdown(page, p);
 
-        const wrapper = p.locator('.ms-wrapper');
-        await expect(wrapper).toHaveClass(/ms-wrapper--inline/);
+        const wrapper = p.locator('.ms__wrapper');
+        await expect(wrapper).toHaveClass(/ms__wrapper--inline/);
     });
 });
 

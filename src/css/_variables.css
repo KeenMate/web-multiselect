@@ -627,4 +627,19 @@
   --ms-scrollbar-thumb-bg: var(--ms-border-color);
   --ms-scrollbar-thumb-bg-hover: var(--ms-text-color-3);
   --ms-scrollbar-thumb-border-radius: 4px;
+
+  /* ==========================================================================
+     DEBUG PANEL (dev-only)
+     ========================================================================== */
+  --ms-debug-bg: var(--base-elevated-bg, light-dark(#f9fafb, #2b2b2b));
+  --ms-debug-border-color: var(--ms-border-color);
+  --ms-debug-text-color: var(--ms-text-color-1);
+  --ms-debug-border-radius: var(--ms-border-radius-md);
+  --ms-debug-summary-color: var(--ms-accent-color);
+  --ms-debug-summary-bg-hover: var(--ms-primary-bg);
+  --ms-debug-summary-outline-color: var(--ms-accent-color);
+  --ms-debug-summary-border-radius: var(--ms-border-radius-sm);
+  --ms-debug-stats-bg: var(--base-main-bg, light-dark(#ffffff, #1a1a1a));
+  --ms-debug-stats-border-radius: var(--ms-border-radius-sm);
+  --ms-debug-bullet-color: var(--ms-accent-color);
 }
