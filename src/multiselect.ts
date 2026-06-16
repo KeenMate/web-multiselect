@@ -2214,9 +2214,13 @@ export class WebMultiSelect<T = any> {
         onBeforeShow?: () => void;
     }): void {
         this.tooltips.get(spec.id)?.destroy();
+        // Prefer the shadow root over document.body so portaled tooltips inherit
+        // the host's --ms-tooltip-* variables and data-theme overrides.
+        const rootNode = this.element.getRootNode();
+        const shadowContainer = rootNode instanceof ShadowRoot ? rootNode : null;
         const tooltip = new Tooltip({
             trigger: spec.trigger,
-            container: this.options.container || document.body,
+            container: this.options.container ?? shadowContainer ?? document.body,
             content: spec.content,
             placement: this.options.badgeTooltipPlacement || 'top',
             offsetDistance: this.options.badgeTooltipOffset ?? 8,

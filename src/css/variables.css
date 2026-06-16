@@ -14,6 +14,11 @@
    ============================================================================== */
 
 :host {
+  /* Block layout — the wrapper-host pattern paints chrome via .ms__input,
+     but :host still needs an explicit display so consumers placing the
+     element in inline contexts see the expected layout. */
+  display: block;
+
   /* ==========================================================================
      COLOR SCHEME
      ==========================================================================
@@ -49,12 +54,6 @@
      FONT FAMILY (set at :host so all shadow DOM content inherits)
      ========================================================================== */
   font-family: var(--ms-font-family, var(--base-font-family, inherit));
-
-  /* ==========================================================================
-     HOST ELEMENT SIZING
-     ==========================================================================
-     Allows external width/height styling on <web-multiselect> element */
-  display: block;
 
   /* ==========================================================================
      COLORS & THEME

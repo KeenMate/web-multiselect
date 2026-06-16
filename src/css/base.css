@@ -10,7 +10,7 @@
    Prevent Flash of Unstyled Content by hiding undefined custom elements
    Keep element visible to prevent layout shift, but hide any text content
 */
-multi-select:not(:defined) {
+web-multiselect:not(:defined) {
   display: block;
   min-height: calc(3.5 * var(--ms-rem));  /* 35px (md size) */
   color: transparent !important;

@@ -5,6 +5,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.0-rc02] - 2026-06-16 [PUBLISHED]
+
+Follow-up release-candidate addressing validation findings from the BlissFramework guideline checks. User-visible changes: badge tooltips now theme correctly when portaled (real bug fix), and the FOUC-prevention rule actually matches the component's tag. Docs structurally split into a slim README + `docs/` directory.
+
+### Fixed
+
+- **Badge tooltips now inherit `--ms-tooltip-*` and `data-theme` overrides.** Previously `spawnTooltip` appended the tooltip element to `document.body`, so it lived outside the shadow scope and didn't see the host's CSS variables or per-instance dark-mode flip. The tooltip now appends to the host's shadow root (Floating UI's `position: fixed` already escapes overflow containers), so dark-mode contrast holds and overrides like `<web-multiselect data-theme="dark">` propagate to badge tooltips. Resolves C-CS-10.
+- **FOUC-prevention rule now actually matches.** `src/css/base.css` declared `multi-select:not(:defined) { ... }`, a leftover from a pre-rename version. The component registers as `web-multiselect`, so the rule never matched and both the pre-upgrade flash and the post-upgrade layout shift it was meant to prevent still happened. Renamed to `web-multiselect:not(:defined)`. Resolves C-TC-15.
+
+### Added
+
+- **Explicit `display: block` on `:host`** — custom elements default to `display: inline`, which is wrong for this block-level component. While the wrapper-host pattern compensated for chrome, hosts placed in inline contexts saw incorrect layout. Resolves C-TC-7.
+- **`docs/usage.md`** — full API reference: declarative + programmatic usage, ~45-row attributes table, properties / methods / events, option structure.
+- **`docs/theming.md`** — `--ms-rem` sizing, Theme Designer integration, complete `--ms-*` variable catalog (50+ entries across 11 categories), dark-mode signals, cascade layers, wrapper-host pattern, unlayered-reset footgun warning.
+- **`docs/examples.md`** — full cookbook: rich content, groups, async / hybrid search, virtual scroll, search modes, display modes, badge positioning + tooltips, i18n, RTL, custom rendering (with XSS notice), flexible data handling, form integration.
+- **`docs/accessibility.md`** — keyboard shortcuts, ARIA labels actually shipped, focus behavior, known gaps.
+- **BlissFramework attribution** in README (`## Built with BlissFramework` section linking to `blissframework.dev`). Resolves C-RS-14.
+
+### Changed
+
+- **README slimmed from 2009 → ~120 lines** following BlissFramework readme-structure triad (D-RS-6 = A). The full reference content moved into the four `docs/` files above; the README is now a landing page with tagline, headline features, what's new, demos & docs index, install, quick start, browser support, dev, license. Resolves C-RS-2, C-RS-3, C-RS-5 through C-RS-8, C-RS-10 through C-RS-13.
+
+### Internal
+
+- Widened `TooltipOptions.container` to `HTMLElement | ShadowRoot` so the tooltip portal can target either — backward compatible with `document.body` and the existing `options.container` opt-out.
+- Cosmetic: dropped a duplicate `display: block` declaration in `:host` (introduced when adding the explicit display intent above).
+
 ## [1.12.0-rc01] - 2026-06-10 [PUBLISHED]
 
 This release aligns the component with the BlissFramework web-component guidelines (CSS structure, cascade layers, BEM naming, theming-variable hygiene). User-visible changes are limited to one BEM class rename; the rest is internal refactor and improved consumer override surface.

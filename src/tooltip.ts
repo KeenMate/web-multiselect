@@ -4,7 +4,7 @@ export interface TooltipOptions {
     /** Element that triggers the tooltip on mouseenter / hides on mouseleave */
     trigger: HTMLElement;
     /** DOM container the tooltip element is appended to (e.g. shadow root or document.body) */
-    container: HTMLElement;
+    container: HTMLElement | ShadowRoot;
     /** Tooltip content — strings set textContent (preserves \n etc.); HTMLElements are appended */
     content: string | HTMLElement;
     /** CSS class on the tooltip element. Default: 'ms__badge-tooltip' (component-styled) */
@@ -34,7 +34,7 @@ export interface TooltipOptions {
 export class Tooltip {
     private readonly element: HTMLDivElement;
     private readonly trigger: HTMLElement;
-    private readonly container: HTMLElement;
+    private readonly container: HTMLElement | ShadowRoot;
     private readonly placement: Placement;
     private readonly offsetDistance: number;
     private readonly showDelay: number;
