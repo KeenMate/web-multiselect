@@ -30,6 +30,10 @@
   "files": [
     "dist",
     "src/css",
+    "docs/usage.md",
+    "docs/theming.md",
+    "docs/examples.md",
+    "docs/accessibility.md",
     "component-variables.manifest.json"
   ],
   "scripts": {
