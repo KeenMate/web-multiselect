@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test — single-select event semantics</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        web-multiselect { display: block; max-width: 320px; }
+    </style>
+</head>
+<body>
+    <h1>single-select event semantics</h1>
+    <p>Targeted by <code>e2e/single-select-events.spec.ts</code>.</p>
+
+    <div class="fixture">
+        <div class="fixture-label">single-select event capture</div>
+        <web-multiselect
+            id="single"
+            multiple="false"
+            value-member="value"
+            display-value-member="label"
+        ></web-multiselect>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+
+        const fruits = [
+            { value: 'apple',  label: 'Apple' },
+            { value: 'banana', label: 'Banana' },
+            { value: 'cherry', label: 'Cherry' }
+        ];
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            const el = document.getElementById('single');
+            el.options = fruits;
+
+            window.__events = { select: [], deselect: [], change: [] };
+            el.addEventListener('select',   e => window.__events.select.push(e.detail));
+            el.addEventListener('deselect', e => window.__events.deselect.push(e.detail));
+            el.addEventListener('change',   e => window.__events.change.push(e.detail));
+        });
+    </script>
+</body>
+</html>

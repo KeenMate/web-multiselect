@@ -23,9 +23,9 @@ Reads `--base-*` variables from the page if [`@keenmate/theme-designer`](https:/
 
 ## What's new
 
-**v1.12.0-rc02** — Badge tooltips now theme correctly when portaled (real dark-mode contrast fix); FOUC-prevention rule renamed to match the actual tag; README split into slim landing page + `docs/` (usage, theming, examples, accessibility). See [CHANGELOG.md](./CHANGELOG.md) for details.
+**v1.12.0-rc03** — Two real bug fixes. (1) Declarative `<option>` / `<optgroup>` children now render correctly without needing `value-member` / `display-value-member` / `group-member` attributes — previously every row rendered as `[N/A]`. (2) `select`, `deselect`, and `change` events are now dispatched with `bubbles: true, composed: true`, so Svelte 5 `onchange={fn}`, React `onChange`, Vue `@change`, and any other framework using delegated event routing work without reaching for the legacy `on:` directive. **Behavior change:** delegated form-level `change` listeners will now also receive our event — filter by `e.target.tagName === 'WEB-MULTISELECT'` if your form library extracts state from every `change`. See [CHANGELOG.md](./CHANGELOG.md) for details.
 
-**v1.12.0-rc01** — Dark mode responds to framework theme classes (`data-bs-theme`, `.dark`, `data-theme`) via Strategy B; CSS cascade layers; canonical Tier 1+2+3 file structure; BEM-aligned class names.
+**v1.12.0-rc02** — Badge tooltips now theme correctly when portaled (real dark-mode contrast fix); FOUC-prevention rule renamed to match the actual tag; README split into slim landing page + `docs/` (usage, theming, examples, accessibility). See [CHANGELOG.md](./CHANGELOG.md) for details.
 
 > ⚠️ **Security notice:** This component intentionally allows raw HTML in rendering callbacks to give developers full control over content display. If you display user-generated content, you must sanitize it yourself. See [docs/examples.md → HTML Injection (XSS) notice](./docs/examples.md#html-injection-xss-notice) for the complete list of affected callbacks.
 

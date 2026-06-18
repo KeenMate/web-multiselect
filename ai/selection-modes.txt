@@ -45,9 +45,13 @@ select.multiple = false;
 
 Behavior:
 - No checkboxes
-- Dropdown closes after selection
+- Dropdown ALWAYS closes after selection (unconditional, not via
+  close-on-select — that attribute is a no-op in single mode)
 - Returns single value (not array)
 - Shows selected value in input field
+- Replacing the selection (picking a different item) fires 'select' +
+  'change' but NOT 'deselect' for the displaced item — see EVENT
+  SEMANTICS section below and events-callbacks.txt
 
 GETTING SELECTED VALUES
 ------------------------
@@ -127,7 +131,11 @@ CLEARING SELECTION
 ------------------
 Clear all selected options:
 
-select.setSelected([]);
+select.setSelected([]);  // SILENT — fires no 'deselect'/'change' events
+
+If listeners must react to the clear, use clearAll() instead:
+select.clearAll();       // Fires 'deselect' per removed item + one 'change'
+                         // This is what formResetCallback uses internally.
 
 Or use clear-all action button:
 <web-multiselect>
@@ -195,40 +203,68 @@ select.addEventListener('change', (e) => {
   console.log('Selected values:', e.detail.selectedValues);
 });
 
+NOTE: 'change' only fires when the selection set actually changed
+(multiselect.ts:1544 — guard on added.length > 0 || removed.length > 0).
+Re-picking the already-selected item in single mode fires nothing.
+
+NOTE: Events bubble and cross shadow DOM boundaries (bubbles + composed),
+so framework delegation (Svelte 5 onchange, React onChange, Vue @change)
+works out of the box. WATCH OUT for collisions with native 'change' and
+'select' events at form-level / container-level listeners — filter by
+e.target. See events-callbacks.txt EVENT BUBBLING section.
+
+EVENT SEMANTICS — SINGLE VS MULTI
+---------------------------------
+Single-select REPLACEMENT (picking item B while A is selected):
+- 'select' (B) + 'change' — A's removal is silent (no 'deselect' for A)
+
+Single-select TOGGLE OFF (clicking the already-selected item):
+- 'deselect' + 'change' — selection becomes empty
+
+Multi-select TOGGLE (any direction):
+- 'select' OR 'deselect' + 'change' per click
+
+Multi-select SELECT ALL action button:
+- 'select' per newly-added item + one 'change'
+
+clearAll() — programmatic or "Clear All" action:
+- 'deselect' per removed item + one 'change'
+
+setSelected(values) — programmatic:
+- SILENT in both modes. No events. See events-callbacks.txt
+  PROGRAMMATIC SELECTION — WHICH METHODS FIRE EVENTS.
+
 SELECTION LIMITS
 ----------------
-Limit number of selections (custom implementation):
+Limit number of selections via POST-COMMIT ROLLBACK. Callbacks and events
+fire after the selection has been committed — they cannot cancel. The
+pattern is: detect the overflow, restore the previous state with
+setSelected (which is silent and will not re-trigger this listener).
 
 select.addEventListener('select', (e) => {
   const maxSelections = 3;
   if (e.detail.selectedOptions.length > maxSelections) {
-    // Prevent selection
-    const currentValues = e.detail.selectedOptions
+    const allowed = e.detail.selectedOptions
       .slice(0, maxSelections)
       .map(opt => opt.value);
-    select.setSelected(currentValues);
+    select.setSelected(allowed);  // silent rollback — see events-callbacks.txt
     alert(`Maximum ${maxSelections} selections allowed`);
   }
 });
 
-Or use callback:
-select.selectCallback = (option) => {
-  const current = select.getSelected();
-  if (current.length >= 3) {
-    alert('Maximum 3 selections');
-    return; // Don't select
-  }
-};
+NOTE: selectCallback fires from the same commit() pass as the 'select'
+event, AFTER the selection has already been added. Returning early from
+selectCallback does NOT cancel the selection (older docs incorrectly
+suggested this — the only cancel mechanism is post-commit rollback).
 
 MINIMUM SELECTIONS
 ------------------
-Enforce minimum selections (custom implementation):
+Enforce minimum selections via the same post-commit rollback pattern:
 
 select.addEventListener('deselect', (e) => {
   const minSelections = 1;
   if (e.detail.selectedOptions.length < minSelections) {
-    // Prevent deselection
-    select.setSelected([e.detail.option.value]);
+    select.setSelected([e.detail.option.value]);  // silent re-add
     alert(`Minimum ${minSelections} selection required`);
   }
 });
@@ -280,20 +316,21 @@ select.selectCallback = (option) => {
 
 DESELECTION HANDLING
 --------------------
-Handle deselection:
+deselectCallback fires AFTER the option has been removed from the
+selection. "Confirm before removal" is a silent post-commit rollback:
 
 select.deselectCallback = (option) => {
-  console.log('Removing:', option);
+  console.log('Removed:', option);
 
-  // Confirm before removal
-  if (option.important) {
-    if (!confirm(`Remove ${option.label}?`)) {
-      // Re-select (can't prevent directly)
-      setTimeout(() => {
-        const values = select.getValue();
-        select.setSelected([...values, option.value]);
-      }, 0);
-    }
+  if (option.important && !confirm(`Remove ${option.label}?`)) {
+    // Re-add. setSelected is SILENT — visual state restores but no
+    // 'select' event fires for the re-add, so don't put critical
+    // side-effect logic in a 'select' listener and expect to see it here.
+    setTimeout(() => {
+      const current = select.getValue();
+      const arr = Array.isArray(current) ? current : (current != null ? [current] : []);
+      select.setSelected([...arr, option.value]);
+    }, 0);
   }
 };
 

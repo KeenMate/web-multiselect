@@ -129,6 +129,22 @@ const MEMBER_PROPERTY_FALLBACKS: ReadonlyArray<{ key: keyof MultiSelectConfig; f
     { key: 'disabledMember',      field: '_disabledMember' }
 ];
 
+/**
+ * Member defaults for the keys parseDeclarativeOptions writes into each parsed option object.
+ * Applied only when declarative <option>/<optgroup> children were parsed, and only for members
+ * the consumer hasn't explicitly configured via attribute, property, or programmatic callback.
+ * Without these, the picker has no idea which key holds the value/label/group and falls through
+ * to its '[N/A]' fallback.
+ */
+const DECLARATIVE_MEMBER_DEFAULTS: ReadonlyArray<{ key: keyof MultiSelectConfig; member: string }> = [
+    { key: 'valueMember',         member: 'value' },
+    { key: 'displayValueMember',  member: 'label' },
+    { key: 'groupMember',         member: 'group' },
+    { key: 'iconMember',          member: 'icon' },
+    { key: 'subtitleMember',      member: 'subtitle' },
+    { key: 'disabledMember',      member: 'disabled' }
+];
+
 /** Parse a single attribute value through its spec. Used by both initial parse and live updates. */
 function parseAttrValue(spec: AttrSpec, raw: string | null): any {
     // Treat null and empty string the same (so `<el foo>` and `<el foo="">` work like a missing attribute
@@ -177,6 +193,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     // Properties for complex data (not attributes)
     private _options?: T[];
+    private _hasDeclarativeOptions = false;
 
     // Member/Callback properties
     private _valueMember?: string;
@@ -284,6 +301,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
                 dataLogger.warn('[MultiSelectElement] Both declarative <option> elements and programmatic .options detected. Using declarative options.');
             }
             this._options = declarativeOptions as T[];
+            this._hasDeclarativeOptions = true;
         }
 
         this.initializePicker();
@@ -576,6 +594,26 @@ export class MultiSelectElement<T = any> extends BaseElement {
             if (options[key] === undefined) (options as any)[key] = (this as any)[field];
         }
 
+        // Declarative member defaults: only when <option>/<optgroup> children were parsed and the
+        // consumer hasn't already set the corresponding member (via attribute, property, or
+        // get*Callback). Without this, the picker can't read value/label/group off the parsed
+        // objects and every row renders as '[N/A]'.
+        if (this._hasDeclarativeOptions) {
+            const callbackOverrides: Partial<Record<keyof MultiSelectConfig, unknown>> = {
+                valueMember: this._getValueCallback,
+                displayValueMember: this._getDisplayValueCallback,
+                groupMember: this._getGroupCallback,
+                iconMember: this._getIconCallback,
+                subtitleMember: this._getSubtitleCallback,
+                disabledMember: this._getDisabledCallback
+            };
+            for (const { key, member } of DECLARATIVE_MEMBER_DEFAULTS) {
+                if (options[key] === undefined && !callbackOverrides[key]) {
+                    (options as any)[key] = member;
+                }
+            }
+        }
+
         // Programmatic-only fields (no attribute equivalent).
         Object.assign(options, {
             actionButtons: this._actionButtons,
@@ -608,7 +646,14 @@ export class MultiSelectElement<T = any> extends BaseElement {
             addNewCallback: this._addNewCallback,
             selectCallback: (option: T) => {
                 if (this._selectCallback) this._selectCallback(option);
+                // bubbles + composed so framework delegation (Svelte 5
+                // onchange, React onChange, etc.) and ancestor listeners
+                // receive the event. Necessary because Svelte 5 routes
+                // 'change' via doc-level event delegation and won't see
+                // non-bubbling CustomEvents.
                 this.dispatchEvent(new CustomEvent('select', {
+                    bubbles: true,
+                    composed: true,
                     detail: {
                         option,
                         selectedOptions: this.picker?.getSelected(),
@@ -619,6 +664,8 @@ export class MultiSelectElement<T = any> extends BaseElement {
             deselectCallback: (option) => {
                 if (this._deselectCallback) this._deselectCallback(option);
                 this.dispatchEvent(new CustomEvent('deselect', {
+                    bubbles: true,
+                    composed: true,
                     detail: {
                         option,
                         selectedOptions: this.picker?.getSelected(),
@@ -629,6 +676,8 @@ export class MultiSelectElement<T = any> extends BaseElement {
             changeCallback: (selectedOptions) => {
                 if (this._changeCallback) this._changeCallback(selectedOptions);
                 this.dispatchEvent(new CustomEvent('change', {
+                    bubbles: true,
+                    composed: true,
                     detail: {
                         selectedOptions,
                         selectedValues: this.collectSelectedValues()

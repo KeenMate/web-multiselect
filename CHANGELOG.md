@@ -5,6 +5,26 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.0-rc03] - 2026-06-18 [PUBLISHED]
+
+Third release candidate addressing two real user-impact bugs surfaced during integration. Both fixes are minimal and additive; the bubbling/composition change is technically a behavior change that delegated form-level listeners may notice (see migration note).
+
+### Fixed
+
+- **Declarative `<option>` / `<optgroup>` children now render correctly.** Previously the light-DOM parser produced option objects with `{value, label, group}` keys, but `initializePicker` never wired the corresponding `valueMember` / `displayValueMember` / `groupMember` config, so every row fell through to the picker's `[N/A]` fallback (`multiselect.ts:200,210`). When declarative children are detected, the element now auto-defaults those member properties (plus `iconMember`/`subtitleMember`/`disabledMember`) — only when the consumer hasn't already configured them via attribute, property, or `get*Callback`, so all existing override paths still win.
+- **`docs/*.md` now shipped in the published tarball.** The slim README links to `./docs/usage.md`, `theming.md`, `examples.md`, and `accessibility.md`, but those files weren't in `package.json`'s `files` array so consumers reading them from `node_modules` got 404s. Explicit per-file listing avoids dragging in the unrelated `docs/api-reference.html`.
+- **Events now reach framework-delegated listeners.** `select`, `deselect`, and `change` events were dispatched as plain `new CustomEvent(name, { detail })` — neither bubbling nor composed. Svelte 5 routes `change` through document-level event delegation (`$.delegate(['change'])`), so the events never reached the handler when consumers used the Svelte 5 `onchange={fn}` callback-prop syntax. Same class of bug affects React's `onChange` and any framework that delegates event routing. Events are now dispatched with `bubbles: true, composed: true`, so framework delegation works out of the box.
+
+### Changed
+
+- **`select` / `deselect` / `change` events bubble and cross shadow DOM boundaries (behavior change).** Consumers who delegate `change` listeners at the form or container level will now also receive our event with `e.target.tagName === 'WEB-MULTISELECT'`. Filter on target if your form-state library extracts state from every `change`. `stopPropagation()` in an ancestor handler will now suppress our event from reaching framework delegation roots — use sparingly. `preventDefault()` remains a no-op (events fire post-commit; nothing to cancel).
+
+### Internal
+
+- Reorganized `ai/events-callbacks.txt` and `ai/selection-modes.txt` to reflect verified event semantics: callbacks fire post-commit (not pre-, cannot cancel); single-mode replacement fires no `deselect` for the displaced item; `setSelected()` is silent; `clearAll()` fires events; native-`change`/`select` name collisions and filter patterns; bubbling + composed flags documented.
+- Added `e2e/single-select-events.spec.ts` (4 specs) + `test/single-select-events.html` fixture: pins single-select event semantics (initial pick, replacement-without-deselect, toggle-off) plus an ancestor-listener test that verifies `bubbles: true` / `composed: true` on all three event types. The bubbling test prevents future regressions on the dispatch flags from going unnoticed in CI.
+- Added `svelte-test/` standalone Svelte 5 + Vite + Playwright sandbox reproducing the framework-delegation issue with both the legacy `on:change` directive and the Svelte 5 `onchange` callback-prop syntax. Documents the diagnostic path; not wired into the main CI run.
+
 ## [1.12.0-rc02] - 2026-06-16 [PUBLISHED]
 
 Follow-up release-candidate addressing validation findings from the BlissFramework guideline checks. User-visible changes: badge tooltips now theme correctly when portaled (real bug fix), and the FOUC-prevention rule actually matches the component's tag. Docs structurally split into a slim README + `docs/` directory.

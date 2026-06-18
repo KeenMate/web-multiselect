@@ -94,19 +94,21 @@ SELECTION CALLBACKS
 React to selection changes:
 
 selectCallback:
-Called before option is selected
+Called AFTER an option has been added to the selection (same commit() pass
+that dispatches the 'select' event). Selection is already committed — the
+callback CANNOT cancel it. Returning early has no effect on the selection.
 
 select.selectCallback = (option) => {
-  console.log('About to select:', option);
-  // Can cancel selection by not proceeding
-  // No return value
+  console.log('Just selected:', option);
 };
 
 deselectCallback:
-Called before option is deselected
+Called AFTER an option has been removed from the selection. Cannot cancel
+the removal. For "are you sure?" style flows see PREVENTING ACTIONS below
+— the only option is post-commit rollback via setSelected().
 
 select.deselectCallback = (option) => {
-  console.log('About to deselect:', option);
+  console.log('Just deselected:', option);
 };
 
 changeCallback:
@@ -307,39 +309,128 @@ select.addEventListener('change', (e) => {
 
 EVENT BUBBLING
 --------------
-Events bubble up the DOM:
+Events DO bubble and DO cross shadow DOM boundaries.
+Dispatched as `new CustomEvent(name, { detail, bubbles: true, composed: true })`
+— see web-component.ts dispatch sites.
 
-<div id="container">
-  <web-multiselect></web-multiselect>
-</div>
+This means:
+- addEventListener can be attached to the <web-multiselect> host OR any ancestor
+- Framework delegation works out of the box:
+    Svelte 5: onchange={handler}   (callback prop)
+    Svelte 4: on:change={handler}  (directive — also still works in Svelte 5)
+    React:    onChange={handler}
+    Vue:      @change="handler"
+- composed: true lets the event escape an enclosing shadow DOM (e.g. when
+  this component is wrapped by another web component)
 
-<script>
-  const container = document.getElementById('container');
+COLLISION WARNING — 'change' and 'select' are also native DOM event names:
+- Form-level listeners using event delegation will receive both native
+  form-control changes and our 'change' events. Filter by target:
+    form.addEventListener('change', (e) => {
+      if (e.target.tagName === 'WEB-MULTISELECT') return; // or handle separately
+      // ... handle native input/select/textarea change
+    });
+- 'select' collides with the native text-selection event from
+  <input>/<textarea>. Same filter pattern applies if delegating at a
+  container level.
 
-  // Listen on parent
-  container.addEventListener('change', (e) => {
-    if (e.target.tagName === 'WEB-MULTISELECT') {
-      console.log('Multiselect changed:', e.detail);
-    }
-  });
-</script>
+CANCELLATION:
+- Events fire AFTER the selection is committed, so preventDefault() does
+  nothing — there is nothing to cancel. cancelable is false.
+- stopPropagation() DOES work and will prevent ancestor listeners (including
+  framework delegation roots) from seeing the event. Use sparingly — calling
+  stopPropagation in a handler can break framework-level event routing.
+
+If you want to react to selection changes WITHOUT also receiving native
+form/text events at the same handler, attach the listener directly on the
+<web-multiselect> host:
+const select = document.querySelector('web-multiselect');
+select.addEventListener('change', (e) => { ... });
 
 PREVENTING ACTIONS
 ------------------
-Callbacks can't prevent actions directly
+Callbacks fire AFTER the selection has been committed — they cannot cancel.
+The "prevent" pattern is a silent rollback via setSelected().
 
 Workaround for preventing deselection:
 select.deselectCallback = (option) => {
   if (option.required) {
     alert('Cannot remove required item');
 
-    // Re-add after a tick
+    // Re-add after a tick. NOTE: setSelected is SILENT (see
+    // PROGRAMMATIC SELECTION — WHICH METHODS FIRE EVENTS below).
+    // The rollback restores the visual state but does NOT fire a fresh
+    // 'select'/'change' event, so downstream listeners won't see the rebound.
     setTimeout(() => {
-      const values = select.getValue();
-      select.setSelected([...values, option.value]);
+      const current = select.getValue();
+      const arr = Array.isArray(current) ? current : (current != null ? [current] : []);
+      select.setSelected([...arr, option.value]);
     }, 0);
   }
 };
+
+SINGLE-SELECT EVENT SEMANTICS
+-----------------------------
+In single-select mode (multiple="false") replacing the current selection
+is NOT modeled as deselect-then-select. Picking a different item when
+one is already selected:
+
+- DOES fire: 'select' (new item) → 'change'
+- DOES NOT fire: 'deselect' for the displaced item
+
+The previous item is cleared silently inside the picker's internal state
+(multiselect.ts toggleOption single-mode branch — selectedValues.clear()
+runs without going through deselectOption). Do not rely on 'deselect' to
+detect "the previous item is gone" in single-select mode.
+
+Clicking the already-selected item DOES fire 'deselect' + 'change' (the
+selection becomes empty — single-select tolerates 0 items).
+
+If you need to react to replacement in single mode, diff against your
+own previous value in the 'change' handler:
+
+let lastValue = null;
+select.addEventListener('change', (e) => {
+  const newValue = e.detail.selectedValues[0] ?? null;
+  if (lastValue !== null && lastValue !== newValue) {
+    console.log('Replaced:', lastValue, '→', newValue);
+  }
+  lastValue = newValue;
+});
+
+PROGRAMMATIC SELECTION — WHICH METHODS FIRE EVENTS
+---------------------------------------------------
+Not every programmatic state change is observable via events. The rule
+is "anything that goes through the commit() helper fires events":
+
+setSelected(values):    SILENT  (no select/deselect/change)
+clearAll():             FIRES   ('deselect' per removed + one 'change')
+"Select All" action:    FIRES   ('select' per added + one 'change')
+"Clear All" action:     FIRES   (calls clearAll internally)
+User click / keyboard:  FIRES
+
+setSelected is silent BY DESIGN — it's the right tool for "update state
+without re-triggering my own listeners":
+  - action-menu reset after handling a pick
+  - parent-driven state sync from a store
+  - silent rollback in preventing-action workarounds
+
+clearAll is the right tool for "clear AND notify":
+  - reset buttons users see
+  - form.reset() — the component's formResetCallback uses clearAll
+
+If you need "setSelected but with events", re-dispatch a 'change' manually:
+
+select.setSelected(values);
+select.dispatchEvent(new CustomEvent('change', {
+  detail: {
+    selectedOptions: select.getSelected(),
+    selectedValues: (() => {
+      const v = select.getValue();
+      return Array.isArray(v) ? v : (v != null ? [v] : []);
+    })()
+  }
+}));
 
 ASYNC CALLBACKS
 ---------------
