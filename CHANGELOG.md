@@ -5,6 +5,30 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.0-rc04] - 2026-06-24 [PUBLISHED]
+
+Placeholder ergonomics for pickers and cascade multiselects, plus a batch attribute setter. All additive and backward compatible — except the search-disabled default placeholder wording (see Changed).
+
+### Added
+
+- **`select-placeholder` attribute / `selectPlaceholder` config** — placeholder shown when the input isn't a usable search box (`enable-search="false"`, or `search-input-mode="readonly"` / `"hidden"`). Defaults to `"Pick an option..."` so a non-searchable picker no longer mislabels itself `"Search..."`.
+- **`no-data-placeholder` attribute / `noDataPlaceholder` config** — opt-in placeholder shown when the option list is empty, so users see there's nothing to choose without opening the dropdown. Aimed at cascade multiselects (a child whose parent isn't resolved yet). Unset by default, so async-loaded selects don't flash an empty-state message before their data arrives. Takes priority over both other placeholders when the list is empty.
+- **`setAttributes(attrs)` method** on the element — applies several attributes in a single in-place update (one re-render instead of one per attribute, or a single reinit at most if a change is structural). Keys are kebab-case attribute names, exactly like `setAttribute`; `null`/`undefined`/`false` removes the attribute, `true` sets it to `""`. Useful for i18n language switches that update multiple placeholder strings at once.
+- **`search-debounce` attribute / `searchDebounce` config** — debounce delay in milliseconds before the async `searchCallback` is invoked, so a burst of keystrokes collapses into a single request instead of one per character. Each keystroke resets the timer. Applies to the async `searchCallback` path only — local in-memory filtering stays instant. Defaults to `0` (no debounce, unchanged behavior). The existing stale-result guard (apply results only if the term still matches) remains as a second line of defense against out-of-order responses.
+- **`searchCallback` now receives an `AbortSignal`; in-flight requests are cancelled.** The callback signature is now `(searchTerm, signal) => Promise<options[]>`. When a newer search supersedes an in-flight one — or the term drops below `min-search-length`, or the component is destroyed — the previous request's signal is aborted; wire it into `fetch(url, { signal })` to actually cancel the network call. Backward compatible: the second argument is optional and existing callbacks that ignore it keep working (their stale results are still discarded). Aborted/superseded responses never overwrite the live filtered options.
+
+### Changed
+
+- **Search-disabled default placeholder is now `"Pick an option..."` instead of `"Search..."`** (behavior change). Only affects instances with search disabled (`enable-search="false"` / `readonly` / `hidden`) that didn't set a custom placeholder. To restore the old text, set `select-placeholder="Search..."`. Placeholder resolution is also re-evaluated on live updates now, so changing the placeholder attributes, the search mode, or the option list (e.g. a cascade clearing/filling) updates the visible placeholder on the fly.
+
+### Internal
+
+- Added `test/unit/placeholder.test.ts` + `test/unit/set-attributes.test.ts` (Vitest + happy-dom, 19 specs) covering placeholder resolution priority, live updates, and `setAttributes` batching/DOM reflection. Introduces a unit-test layer (`npm run test:unit`) alongside the existing Playwright e2e suite; `npm test` now runs both.
+- Added `e2e/placeholder.spec.ts` (10 specs) + `test/placeholder.html` fixture: pins the search / select / no-data placeholder behavior, live i18n updates, cascade empty/refill, and `setAttributes` end-to-end in the browser.
+- Added `test/unit/search-debounce.test.ts` (4 specs, fake timers) + `e2e/search-debounce.spec.ts` (3 specs) + `test/search-debounce.html` fixture: verify the async callback collapses keystroke bursts into one call, timer-reset behavior, and that local filtering is unaffected.
+- Added `test/unit/search-abort.test.ts` (5 specs) + `e2e/search-abort.spec.ts` (3 specs) + `test/search-abort.html` fixture: verify the `AbortSignal` is passed, that a newer search / sub-min-length / destroy aborts the previous request, and that aborted results never clobber the live options.
+- `examples-new-api.html` §8 (Async Search) now demonstrates cancellation and debouncing: an adjustable "simulated API delay" slider on the product search plus a live request log that shows requests firing, completing, and being cancelled when superseded; the GitHub-users search forwards the `AbortSignal` into its real `fetch`; and a dedicated **Debounced Search** demo with a `search-debounce` slider and a keystrokes-vs-API-calls counter that makes the coalescing obvious (e.g. 5 keystrokes → 1 call).
+
 ## [1.12.0-rc03] - 2026-06-18 [PUBLISHED]
 
 Third release candidate addressing two real user-impact bugs surfaced during integration. Both fixes are minimal and additive; the bubbling/composition change is technically a behavior change that delegated form-level listeners may notice (see migration note).

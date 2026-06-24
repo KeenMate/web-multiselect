@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test — search debounce</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        web-multiselect { display: block; max-width: 320px; }
+    </style>
+</head>
+<body>
+    <h1>search debounce</h1>
+    <p>Targeted by <code>e2e/search-debounce.spec.ts</code>. Each instance has an async <code>searchCallback</code> that counts how many times it's invoked, exposed on <code>window.__calls</code>.</p>
+
+    <div class="fixture">
+        <div class="fixture-label">no debounce (search-debounce default 0)</div>
+        <web-multiselect id="ms-immediate" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">search-debounce="300"</div>
+        <web-multiselect id="ms-debounced" search-debounce="300" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+
+        window.__calls = { 'ms-immediate': 0, 'ms-debounced': 0 };
+
+        function makeCallback(id) {
+            return async (term) => {
+                window.__calls[id] += 1;
+                // Resolve quickly with a single synthetic result for the term.
+                return term ? [{ value: term, label: term.toUpperCase() }] : [];
+            };
+        }
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            document.getElementById('ms-immediate').searchCallback = makeCallback('ms-immediate');
+            document.getElementById('ms-debounced').searchCallback = makeCallback('ms-debounced');
+        });
+    </script>
+</body>
+</html>

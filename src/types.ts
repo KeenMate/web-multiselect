@@ -226,8 +226,20 @@ export interface MultiSelectConfig<T = any> {
 
     /** Hint text shown above the input while the dropdown is open. */
     searchHint?: string;
-    /** Placeholder text for the search input */
+    /** Placeholder text for the search input (shown while search is usable) */
     searchPlaceholder?: string;
+    /**
+     * Placeholder shown when search is disabled (input acts as a picker rather than a search box).
+     * Applies when `isSearchEnabled` is false or `searchInputMode` is 'readonly'/'hidden'.
+     * Default: "Pick an option..."
+     */
+    selectPlaceholder?: string;
+    /**
+     * Placeholder shown when there are no options to choose from (e.g. an unresolved cascade parent).
+     * Opt-in: when unset, the normal search/select placeholder is used even with an empty list.
+     * Lets users see there is no data without opening the dropdown.
+     */
+    noDataPlaceholder?: string;
     /** Minimum width for the dropdown (e.g., '20rem', '300px') */
     dropdownMinWidth?: string | null;
     /** Maximum width for the dropdown (e.g., '40rem', '500px') */
@@ -261,6 +273,13 @@ export interface MultiSelectConfig<T = any> {
     badgesMaxVisible?: number | null;
     /** Minimum search length before loading data */
     minSearchLength?: number;
+    /**
+     * Debounce delay in milliseconds before the async `searchCallback` is invoked.
+     * Each keystroke resets the timer, so only the last input in a burst fires a request.
+     * Applies to the async `searchCallback` path only — local in-memory filtering stays instant.
+     * Default: 0 (no debounce — callback runs on every keystroke).
+     */
+    searchDebounce?: number;
     /** Minimum items before virtual scroll activates (default: 100) */
     virtualScrollThreshold?: number;
     /** Fixed height for each option in pixels (required for virtual scroll, default: 50) */
@@ -276,8 +295,13 @@ export interface MultiSelectConfig<T = any> {
 
     /** Pre-process search term before calling searchCallback. Return null to prevent search. Use for accent removal, validation, etc. */
     beforeSearchCallback?: ((searchTerm: string) => string | null) | null;
-    /** Async function to load data: (searchTerm) => Promise<options[]> */
-    searchCallback?: ((searchTerm: string) => Promise<T[]>) | null;
+    /**
+     * Async function to load data: `(searchTerm, signal) => Promise<options[]>`.
+     * The optional second argument is an `AbortSignal` that fires when a newer search
+     * supersedes this one (or the component is destroyed). Wire it into your `fetch`
+     * to cancel the in-flight request; ignoring it is fine — stale results are discarded.
+     */
+    searchCallback?: ((searchTerm: string, signal?: AbortSignal) => Promise<T[]>) | null;
     /** Callback to add a new option when isAddNewAllowed is true */
     addNewCallback?: ((value: string) => T | Promise<T>) | null;
     /** Callback when an option is selected */
@@ -358,7 +382,7 @@ export interface MultiSelectOption {
  */
 export interface MultiSelectOptions extends MultiSelectConfig<MultiSelectOption> {
     options?: MultiSelectOption[];
-    searchCallback?: ((searchTerm: string) => Promise<MultiSelectOption[]>) | null;
+    searchCallback?: ((searchTerm: string, signal?: AbortSignal) => Promise<MultiSelectOption[]>) | null;
     addNewCallback?: ((value: string) => MultiSelectOption | Promise<MultiSelectOption>) | null;
     selectCallback?: ((option: MultiSelectOption) => void) | null;
     deselectCallback?: ((option: MultiSelectOption) => void) | null;

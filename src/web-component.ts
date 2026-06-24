@@ -46,6 +46,8 @@ const ATTRIBUTE_TABLE: ReadonlyArray<AttrSpec> = [
     // Strings
     { attr: 'search-hint',                 key: 'searchHint',               parser: 'string-or-undefined' },
     { attr: 'search-placeholder',          key: 'searchPlaceholder',        parser: 'string', default: 'Search...' },
+    { attr: 'select-placeholder',          key: 'selectPlaceholder',        parser: 'string', default: 'Pick an option...' },
+    { attr: 'no-data-placeholder',         key: 'noDataPlaceholder',        parser: 'string-or-undefined' },
     { attr: 'dropdown-min-width',          key: 'dropdownMinWidth',         parser: 'string-or-undefined' },
     { attr: 'dropdown-max-width',          key: 'dropdownMaxWidth',         parser: 'string-or-undefined' },
     { attr: 'max-height',                  key: 'maxHeight',                parser: 'string', default: '20rem' },
@@ -88,6 +90,7 @@ const ATTRIBUTE_TABLE: ReadonlyArray<AttrSpec> = [
     { attr: 'badges-threshold',            key: 'badgesThreshold',          parser: 'int' },
     { attr: 'badges-max-visible',          key: 'badgesMaxVisible',         parser: 'int' },
     { attr: 'min-search-length',           key: 'minSearchLength',          parser: 'int', default: 0 },
+    { attr: 'search-debounce',             key: 'searchDebounce',           parser: 'int', default: 0 },
     { attr: 'virtual-scroll-threshold',    key: 'virtualScrollThreshold',   parser: 'int', default: 100 },
     { attr: 'option-height',               key: 'optionHeight',             parser: 'int', default: 50 },
     { attr: 'badge-height',                key: 'badgeHeight',              parser: 'int', default: 36 },
@@ -235,9 +238,15 @@ export class MultiSelectElement<T = any> extends BaseElement {
     // Action buttons
     private _actionButtons?: any[];
 
+    // Batch-update state (setAttributes): collects per-attribute changes so a group of
+    // attribute writes applies as a single in-place update instead of one re-render each.
+    private _batchDepth = 0;
+    private _batchPartial: Partial<MultiSelectConfig<T>> = {};
+    private _batchNeedsReinit = false;
+
     // Event callbacks
     private _beforeSearchCallback?: (searchTerm: string) => string | null;
-    private _searchCallback?: (searchTerm: string) => Promise<T[]>;
+    private _searchCallback?: (searchTerm: string, signal?: AbortSignal) => Promise<T[]>;
     private _addNewCallback?: (value: string) => T | Promise<T>;
     private _selectCallback?: (option: T) => void;
     private _deselectCallback?: (option: T) => void;
@@ -338,6 +347,12 @@ export class MultiSelectElement<T = any> extends BaseElement {
             const finalValue = (value === undefined && fallbackField)
                 ? (this as any)[fallbackField]
                 : value;
+            // During a setAttributes() batch, accumulate the change instead of applying it now;
+            // the whole partial is flushed in one updateOptions call when the batch ends.
+            if (this._batchDepth > 0) {
+                (this._batchPartial as any)[spec.key] = finalValue;
+                return;
+            }
             const partial = { [spec.key]: finalValue } as Partial<MultiSelectConfig<T>>;
             const applied = this.picker.updateOptions(partial);
             if (applied) return;
@@ -345,7 +360,56 @@ export class MultiSelectElement<T = any> extends BaseElement {
         }
 
         // Fallback: full destroy + re-init for attributes the picker can't apply in place.
+        if (this._batchDepth > 0) {
+            this._batchNeedsReinit = true;
+            return;
+        }
         this.reinitialize();
+    }
+
+    /**
+     * Set several attributes in one in-place update — a single re-render instead of one per
+     * attribute (and a single reinit at most if any change is structural). Keys are attribute
+     * names in kebab-case, exactly as `setAttribute`. A value of `null`/`undefined`/`false`
+     * removes the attribute; `true` sets it to an empty string; anything else is stringified.
+     *
+     * @example
+     *   el.setAttributes({
+     *     'search-placeholder': t('search'),
+     *     'select-placeholder': t('pick'),
+     *     'no-data-placeholder': t('noData'),
+     *   });
+     */
+    public setAttributes(attrs: Record<string, string | number | boolean | null | undefined>): void {
+        this._batchDepth++;
+        try {
+            for (const [name, value] of Object.entries(attrs)) {
+                if (value === null || value === undefined || value === false) {
+                    this.removeAttribute(name);
+                } else {
+                    this.setAttribute(name, value === true ? '' : String(value));
+                }
+            }
+        } finally {
+            this._batchDepth--;
+        }
+
+        if (this._batchDepth > 0) return; // nested batch; let the outermost call flush
+
+        const partial = this._batchPartial;
+        const needsReinit = this._batchNeedsReinit;
+        this._batchPartial = {};
+        this._batchNeedsReinit = false;
+
+        if (!this.picker) return;
+        if (needsReinit) {
+            this.reinitialize();
+            return;
+        }
+        if (Object.keys(partial).length > 0) {
+            const applied = this.picker.updateOptions(partial);
+            if (!applied) this.reinitialize();
+        }
     }
 
     private render() {
@@ -1111,11 +1175,11 @@ export class MultiSelectElement<T = any> extends BaseElement {
         this.updatePicker({ beforeSearchCallback: callback });
     }
 
-    get searchCallback(): ((searchTerm: string) => Promise<T[]>) | undefined {
+    get searchCallback(): ((searchTerm: string, signal?: AbortSignal) => Promise<T[]>) | undefined {
         return this._searchCallback;
     }
 
-    set searchCallback(callback: ((searchTerm: string) => Promise<T[]>) | undefined) {
+    set searchCallback(callback: ((searchTerm: string, signal?: AbortSignal) => Promise<T[]>) | undefined) {
         this._searchCallback = callback;
         this.updatePicker({ searchCallback: callback });
     }

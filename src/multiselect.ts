@@ -106,6 +106,8 @@ export class WebMultiSelect<T = any> {
     private matchingIndices: Set<number> = new Set();
     private searchTerm = '';
     private isLoading = false;
+    private searchDebounceTimer?: ReturnType<typeof setTimeout>;
+    private searchAbortController?: AbortController;
     private showSelectedPopover = false;
     private selectedPopoverPlacement: Placement | null = null;
     private dropdownPlacement: Placement | null = null;
@@ -278,6 +280,8 @@ export class WebMultiSelect<T = any> {
             // String options
             searchHint: element.dataset.searchHint || '',
             searchPlaceholder: element.dataset.searchPlaceholder || 'Search...',
+            selectPlaceholder: element.dataset.selectPlaceholder || 'Pick an option...',
+            noDataPlaceholder: element.dataset.noDataPlaceholder || undefined,
             dropdownMinWidth: element.dataset.dropdownMinWidth || undefined,
             dropdownMaxWidth: element.dataset.dropdownMaxWidth || undefined,
             badgesDisplayMode: (element.dataset.badgesDisplayMode as any) || 'badges',
@@ -292,6 +296,7 @@ export class WebMultiSelect<T = any> {
             // Number options
             badgesThreshold: element.dataset.badgesThreshold ? parseInt(element.dataset.badgesThreshold) : undefined,
             minSearchLength: parseInt(element.dataset.minSearchLength || '0') || 0,
+            searchDebounce: parseInt(element.dataset.searchDebounce || '0') || 0,
 
             // Boolean options (internal names with 'is' prefix)
             isMultipleEnabled: element.dataset.multiple !== 'false',
@@ -400,7 +405,7 @@ export class WebMultiSelect<T = any> {
         this.input = document.createElement('input');
         this.input.type = 'text';
         this.input.className = 'ms__input';
-        this.input.placeholder = this.options.searchPlaceholder;
+        this.input.placeholder = this.getPlaceholderText();
         this.input.autocomplete = 'off';
 
         // Apply searchInputMode
@@ -759,6 +764,28 @@ export class WebMultiSelect<T = any> {
         return groups;
     }
 
+    /** Whether the input currently functions as a usable search field (drives placeholder wording). */
+    private get isSearchUsable(): boolean {
+        return !!this.options.isSearchEnabled
+            && this.options.searchInputMode !== 'readonly'
+            && this.options.searchInputMode !== 'hidden';
+    }
+
+    /**
+     * Resolve the closed-state input placeholder for the current data/search state.
+     * Priority: explicit no-data placeholder (when the list is empty) → "pick" prompt when
+     * search is unusable → the search placeholder.
+     */
+    private getPlaceholderText(): string {
+        if (this.options.noDataPlaceholder && this.allOptions.length === 0) {
+            return this.options.noDataPlaceholder;
+        }
+        if (!this.isSearchUsable) {
+            return this.options.selectPlaceholder || this.options.searchPlaceholder;
+        }
+        return this.options.searchPlaceholder;
+    }
+
     private renderBadges(): void {
         // Clean up existing tooltips before re-rendering
         this.destroyAllBadgeTooltips();
@@ -801,7 +828,7 @@ export class WebMultiSelect<T = any> {
                 const countText = this.options.getCounterCallback ? this.options.getCounterCallback(count) : `${count} selected`;
                 this.input.placeholder = countText;
             } else {
-                this.input.placeholder = this.options.searchPlaceholder;
+                this.input.placeholder = this.getPlaceholderText();
             }
         }
 
@@ -1007,6 +1034,7 @@ export class WebMultiSelect<T = any> {
             if (result === null) {
                 // beforeSearchCallback returned null - don't search, show all options
                 dataLogger.debug(`[${this.instanceId}] beforeSearchCallback blocked search for term:`, value);
+                this.abortInFlightSearch();
                 this.filteredOptions = [...this.allOptions];
                 this.matchingIndices.clear();
                 this.renderDropdown();
@@ -1022,6 +1050,7 @@ export class WebMultiSelect<T = any> {
             // ASYNC SEARCH PATH
             // Check minimum search length
             if (processedValue.length < this.options.minSearchLength) {
+                this.abortInFlightSearch(); // No longer want any in-flight results
                 this.isLoading = false; // Stop loading state
                 if (this.options.isKeepOptionsOnSearch) {
                     // Keep showing initial options
@@ -1036,37 +1065,24 @@ export class WebMultiSelect<T = any> {
                 return;
             }
 
-            this.isLoading = true;
-            this.renderDropdown();
-            dataLogger.debug(`[${this.instanceId}] Loading data for search term:`, processedValue);
-
-            try {
-                const results = await this.options.searchCallback(processedValue);
-
-                if (this.searchTerm === value) {
-                    const searchResults = results || [];
-
-                    // Always show the search results in filtered options
-                    this.filteredOptions = [...searchResults];
-                    this.isLoading = false;
-                    this.matchingIndices.clear(); // Async search doesn't use matching indices
-
-                    // Auto-focus first option if search is enabled and there are results
-                    this.focusedIndex = (this.options.isSearchEnabled && this.filteredOptions.length > 0) ? 0 : -1;
-                    this.renderDropdown();
-                    dataLogger.debug(`[${this.instanceId}] Loaded ${searchResults.length} results`);
-                }
-            } catch (error) {
-                dataLogger.error(`[${this.instanceId}] Error loading data:`, error);
-                this.isLoading = false;
-                if (this.options.isKeepOptionsOnSearch) {
-                    // Show initial options on error
-                    this.filteredOptions = [...this.allOptions];
-                } else {
-                    this.filteredOptions = [];
-                }
-                this.matchingIndices.clear();
-                this.renderDropdown();
+            // Debounce the (potentially network-backed) callback. A pending timer from a
+            // previous keystroke is always cancelled, so only the last input in a burst fires
+            // a request. searchDebounce defaults to 0 → callback runs immediately as before.
+            if (this.searchDebounceTimer) {
+                clearTimeout(this.searchDebounceTimer);
+                this.searchDebounceTimer = undefined;
+            }
+            const debounceMs = this.options.searchDebounce || 0;
+            if (debounceMs > 0) {
+                this.searchDebounceTimer = setTimeout(() => {
+                    this.searchDebounceTimer = undefined;
+                    // Drop this run if a newer keystroke superseded the value while we waited.
+                    if (this.searchTerm === value) {
+                        void this.performAsyncSearch(value, processedValue);
+                    }
+                }, debounceMs);
+            } else {
+                await this.performAsyncSearch(value, processedValue);
             }
         } else {
             // LOCAL SEARCH PATH
@@ -1120,6 +1136,75 @@ export class WebMultiSelect<T = any> {
             // Scroll to focused item in navigate mode
             if (this.options.searchMode === 'navigate' && this.focusedIndex >= 0) {
                 this.scrollToFocused();
+            }
+        }
+    }
+
+    /** Abort the search request currently in flight, if any. The aborted request's results
+     *  are then ignored (and the consumer's `searchCallback` can short-circuit its fetch via
+     *  the `AbortSignal` it was handed). */
+    private abortInFlightSearch(): void {
+        if (this.searchAbortController) {
+            this.searchAbortController.abort();
+            this.searchAbortController = undefined;
+        }
+    }
+
+    /**
+     * Invoke the async `searchCallback` and apply its results. Split out of `handleSearch`
+     * so it can be called immediately or after the debounce timer.
+     *
+     * Any request still in flight is aborted before a new one starts, so a slow earlier
+     * request can't overwrite a newer one — and consumers that wire the passed `AbortSignal`
+     * into their fetch get the request actually cancelled, not just ignored. The
+     * `aborted` / `searchTerm === value` guards drop superseded or out-of-order responses.
+     */
+    private async performAsyncSearch(value: string, processedValue: string): Promise<void> {
+        // Cancel any previous in-flight request; only the latest query should win.
+        this.abortInFlightSearch();
+        const controller = new AbortController();
+        this.searchAbortController = controller;
+
+        this.isLoading = true;
+        this.renderDropdown();
+        dataLogger.debug(`[${this.instanceId}] Loading data for search term:`, processedValue);
+
+        try {
+            const results = await this.options.searchCallback!(processedValue, controller.signal);
+
+            // Ignore results from a request that was aborted or superseded by a newer term.
+            if (controller.signal.aborted || this.searchTerm !== value) return;
+
+            const searchResults = results || [];
+
+            // Always show the search results in filtered options
+            this.filteredOptions = [...searchResults];
+            this.isLoading = false;
+            this.matchingIndices.clear(); // Async search doesn't use matching indices
+
+            // Auto-focus first option if search is enabled and there are results
+            this.focusedIndex = (this.options.isSearchEnabled && this.filteredOptions.length > 0) ? 0 : -1;
+            this.renderDropdown();
+            dataLogger.debug(`[${this.instanceId}] Loaded ${searchResults.length} results`);
+        } catch (error) {
+            // Aborted requests are expected — a newer request owns the state now, so bail quietly.
+            if (controller.signal.aborted) return;
+
+            dataLogger.error(`[${this.instanceId}] Error loading data:`, error);
+            this.isLoading = false;
+            if (this.options.isKeepOptionsOnSearch) {
+                // Show initial options on error
+                this.filteredOptions = [...this.allOptions];
+            } else {
+                this.filteredOptions = [];
+            }
+            this.matchingIndices.clear();
+            this.renderDropdown();
+        } finally {
+            // Release the controller only if it's still the active one (a newer request may
+            // have already replaced it).
+            if (this.searchAbortController === controller) {
+                this.searchAbortController = undefined;
             }
         }
     }
@@ -1555,7 +1640,7 @@ export class WebMultiSelect<T = any> {
         this.dropdown.classList.add('ms__dropdown--visible');
         uiLogger.info(`[${this.instanceId}] Dropdown opened`);
 
-        this.input.placeholder = this.options.searchPlaceholder;
+        this.input.placeholder = this.getPlaceholderText();
 
         // Only clear input if search is enabled
         if (!this.options.isMultipleEnabled && this.options.isSearchEnabled) {
@@ -2146,8 +2231,10 @@ export class WebMultiSelect<T = any> {
         }
 
         // Input placeholder (only safe to set when dropdown is closed; otherwise renderBadges takes over).
-        if ('searchPlaceholder' in partial && !this.isOpen) {
-            this.input.placeholder = this.options.searchPlaceholder;
+        // Recomputed unconditionally so live changes to any input — placeholder text (e.g. a language
+        // switch), search mode, or the option list emptying/filling for cascades — are reflected.
+        if (!this.isOpen) {
+            this.input.placeholder = this.getPlaceholderText();
         }
 
         // Search input display mode
@@ -2362,6 +2449,12 @@ export class WebMultiSelect<T = any> {
 
     public destroy(): void {
         this.destroyAllTooltips();
+
+        if (this.searchDebounceTimer) {
+            clearTimeout(this.searchDebounceTimer);
+            this.searchDebounceTimer = undefined;
+        }
+        this.abortInFlightSearch();
 
         if (this.dropdownCleanup) this.dropdownCleanup();
         if (this.hintCleanup) this.hintCleanup();

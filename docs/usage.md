@@ -79,7 +79,9 @@ multiselect.setSelected(['js', 'ts']);
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `multiple` | `boolean` | `true` | Allow multiple selections |
-| `search-placeholder` | `string` | `'Search...'` | Placeholder text for search input |
+| `search-placeholder` | `string` | `'Search...'` | Placeholder text shown while search is usable |
+| `select-placeholder` | `string` | `'Pick an option...'` | Placeholder shown when search is disabled (`enable-search="false"`, or `search-input-mode` `readonly`/`hidden`) — the input acts as a picker, not a search box |
+| `no-data-placeholder` | `string` | - | Opt-in placeholder shown when the option list is empty, so users see there's no data without opening. Highest priority when the list is empty. Useful for cascade multiselects (a child whose parent isn't resolved yet) |
 | `search-hint` | `string` | - | Hint text shown above input when focused |
 | `allow-groups` | `boolean` | `true` | Enable option grouping |
 | `show-checkboxes` | `boolean` | `true` | Show checkboxes next to options |
@@ -99,6 +101,7 @@ multiselect.setSelected(['js', 'ts']);
 | `empty-message` | `string` | `'No results found'` | Message when no options found |
 | `loading-message` | `string` | `'Loading...'` | Message while loading async data |
 | `min-search-length` | `number` | `0` | Minimum search length for async |
+| `search-debounce` | `number` | `0` | Debounce (ms) before the async `searchCallback` fires; coalesces keystroke bursts into one request. Resets on each keystroke. Async callback only — local filtering stays instant. `0` = no debounce |
 | `keep-options-on-search` | `boolean` | `true` | Keep initial options visible when `searchCallback` is active (hybrid search) |
 | `should-keep-search-on-close` | `boolean` | `true` | Preserve search text and filtered results when dropdown closes |
 | `sticky-actions` | `boolean` | `true` | Keep action buttons fixed at top while scrolling |
@@ -278,6 +281,7 @@ multiselect.addNewCallback = async (value) => {
 | `getSelected()` | Get currently selected options as array of option objects |
 | `setSelected(values: (string \| number)[])` | Set selected values by ID/value |
 | `getValue()` | Get selected value(s) — returns single value in single-select mode, array in multi-select mode |
+| `setAttributes(attrs: Record<string, string \| number \| boolean \| null>)` | Set several attributes in a single in-place update (one re-render instead of one per attribute). Keys are kebab-case attribute names, as `setAttribute`; `null`/`undefined`/`false` removes the attribute, `true` sets it to `""`. Handy for i18n switches that change multiple strings at once |
 | `destroy()` | Clean up and destroy instance |
 
 ## Events

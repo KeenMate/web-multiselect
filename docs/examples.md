@@ -70,6 +70,7 @@ select.options = [
 <web-multiselect
   id="async-select"
   min-search-length="2"
+  search-debounce="300"
   loading-message="Searching..."
   empty-message="No products found">
 </web-multiselect>
@@ -77,13 +78,18 @@ select.options = [
 <script type="module">
   const select = document.getElementById('async-select');
 
-  select.onSearch = async (searchTerm) => {
-    const response = await fetch(`/api/products?q=${searchTerm}`);
+  // `signal` aborts when a newer search supersedes this one (or the element is destroyed).
+  // Forward it to fetch so the stale request is actually cancelled.
+  select.searchCallback = async (searchTerm, signal) => {
+    const response = await fetch(`/api/products?q=${searchTerm}`, { signal });
     const data = await response.json();
     return data.products;
   };
 </script>
 ```
+
+- `search-debounce="300"` waits 300ms after the last keystroke before calling the API, so a burst of typing makes one request instead of one per character.
+- The `signal` (an `AbortSignal`) is optional — callbacks that omit it still work; their superseded results are discarded, just not network-cancelled.
 
 ## Hybrid static + dynamic search
 

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test — search abort</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        web-multiselect { display: block; max-width: 320px; }
+    </style>
+</head>
+<body>
+    <h1>search abort</h1>
+    <p>Targeted by <code>e2e/search-abort.spec.ts</code>. The <code>searchCallback</code> resolves after a delay and rejects with an <code>AbortError</code> when its <code>AbortSignal</code> fires; <code>window.__aborted</code> counts cancellations.</p>
+
+    <div class="fixture">
+        <div class="fixture-label">async searchCallback wired to AbortSignal (no debounce)</div>
+        <web-multiselect id="ms-abort" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+
+        window.__aborted = 0;
+
+        // Resolve after `delay` ms, but reject early (and count) if the signal aborts.
+        function slowSearch(term, signal) {
+            return new Promise((resolve, reject) => {
+                const timer = setTimeout(() => {
+                    resolve(term ? [{ value: term, label: term.toUpperCase() }] : []);
+                }, 300);
+
+                signal?.addEventListener('abort', () => {
+                    clearTimeout(timer);
+                    window.__aborted += 1;
+                    reject(new DOMException('Aborted', 'AbortError'));
+                });
+            });
+        }
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            document.getElementById('ms-abort').searchCallback = slowSearch;
+        });
+    </script>
+</body>
+</html>

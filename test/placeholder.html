@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test — placeholders</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        web-multiselect { display: block; max-width: 320px; }
+    </style>
+</head>
+<body>
+    <h1>placeholders</h1>
+    <p>Targeted by <code>e2e/placeholder.spec.ts</code>. Covers the search placeholder, the search-disabled "pick" placeholder (<code>select-placeholder</code>), the empty-list <code>no-data-placeholder</code>, and live updates via <code>setAttributes()</code>.</p>
+
+    <div class="fixture">
+        <div class="fixture-label">default (search enabled)</div>
+        <web-multiselect id="ph-search" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">enable-search="false" → select-placeholder default</div>
+        <web-multiselect id="ph-nosearch" enable-search="false" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">search-input-mode="readonly" → select-placeholder default</div>
+        <web-multiselect id="ph-readonly" search-input-mode="readonly" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">custom select-placeholder</div>
+        <web-multiselect id="ph-custom-select" enable-search="false" select-placeholder="Choose a fruit" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">no-data-placeholder + empty list (cascade child)</div>
+        <web-multiselect id="ph-nodata" no-data-placeholder="No data — pick a category first" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">no-data-placeholder but list has options</div>
+        <web-multiselect id="ph-nodata-filled" no-data-placeholder="No data" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+
+        const items = [
+            { value: 'apple',  label: 'Apple' },
+            { value: 'banana', label: 'Banana' },
+            { value: 'cherry', label: 'Cherry' }
+        ];
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            // Everything except the cascade-child example gets data.
+            for (const id of ['ph-search', 'ph-nosearch', 'ph-readonly', 'ph-custom-select', 'ph-nodata-filled']) {
+                document.getElementById(id).options = items;
+            }
+            // ph-nodata intentionally stays empty to show the no-data placeholder.
+
+            // Expose the data + a batch helper for the live-update tests.
+            window.__items = items;
+            window.__setAttrs = (id, attrs) => document.getElementById(id).setAttributes(attrs);
+        });
+    </script>
+</body>
+</html>
