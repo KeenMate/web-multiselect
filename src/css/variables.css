@@ -416,12 +416,17 @@
   /* ==========================================================================
      EMPTY & LOADING STATES
      ========================================================================== */
+  /* Shared footprint so the dropdown doesn't jump when swapping the empty
+     ("No data") block for the loader (spinner + text) during async search.
+     Sized to contain a small spinner + gap + one text line; override if a
+     consumer's loader is taller. */
+  --ms-state-min-height: calc(8 * var(--ms-rem));
   --ms-empty-padding: calc(1.6 * var(--ms-rem)) calc(1.2 * var(--ms-rem));
   --ms-empty-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
   --ms-empty-color: var(--ms-text-color-3);
 
   /* Loader */
-  --ms-loader-padding: calc(1.6 * var(--ms-rem));
+  --ms-loader-padding: calc(1.6 * var(--ms-rem)) calc(1.2 * var(--ms-rem));
   --ms-loader-gap: calc(0.8 * var(--ms-rem));
 
   /* Loading Text */

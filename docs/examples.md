@@ -40,7 +40,7 @@ Icons support multiple formats — emojis, SVG markup, Font Awesome, images, or 
     {
       value: 'angular',
       label: 'Angular',
-      icon: '<i class="fab fa-angular"></i>',  // Font Awesome
+      icon: '<i class="fab fa-angular"></i>',  // Font icon — see Shadow DOM caveat below
       subtitle: 'Platform for building mobile and desktop apps'
     },
     {
@@ -52,6 +52,50 @@ Icons support multiple formats — emojis, SVG markup, Font Awesome, images, or 
   ];
 </script>
 ```
+
+### Icons in Shadow DOM — SVG vs. font icons
+
+The component renders in **Shadow DOM**, which changes how icons reach it. This applies anywhere you pass icon HTML: option `icon`, action button `text`, badge/option render callbacks, etc.
+
+| Icon type | Works out of the box? | What's needed |
+|---|---|---|
+| Emoji (`⚛️`) | ✅ Yes | Nothing |
+| Inline SVG (`<svg>…</svg>`) | ✅ Yes | Nothing — markup is self-contained |
+| `<img src="…">` | ✅ Yes | Nothing |
+| Font icons (Font Awesome, Material, Bootstrap Icons) | ⚠️ Partially | **Two** steps — see below |
+
+**Font icons need two things, because they're font-based:**
+
+1. **Register the `@font-face` at the document level** — a normal `<link>` (or `@font-face`) in the page `<head>`. A browser will **not** apply a `@font-face` declared *inside* a shadow root, so a shadow-only setup renders the glyphs as empty `□` boxes.
+2. **Inject the icon *class rules* into the Shadow DOM** via `customStylesCallback` — page CSS doesn't cross the shadow boundary, so `.fas` / `.fa-*::before` must be added inside the component.
+
+```javascript
+// 1) In the page <head> (once): <link rel="stylesheet" href="…/font-awesome/6.5.1/css/all.min.css">
+
+// 2) Inject the class rules into the shadow:
+select.customStylesCallback = () => `
+  @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
+`;
+// (Or, to avoid the async @import, inject only the few rules you use:
+//   .fa-solid { font-family: "Font Awesome 6 Free"; font-weight: 900; }
+//   .fa-check::before { content: "\f00c"; } … )
+```
+
+**Recommended: prefer inline SVG icons** (e.g. [Lucide](https://lucide.dev)) — they render natively in Shadow DOM with **zero** setup, and using `stroke="currentColor"` / `fill="currentColor"` makes them inherit the surrounding text color (dark mode included):
+
+```javascript
+const check = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+  style="vertical-align:-3px"><path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/></svg>`;
+
+select.actionButtons = [
+  { action: 'select-all', text: `${check} Select All`, tooltip: 'Select all' }
+];
+```
+
+> See [`examples-action-buttons.html`](../examples-action-buttons.html) §11 (Font Awesome) and §12 (Lucide SVG) for runnable side-by-side demos.
+
+> ⚠️ **Security:** `icon`, action button `text`, and the render callbacks all insert **raw HTML**. Only pass icon markup you control — never untrusted/user-supplied strings. See the [HTML Injection (XSS) notice](#html-injection-xss-notice).
 
 ## Grouped options
 
@@ -461,7 +505,7 @@ The following callbacks allow **raw HTML injection** and are intentionally **NOT
 - `getValueCallback`, `getSearchValueCallback`, `getGroupCallback`, `getDisabledCallback`
 - `getBadgeClassCallback`, `getSelectedItemClassCallback` (CSS class names only)
 - `beforeSearchCallback`, `searchCallback`, `addNewCallback`
-- `selectCallback`, `deselectCallback`, `changeCallback`
+- `onSelect`, `onDeselect`, `onChange`
 - `getRemoveButtonTooltipCallback` (used as title attribute)
 - `getValueFormatCallback` (form value)
 

@@ -344,6 +344,10 @@
 
 /* Empty state */
 .ms__empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: var(--ms-state-min-height);
   padding: var(--ms-empty-padding);
   text-align: center;
   font-size: var(--ms-empty-font-size);
@@ -356,6 +360,7 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  min-height: var(--ms-state-min-height);
   padding: var(--ms-loader-padding);
   gap: var(--ms-loader-gap);
 }

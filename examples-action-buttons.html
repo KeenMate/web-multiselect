@@ -162,9 +162,9 @@
 
         <!-- Example 3: Dynamic Visibility -->
         <section class="example-section">
-            <h2>3. Dynamic Visibility (isVisibleCallback)</h2>
+            <h2>3. Dynamic Visibility (getIsVisibleCallback)</h2>
             <p class="description">
-                Show/hide buttons based on current selection state using <code>isVisibleCallback</code>.
+                Show/hide buttons based on current selection state using <code>getIsVisibleCallback</code>.
             </p>
 
             <div class="demo-area">
@@ -183,7 +183,7 @@
     text: 'Select All',
     tooltip: 'Select all numbers',
     // Only show when not all items are selected
-    isVisibleCallback: (ms) =&gt; {
+    getIsVisibleCallback: (ms) =&gt; {
       const total = ms.options.options?.length || 0;
       const selected = ms.getSelected().length;
       return selected &lt; total;
@@ -194,7 +194,7 @@
     text: 'Clear All',
     tooltip: 'Clear selection',
     // Only show when at least one item is selected
-    isVisibleCallback: (ms) =&gt; ms.getSelected().length &gt; 0
+    getIsVisibleCallback: (ms) =&gt; ms.getSelected().length &gt; 0
   }
 ];</pre></div>
 
@@ -206,9 +206,9 @@
 
         <!-- Example 4: Dynamic Disabled State -->
         <section class="example-section">
-            <h2>4. Dynamic Disabled State (isDisabledCallback)</h2>
+            <h2>4. Dynamic Disabled State (getIsDisabledCallback)</h2>
             <p class="description">
-                Enable/disable buttons based on conditions using <code>isDisabledCallback</code>.
+                Enable/disable buttons based on conditions using <code>getIsDisabledCallback</code>.
             </p>
 
             <div class="demo-area">
@@ -227,7 +227,7 @@
     text: 'Select All',
     tooltip: 'Select all fruits',
     // Disabled when all items are selected
-    isDisabledCallback: (ms) =&gt; {
+    getIsDisabledCallback: (ms) =&gt; {
       const total = ms.options.options?.length || 0;
       return ms.getSelected().length &gt;= total;
     }
@@ -237,14 +237,14 @@
     text: 'Clear All',
     tooltip: 'Clear selection',
     // Disabled when nothing is selected
-    isDisabledCallback: (ms) =&gt; ms.getSelected().length === 0
+    getIsDisabledCallback: (ms) =&gt; ms.getSelected().length === 0
   },
   {
     action: 'custom',
     text: 'Select First 3',
     tooltip: 'Select first 3 items',
     // Disabled when less than 3 items available
-    isDisabledCallback: (ms) =&gt; {
+    getIsDisabledCallback: (ms) =&gt; {
       const total = ms.options.options?.length || 0;
       return total &lt; 3;
     },
@@ -542,12 +542,12 @@ multiselect.actionButtons = [
       const selected = ms.getSelected().length;
       return selected &gt;= 5 ? 'danger-btn' : 'success-btn';
     },
-    isVisibleCallback: (ms) =&gt; {
+    getIsVisibleCallback: (ms) =&gt; {
       const total = ms.options.options?.length || 0;
       const selected = ms.getSelected().length;
       return selected &lt; total;  // Always visible when not all selected
     },
-    isDisabledCallback: (ms) =&gt; {
+    getIsDisabledCallback: (ms) =&gt; {
       return ms.getSelected().length &gt;= 5;  // Disabled at max
     }
   },
@@ -561,8 +561,8 @@ multiselect.actionButtons = [
     getClassCallback: (ms) =&gt; {
       return ms.getSelected().length &gt; 0 ? ['danger-btn', 'active-state'] : 'inactive-state';
     },
-    isVisibleCallback: (ms) =&gt; ms.getSelected().length &gt; 0,
-    isDisabledCallback: (ms) =&gt; ms.getSelected().length === 0
+    getIsVisibleCallback: (ms) =&gt; ms.getSelected().length &gt; 0,
+    getIsDisabledCallback: (ms) =&gt; ms.getSelected().length === 0
   }
 ];</pre></div>
 
@@ -639,7 +639,9 @@ multiselect.actionButtons = [
         <section class="example-section">
             <h2>11. Font Awesome Icons in Buttons</h2>
             <p class="description">
-                Action buttons support HTML content, including Font Awesome icons. <strong>Important:</strong> Because the component uses Shadow DOM, you must inject Font Awesome CSS via <code>customStylesCallback</code> - loading it in the page <code>&lt;head&gt;</code> is not sufficient.
+                Action buttons accept HTML, so Font Awesome icons work — but Font Awesome is <strong>font-based</strong>, which needs <strong>two</strong> things in a Shadow DOM component:
+                <strong>(1)</strong> the <code>@font-face</code> must be registered at the <em>document</em> level (a normal <code>&lt;link&gt;</code> in the page <code>&lt;head&gt;</code>) — a shadow-scoped <code>@font-face</code> is ignored by browsers, so the glyphs would render as empty boxes; and
+                <strong>(2)</strong> the icon <em>class rules</em> (<code>.fas</code>, <code>.fa-*::before</code>) must be injected <em>into</em> the Shadow DOM via <code>customStylesCallback</code>, because page CSS can't cross the shadow boundary. Prefer <a href="#lucide">SVG icons (§12)</a> when you want zero setup.
             </p>
 
             <div class="demo-area">
@@ -652,12 +654,16 @@ multiselect.actionButtons = [
                 </div>
             </div>
 
-            <div class="code-block"><pre>// STEP 1: Inject Font Awesome into Shadow DOM (REQUIRED!)
+            <div class="code-block"><pre>// STEP 0: Register the FONT at document level (page &lt;head&gt;), once:
+//   &lt;link rel="stylesheet" href="https://cdnjs.cloudflare.com/.../font-awesome/6.5.1/css/all.min.css"&gt;
+// A shadow-scoped @font-face is ignored, so this is what makes the glyphs render.
+
+// STEP 1: Inject the icon CLASS RULES into the Shadow DOM
 multiselect.customStylesCallback = () =&gt; `
   @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
 
   /* Optional: Style the icons */
-  .ml__action-btn i {
+  .ms__action-btn i {
     margin-right: 0.35rem;
   }
 `;
@@ -707,13 +713,54 @@ multiselect.actionButtons = [
 ];</pre></div>
 
             <div class="note">
-                <div class="note-title">⚠️ Shadow DOM Requirements:</div>
+                <div class="note-title">⚠️ Shadow DOM + font icons — you need both halves:</div>
                 <ul>
-                    <li><strong>CRITICAL: Use customStylesCallback:</strong> Font Awesome CSS must be injected into the Shadow DOM using <code>customStylesCallback</code> with <code>@import</code>. Loading Font Awesome in the page <code>&lt;head&gt;</code> is NOT sufficient because Shadow DOM blocks external styles.</li>
-                    <li><strong>Alternative: Use SVG icons:</strong> Inline SVG icons work perfectly in Shadow DOM without any CSS injection (e.g., <code>&lt;svg&gt;...&lt;/svg&gt;</code>)</li>
-                    <li><strong>HTML is supported:</strong> The <code>text</code> property and <code>getTextCallback</code> both accept HTML strings</li>
-                    <li><strong>Accessibility:</strong> Icon-only buttons should always include descriptive tooltips for screen readers</li>
-                    <li><strong>Any icon library works:</strong> The same <code>customStylesCallback</code> approach works with Material Icons, Bootstrap Icons, etc.</li>
+                    <li><strong>Font at document level (required):</strong> Keep the Font Awesome <code>&lt;link&gt;</code> in the page <code>&lt;head&gt;</code>. The <code>@font-face</code> must live in the document — a browser will <em>not</em> apply a <code>@font-face</code> declared inside a shadow root, so loading FA only via <code>customStylesCallback</code> renders the glyphs as empty <code>□</code> boxes.</li>
+                    <li><strong>Class rules in the shadow (required):</strong> The <code>.fas</code> / <code>.fa-*::before</code> rules must be injected into the Shadow DOM with <code>customStylesCallback</code>, because page CSS doesn't cross the shadow boundary. The <code>@import</code> above does this (or inject just the few <code>::before { content }</code> rules you use to avoid the async fetch).</li>
+                    <li><strong>Prefer SVG icons (zero setup):</strong> Inline SVG (e.g. Lucide — see §12) renders natively in Shadow DOM with no <code>@font-face</code> and no CSS injection at all.</li>
+                    <li><strong>HTML is supported:</strong> The <code>text</code> property and <code>getTextCallback</code> both accept HTML strings.</li>
+                    <li><strong>Accessibility:</strong> Icon-only buttons should always include descriptive tooltips for screen readers.</li>
+                    <li><strong>Any font-icon library works the same way:</strong> Material Icons, Bootstrap Icons, etc. — font at document level, class rules in the shadow.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Example 12: Lucide SVG Icons -->
+        <section class="example-section" id="lucide">
+            <h2>12. Lucide (SVG) Icons in Buttons</h2>
+            <p class="description">
+                Unlike font icons, <strong>inline SVG icons render natively inside Shadow DOM</strong> — no <code>@font-face</code>, no <code>&lt;head&gt;</code> link, no <code>customStylesCallback</code>. You just put the SVG markup in the button <code>text</code>. These are <a href="https://lucide.dev" target="_blank" rel="noopener">Lucide</a> icons; they use <code>stroke="currentColor"</code>, so they automatically match the button's text color (including dark mode).
+            </p>
+
+            <div class="demo-area">
+                <label class="demo-label">Select Technologies:</label>
+                <web-multiselect id="lucide-buttons" multiple="true"></web-multiselect>
+
+                <div class="output">
+                    <div class="output-label">Selected:</div>
+                    <pre id="output-lucide">[]</pre>
+                </div>
+            </div>
+
+            <div class="code-block"><pre>// No setup needed — SVG just works in Shadow DOM.
+// Lucide SVGs use stroke="currentColor" so they inherit the button color.
+const check = `&lt;svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+  style="vertical-align:-3px"&gt;&lt;path d="M18 6 7 17l-5-5"/&gt;&lt;path d="m22 10-7.5 7.5L13 16"/&gt;&lt;/svg&gt;`;
+
+multiselect.actionButtons = [
+  { action: 'select-all', text: `${check} Select All`, tooltip: 'Select all' },
+  { action: 'clear-all',  text: `${xIcon} Clear`,      tooltip: 'Clear selection' },
+  // ...custom buttons with shuffle / refresh / toggle SVGs
+];</pre></div>
+
+            <div class="note">
+                <div class="note-title">✅ Why SVG is the easy path in Shadow DOM:</div>
+                <ul>
+                    <li><strong>Zero setup:</strong> No font registration, no CSS injection, no async <code>@import</code> race — the markup is self-contained.</li>
+                    <li><strong>Themes for free:</strong> <code>stroke="currentColor"</code> (Lucide) / <code>fill="currentColor"</code> means the icon follows the button's text color, so dark mode and custom <code>--ms-*</code> colors just work.</li>
+                    <li><strong>Sizing:</strong> Set <code>width</code>/<code>height</code> on the <code>&lt;svg&gt;</code> (here <code>16</code>) and a small <code>vertical-align</code> to sit it on the text baseline.</li>
+                    <li><strong>Security:</strong> <code>text</code>/<code>getTextCallback</code> render raw HTML — only inline SVG you control, never untrusted strings.</li>
                 </ul>
             </div>
         </section>
@@ -732,8 +779,8 @@ isDisabled?: boolean                            // Optional (default: false)</pr
 
             <h3>Dynamic Callbacks</h3>
             <div class="code-block"><pre>onClick?: (multiselect) => void | Promise&lt;void&gt;   // Required for 'custom' action
-isVisibleCallback?: (multiselect) => boolean      // Dynamic visibility
-isDisabledCallback?: (multiselect) => boolean     // Dynamic disabled state
+getIsVisibleCallback?: (multiselect) => boolean      // Dynamic visibility
+getIsDisabledCallback?: (multiselect) => boolean     // Dynamic disabled state
 getTextCallback?: (multiselect) => string         // Dynamic text
 getClassCallback?: (multiselect) => string | string[]  // Dynamic CSS classes
 getTooltipCallback?: (multiselect) => string      // Dynamic tooltip</pre></div>
@@ -742,8 +789,8 @@ getTooltipCallback?: (multiselect) => string      // Dynamic tooltip</pre></div>
             <div class="note">
                 <div class="note-title">When both static and callback are defined:</div>
                 <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
-                    <li><code>isVisibleCallback</code> &gt; <code>isVisible</code> &gt; default <code>true</code></li>
-                    <li><code>isDisabledCallback</code> &gt; <code>isDisabled</code> &gt; default <code>false</code></li>
+                    <li><code>getIsVisibleCallback</code> &gt; <code>isVisible</code> &gt; default <code>true</code></li>
+                    <li><code>getIsDisabledCallback</code> &gt; <code>isDisabled</code> &gt; default <code>false</code></li>
                     <li><code>getTextCallback</code> &gt; <code>text</code></li>
                     <li><code>getClassCallback</code> &gt; <code>cssClass</code></li>
                     <li><code>getTooltipCallback</code> &gt; <code>tooltip</code></li>
@@ -875,7 +922,7 @@ getTooltipCallback?: (multiselect) => string      // Dynamic tooltip</pre></div>
                     action: 'select-all',
                     text: 'Select All',
                     tooltip: 'Select all numbers',
-                    isVisibleCallback: (ms) => {
+                    getIsVisibleCallback: (ms) => {
                         const total = ms.options.options?.length || 0;
                         const selected = ms.getSelected().length;
                         return selected < total;
@@ -885,7 +932,7 @@ getTooltipCallback?: (multiselect) => string      // Dynamic tooltip</pre></div>
                     action: 'clear-all',
                     text: 'Clear All',
                     tooltip: 'Clear selection',
-                    isVisibleCallback: (ms) => ms.getSelected().length > 0
+                    getIsVisibleCallback: (ms) => ms.getSelected().length > 0
                 }
             ];
             dynamicVisibility.addEventListener('change', () => {
@@ -900,7 +947,7 @@ getTooltipCallback?: (multiselect) => string      // Dynamic tooltip</pre></div>
                     action: 'select-all',
                     text: 'Select All',
                     tooltip: 'Select all fruits',
-                    isDisabledCallback: (ms) => {
+                    getIsDisabledCallback: (ms) => {
                         const total = ms.options.options?.length || 0;
                         return ms.getSelected().length >= total;
                     }
@@ -909,13 +956,13 @@ getTooltipCallback?: (multiselect) => string      // Dynamic tooltip</pre></div>
                     action: 'clear-all',
                     text: 'Clear All',
                     tooltip: 'Clear selection',
-                    isDisabledCallback: (ms) => ms.getSelected().length === 0
+                    getIsDisabledCallback: (ms) => ms.getSelected().length === 0
                 },
                 {
                     action: 'custom',
                     text: 'Select First 3',
                     tooltip: 'Select first 3 items',
-                    isDisabledCallback: (ms) => {
+                    getIsDisabledCallback: (ms) => {
                         const total = ms.options.options?.length || 0;
                         return total < 3;
                     },
@@ -1127,12 +1174,12 @@ getTooltipCallback?: (multiselect) => string      // Dynamic tooltip</pre></div>
                         const selected = ms.getSelected().length;
                         return selected >= 5 ? 'danger-btn' : 'success-btn';
                     },
-                    isVisibleCallback: (ms) => {
+                    getIsVisibleCallback: (ms) => {
                         const total = ms.options.options?.length || 0;
                         const selected = ms.getSelected().length;
                         return selected < total;
                     },
-                    isDisabledCallback: (ms) => {
+                    getIsDisabledCallback: (ms) => {
                         return ms.getSelected().length >= 5;
                     }
                 },
@@ -1146,8 +1193,8 @@ getTooltipCallback?: (multiselect) => string      // Dynamic tooltip</pre></div>
                     getClassCallback: (ms) => {
                         return ms.getSelected().length > 0 ? ['danger-btn', 'active-state'] : 'inactive-state';
                     },
-                    isVisibleCallback: (ms) => ms.getSelected().length > 0,
-                    isDisabledCallback: (ms) => ms.getSelected().length === 0
+                    getIsVisibleCallback: (ms) => ms.getSelected().length > 0,
+                    getIsDisabledCallback: (ms) => ms.getSelected().length === 0
                 }
             ];
             combined.addEventListener('change', () => {
@@ -1217,7 +1264,7 @@ getTooltipCallback?: (multiselect) => string      // Dynamic tooltip</pre></div>
                 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css');
 
                 /* Optional: Style the icons */
-                .ml__action-btn i {
+                .ms__action-btn i {
                     margin-right: 0.35rem;
                 }
             `;
@@ -1282,6 +1329,79 @@ getTooltipCallback?: (multiselect) => string      // Dynamic tooltip</pre></div>
             ];
             iconButtons.addEventListener('change', () => {
                 document.getElementById('output-icons').textContent = JSON.stringify(iconButtons.getValue(), null, 2);
+            });
+
+            // Example 12: Lucide (SVG) Icons — no font, no @font-face, no CSS injection.
+            // Lucide SVGs use stroke="currentColor", so they inherit the button's text color.
+            const lucide = (paths) => `<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" `
+                + `viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" `
+                + `stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px">${paths}</svg>`;
+            const luCheck   = lucide('<path d="M18 6 7 17l-5-5"/><path d="m22 10-7.5 7.5L13 16"/>');
+            const luX       = lucide('<path d="M18 6 6 18"/><path d="m6 6 12 12"/>');
+            const luShuffle = lucide('<path d="m18 14 4 4-4 4"/><path d="m18 2 4 4-4 4"/><path d="M2 18h1.973a4 4 0 0 0 3.3-1.7l5.454-8.6a4 4 0 0 1 3.3-1.7H22"/><path d="M2 6h1.972a4 4 0 0 1 3.6 2.2"/><path d="M22 18h-6.041a4 4 0 0 1-3.3-1.8l-.359-.45"/>');
+            const luRefresh = lucide('<path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/>');
+            const luToggleOn  = lucide('<circle cx="15" cy="12" r="3"/><rect width="20" height="14" x="2" y="5" rx="7"/>');
+            const luToggleOff = lucide('<circle cx="9" cy="12" r="3"/><rect width="20" height="14" x="2" y="5" rx="7"/>');
+
+            const lucideButtons = document.querySelector('#lucide-buttons');
+            lucideButtons.options = techOptions;
+            // NOTE: no customStylesCallback — inline SVG needs no Shadow DOM style injection.
+            lucideButtons.actionButtons = [
+                {
+                    action: 'select-all',
+                    text: `${luCheck} Select All`,
+                    tooltip: 'Select all available technologies'
+                },
+                {
+                    action: 'clear-all',
+                    text: `${luX} Clear`,
+                    tooltip: 'Clear all selections'
+                },
+                {
+                    action: 'custom',
+                    text: `${luShuffle} Random`,
+                    tooltip: 'Select 3 random technologies',
+                    onClick: (ms) => {
+                        const shuffled = [...techOptions].sort(() => Math.random() - 0.5);
+                        ms.setSelected(shuffled.slice(0, 3).map(o => o[0]));
+                    }
+                },
+                {
+                    action: 'custom',
+                    text: luRefresh, // icon-only
+                    tooltip: 'Invert Selection',
+                    onClick: (ms) => {
+                        const allValues = techOptions.map(o => o[0]);
+                        const selectedValues = ms.getValue();
+                        const inverted = allValues.filter(v => !selectedValues.includes(v));
+                        ms.setSelected(inverted);
+                    }
+                },
+                {
+                    action: 'custom',
+                    text: 'Toggle',
+                    getTextCallback: (ms) => {
+                        const count = ms.getSelected().length;
+                        const total = techOptions.length;
+                        const icon = count === total ? luToggleOn : luToggleOff;
+                        return `${icon} ${count}/${total}`;
+                    },
+                    getTooltipCallback: (ms) => {
+                        const count = ms.getSelected().length;
+                        return count === techOptions.length ? 'Deselect all' : 'Select all';
+                    },
+                    onClick: (ms) => {
+                        const count = ms.getSelected().length;
+                        if (count === techOptions.length) {
+                            ms.setSelected([]);
+                        } else {
+                            ms.selectAll();
+                        }
+                    }
+                }
+            ];
+            lucideButtons.addEventListener('change', () => {
+                document.getElementById('output-lucide').textContent = JSON.stringify(lucideButtons.getValue(), null, 2);
             });
         });
     </script>
