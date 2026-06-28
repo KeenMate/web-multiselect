@@ -152,6 +152,22 @@ multiselect.beforeSearchCallback = (searchTerm) => {
   return normalized; // Return transformed term
 };
 
+// Interceptors — veto a selection/deselection before it happens.
+// Return false to block; return true/undefined to allow. Silent (no event).
+// Receives the option being toggled and the current selection (before the change).
+// Note: programmatic setSelected() and the Select-All / Clear-All buttons bypass these.
+multiselect.beforeSelectCallback = (option, selectedOptions) => {
+  // Example: don't allow selecting "item1" while "item2" is already selected
+  if (option.value === 'item1' && selectedOptions.some(o => o.value === 'item2')) {
+    return false; // blocked
+  }
+};
+
+multiselect.beforeDeselectCallback = (option, selectedOptions) => {
+  // Example: "item1" is required — can't be removed once chosen
+  if (option.value === 'item1') return false;
+};
+
 // Event callbacks
 multiselect.onSelect = (option) => {
   console.log('Selected:', option);
@@ -183,7 +199,7 @@ multiselect.actionButtons = [
     text: 'Select All',
     tooltip: 'Select all items',
     cssClass: 'my-custom-class',
-    isVisibleCallback: (multiselect) => multiselect.getSelected().length < 5  // Hide if 5+ selected
+    getIsVisibleCallback: (multiselect) => multiselect.getSelected().length < 5  // Hide if 5+ selected
   },
   {
     action: 'clear-all',
@@ -204,7 +220,7 @@ multiselect.actionButtons = [
       multiselect.setSelected(inverted);
     },
     // Dynamic callbacks (take priority over static properties)
-    isDisabledCallback: (multiselect) => multiselect.getSelected().length === 0,
+    getIsDisabledCallback: (multiselect) => multiselect.getSelected().length === 0,
     getTextCallback: (multiselect) => multiselect.getSelected().length > 0 ? 'Invert' : 'Select Items First',
     getClassCallback: (multiselect) => multiselect.getSelected().length > 0 ? 'active' : 'inactive'
   }

@@ -51,8 +51,8 @@ test.describe('events', () => {
     });
 });
 
-test.describe('callbacks', () => {
-    test('selectCallback fires with item on each selection', async ({ page }) => {
+test.describe('event handler props (on*)', () => {
+    test('onSelect fires with item on each selection', async ({ page }) => {
         const p = picker(page, 'callbacks');
         await openDropdown(p);
         await p.locator('.ms__option[data-value="apple"]').click();
@@ -61,7 +61,7 @@ test.describe('callbacks', () => {
         expect(calls).toEqual(['apple']);
     });
 
-    test('changeCallback receives the full selection array', async ({ page }) => {
+    test('onChange receives the full selection array', async ({ page }) => {
         const p = picker(page, 'callbacks');
         await openDropdown(p);
         await p.locator('.ms__option[data-value="apple"]').click();

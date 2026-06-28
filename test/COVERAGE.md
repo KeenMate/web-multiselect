@@ -105,14 +105,14 @@ When a row is marked `✓`/`△`, the **Spec** column points at the file under
 | Built-in `select-all` selects all visible options             | ✓      | `action-buttons.spec.ts`     | `action-buttons.html`     |
 | Built-in `clear-all` clears all selections                    | ✓      | `action-buttons.spec.ts`     | `action-buttons.html`     |
 | Custom action button fires `onClick`                          | ✓      | `action-buttons.spec.ts`     | `action-buttons.html`     |
-| `isVisibleCallback` hides button dynamically                  | ✓      | `action-buttons.spec.ts`     | `action-buttons.html`     |
-| `isDisabledCallback` disables button dynamically              | ✓      | `action-buttons.spec.ts`     | `action-buttons.html`     |
+| `getIsVisibleCallback` hides button dynamically                  | ✓      | `action-buttons.spec.ts`     | `action-buttons.html`     |
+| `getIsDisabledCallback` disables button dynamically              | ✓      | `action-buttons.spec.ts`     | `action-buttons.html`     |
 | `getTextCallback` / `getClassCallback` / `getTooltipCallback` | ✗      |      |         |
 | Action button tooltip shows on hover                          | ✗      |      |         |
 | `sticky-actions` keeps actions pinned while scrolling         | ✓      | `action-buttons.spec.ts`     | `action-buttons.html`     |
 | `actions-layout="wrap"` wraps buttons to multiple rows        | ✓      | `action-buttons.spec.ts`     | `action-buttons.html`     |
-| Select-all fires per-item `selectCallback`                    | ✓      | `action-buttons.spec.ts`     | `action-buttons.html`     |
-| Clear-all fires per-item `deselectCallback`                   | ✓      | `action-buttons.spec.ts`     | `action-buttons.html`     |
+| Select-all fires per-item `onSelect`                    | ✓      | `action-buttons.spec.ts`     | `action-buttons.html`     |
+| Clear-all fires per-item `onDeselect`                   | ✓      | `action-buttons.spec.ts`     | `action-buttons.html`     |
 
 ## 8. Groups
 
@@ -189,7 +189,7 @@ When a row is marked `✓`/`△`, the **Spec** column points at the file under
 | `select` event with full detail                               | ✓      | `events-api.spec.ts`         | `events-api.html`         |
 | `deselect` event with full detail                             | ✓      | `events-api.spec.ts`         | `events-api.html`         |
 | `change` event fires once per bulk operation                  | ✓      | `events-api.spec.ts`         | `events-api.html`         |
-| `selectCallback` / `deselectCallback` / `changeCallback`      | ✓      | `events-api.spec.ts`         | `events-api.html`         |
+| `onSelect` / `onDeselect` / `onChange`      | ✓      | `events-api.spec.ts`         | `events-api.html`         |
 | `selectedValues` setter populates selection (no setter today) | ✗      |      |         |
 | `options` setter replaces options                             | ✓      | `events-api.spec.ts`         | `events-api.html`         |
 | `updateOptions(partial)` updates without rebuilding DOM       | ✗      |      |         |

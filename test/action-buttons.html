@@ -38,7 +38,7 @@
     </div>
 
     <div class="fixture">
-        <div class="fixture-label">select-all + per-item selectCallback tracker</div>
+        <div class="fixture-label">select-all + per-item onSelect tracker</div>
         <web-multiselect id="tracker" value-member="value" display-value-member="label"></web-multiselect>
     </div>
 
@@ -81,14 +81,14 @@
                     text: 'Maybe Visible',
                     cssClass: 'js-maybe-visible',
                     onClick: () => {},
-                    isVisibleCallback: () => window.__dynamicVisible
+                    getIsVisibleCallback: () => window.__dynamicVisible
                 },
                 {
                     action: 'custom',
                     text: 'Maybe Disabled',
                     cssClass: 'js-maybe-disabled',
                     onClick: () => {},
-                    isDisabledCallback: () => window.__dynamicDisabled
+                    getIsDisabledCallback: () => window.__dynamicDisabled
                 }
             ];
 
@@ -109,12 +109,12 @@
             ];
             document.getElementById('wrap').actionButtons = manyButtons;
 
-            // Tracker — counts per-item selectCallback fires
+            // Tracker — counts per-item onSelect fires
             const tracker = document.getElementById('tracker');
             window.__trackerSelected = [];
             window.__trackerDeselected = [];
-            tracker.selectCallback = (item) => { window.__trackerSelected.push(item.value); };
-            tracker.deselectCallback = (item) => { window.__trackerDeselected.push(item.value); };
+            tracker.onSelect = (item) => { window.__trackerSelected.push(item.value); };
+            tracker.onDeselect = (item) => { window.__trackerDeselected.push(item.value); };
             tracker.actionButtons = [
                 { action: 'select-all', text: 'Select all' },
                 { action: 'clear-all',  text: 'Clear all'  }

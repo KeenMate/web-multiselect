@@ -90,9 +90,9 @@ export interface ActionButton<T = any> {
     /** Custom click handler (required for 'custom' action) */
     onClick?: (multiselect: any) => void | Promise<void>;
     /** Dynamic visibility callback - return false to hide button (takes priority over isVisible) */
-    isVisibleCallback?: (multiselect: any) => boolean;
+    getIsVisibleCallback?: (multiselect: any) => boolean;
     /** Dynamic disabled state callback - return true to disable button (takes priority over isDisabled) */
-    isDisabledCallback?: (multiselect: any) => boolean;
+    getIsDisabledCallback?: (multiselect: any) => boolean;
     /** Dynamic text callback - return button text (takes priority over text) */
     getTextCallback?: (multiselect: any) => string;
     /** Dynamic CSS class callback - return class name(s) (takes priority over cssClass) */
@@ -296,6 +296,23 @@ export interface MultiSelectConfig<T = any> {
     /** Pre-process search term before calling searchCallback. Return null to prevent search. Use for accent removal, validation, etc. */
     beforeSearchCallback?: ((searchTerm: string) => string | null) | null;
     /**
+     * Interceptor: runs before an option is selected via user interaction.
+     * Receives the option about to be added and the current selection (before the change).
+     * Return `false` to block the selection; return `true`/`undefined` to allow.
+     * Silent — a blocked action fires no event. Bypassed by programmatic `setSelected`
+     * and the Select-All action button.
+     */
+    beforeSelectCallback?: ((option: T, selectedOptions: T[]) => boolean | void) | null;
+    /**
+     * Interceptor: runs before an option is deselected via user interaction — the dropdown
+     * option toggle, a badge's remove (×) button, the selected-items popover's remove button,
+     * and the "remove hidden" badge (checked per item). Receives the option about to be
+     * removed and the current selection (before the change). Return `false` to block the
+     * deselection; return `true`/`undefined` to allow. Silent — a blocked action fires no
+     * event. Bypassed by programmatic `setSelected` and the Clear-All action button.
+     */
+    beforeDeselectCallback?: ((option: T, selectedOptions: T[]) => boolean | void) | null;
+    /**
      * Async function to load data: `(searchTerm, signal) => Promise<options[]>`.
      * The optional second argument is an `AbortSignal` that fires when a newer search
      * supersedes this one (or the component is destroyed). Wire it into your `fetch`
@@ -304,12 +321,12 @@ export interface MultiSelectConfig<T = any> {
     searchCallback?: ((searchTerm: string, signal?: AbortSignal) => Promise<T[]>) | null;
     /** Callback to add a new option when isAddNewAllowed is true */
     addNewCallback?: ((value: string) => T | Promise<T>) | null;
-    /** Callback when an option is selected */
-    selectCallback?: ((option: T) => void) | null;
-    /** Callback when an option is deselected */
-    deselectCallback?: ((option: T) => void) | null;
-    /** Callback when selection changes */
-    changeCallback?: ((selectedOptions: T[]) => void) | null;
+    /** Event handler: an option was selected (fire-and-forget; return value ignored). Mirrors the bubbling `select` CustomEvent on the element. */
+    onSelect?: ((option: T) => void) | null;
+    /** Event handler: an option was deselected (fire-and-forget). Mirrors the bubbling `deselect` CustomEvent on the element. */
+    onDeselect?: ((option: T) => void) | null;
+    /** Event handler: the selection set changed (fire-and-forget). Mirrors the bubbling `change` CustomEvent on the element. */
+    onChange?: ((selectedOptions: T[]) => void) | null;
     /** Callback to format count badge text (for i18n/pluralization). When moreCount is provided, it's for the "+X more" badge in partial mode. */
     getCounterCallback?: ((count: number, moreCount?: number) => string) | null;
 
@@ -384,7 +401,7 @@ export interface MultiSelectOptions extends MultiSelectConfig<MultiSelectOption>
     options?: MultiSelectOption[];
     searchCallback?: ((searchTerm: string, signal?: AbortSignal) => Promise<MultiSelectOption[]>) | null;
     addNewCallback?: ((value: string) => MultiSelectOption | Promise<MultiSelectOption>) | null;
-    selectCallback?: ((option: MultiSelectOption) => void) | null;
-    deselectCallback?: ((option: MultiSelectOption) => void) | null;
-    changeCallback?: ((selectedOptions: MultiSelectOption[]) => void) | null;
+    onSelect?: ((option: MultiSelectOption) => void) | null;
+    onDeselect?: ((option: MultiSelectOption) => void) | null;
+    onChange?: ((selectedOptions: MultiSelectOption[]) => void) | null;
 }

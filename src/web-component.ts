@@ -246,11 +246,13 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     // Event callbacks
     private _beforeSearchCallback?: (searchTerm: string) => string | null;
+    private _beforeSelectCallback?: (option: T, selectedOptions: T[]) => boolean | void;
+    private _beforeDeselectCallback?: (option: T, selectedOptions: T[]) => boolean | void;
     private _searchCallback?: (searchTerm: string, signal?: AbortSignal) => Promise<T[]>;
     private _addNewCallback?: (value: string) => T | Promise<T>;
-    private _selectCallback?: (option: T) => void;
-    private _deselectCallback?: (option: T) => void;
-    private _changeCallback?: (selectedOptions: T[]) => void;
+    private _onSelect?: (option: T) => void;
+    private _onDeselect?: (option: T) => void;
+    private _onChange?: (selectedOptions: T[]) => void;
 
     static get observedAttributes() {
         return [
@@ -706,10 +708,12 @@ export class MultiSelectElement<T = any> extends BaseElement {
             }),
             options: this._options ?? parsedDataOptions,
             beforeSearchCallback: this._beforeSearchCallback,
+            beforeSelectCallback: this._beforeSelectCallback,
+            beforeDeselectCallback: this._beforeDeselectCallback,
             searchCallback: this._searchCallback,
             addNewCallback: this._addNewCallback,
-            selectCallback: (option: T) => {
-                if (this._selectCallback) this._selectCallback(option);
+            onSelect: (option: T) => {
+                if (this._onSelect) this._onSelect(option);
                 // bubbles + composed so framework delegation (Svelte 5
                 // onchange, React onChange, etc.) and ancestor listeners
                 // receive the event. Necessary because Svelte 5 routes
@@ -725,8 +729,8 @@ export class MultiSelectElement<T = any> extends BaseElement {
                     } as MultiSelectEventDetail<T>
                 }));
             },
-            deselectCallback: (option) => {
-                if (this._deselectCallback) this._deselectCallback(option);
+            onDeselect: (option) => {
+                if (this._onDeselect) this._onDeselect(option);
                 this.dispatchEvent(new CustomEvent('deselect', {
                     bubbles: true,
                     composed: true,
@@ -737,8 +741,8 @@ export class MultiSelectElement<T = any> extends BaseElement {
                     } as MultiSelectEventDetail<T>
                 }));
             },
-            changeCallback: (selectedOptions) => {
-                if (this._changeCallback) this._changeCallback(selectedOptions);
+            onChange: (selectedOptions) => {
+                if (this._onChange) this._onChange(selectedOptions);
                 this.dispatchEvent(new CustomEvent('change', {
                     bubbles: true,
                     composed: true,
@@ -1175,6 +1179,24 @@ export class MultiSelectElement<T = any> extends BaseElement {
         this.updatePicker({ beforeSearchCallback: callback });
     }
 
+    get beforeSelectCallback(): ((option: T, selectedOptions: T[]) => boolean | void) | undefined {
+        return this._beforeSelectCallback;
+    }
+
+    set beforeSelectCallback(callback: ((option: T, selectedOptions: T[]) => boolean | void) | undefined) {
+        this._beforeSelectCallback = callback;
+        this.updatePicker({ beforeSelectCallback: callback });
+    }
+
+    get beforeDeselectCallback(): ((option: T, selectedOptions: T[]) => boolean | void) | undefined {
+        return this._beforeDeselectCallback;
+    }
+
+    set beforeDeselectCallback(callback: ((option: T, selectedOptions: T[]) => boolean | void) | undefined) {
+        this._beforeDeselectCallback = callback;
+        this.updatePicker({ beforeDeselectCallback: callback });
+    }
+
     get searchCallback(): ((searchTerm: string, signal?: AbortSignal) => Promise<T[]>) | undefined {
         return this._searchCallback;
     }
@@ -1193,28 +1215,28 @@ export class MultiSelectElement<T = any> extends BaseElement {
         this.updatePicker({ addNewCallback: callback });
     }
 
-    get selectCallback(): ((option: T) => void) | undefined {
-        return this._selectCallback;
+    get onSelect(): ((option: T) => void) | undefined {
+        return this._onSelect;
     }
 
-    set selectCallback(callback: ((option: T) => void) | undefined) {
-        this._selectCallback = callback;
+    set onSelect(callback: ((option: T) => void) | undefined) {
+        this._onSelect = callback;
     }
 
-    get deselectCallback(): ((option: T) => void) | undefined {
-        return this._deselectCallback;
+    get onDeselect(): ((option: T) => void) | undefined {
+        return this._onDeselect;
     }
 
-    set deselectCallback(callback: ((option: T) => void) | undefined) {
-        this._deselectCallback = callback;
+    set onDeselect(callback: ((option: T) => void) | undefined) {
+        this._onDeselect = callback;
     }
 
-    get changeCallback(): ((selectedOptions: T[]) => void) | undefined {
-        return this._changeCallback;
+    get onChange(): ((selectedOptions: T[]) => void) | undefined {
+        return this._onChange;
     }
 
-    set changeCallback(callback: ((selectedOptions: T[]) => void) | undefined) {
-        this._changeCallback = callback;
+    set onChange(callback: ((selectedOptions: T[]) => void) | undefined) {
+        this._onChange = callback;
     }
 
     // Action buttons

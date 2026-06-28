@@ -119,6 +119,22 @@ npm run test:e2e    # Playwright (browser) — interaction/visual
 npm test            # both
 ```
 
+## Code structure
+
+Follows the BlissFramework four-layer web-component layout:
+
+| Layer | File | Role |
+|-------|------|------|
+| Element | `src/web-component.ts` | `MultiSelectElement` — custom-element I/O wrapper, `ATTRIBUTE_TABLE`-driven |
+| Logic | `src/multiselect.ts` | `WebMultiSelect<T>` — framework-agnostic core |
+| Service | `src/tooltip.ts`, `src/virtual-scroll.ts` | single-purpose helpers (`Tooltip`, `VirtualScroll`) |
+| Side | `src/types.ts`, `src/logger.ts`, `src/vendor/` | types, logging, vendored deps |
+
+Two deviations from the canonical shape, both intentional:
+
+- **`MultiSelectElement extends BaseElement`, not `HTMLElement` directly.** `BaseElement` is a local `const` resolving to `HTMLElement` in the browser and to a stub class under SSR (`typeof HTMLElement === 'undefined'`), so importing the module in Node doesn't throw. A literal `grep "extends HTMLElement"` structure check will not match here by design.
+- **`src/vite-env.d.ts`** is a standard Vite ambient-types file, not part of the four-layer model.
+
 ## License
 
 MIT — see [LICENSE](./LICENSE).

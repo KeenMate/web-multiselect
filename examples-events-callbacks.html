@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MultiSelect — Events, Handlers & Interceptors</title>
+
+    <!-- Shared example styles -->
+    <link rel="stylesheet" href="examples-shared.css">
+
+    <style>
+        .log {
+            background: #f9f9f9;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 1rem;
+            font-family: monospace;
+            font-size: 0.8125rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .log .muted { color: #666; }
+        .tag-prop  { color: #9b1d8e; font-weight: 600; }
+        .tag-event { color: #0066cc; font-weight: 600; }
+        .tag-block { color: #c0392b; font-weight: 600; }
+        .tag-ok    { color: #1e7e34; font-weight: 600; }
+        .legend { font-size: 0.8125rem; margin-top: 0.25rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="index.html" class="back-link">← Back to Examples</a>
+            <h1>🔔 Events, Handlers &amp; Interceptors</h1>
+            <p class="subtitle">
+                The notification surface, end to end: fire-and-forget <strong>events</strong>
+                (DOM <code>CustomEvent</code> + the <code>on*</code> property twin) and
+                return-consuming <strong>interceptors</strong> that can veto an action before it happens.
+            </p>
+        </header>
+
+        <!-- ============================================================ -->
+        <!-- 1. EVENTS — DOM events and the on* property twin             -->
+        <!-- ============================================================ -->
+        <div class="card">
+            <h2>1 · Events — <code>addEventListener</code> &amp; the <code>on*</code> twin</h2>
+            <p>
+                Every notification is available two ways and <strong>both fire for the same action</strong>:
+                the bubbling DOM events <code>select</code> / <code>deselect</code> / <code>change</code>,
+                and the JS properties <code>onSelect</code> / <code>onDeselect</code> / <code>onChange</code>.
+                They're <em>events</em>, not callbacks — the return value is ignored.
+                This picker wires both so you can watch them pair up.
+            </p>
+            <div class="form-group">
+                <label>Pick a few</label>
+                <web-multiselect
+                    id="events-select"
+                    value-member="value"
+                    display-value-member="label"
+                    search-placeholder="Select skills...">
+                </web-multiselect>
+                <small class="form-text legend">
+                    <span class="tag-prop">[prop]</span> = <code>on*</code> property handler &nbsp;·&nbsp;
+                    <span class="tag-event">[event]</span> = <code>addEventListener</code>
+                </small>
+            </div>
+            <div id="events-log" class="log"><div class="muted">Pick an option — [prop] and [event] entries log here…</div></div>
+
+            <details style="margin-top: 1rem;">
+                <summary>Show code</summary>
+<pre><code>// Property handlers (the on* form) — return value ignored
+el.onSelect   = (option)          =&gt; log('prop', 'onSelect', option.label);
+el.onDeselect = (option)          =&gt; log('prop', 'onDeselect', option.label);
+el.onChange   = (selectedOptions) =&gt; log('prop', 'onChange', selectedOptions.map(o =&gt; o.value));
+
+// The very same notifications as bubbling DOM events
+el.addEventListener('change', (e) =&gt; {
+  // e.detail = { option, selectedOptions, selectedValues }
+  log('event', 'change', e.detail.selectedValues);
+});</code></pre>
+            </details>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 2. beforeSelectCallback — veto a selection                   -->
+        <!-- ============================================================ -->
+        <div class="card">
+            <h2>2 · <code>beforeSelectCallback</code> — block a selection</h2>
+            <p>
+                An <strong>interceptor</strong>: runs <em>before</em> an option is added and returns
+                <code>false</code> to block it. Here <strong>Full-time</strong> and <strong>Part-time</strong>
+                are mutually exclusive — picking one while the other is selected is vetoed.
+                The veto is silent (no event fires); the message below is produced by the callback itself.
+            </p>
+            <div class="form-group">
+                <label>Availability</label>
+                <web-multiselect
+                    id="exclusive-select"
+                    value-member="value"
+                    display-value-member="label"
+                    search-placeholder="Choose availability...">
+                </web-multiselect>
+                <small class="form-text">Try selecting Full-time, then Part-time.</small>
+            </div>
+            <div id="exclusive-log" class="log"><div class="muted">Selections and blocks log here…</div></div>
+
+            <details style="margin-top: 1rem;">
+                <summary>Show code</summary>
+<pre><code>const EXCLUSIVE = ['full', 'part'];
+
+el.beforeSelectCallback = (option, selected) =&gt; {
+  // block if the option conflicts with something already selected
+  const conflict = EXCLUSIVE.includes(option.value)
+    &amp;&amp; selected.find(o =&gt; EXCLUSIVE.includes(o.value) &amp;&amp; o.value !== option.value);
+  if (conflict) {
+    showMessage(`Blocked: can't pick ${option.label} while ${conflict.label} is selected`);
+    return false;            // ← veto
+  }
+  // return undefined ⇒ allow
+};</code></pre>
+            </details>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 3. beforeDeselectCallback — protect a required item          -->
+        <!-- ============================================================ -->
+        <div class="card">
+            <h2>3 · <code>beforeDeselectCallback</code> — protect a required item</h2>
+            <p>
+                The mirror interceptor on the way out. <strong>Team Lead</strong> is pre-selected and
+                required — trying to remove it is vetoed, while the other members can be toggled freely.
+                Note the veto applies only to interactive removal: programmatic
+                <code>setSelected()</code> and the Clear-All button bypass it.
+            </p>
+            <div class="form-group">
+                <label>Team</label>
+                <web-multiselect
+                    id="required-select"
+                    value-member="value"
+                    display-value-member="label"
+                    search-placeholder="Build the team...">
+                </web-multiselect>
+                <small class="form-text">Team Lead can't be removed; the others can.</small>
+            </div>
+            <div id="required-log" class="log"><div class="muted">Try removing Team Lead, then a developer…</div></div>
+
+            <details style="margin-top: 1rem;">
+                <summary>Show code</summary>
+<pre><code>el.beforeDeselectCallback = (option) =&gt; {
+  if (option.value === 'lead') {
+    showMessage('Team Lead is required — cannot be removed');
+    return false;            // ← veto removal
+  }
+};
+el.setSelected(['lead']);    // pre-select (bypasses the veto)</code></pre>
+            </details>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 4. The distinction                                           -->
+        <!-- ============================================================ -->
+        <div class="card">
+            <h2>Callback vs event — the one rule</h2>
+            <p>
+                The line is drawn by <strong>whether the component uses the return value</strong>:
+            </p>
+            <ul>
+                <li><strong>Event</strong> (fire-and-forget, return ignored): <code>onSelect</code>,
+                    <code>onDeselect</code>, <code>onChange</code>, and the bare DOM
+                    <code>select</code>/<code>deselect</code>/<code>change</code> events.</li>
+                <li><strong>Interceptor callback</strong> (return consumed to cancel): <code>before*Callback</code>
+                    — <code>beforeSelectCallback</code>, <code>beforeDeselectCallback</code>,
+                    <code>beforeSearchCallback</code>.</li>
+                <li><strong>Data/behavior callback</strong> (return consumed as a value):
+                    <code>get*Callback</code> / <code>render*Callback</code> / <code>searchCallback</code>.</li>
+            </ul>
+        </div>
+    </div>
+
+    <script type="module">
+        document.addEventListener('DOMContentLoaded', () => {
+            const stamp = () => new Date().toLocaleTimeString();
+            function logger(el) {
+                return (cls, label, text) => {
+                    if (el.querySelector('.muted')) el.innerHTML = '';
+                    const row = document.createElement('div');
+                    row.style.marginBottom = '0.4rem';
+                    row.innerHTML = `<span class="${cls}">[${stamp()}] ${label}</span> ${text ?? ''}`;
+                    el.appendChild(row);
+                    el.scrollTop = el.scrollHeight;
+                };
+            }
+
+            // --- 1. Events + on* twin ---------------------------------
+            const skills = [
+                { value: 'js', label: 'JavaScript' },
+                { value: 'ts', label: 'TypeScript' },
+                { value: 'py', label: 'Python' },
+                { value: 'go', label: 'Go' },
+                { value: 'rust', label: 'Rust' }
+            ];
+            const eventsSelect = document.getElementById('events-select');
+            const eventsLog = logger(document.getElementById('events-log'));
+            eventsSelect.options = skills;
+
+            eventsSelect.onSelect   = (option) => eventsLog('tag-prop', '[prop] onSelect', option.label);
+            eventsSelect.onDeselect = (option) => eventsLog('tag-prop', '[prop] onDeselect', option.label);
+            eventsSelect.onChange   = (selectedOptions) =>
+                eventsLog('tag-prop', '[prop] onChange', JSON.stringify(selectedOptions.map(o => o.value)));
+            eventsSelect.addEventListener('change', (e) =>
+                eventsLog('tag-event', '[event] change', JSON.stringify(e.detail.selectedValues)));
+
+            // --- 2. beforeSelectCallback (mutually exclusive) ---------
+            const availability = [
+                { value: 'full', label: 'Full-time' },
+                { value: 'part', label: 'Part-time' },
+                { value: 'contract', label: 'Contract' },
+                { value: 'remote', label: 'Remote OK' }
+            ];
+            const EXCLUSIVE = ['full', 'part'];
+            const exclusiveSelect = document.getElementById('exclusive-select');
+            const exclusiveLog = logger(document.getElementById('exclusive-log'));
+            exclusiveSelect.options = availability;
+
+            exclusiveSelect.beforeSelectCallback = (option, selected) => {
+                const conflict = EXCLUSIVE.includes(option.value)
+                    && selected.find(o => EXCLUSIVE.includes(o.value) && o.value !== option.value);
+                if (conflict) {
+                    exclusiveLog('tag-block', '[blocked] beforeSelect',
+                        `can't pick ${option.label} while ${conflict.label} is selected`);
+                    return false;
+                }
+                // allow
+            };
+            exclusiveSelect.onSelect = (option) => exclusiveLog('tag-ok', '[allowed] onSelect', option.label);
+
+            // --- 3. beforeDeselectCallback (required item) ------------
+            const team = [
+                { value: 'lead', label: 'Team Lead' },
+                { value: 'dev-a', label: 'Developer A' },
+                { value: 'dev-b', label: 'Developer B' },
+                { value: 'qa', label: 'QA Engineer' }
+            ];
+            const requiredSelect = document.getElementById('required-select');
+            const requiredLog = logger(document.getElementById('required-log'));
+            requiredSelect.options = team;
+
+            requiredSelect.beforeDeselectCallback = (option) => {
+                if (option.value === 'lead') {
+                    requiredLog('tag-block', '[blocked] beforeDeselect', 'Team Lead is required — cannot be removed');
+                    return false;
+                }
+            };
+            requiredSelect.onDeselect = (option) => requiredLog('tag-ok', '[removed] onDeselect', option.label);
+            requiredSelect.setSelected(['lead']); // pre-select; bypasses the veto
+        });
+    </script>
+
+    <!-- Development mode: Load from src -->
+    <script type="module" src="/src/index.ts"></script>
+</body>
+</html>

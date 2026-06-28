@@ -326,17 +326,32 @@
                     <td>Called when user adds a new option (when allowAddNew is true). Should return the created option.</td>
                 </tr>
                 <tr>
-                    <td><code>selectCallback</code></td>
+                    <td><code>beforeSearchCallback</code></td>
+                    <td class="type">(searchTerm: string) => string | null</td>
+                    <td>Interceptor: pre-process the search term. Return a transformed term, or <code>null</code> to block the search.</td>
+                </tr>
+                <tr>
+                    <td><code>beforeSelectCallback</code></td>
+                    <td class="type">(option, selectedOptions) => boolean | void</td>
+                    <td>Interceptor: runs before an interactive selection. Return <code>false</code> to block; <code>true</code>/<code>undefined</code> to allow. Silent (no event). Bypassed by <code>setSelected</code> and Select-All.</td>
+                </tr>
+                <tr>
+                    <td><code>beforeDeselectCallback</code></td>
+                    <td class="type">(option, selectedOptions) => boolean | void</td>
+                    <td>Interceptor: runs before an interactive deselection. Return <code>false</code> to block; <code>true</code>/<code>undefined</code> to allow. Silent (no event). Bypassed by <code>setSelected</code> and Clear-All.</td>
+                </tr>
+                <tr>
+                    <td><code>onSelect</code></td>
                     <td class="type">(option: MultiSelectOption) => void</td>
                     <td>Called when an option is selected.</td>
                 </tr>
                 <tr>
-                    <td><code>deselectCallback</code></td>
+                    <td><code>onDeselect</code></td>
                     <td class="type">(option: MultiSelectOption) => void</td>
                     <td>Called when an option is deselected.</td>
                 </tr>
                 <tr>
-                    <td><code>changeCallback</code></td>
+                    <td><code>onChange</code></td>
                     <td class="type">(selectedOptions: MultiSelectOption[]) => void</td>
                     <td>Called whenever the selection changes (after select or deselect).</td>
                 </tr>

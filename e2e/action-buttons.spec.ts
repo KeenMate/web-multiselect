@@ -49,7 +49,7 @@ test.describe('custom action', () => {
 });
 
 test.describe('dynamic visibility / disabled', () => {
-    test('isVisibleCallback hides the button', async ({ page }) => {
+    test('getIsVisibleCallback hides the button', async ({ page }) => {
         const p = picker(page, 'dynamic');
         await openDropdown(p);
 
@@ -57,7 +57,7 @@ test.describe('dynamic visibility / disabled', () => {
         await expect(p.locator('.ms__action-btn.js-maybe-visible')).toHaveCount(0);
     });
 
-    test('isDisabledCallback sets disabled attribute', async ({ page }) => {
+    test('getIsDisabledCallback sets disabled attribute', async ({ page }) => {
         const p = picker(page, 'dynamic');
         await openDropdown(p);
 
@@ -82,7 +82,7 @@ test.describe('layout modifiers', () => {
 });
 
 test.describe('per-item callbacks fire on bulk operations', () => {
-    test('select-all fires selectCallback once per newly-selected item', async ({ page }) => {
+    test('select-all fires onSelect once per newly-selected item', async ({ page }) => {
         const p = picker(page, 'tracker');
         await openDropdown(p);
 
@@ -92,7 +92,7 @@ test.describe('per-item callbacks fire on bulk operations', () => {
         expect(selected).toHaveLength(8);
     });
 
-    test('clear-all fires deselectCallback once per removed item', async ({ page }) => {
+    test('clear-all fires onDeselect once per removed item', async ({ page }) => {
         const p = picker(page, 'tracker');
         await openDropdown(p);
 

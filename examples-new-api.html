@@ -672,7 +672,7 @@ select.actionButtons = [
     action: 'select-all',
     text: 'Select All',
     tooltip: 'Select all items',
-    isVisibleCallback: (picker) =&gt; {
+    getIsVisibleCallback: (picker) =&gt; {
       const allCount = picker.options.options?.length || 0;
       return picker.getSelected().length &lt; allCount;
     }
@@ -681,7 +681,7 @@ select.actionButtons = [
     action: 'clear-all',
     text: 'Clear All',
     tooltip: 'Clear selection',
-    isVisibleCallback: (picker) =&gt; picker.getSelected().length &gt; 0
+    getIsVisibleCallback: (picker) =&gt; picker.getSelected().length &gt; 0
   },
   {
     action: 'custom',
@@ -711,8 +711,8 @@ select.actionButtons = [
             <ul class="feature-list">
                 <li><strong>Built-in actions:</strong> 'select-all', 'clear-all' with standard behavior</li>
                 <li><strong>Custom actions:</strong> Add any action with custom onClick handler</li>
-                <li><strong>Dynamic visibility:</strong> Use <code>isVisibleCallback</code> or static <code>isVisible</code> to show/hide buttons based on state</li>
-                <li><strong>Disabled state:</strong> Use <code>isDisabledCallback</code> or static <code>isDisabled</code> to disable buttons</li>
+                <li><strong>Dynamic visibility:</strong> Use <code>getIsVisibleCallback</code> or static <code>isVisible</code> to show/hide buttons based on state</li>
+                <li><strong>Disabled state:</strong> Use <code>getIsDisabledCallback</code> or static <code>isDisabled</code> to disable buttons</li>
                 <li><strong>Dynamic text:</strong> Use <code>getTextCallback</code> to change button text based on state</li>
                 <li><strong>Dynamic tooltips:</strong> Use <code>getTooltipCallback</code> or static <code>tooltip</code></li>
                 <li><strong>Dynamic styling:</strong> Use <code>getClassCallback</code> or static <code>cssClass</code> to add CSS classes</li>
@@ -1766,7 +1766,7 @@ buSelect.addEventListener('change', async (e) =&gt; {
                 action: 'select-all',
                 text: 'Select All',
                 tooltip: 'Select all items',
-                isVisibleCallback: (picker) => {
+                getIsVisibleCallback: (picker) => {
                     const allCount = picker.options.options?.length || 0;
                     return picker.getSelected().length < allCount;
                 }
@@ -1775,7 +1775,7 @@ buSelect.addEventListener('change', async (e) =&gt; {
                 action: 'clear-all',
                 text: 'Clear All',
                 tooltip: 'Clear selection',
-                isVisibleCallback: (picker) => picker.getSelected().length > 0
+                getIsVisibleCallback: (picker) => picker.getSelected().length > 0
             },
             {
                 action: 'custom',

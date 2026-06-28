@@ -7,9 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **`beforeSelectCallback` / `beforeDeselectCallback` interceptors** — veto a selection or deselection before it happens. Each receives `(option, selectedOptions)` (the option being toggled and the current selection *before* the change) and returns `false` to block, or `true`/`undefined` to allow. Silent by design — a blocked action mutates no state and fires no `select`/`deselect`/`change` event. The deselect veto covers **every interactive removal path**: the dropdown option toggle, a badge's remove (×) button, the selected-items popover's remove button, and the "remove hidden" badge (evaluated per item). Programmatic `setSelected()` and the Select-All / Clear-All action buttons intentionally bypass the veto. Example — block selecting `item1` while `item2` is selected: `el.beforeSelectCallback = (opt, sel) => !(opt.value === 'item1' && sel.some(o => o.value === 'item2'))`. In single-select mode a blocked pick leaves the previous value untouched and keeps the dropdown open.
+
+### Changed
+
+- **Fire-and-forget notifications renamed from `*Callback` to `on*` — breaking, no alias.** The BlissFramework naming guideline now draws the callback/event line by *whether the component consumes the return value*: return used → callback (`get*Callback` / `before*Callback`), return ignored → event (`on*`). The four notifications whose return value is discarded are therefore events, not callbacks, and are renamed: config `selectCallback` → `onSelect`, `deselectCallback` → `onDeselect`, `changeCallback` → `onChange`; and `ActionButton.onClick` (which had briefly been renamed to `clickCallback`) stays `onClick`. Each of `onSelect`/`onDeselect`/`onChange` still mirrors its bubbling `select`/`deselect`/`change` `CustomEvent` (the DOM event names are unchanged). Removed outright, no deprecated aliases — clean slate. Migration: rename the config keys / element properties (`el.selectCallback` → `el.onSelect`, etc.); `addEventListener('select' | 'deselect' | 'change', …)` is unaffected.
+- **`ActionButton` predicate callbacks renamed to the `get*Callback` shape — breaking, no alias.** `isVisibleCallback` → `getIsVisibleCallback`, `isDisabledCallback` → `getIsDisabledCallback` (their return value *is* consumed, so they stay callbacks, matching the sibling `getTextCallback` / `getClassCallback` / `getTooltipCallback`). Static `isVisible` / `isDisabled` booleans are unchanged. Migration: rename the two keys in any `actionButtons` config.
+
 ### Fixed
 
 - **Single-select dropdown no longer reopens with a stale search filter under an empty input box.** In single-select mode the input is dual-purpose — it shows the selected label while closed and acts as the search box while open. On open it was blanked unconditionally (`multiselect.ts`), ignoring `shouldKeepSearchOnClose` (default `true`, which `close()` honors for `searchTerm`/`filteredOptions`). So after searching e.g. `"java"` and picking a result, reopening showed an empty input while the list was still filtered to the two `"java"` matches — the box and the list silently disagreed. `open()` now mirrors `searchTerm` into the box (`this.input.value = this.searchTerm`) instead of clearing it, so the visible input and the filtered list always stay in sync: with `should-keep-search-on-close` (default) the box shows the kept term and the matching results; with it `false`, both reset to empty/full.
+
+### Internal
+
+- **Interactive select/deselect consolidated into single funnels.** All user-initiated mutations now route through `interactiveSelect()` / `interactiveDeselect()`, which own both the `before*Callback` veto and the state change; the low-level `selectOption()` / `deselectOption()` primitives are reserved for programmatic/bulk paths (`setSelected`, `clearAll`). This removed the duplicated toggle branches and made it structurally impossible for a removal affordance (dropdown, badge ×, popover ×, remove-hidden) to skip the veto — the drift that had let the badge × bypass `beforeDeselectCallback`.
+- **New example page `examples-events-callbacks.html`** demonstrating the DOM events, the `on*` property twin, and the `beforeSelect`/`beforeDeselect` interceptors with live veto demos. Linked from the index hub.
 
 ## [1.12.0-rc04] - 2026-06-24 [PUBLISHED]
 

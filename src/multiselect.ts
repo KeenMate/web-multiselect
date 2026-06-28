@@ -653,10 +653,10 @@ export class WebMultiSelect<T = any> {
         const wrapClass = this.options.actionsLayout === 'wrap' ? ' ms__actions--wrap' : '';
 
         const buttonsHTML = buttons.map((button, buttonIndex) => {
-            const isVisible = button.isVisibleCallback ? button.isVisibleCallback(this) : (button.isVisible ?? true);
+            const isVisible = button.getIsVisibleCallback ? button.getIsVisibleCallback(this) : (button.isVisible ?? true);
             if (!isVisible) return '';
 
-            const isDisabled = button.isDisabledCallback ? button.isDisabledCallback(this) : (button.isDisabled ?? false);
+            const isDisabled = button.getIsDisabledCallback ? button.getIsDisabledCallback(this) : (button.isDisabled ?? false);
             const disabledAttr = isDisabled ? ' disabled' : '';
 
             const text = button.getTextCallback ? button.getTextCallback(this) : button.text;
@@ -1378,8 +1378,8 @@ export class WebMultiSelect<T = any> {
                 const selectedOptions = Array.from(this.selectedOptions.values());
                 const hiddenOptions = selectedOptions.slice(maxVisible);
 
-                // Deselect all hidden options
-                hiddenOptions.forEach(option => this.deselectOption(option));
+                // Deselect all hidden options (respecting the deselect veto per item)
+                hiddenOptions.forEach(option => this.interactiveDeselect(option));
                 return;
             }
 
@@ -1387,7 +1387,7 @@ export class WebMultiSelect<T = any> {
             const value = removeBtn.dataset.value!;
             const option = this.selectedOptions.get(value);
             if (option) {
-                this.deselectOption(option);
+                this.interactiveDeselect(option);
             }
             return;
         }
@@ -1516,32 +1516,62 @@ export class WebMultiSelect<T = any> {
         const valueKey = String(value);
         interactionLogger.debug(`[${this.instanceId}] toggleOption called`, { value, multiple: this.options.isMultipleEnabled });
 
+        const wasSelected = this.selectedValues.has(valueKey);
+        const changed = wasSelected
+            ? this.interactiveDeselect(option)
+            : this.interactiveSelect(option);
+
+        // A vetoed toggle changes nothing — leave the dropdown open so the user
+        // can pick something else (single-select otherwise closes on every pick).
+        if (!changed) return;
+
         if (!this.options.isMultipleEnabled) {
-            if (this.selectedValues.has(valueKey)) {
-                interactionLogger.debug(`[${this.instanceId}] Deselecting option in single-select mode`, { value });
-                this.deselectOption(option);
-            } else {
-                interactionLogger.debug(`[${this.instanceId}] Clearing previous selections and selecting new option`, { value });
-                this.selectedValues.clear();
-                this.selectedOptions.clear();
-                this.selectOption(option);
-            }
-
             this.close();
-            return;
-        }
-
-        if (this.selectedValues.has(valueKey)) {
-            interactionLogger.debug(`[${this.instanceId}] Deselecting option`, { value });
-            this.deselectOption(option);
-        } else {
-            interactionLogger.debug(`[${this.instanceId}] Selecting option`, { value });
-            this.selectOption(option);
-        }
-
-        if (this.options.isCloseOnSelect) {
+        } else if (this.options.isCloseOnSelect) {
             this.close();
         }
+    }
+
+    /**
+     * The single funnel for an interactive (user-initiated) selection. Consults
+     * `beforeSelectCallback` and only mutates state if allowed, so the veto can
+     * never be bypassed by a new UI entry point. Programmatic `setSelected` and
+     * the Select-All button deliberately do not route through here.
+     * Returns true if the option was selected, false if the veto blocked it.
+     */
+    private interactiveSelect(option: T): boolean {
+        if (this.options.beforeSelectCallback &&
+            this.options.beforeSelectCallback(option, this.getSelected()) === false) {
+            interactionLogger.debug(`[${this.instanceId}] Selection blocked by beforeSelectCallback`);
+            return false;
+        }
+        // Single-select replaces the current value. Clearing directly (rather
+        // than via deselectOption) preserves the documented replacement
+        // semantics: a replace fires select + change, but no deselect.
+        if (!this.options.isMultipleEnabled) {
+            this.selectedValues.clear();
+            this.selectedOptions.clear();
+        }
+        this.selectOption(option);
+        return true;
+    }
+
+    /**
+     * The single funnel for an interactive (user-initiated) deselection. Every
+     * removal affordance — dropdown toggle, badge × button, selected-items
+     * popover × button, and the "remove hidden" badge — routes through here so
+     * the `beforeDeselectCallback` veto applies uniformly. Programmatic
+     * `setSelected` and the Clear-All button deliberately bypass it.
+     * Returns true if the option was deselected, false if the veto blocked it.
+     */
+    private interactiveDeselect(option: T): boolean {
+        if (this.options.beforeDeselectCallback &&
+            this.options.beforeDeselectCallback(option, this.getSelected()) === false) {
+            interactionLogger.debug(`[${this.instanceId}] Deselection blocked by beforeDeselectCallback`);
+            return false;
+        }
+        this.deselectOption(option);
+        return true;
     }
 
     private async handleAddNew(value: string): Promise<void> {
@@ -1610,7 +1640,7 @@ export class WebMultiSelect<T = any> {
     /**
      * Re-render and fire callbacks after a selection state change.
      * `added` / `removed` drive per-item select/deselect callbacks.
-     * `changeCallback` fires once if anything actually changed.
+     * `onChange` fires once if anything actually changed.
      */
     private commit(delta: { added?: T[]; removed?: T[] }): void {
         this.renderDropdown();
@@ -1620,14 +1650,14 @@ export class WebMultiSelect<T = any> {
         const added = delta.added ?? [];
         const removed = delta.removed ?? [];
 
-        if (this.options.selectCallback) {
-            added.forEach(option => this.options.selectCallback!(option));
+        if (this.options.onSelect) {
+            added.forEach(option => this.options.onSelect!(option));
         }
-        if (this.options.deselectCallback) {
-            removed.forEach(option => this.options.deselectCallback!(option));
+        if (this.options.onDeselect) {
+            removed.forEach(option => this.options.onDeselect!(option));
         }
-        if ((added.length > 0 || removed.length > 0) && this.options.changeCallback) {
-            this.options.changeCallback(this.getSelected());
+        if ((added.length > 0 || removed.length > 0) && this.options.onChange) {
+            this.options.onChange(this.getSelected());
         }
     }
 
@@ -2093,8 +2123,7 @@ export class WebMultiSelect<T = any> {
             e.preventDefault();
             const value = removeBtn.dataset.value!;
             const option = this.selectedOptions.get(value);
-            if (option) {
-                this.deselectOption(option);
+            if (option && this.interactiveDeselect(option)) {
                 this.renderSelectedPopover();
                 if (this.selectedValues.size === 0) {
                     this.hideSelectedPopover();
