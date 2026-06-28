@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- **Single-select dropdown no longer reopens with a stale search filter under an empty input box.** In single-select mode the input is dual-purpose — it shows the selected label while closed and acts as the search box while open. On open it was blanked unconditionally (`multiselect.ts`), ignoring `shouldKeepSearchOnClose` (default `true`, which `close()` honors for `searchTerm`/`filteredOptions`). So after searching e.g. `"java"` and picking a result, reopening showed an empty input while the list was still filtered to the two `"java"` matches — the box and the list silently disagreed. `open()` now mirrors `searchTerm` into the box (`this.input.value = this.searchTerm`) instead of clearing it, so the visible input and the filtered list always stay in sync: with `should-keep-search-on-close` (default) the box shows the kept term and the matching results; with it `false`, both reset to empty/full.
+
 ## [1.12.0-rc04] - 2026-06-24 [PUBLISHED]
 
 Placeholder ergonomics for pickers and cascade multiselects, plus a batch attribute setter. All additive and backward compatible — except the search-disabled default placeholder wording (see Changed).

@@ -1642,9 +1642,14 @@ export class WebMultiSelect<T = any> {
 
         this.input.placeholder = this.getPlaceholderText();
 
-        // Only clear input if search is enabled
+        // Single-select reuses the input box to show the selected label while
+        // closed, so on open we switch it back to "search mode". Show the current
+        // search term rather than blanking it: close() has already cleared or kept
+        // searchTerm/filteredOptions per shouldKeepSearchOnClose, so mirroring
+        // searchTerm here keeps the box and the filtered list in sync (no stale
+        // "java" filter lingering under an empty box).
         if (!this.options.isMultipleEnabled && this.options.isSearchEnabled) {
-            this.input.value = '';
+            this.input.value = this.searchTerm;
         }
 
         // If using searchCallback with keepOptionsOnSearch, ensure initial options are shown
