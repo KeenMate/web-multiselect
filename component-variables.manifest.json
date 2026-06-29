@@ -241,6 +241,7 @@
     { "name": "ms-checkbox-checked-bg-hover", "category": "checkbox", "usage": "Checked checkbox hover background" },
     { "name": "ms-checkbox-checked-border-color-hover", "category": "checkbox", "usage": "Checked checkbox hover border" },
 
+    { "name": "ms-state-min-height", "category": "empty", "usage": "Shared min-height for the empty and loading states so the dropdown doesn't resize when swapping between them" },
     { "name": "ms-empty-padding", "category": "empty", "usage": "Empty state padding" },
     { "name": "ms-empty-font-size", "category": "empty", "usage": "Empty state font size" },
     { "name": "ms-empty-color", "category": "empty", "usage": "Empty state text color" },
