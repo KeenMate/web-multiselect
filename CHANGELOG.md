@@ -5,10 +5,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.12.0-rc05] - 2026-06-28 [PUBLISHED]
+## [1.12.0-rc05] - 2026-06-30 [PUBLISHED]
 
 ### Added
 
+- **Hover tooltips on dropdown options.** Opt in with the `enable-option-tooltips` attribute (or `el.enableOptionTooltips = true`). Each option row gets a hover tooltip built from the same `Tooltip` engine already used by badge and action-button tooltips, including Floating-UI positioning, show/hide delays, and virtual-scroll recycling support (tooltips re-attach as rows scroll into view). Default content is the option's display value, plus its subtitle on a second line when present; override per option with `getOptionTooltipCallback` (returns a `string` or `HTMLElement`).
+- **Option tooltips are independently configurable** (not just shared with badge tooltips):
+  - `option-tooltip-placement` (default `top-start`) — anchored to the row's **start edge** so the tooltip no longer centers in the middle of a full-width row. Use `left`/`right` for the start/end **side** of a narrow control.
+  - `option-tooltip-follow-cursor` (default `false`) — anchors the tooltip to the mouse pointer and follows it across the row; ideal for very wide rows where a row-anchored tooltip would sit far from the cursor. Implemented in the shared `Tooltip` class via a Floating-UI virtual element driven by `mousemove`.
+  - `option-tooltip-delay` / `option-tooltip-offset` — fall back to the `badge-tooltip-*` values, then the base defaults (100 ms / 8 px).
+  - **Independent styling:** option tooltips render with the `.ms__option-tooltip` class and read `--ms-option-tooltip-*` variables (`-bg`, `-text-color`, `-padding`, `-border-radius`, `-font-size`, `-max-width`, `-shadow`, `-z-index`), each defaulting to the shared `--ms-tooltip-*` surface — so they look identical until you override one, and can be targeted separately in custom CSS.
+- **New example page `examples-tooltips.html`** demonstrating default/custom option tooltips, virtual-scroll support, the full-width placement/follow-cursor fixes, narrow-control side placement, independent `--ms-option-tooltip-*` styling, and badge tooltips. Linked from the index hub.
+- **Action-button positioning, rows, and alignment.**
+  - `actions-position` (`top` default | `bottom`) — render the action-buttons block as a sticky footer at the bottom of the dropdown instead of the top. Sticky now pins to the matching edge (`top: 0` / `bottom: 0`).
+  - `ActionButton.row` (1-based, default `1`) — arrange buttons across multiple stacked rows. **Row 1 sits at the panel's outer edge and higher rows stack inward toward the options list**, so with `actions-position="top"` row 1 is the topmost line and with `actions-position="bottom"` row 1 is the bottommost line (CSS `column-reverse` for the bottom case).
+  - `actions-align` (`stretch` default | `left` | `right` | `center` | `space-between`) — horizontal arrangement of buttons within a row. `stretch` keeps the previous full-width behavior; the others size buttons to content and distribute them.
+  - Internally `.ms__actions` is now a vertical stack of `.ms__actions-row` lines. Backward-compatible: no `row` set → a single row (today's behavior); `actions-align` defaults to `stretch`.
+  - Demonstrated by a new section in `examples-action-buttons.html`.
+- **Built-in actions auto-manage their disabled state.** The `select-all` action is now disabled by default once it would add nothing (every selectable option already selected), and `clear-all` is disabled while nothing is selected. This applies **only** when the consumer hasn't set an explicit static `isDisabled` or a `getIsDisabledCallback` — precedence is dynamic callback › static `isDisabled` › built-in default — so existing custom configs are unaffected.
 - **`beforeSelectCallback` / `beforeDeselectCallback` interceptors** — veto a selection or deselection before it happens. Each receives `(option, selectedOptions)` (the option being toggled and the current selection *before* the change) and returns `false` to block, or `true`/`undefined` to allow. Silent by design — a blocked action mutates no state and fires no `select`/`deselect`/`change` event. The deselect veto covers **every interactive removal path**: the dropdown option toggle, a badge's remove (×) button, the selected-items popover's remove button, and the "remove hidden" badge (evaluated per item). Programmatic `setSelected()` and the Select-All / Clear-All action buttons intentionally bypass the veto. Example — block selecting `item1` while `item2` is selected: `el.beforeSelectCallback = (opt, sel) => !(opt.value === 'item1' && sel.some(o => o.value === 'item2'))`. In single-select mode a blocked pick leaves the previous value untouched and keeps the dropdown open.
 
 ### Changed

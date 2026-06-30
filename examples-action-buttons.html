@@ -117,6 +117,13 @@
             <p class="description">
                 Using static properties: <code>isVisible</code>, <code>isDisabled</code>, <code>cssClass</code>, and <code>tooltip</code>.
             </p>
+            <div class="note">
+                <div class="note-title">Built-in smart defaults:</div>
+                The <code>select-all</code> and <code>clear-all</code> actions auto-manage their disabled state
+                when you don't set a static <code>isDisabled</code> or a <code>getIsDisabledCallback</code>:
+                <strong>Select All</strong> disables once every option is selected, and <strong>Clear All</strong>
+                disables while nothing is selected. Try it — select all colors and watch Select All disable.
+            </div>
 
             <div class="demo-area">
                 <label class="demo-label">Select Colors:</label>
@@ -134,15 +141,15 @@
     text: 'Select All',
     tooltip: 'Select all available colors',
     cssClass: 'custom-select-btn',
-    isVisible: true,
-    isDisabled: false
+    isVisible: true
+    // No static isDisabled → built-in default: disabled once all are selected
   },
   {
     action: 'clear-all',
     text: 'Clear All',
     tooltip: 'Remove all selections',
-    isVisible: true,
-    isDisabled: false
+    isVisible: true
+    // No static isDisabled → built-in default: disabled while nothing is selected
   },
   {
     action: 'custom',
@@ -765,6 +772,65 @@ multiselect.actionButtons = [
             </div>
         </section>
 
+        <!-- Example 13: Positioning, Rows & Alignment -->
+        <section class="example-section">
+            <h2>13. Positioning, Rows &amp; Alignment</h2>
+            <p class="description">
+                Place the actions block at the <code>top</code> (default) or <code>bottom</code> of the dropdown,
+                arrange buttons across multiple rows with the per-button <code>row</code> property, and control
+                horizontal alignment with <code>actions-align</code>.
+            </p>
+
+            <div class="grid-2">
+                <div>
+                    <h3><code>actions-position="top"</code> — 2 rows</h3>
+                    <p class="description">Row 1 is the topmost line, row 2 below it.</p>
+                    <div class="demo-area">
+                        <web-multiselect id="pos-top-rows" multiple="true" actions-position="top"></web-multiselect>
+                    </div>
+                </div>
+
+                <div>
+                    <h3><code>actions-position="bottom"</code> — 2 rows</h3>
+                    <p class="description">Row 1 is the bottommost line, row 2 above it.</p>
+                    <div class="demo-area">
+                        <web-multiselect id="pos-bottom-rows" multiple="true" actions-position="bottom"></web-multiselect>
+                    </div>
+                </div>
+            </div>
+
+            <h3 style="margin-top:1.5rem;">Alignment (<code>actions-align</code>)</h3>
+            <div class="grid-2">
+                <div>
+                    <div class="demo-area">
+                        <label class="demo-label"><code>actions-align="right"</code></label>
+                        <web-multiselect id="align-right" multiple="true" actions-align="right"></web-multiselect>
+                    </div>
+                </div>
+                <div>
+                    <div class="demo-area">
+                        <label class="demo-label"><code>actions-align="space-between"</code></label>
+                        <web-multiselect id="align-between" multiple="true" actions-align="space-between"></web-multiselect>
+                    </div>
+                </div>
+            </div>
+
+            <div class="code-block"><pre>&lt;web-multiselect actions-position="bottom" actions-align="right"&gt;&lt;/web-multiselect&gt;
+
+multiselect.actionButtons = [
+  { action: 'select-all', text: 'Select All', row: 1 },
+  { action: 'clear-all',  text: 'Clear All',  row: 1 },
+  { action: 'custom', text: 'First 3', row: 2, onClick: ... },
+  { action: 'custom', text: 'Invert',  row: 2, onClick: ... },
+];</pre></div>
+
+            <div class="note">
+                <div class="note-title">Row ordering:</div>
+                Row 1 always sits at the panel's outer edge; higher rows stack inward toward the options list.
+                So <code>top</code> renders row 1 first (top), and <code>bottom</code> renders row 1 last (bottom).
+            </div>
+        </section>
+
         <!-- Summary -->
         <section class="example-section">
             <h2>📋 Summary</h2>
@@ -772,6 +838,7 @@ multiselect.actionButtons = [
             <h3>Static Properties</h3>
             <div class="code-block"><pre>action: 'select-all' | 'clear-all' | 'custom'  // Required
 text: string                                    // Required
+row?: number                                    // Optional (default: 1) — which button row
 tooltip?: string                                // Optional
 cssClass?: string                               // Optional
 isVisible?: boolean                             // Optional (default: true)
@@ -886,15 +953,17 @@ getTooltipCallback?: (multiselect) => string      // Dynamic tooltip</pre></div>
                     text: 'Select All',
                     tooltip: 'Select all available colors',
                     cssClass: 'custom-select-btn',
-                    isVisible: true,
-                    isDisabled: false
+                    isVisible: true
+                    // No static isDisabled → built-in default applies:
+                    // auto-disabled once every color is selected.
                 },
                 {
                     action: 'clear-all',
                     text: 'Clear All',
                     tooltip: 'Remove all selections',
-                    isVisible: true,
-                    isDisabled: false
+                    isVisible: true
+                    // No static isDisabled → built-in default applies:
+                    // auto-disabled while nothing is selected.
                 },
                 {
                     action: 'custom',
@@ -1403,6 +1472,40 @@ getTooltipCallback?: (multiselect) => string      // Dynamic tooltip</pre></div>
             lucideButtons.addEventListener('change', () => {
                 document.getElementById('output-lucide').textContent = JSON.stringify(lucideButtons.getValue(), null, 2);
             });
+
+            // Example 13: Positioning, Rows & Alignment
+            const rowButtons = [
+                { action: 'select-all', text: 'Select All', row: 1 },
+                { action: 'clear-all',  text: 'Clear All',  row: 1 },
+                { action: 'custom', text: 'First 3', row: 2, onClick: (ms) => ms.setSelected(itemOptions.slice(0, 3).map(o => o[0])) },
+                { action: 'custom', text: 'Invert',  row: 2, onClick: (ms) => {
+                    const allValues = itemOptions.map(o => o[0]);
+                    const selectedValues = ms.getValue();
+                    ms.setSelected(allValues.filter(v => !selectedValues.includes(v)));
+                }}
+            ];
+
+            const posTopRows = document.querySelector('#pos-top-rows');
+            posTopRows.options = itemOptions;
+            posTopRows.actionButtons = rowButtons;
+
+            const posBottomRows = document.querySelector('#pos-bottom-rows');
+            posBottomRows.options = itemOptions;
+            posBottomRows.actionButtons = rowButtons;
+
+            const alignRight = document.querySelector('#align-right');
+            alignRight.options = itemOptions;
+            alignRight.actionButtons = [
+                { action: 'select-all', text: 'Select All' },
+                { action: 'clear-all', text: 'Clear All' }
+            ];
+
+            const alignBetween = document.querySelector('#align-between');
+            alignBetween.options = itemOptions;
+            alignBetween.actionButtons = [
+                { action: 'select-all', text: 'Select All' },
+                { action: 'clear-all', text: 'Clear All' }
+            ];
         });
     </script>
 </body>

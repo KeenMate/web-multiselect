@@ -78,6 +78,10 @@ const ATTRIBUTE_TABLE: ReadonlyArray<AttrSpec> = [
       enumValues: ['filter','navigate'], default: 'filter' },
     { attr: 'actions-layout',              key: 'actionsLayout',            parser: 'enum',
       enumValues: ['nowrap','wrap'], default: 'nowrap' },
+    { attr: 'actions-position',            key: 'actionsPosition',          parser: 'enum',
+      enumValues: ['top','bottom'], default: 'top' },
+    { attr: 'actions-align',               key: 'actionsAlign',             parser: 'enum',
+      enumValues: ['stretch','left','right','center','space-between'], default: 'stretch' },
     { attr: 'checkbox-align',              key: 'checkboxAlign',            parser: 'enum',
       enumValues: ['top','center','bottom'], default: 'center' },
     { attr: 'value-format',                key: 'valueFormat',              parser: 'enum',
@@ -85,6 +89,9 @@ const ATTRIBUTE_TABLE: ReadonlyArray<AttrSpec> = [
     { attr: 'badge-tooltip-placement',     key: 'badgeTooltipPlacement',    parser: 'enum',
       enumValues: ['top','top-start','top-end','bottom','bottom-start','bottom-end','left','left-start','left-end','right','right-start','right-end'],
       default: 'top' },
+    { attr: 'option-tooltip-placement',    key: 'optionTooltipPlacement',   parser: 'enum',
+      enumValues: ['top','top-start','top-end','bottom','bottom-start','bottom-end','left','left-start','left-end','right','right-start','right-end'],
+      default: 'top-start' },
 
     // Numbers
     { attr: 'badges-threshold',            key: 'badgesThreshold',          parser: 'int' },
@@ -97,6 +104,8 @@ const ATTRIBUTE_TABLE: ReadonlyArray<AttrSpec> = [
     { attr: 'virtual-scroll-buffer',       key: 'virtualScrollBuffer',      parser: 'int', default: 10 },
     { attr: 'badge-tooltip-delay',         key: 'badgeTooltipDelay',        parser: 'int', default: 100 },
     { attr: 'badge-tooltip-offset',        key: 'badgeTooltipOffset',       parser: 'int', default: 8 },
+    { attr: 'option-tooltip-delay',        key: 'optionTooltipDelay',       parser: 'int' },
+    { attr: 'option-tooltip-offset',       key: 'optionTooltipOffset',      parser: 'int' },
 
     // Booleans (default true: presence/empty = true; only 'false' negates)
     { attr: 'multiple',                    key: 'isMultipleEnabled',        parser: 'bool-default-true' },
@@ -113,7 +122,9 @@ const ATTRIBUTE_TABLE: ReadonlyArray<AttrSpec> = [
     { attr: 'allow-add-new',               key: 'isAddNewAllowed',          parser: 'bool-default-false' },
     { attr: 'show-counter',                key: 'isCounterShown',           parser: 'bool-default-false' },
     { attr: 'enable-virtual-scroll',       key: 'isVirtualScrollEnabled',   parser: 'bool-default-false' },
-    { attr: 'enable-badge-tooltips',       key: 'isBadgeTooltipsEnabled',   parser: 'bool-default-false' }
+    { attr: 'enable-badge-tooltips',       key: 'isBadgeTooltipsEnabled',   parser: 'bool-default-false' },
+    { attr: 'enable-option-tooltips',      key: 'isOptionTooltipsEnabled',  parser: 'bool-default-false' },
+    { attr: 'option-tooltip-follow-cursor', key: 'isOptionTooltipFollowCursor', parser: 'bool-default-false' }
 ];
 
 const ATTRIBUTE_TABLE_BY_ATTR = new Map(ATTRIBUTE_TABLE.map(s => [s.attr, s]));
@@ -223,6 +234,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     // Tooltip callbacks
     private _getBadgeTooltipCallback?: (item: T) => string | HTMLElement;
+    private _getOptionTooltipCallback?: (item: T) => string | HTMLElement;
     private _getRemoveButtonTooltipCallback?: (item: T) => string;
 
     // Custom rendering callbacks
@@ -701,6 +713,7 @@ export class MultiSelectElement<T = any> extends BaseElement {
             renderSelectedContentCallback: this._renderSelectedContentCallback,
             getValueFormatCallback: this._getValueFormatCallback,
             getBadgeTooltipCallback: this._getBadgeTooltipCallback,
+            getOptionTooltipCallback: this._getOptionTooltipCallback,
             getRemoveButtonTooltipCallback: this._getRemoveButtonTooltipCallback,
             getCounterCallback: this._getCounterCallback || ((count: number, moreCount?: number) => {
                 if (moreCount !== undefined) return `+${moreCount} more`;
@@ -1119,6 +1132,60 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     get enableBadgeTooltips(): boolean {
         return this.getAttribute('enable-badge-tooltips') === 'true';
+    }
+
+    set enableOptionTooltips(value: boolean) {
+        if (value) this.setAttribute('enable-option-tooltips', 'true');
+        else this.removeAttribute('enable-option-tooltips');
+    }
+
+    get enableOptionTooltips(): boolean {
+        return this.getAttribute('enable-option-tooltips') === 'true';
+    }
+
+    set getOptionTooltipCallback(callback: ((item: T) => string | HTMLElement) | undefined) {
+        this._getOptionTooltipCallback = callback;
+        this.updatePicker({ getOptionTooltipCallback: callback });
+    }
+
+    get getOptionTooltipCallback() {
+        return this._getOptionTooltipCallback;
+    }
+
+    set optionTooltipPlacement(value: string | null) {
+        if (value) this.setAttribute('option-tooltip-placement', value);
+        else this.removeAttribute('option-tooltip-placement');
+    }
+
+    get optionTooltipPlacement(): string | null {
+        return this.getAttribute('option-tooltip-placement');
+    }
+
+    set optionTooltipFollowCursor(value: boolean) {
+        if (value) this.setAttribute('option-tooltip-follow-cursor', 'true');
+        else this.removeAttribute('option-tooltip-follow-cursor');
+    }
+
+    get optionTooltipFollowCursor(): boolean {
+        return this.getAttribute('option-tooltip-follow-cursor') === 'true';
+    }
+
+    set actionsPosition(value: string | null) {
+        if (value) this.setAttribute('actions-position', value);
+        else this.removeAttribute('actions-position');
+    }
+
+    get actionsPosition(): string | null {
+        return this.getAttribute('actions-position');
+    }
+
+    set actionsAlign(value: string | null) {
+        if (value) this.setAttribute('actions-align', value);
+        else this.removeAttribute('actions-align');
+    }
+
+    get actionsAlign(): string | null {
+        return this.getAttribute('actions-align');
     }
 
     set badgeTooltipPlacement(value: string | null) {

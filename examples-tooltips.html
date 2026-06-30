@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tooltips Examples - MultiSelect</title>
+
+    <!-- Shared example styles -->
+    <link rel="stylesheet" href="examples-shared.css">
+
+    <!-- Page-specific styles -->
+    <style>
+        .demo-area {
+            background: #f7fafc;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .demo-label {
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="index.html" class="back-link">← Back to Examples</a>
+            <h1>💬 Tooltips Examples</h1>
+            <p class="subtitle">Hover tooltips on dropdown options and selected badges</p>
+        </header>
+
+        <!-- Example 1: Option tooltips, default content -->
+        <section class="example-section">
+            <h2>1. Option Tooltips (default content)</h2>
+            <p class="description">
+                Enable hover tooltips on the dropdown rows with <code>enable-option-tooltips</code>. With no
+                callback, the tooltip shows the option's display value, plus its subtitle on a second line when present.
+            </p>
+
+            <div class="demo-area">
+                <label class="demo-label">Open the dropdown and hover a row:</label>
+                <web-multiselect id="option-default" multiple="true" enable-option-tooltips="true"></web-multiselect>
+            </div>
+
+            <div class="code-block"><pre>&lt;web-multiselect enable-option-tooltips="true"&gt;&lt;/web-multiselect&gt;</pre></div>
+
+            <div class="note">
+                <div class="note-title">Try it:</div>
+                Click to open the list, then hover over a row. The tooltip appears after the default 100&nbsp;ms delay.
+            </div>
+        </section>
+
+        <!-- Example 2: Option tooltips, custom callback -->
+        <section class="example-section">
+            <h2>2. Option Tooltips (custom <code>getOptionTooltipCallback</code>)</h2>
+            <p class="description">
+                Build rich, per-option tooltip content with <code>getOptionTooltipCallback</code>. It receives the
+                option object and returns a <code>string</code> or an <code>HTMLElement</code>.
+            </p>
+
+            <div class="demo-area">
+                <label class="demo-label">Hover a row to see its description:</label>
+                <web-multiselect id="option-custom" multiple="true" enable-option-tooltips="true"></web-multiselect>
+            </div>
+
+            <div class="code-block"><pre>multiselect.getOptionTooltipCallback = (item) =&gt;
+  `${item.label} — ${item.description}`;</pre></div>
+        </section>
+
+        <!-- Example 3: Option tooltips with virtual scrolling -->
+        <section class="example-section">
+            <h2>3. Option Tooltips with Virtual Scrolling</h2>
+            <p class="description">
+                Tooltips re-attach as rows recycle into view, so they work seamlessly with the virtual-scrolled list
+                (this one holds 1,000 options).
+            </p>
+
+            <div class="demo-area">
+                <label class="demo-label">Scroll the list, then hover any row:</label>
+                <web-multiselect id="option-virtual" multiple="true" enable-option-tooltips="true"></web-multiselect>
+            </div>
+
+            <div class="code-block"><pre>// No extra config — virtual scrolling is automatic past ~100 items.
+multiselect.getOptionTooltipCallback = (item) =&gt; `Value: ${item.value}`;</pre></div>
+        </section>
+
+        <!-- Example 4: Full-width + follow cursor -->
+        <section class="example-section">
+            <h2>4. Full-Width Rows — Placement & Follow-Cursor</h2>
+            <p class="description">
+                On a wide multiselect, a row-centered tooltip lands in the middle of the screen. Two fixes:
+                option tooltips default to <code>option-tooltip-placement="top-start"</code> (anchored to the
+                row's start edge), or set <code>option-tooltip-follow-cursor="true"</code> so the tooltip tracks
+                the pointer.
+            </p>
+
+            <div class="demo-area">
+                <label class="demo-label">Full-width, default <code>top-start</code> anchoring:</label>
+                <web-multiselect id="wide-anchored" multiple="true" enable-option-tooltips="true"
+                    style="display:block; width:100%;"></web-multiselect>
+            </div>
+
+            <div class="demo-area">
+                <label class="demo-label">Full-width, <code>follow-cursor</code> — move the mouse along a row:</label>
+                <web-multiselect id="wide-follow" multiple="true" enable-option-tooltips="true"
+                    option-tooltip-follow-cursor="true"
+                    style="display:block; width:100%;"></web-multiselect>
+            </div>
+
+            <div class="code-block"><pre>&lt;!-- anchored to the row start (default) --&gt;
+&lt;web-multiselect enable-option-tooltips="true"
+                 option-tooltip-placement="top-start"&gt;&lt;/web-multiselect&gt;
+
+&lt;!-- or follow the pointer --&gt;
+&lt;web-multiselect enable-option-tooltips="true"
+                 option-tooltip-follow-cursor="true"&gt;&lt;/web-multiselect&gt;</pre></div>
+        </section>
+
+        <!-- Example 5: Narrow + side placement -->
+        <section class="example-section">
+            <h2>5. Narrow Multiselect — Side (start/end) Placement</h2>
+            <p class="description">
+                For a small/narrow multiselect, show the tooltip on the side of the row instead of above it. Use
+                <code>option-tooltip-placement="right"</code> (end side) or <code>"left"</code> (start side). Floating
+                UI auto-flips to the opposite side if there isn't room.
+            </p>
+
+            <div class="demo-area">
+                <label class="demo-label">Narrow control, tooltip on the <code>right</code> (end) side:</label>
+                <web-multiselect id="narrow-side" multiple="true" enable-option-tooltips="true"
+                    option-tooltip-placement="right"
+                    style="display:block; max-width:200px;"></web-multiselect>
+            </div>
+
+            <div class="code-block"><pre>&lt;web-multiselect enable-option-tooltips="true"
+                 option-tooltip-placement="right"&gt;  &lt;!-- or "left" --&gt;
+&lt;/web-multiselect&gt;</pre></div>
+        </section>
+
+        <!-- Example 6: Independent styling -->
+        <section class="example-section">
+            <h2>6. Independent Styling (<code>--ms-option-tooltip-*</code>)</h2>
+            <p class="description">
+                Option tooltips render with class <code>.ms__option-tooltip</code> and read their own
+                <code>--ms-option-tooltip-*</code> variables, which default to the shared
+                <code>--ms-tooltip-*</code> surface. Override them to style option tooltips independently of badge
+                tooltips.
+            </p>
+
+            <div class="demo-area">
+                <label class="demo-label">Custom-styled option tooltips (set on the element):</label>
+                <web-multiselect id="styled-option" multiple="true" enable-option-tooltips="true"
+                    style="display:block; max-width:320px;
+                           --ms-option-tooltip-bg:#4338ca;
+                           --ms-option-tooltip-text-color:#fff;
+                           --ms-option-tooltip-border-radius:2px;
+                           --ms-option-tooltip-max-width:160px;"></web-multiselect>
+            </div>
+
+            <div class="code-block"><pre>web-multiselect {
+  --ms-option-tooltip-bg: #4338ca;
+  --ms-option-tooltip-text-color: #fff;
+  --ms-option-tooltip-border-radius: 2px;
+  --ms-option-tooltip-max-width: 160px;
+}</pre></div>
+        </section>
+
+        <!-- Example 7: Badge tooltips -->
+        <section class="example-section">
+            <h2>7. Badge Tooltips</h2>
+            <p class="description">
+                The same tooltip engine drives the selected-badge tooltips. Enable with
+                <code>enable-badge-tooltips</code>; customize content with <code>getBadgeTooltipCallback</code> and the
+                remove-button text with <code>remove-button-tooltip-text</code>.
+            </p>
+
+            <div class="demo-area">
+                <label class="demo-label">Select a few items, then hover a badge (or its × button):</label>
+                <web-multiselect id="badge-tt" multiple="true"
+                    enable-badge-tooltips="true"
+                    remove-button-tooltip-text="Remove {0}"></web-multiselect>
+            </div>
+
+            <div class="code-block"><pre>&lt;web-multiselect
+  enable-badge-tooltips="true"
+  remove-button-tooltip-text="Remove {0}"&gt;
+&lt;/web-multiselect&gt;
+
+multiselect.getBadgeTooltipCallback = (item) =&gt;
+  `${item.label}: ${item.description}`;</pre></div>
+        </section>
+
+        <!-- Summary -->
+        <section class="example-section">
+            <h2>📋 Summary</h2>
+
+            <h3>Option tooltips</h3>
+            <div class="code-block"><pre>enable-option-tooltips        // boolean, default false
+option-tooltip-placement      // 'top' | 'top-start' | ... | 'left' | 'right' (default 'top-start')
+option-tooltip-delay          // ms before show (falls back to badge-tooltip-delay, then 100)
+option-tooltip-offset         // px gap (falls back to badge-tooltip-offset, then 8)
+option-tooltip-follow-cursor  // boolean, default false — anchor to & track the pointer
+
+el.enableOptionTooltips
+el.optionTooltipPlacement
+el.optionTooltipFollowCursor
+el.getOptionTooltipCallback = (item) =&gt; string | HTMLElement
+
+// Independent styling (default to the shared --ms-tooltip-* surface):
+--ms-option-tooltip-bg | -text-color | -padding | -border-radius
+--ms-option-tooltip-font-size | -max-width | -shadow | -z-index</pre></div>
+
+            <h3>Badge tooltips</h3>
+            <div class="code-block"><pre>enable-badge-tooltips      // attribute (boolean, default false)
+badge-tooltip-placement    // 'top' | 'bottom' | 'left' | 'right' (default 'top')
+badge-tooltip-delay        // ms before show (default 100)
+badge-tooltip-offset       // px gap (default 8)
+remove-button-tooltip-text // {0} = item name
+el.getBadgeTooltipCallback        = (item) =&gt; string | HTMLElement
+el.getRemoveButtonTooltipCallback = (item) =&gt; string</pre></div>
+
+            <div class="note">
+                <div class="note-title">Shared styling:</div>
+                Option and badge tooltips render with the same <code>--ms-tooltip-*</code> CSS variables and share the
+                badge tooltip's placement / delay / offset settings.
+            </div>
+        </section>
+    </div>
+
+    <script type="module" src="/src/index.ts"></script>
+    <script type="module">
+        const fruitOptions = [
+            { value: 'apple',      label: 'Apple',      description: 'A crisp red or green fruit' },
+            { value: 'banana',     label: 'Banana',     description: 'A soft yellow tropical fruit' },
+            { value: 'cherry',     label: 'Cherry',     description: 'A small, sweet red stone fruit' },
+            { value: 'date',       label: 'Date',       description: 'A sweet, chewy dried fruit' },
+            { value: 'elderberry', label: 'Elderberry', description: 'A tart dark-purple berry' },
+            { value: 'fig',        label: 'Fig',        description: 'A soft fruit full of tiny seeds' },
+            { value: 'grape',      label: 'Grape',      description: 'A juicy berry that grows in clusters' }
+        ];
+
+        // 1,000 items for the virtual-scrolling demo.
+        const manyOptions = Array.from({ length: 1000 }, (_, i) => ({
+            value: `opt-${i + 1}`,
+            label: `Option ${i + 1}`,
+            description: `Generated row number ${i + 1}`
+        }));
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            // Example 1 — default content
+            const optDefault = document.querySelector('#option-default');
+            optDefault.valueMember = 'value';
+            optDefault.displayValueMember = 'label';
+            optDefault.subtitleMember = 'description';
+            optDefault.options = fruitOptions;
+
+            // Example 2 — custom callback
+            const optCustom = document.querySelector('#option-custom');
+            optCustom.valueMember = 'value';
+            optCustom.displayValueMember = 'label';
+            optCustom.options = fruitOptions;
+            optCustom.getOptionTooltipCallback = (item) => `${item.label} — ${item.description}`;
+
+            // Example 3 — virtual scrolling
+            const optVirtual = document.querySelector('#option-virtual');
+            optVirtual.valueMember = 'value';
+            optVirtual.displayValueMember = 'label';
+            optVirtual.options = manyOptions;
+            optVirtual.getOptionTooltipCallback = (item) => `Value: ${item.value}`;
+
+            // Example 4 — full-width: anchored (default) + follow-cursor
+            for (const id of ['wide-anchored', 'wide-follow']) {
+                const el = document.querySelector('#' + id);
+                el.valueMember = 'value';
+                el.displayValueMember = 'label';
+                el.options = fruitOptions;
+                el.getOptionTooltipCallback = (item) => `${item.label} — ${item.description}`;
+            }
+
+            // Example 5 — narrow: side placement
+            const narrowSide = document.querySelector('#narrow-side');
+            narrowSide.valueMember = 'value';
+            narrowSide.displayValueMember = 'label';
+            narrowSide.options = fruitOptions;
+            narrowSide.getOptionTooltipCallback = (item) => item.description;
+
+            // Example 6 — independent styling
+            const styledOption = document.querySelector('#styled-option');
+            styledOption.valueMember = 'value';
+            styledOption.displayValueMember = 'label';
+            styledOption.options = fruitOptions;
+            styledOption.getOptionTooltipCallback = (item) => item.description;
+
+            // Example 7 — badge tooltips
+            const badgeTt = document.querySelector('#badge-tt');
+            badgeTt.valueMember = 'value';
+            badgeTt.displayValueMember = 'label';
+            badgeTt.options = fruitOptions;
+            badgeTt.getBadgeTooltipCallback = (item) => `${item.label}: ${item.description}`;
+        });
+    </script>
+</body>
+</html>

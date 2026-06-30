@@ -97,6 +97,11 @@ multiselect.setSelected(['js', 'ts']);
 | `badge-tooltip-placement` | `'top' \| 'bottom' \| 'left' \| 'right'` | `'top'` | Tooltip placement relative to badge |
 | `badge-tooltip-delay` | `number` | `100` | Delay in ms before showing tooltip |
 | `badge-tooltip-offset` | `number` | `8` | Distance in pixels between badge and tooltip |
+| `enable-option-tooltips` | `boolean` | `false` | Enable hover tooltips on dropdown options |
+| `option-tooltip-placement` | `'top' \| 'top-start' \| … \| 'left' \| 'right'` | `'top-start'` | Option tooltip placement (anchored to the row's start edge by default; use `left`/`right` for the start/end side on a narrow control) |
+| `option-tooltip-delay` | `number` | inherits `badge-tooltip-delay`, then `100` | Delay in ms before showing an option tooltip |
+| `option-tooltip-offset` | `number` | inherits `badge-tooltip-offset`, then `8` | Distance in pixels between row and option tooltip |
+| `option-tooltip-follow-cursor` | `boolean` | `false` | Anchor the option tooltip to the mouse pointer and follow it across the row (best for full-width rows) |
 | `max-height` | `string` | `'20rem'` | Maximum height of dropdown |
 | `empty-message` | `string` | `'No results found'` | Message when no options found |
 | `loading-message` | `string` | `'Loading...'` | Message while loading async data |
@@ -104,8 +109,10 @@ multiselect.setSelected(['js', 'ts']);
 | `search-debounce` | `number` | `0` | Debounce (ms) before the async `searchCallback` fires; coalesces keystroke bursts into one request. Resets on each keystroke. Async callback only — local filtering stays instant. `0` = no debounce |
 | `keep-options-on-search` | `boolean` | `true` | Keep initial options visible when `searchCallback` is active (hybrid search) |
 | `should-keep-search-on-close` | `boolean` | `true` | Preserve search text and filtered results when dropdown closes |
-| `sticky-actions` | `boolean` | `true` | Keep action buttons fixed at top while scrolling |
-| `actions-layout` | `'nowrap' \| 'wrap'` | `'nowrap'` | Layout mode for action buttons: `nowrap` (single row) or `wrap` (multi-row) |
+| `sticky-actions` | `boolean` | `true` | Keep the action-buttons block pinned to its edge while scrolling |
+| `actions-layout` | `'nowrap' \| 'wrap'` | `'nowrap'` | Whether buttons in a row wrap: `nowrap` (single line) or `wrap` |
+| `actions-position` | `'top' \| 'bottom'` | `'top'` | Place the actions block at the top or bottom (sticky footer) of the dropdown |
+| `actions-align` | `'stretch' \| 'left' \| 'right' \| 'center' \| 'space-between'` | `'stretch'` | Horizontal arrangement of buttons within a row (`stretch` = full-width) |
 | `lock-placement` | `boolean` | `true` | Lock dropdown placement after first open to prevent flipping |
 | `enable-search` | `boolean` | `true` | Enable/disable search functionality |
 | `search-input-mode` | `'normal' \| 'readonly' \| 'hidden'` | `'normal'` | Search input display mode |
@@ -190,6 +197,11 @@ multiselect.getBadgeDisplayCallback = (item) => {
 // Badge tooltip customization
 multiselect.getBadgeTooltipCallback = (item) => {
   return `${item.label} - ${item.subtitle}`;
+};
+
+// Option (dropdown row) tooltip customization — requires enable-option-tooltips
+multiselect.getOptionTooltipCallback = (item) => {
+  return `${item.label} — ${item.description}`;
 };
 
 // Action buttons (Select All, Clear All, custom actions)

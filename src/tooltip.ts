@@ -1,4 +1,4 @@
-import { computePosition, autoUpdate, offset, flip, shift, type Placement } from '@floating-ui/dom';
+import { computePosition, autoUpdate, offset, flip, shift, type Placement, type VirtualElement } from '@floating-ui/dom';
 
 export interface TooltipOptions {
     /** Element that triggers the tooltip on mouseenter / hides on mouseleave */
@@ -20,6 +20,13 @@ export interface TooltipOptions {
     /** Delay before hiding on mouseleave (ms). Default 100. */
     hideDelay?: number;
     /**
+     * Anchor the tooltip to the mouse pointer instead of the trigger element, and follow it as the
+     * pointer moves over the trigger. Useful for wide triggers (e.g. a full-width option row) where a
+     * trigger-centered tooltip would land far from the cursor. `placement`/`offsetDistance` still apply,
+     * computed relative to the pointer.
+     */
+    followCursor?: boolean;
+    /**
      * Hook fired right before this tooltip becomes visible. Used by the badge-remove tooltip to
      * immediately dismiss its parent badge tooltip so the two don't overlap.
      */
@@ -40,14 +47,19 @@ export class Tooltip {
     private readonly showDelay: number;
     private readonly hideDelay: number;
     private readonly visibleClass: string;
+    private readonly followCursor: boolean;
     private readonly onBeforeShow?: () => void;
 
     private showTimer: number | null = null;
     private hideTimer: number | null = null;
     private positionCleanup: (() => void) | null = null;
+    private visible = false;
+    private cursorX = 0;
+    private cursorY = 0;
 
-    private readonly handleMouseEnter: () => void;
+    private readonly handleMouseEnter: (e: MouseEvent) => void;
     private readonly handleMouseLeave: () => void;
+    private readonly handleMouseMove?: (e: MouseEvent) => void;
 
     constructor(opts: TooltipOptions) {
         this.trigger = opts.trigger;
@@ -57,6 +69,7 @@ export class Tooltip {
         this.showDelay = opts.showDelay ?? 100;
         this.hideDelay = opts.hideDelay ?? 100;
         this.visibleClass = opts.visibleClass ?? 'ms__badge-tooltip--visible';
+        this.followCursor = opts.followCursor ?? false;
         this.onBeforeShow = opts.onBeforeShow;
 
         this.element = document.createElement('div');
@@ -68,10 +81,25 @@ export class Tooltip {
         }
         this.container.appendChild(this.element);
 
-        this.handleMouseEnter = () => this.scheduleShow();
+        this.handleMouseEnter = (e: MouseEvent) => {
+            if (this.followCursor) {
+                this.cursorX = e.clientX;
+                this.cursorY = e.clientY;
+            }
+            this.scheduleShow();
+        };
         this.handleMouseLeave = () => this.scheduleHide();
         this.trigger.addEventListener('mouseenter', this.handleMouseEnter);
         this.trigger.addEventListener('mouseleave', this.handleMouseLeave);
+
+        if (this.followCursor) {
+            this.handleMouseMove = (e: MouseEvent) => {
+                this.cursorX = e.clientX;
+                this.cursorY = e.clientY;
+                if (this.visible) this.positionAtCursor();
+            };
+            this.trigger.addEventListener('mousemove', this.handleMouseMove);
+        }
     }
 
     private scheduleShow(): void {
@@ -100,28 +128,53 @@ export class Tooltip {
 
     private show(): void {
         this.onBeforeShow?.();
+        this.visible = true;
         this.element.classList.add(this.visibleClass);
-        // (Re)attach autoUpdate positioning while visible
-        if (this.positionCleanup) this.positionCleanup();
-        this.positionCleanup = autoUpdate(this.trigger, this.element, () => {
-            computePosition(this.trigger, this.element, {
-                placement: this.placement,
-                strategy: 'fixed',
-                middleware: [
-                    offset(this.offsetDistance),
-                    flip(),
-                    shift({ padding: 8 })
-                ]
-            }).then(({ x, y }) => {
-                Object.assign(this.element.style, {
-                    left: `${x}px`,
-                    top: `${y}px`
-                });
+        if (this.positionCleanup) {
+            this.positionCleanup();
+            this.positionCleanup = null;
+        }
+        if (this.followCursor) {
+            // Anchored to the pointer; the mousemove handler drives repositioning while visible.
+            this.positionAtCursor();
+        } else {
+            // (Re)attach autoUpdate positioning relative to the trigger while visible.
+            this.positionCleanup = autoUpdate(this.trigger, this.element, () => this.computeAt(this.trigger));
+        }
+    }
+
+    /** Position the tooltip relative to a reference (the trigger element or a pointer virtual element). */
+    private computeAt(reference: Element | VirtualElement): void {
+        computePosition(reference, this.element, {
+            placement: this.placement,
+            strategy: 'fixed',
+            middleware: [
+                offset(this.offsetDistance),
+                flip(),
+                shift({ padding: 8 })
+            ]
+        }).then(({ x, y }) => {
+            Object.assign(this.element.style, {
+                left: `${x}px`,
+                top: `${y}px`
             });
         });
     }
 
+    /** Position the tooltip relative to the last-known pointer location (follow-cursor mode). */
+    private positionAtCursor(): void {
+        const x = this.cursorX;
+        const y = this.cursorY;
+        const pointer: VirtualElement = {
+            getBoundingClientRect: () => ({
+                width: 0, height: 0, x, y, top: y, left: x, right: x, bottom: y
+            })
+        };
+        this.computeAt(pointer);
+    }
+
     private hide(): void {
+        this.visible = false;
         this.element.classList.remove(this.visibleClass);
         if (this.positionCleanup) {
             this.positionCleanup();
@@ -153,6 +206,7 @@ export class Tooltip {
         }
         this.trigger.removeEventListener('mouseenter', this.handleMouseEnter);
         this.trigger.removeEventListener('mouseleave', this.handleMouseLeave);
+        if (this.handleMouseMove) this.trigger.removeEventListener('mousemove', this.handleMouseMove);
         this.element.remove();
     }
 }

@@ -43,6 +43,10 @@ export type SearchMode = 'filter' | 'navigate';
  * - 'wrap': Buttons wrap to multiple rows when needed
  */
 export type ActionsLayout = 'nowrap' | 'wrap';
+/** Where the action-buttons block sits in the dropdown panel. */
+export type ActionsPosition = 'top' | 'bottom';
+/** Horizontal arrangement of buttons within an action row. `stretch` = full-width (default). */
+export type ActionsAlign = 'stretch' | 'left' | 'right' | 'center' | 'space-between';
 
 /**
  * Context provided to renderOptionContentCallback
@@ -81,6 +85,13 @@ export interface ActionButton<T = any> {
     text: string;
     /** Optional CSS class(es) to add to the button */
     cssClass?: string;
+    /**
+     * 1-based row this button belongs to (default `1`). Buttons sharing a `row` render on the same
+     * horizontal line; different values stack into multiple rows. Row 1 sits at the panel's outer edge
+     * and higher rows stack inward toward the options list — so with `actions-position="top"` row 1 is
+     * the topmost line, and with `actions-position="bottom"` row 1 is the bottommost line.
+     */
+    row?: number;
     /** Optional tooltip text */
     tooltip?: string;
     /** Static visibility - set to false to hide button */
@@ -262,6 +273,10 @@ export interface MultiSelectConfig<T = any> {
     searchMode?: SearchMode;
     /** Layout mode for action buttons: 'nowrap' (default) or 'wrap' for multi-row */
     actionsLayout?: ActionsLayout;
+    /** Where the action-buttons block sits in the dropdown: 'top' (default) or 'bottom' (sticky footer). */
+    actionsPosition?: ActionsPosition;
+    /** Horizontal arrangement of buttons within a row: 'stretch' (default, full-width), 'left', 'right', 'center', or 'space-between'. */
+    actionsAlign?: ActionsAlign;
 
     // ========================================================================
     // NUMBER OPTIONS
@@ -348,6 +363,19 @@ export interface MultiSelectConfig<T = any> {
     badgeTooltipDelay?: number;
     /** Offset distance for tooltip in pixels */
     badgeTooltipOffset?: number;
+
+    /** Enable tooltips on dropdown options (internal: isOptionTooltipsEnabled) */
+    isOptionTooltipsEnabled?: boolean;
+    /** Callback to generate custom tooltip content for a dropdown option. Default: display value, plus subtitle on the next line when present. */
+    getOptionTooltipCallback?: ((item: T) => string | HTMLElement) | null;
+    /** Option tooltip placement. Default `'top-start'` (anchored to the row's start edge, so it doesn't center on a full-width row). Use `'left'`/`'right'` (start/end side) for a narrow multiselect. */
+    optionTooltipPlacement?: Placement;
+    /** Delay before showing an option tooltip (ms). Falls back to `badgeTooltipDelay`, then `100`. */
+    optionTooltipDelay?: number;
+    /** Offset distance for an option tooltip (px). Falls back to `badgeTooltipOffset`, then `8`. */
+    optionTooltipOffset?: number;
+    /** Anchor the option tooltip to the mouse pointer and follow it across the row (best for full-width rows). Default `false`. */
+    isOptionTooltipFollowCursor?: boolean;
 
     // ========================================================================
     // OTHER OPTIONS

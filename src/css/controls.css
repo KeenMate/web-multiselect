@@ -132,27 +132,73 @@
    DROPDOWN ACTION BAR
    ============================================================================== */
 
+/* Actions block: a vertical stack of one or more button rows. */
 .ms__actions {
   display: flex;
-  flex-wrap: nowrap;
+  flex-direction: column;
   gap: var(--ms-actions-gap);
   padding: var(--ms-actions-padding);
+}
+
+/* Top position: separator below the actions (above the options list). */
+.ms__actions--top {
   border-bottom: var(--ms-actions-border-bottom);
 }
 
-.ms__actions--wrap {
+/* Bottom position: column-reverse so row 1 lands at the bottom (outer) edge; separator above. */
+.ms__actions--bottom {
+  flex-direction: column-reverse;
+  border-top: var(--ms-actions-border-bottom);
+}
+
+/* One horizontal line of buttons within the stack. */
+.ms__actions-row {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: var(--ms-actions-gap);
+}
+
+.ms__actions--wrap .ms__actions-row {
   flex-wrap: wrap;
 }
 
+/* Sticky pins the block to the matching edge of the scrolling dropdown. */
 .ms__actions--sticky {
   position: sticky;
-  top: 0;
   z-index: var(--ms-z-index-sticky);
   background: var(--ms-actions-bg);
 }
 
-.ms__action-btn {
+.ms__actions--sticky.ms__actions--top {
+  top: 0;
+}
+
+.ms__actions--sticky.ms__actions--bottom {
+  bottom: 0;
+}
+
+/* Button alignment within a row. `stretch` (default) fills the row; the rest size to content. */
+.ms__actions--align-stretch .ms__action-btn {
   flex: 1;
+}
+
+.ms__actions--align-left .ms__actions-row {
+  justify-content: flex-start;
+}
+
+.ms__actions--align-right .ms__actions-row {
+  justify-content: flex-end;
+}
+
+.ms__actions--align-center .ms__actions-row {
+  justify-content: center;
+}
+
+.ms__actions--align-space-between .ms__actions-row {
+  justify-content: space-between;
+}
+
+.ms__action-btn {
   font-family: inherit; /* Form elements don't inherit font by default */
   padding: var(--ms-action-btn-padding);
   font-size: var(--ms-action-btn-font-size);

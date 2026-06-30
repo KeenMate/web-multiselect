@@ -536,6 +536,17 @@
   --ms-tooltip-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
   --ms-tooltip-z-index: 10000;
 
+  /* Option (dropdown row) tooltip — per-feature hooks default to the shared tooltip surface,
+     so option tooltips look identical until you override one of these independently. */
+  --ms-option-tooltip-bg: var(--ms-tooltip-bg);
+  --ms-option-tooltip-text-color: var(--ms-tooltip-text-color);
+  --ms-option-tooltip-padding: var(--ms-tooltip-padding);
+  --ms-option-tooltip-border-radius: var(--ms-tooltip-border-radius);
+  --ms-option-tooltip-font-size: var(--ms-tooltip-font-size);
+  --ms-option-tooltip-max-width: var(--ms-tooltip-max-width);
+  --ms-option-tooltip-shadow: var(--ms-tooltip-shadow);
+  --ms-option-tooltip-z-index: var(--ms-tooltip-z-index);
+
   /* ==========================================================================
      SELECTED POPOVER
      ========================================================================== */

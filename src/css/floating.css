@@ -121,6 +121,34 @@
   visibility: visible;
 }
 
+/* Option (dropdown row) tooltip. Same shape as the badge tooltip but reads its own
+   --ms-option-tooltip-* hooks (which default to the shared --ms-tooltip-* surface), so it can be
+   themed independently and targeted separately in custom CSS. */
+.ms__option-tooltip {
+  position: fixed;
+  z-index: var(--ms-option-tooltip-z-index);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity var(--ms-transition-normal) ease, visibility var(--ms-transition-normal) ease;
+
+  background: var(--ms-option-tooltip-bg);
+  color: var(--ms-option-tooltip-text-color);
+  padding: var(--ms-option-tooltip-padding);
+  border-radius: var(--ms-option-tooltip-border-radius);
+  font-size: var(--ms-option-tooltip-font-size);
+  line-height: var(--ms-line-height-relaxed);
+  max-width: var(--ms-option-tooltip-max-width);
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  box-shadow: var(--ms-option-tooltip-shadow);
+  pointer-events: none; /* Prevent tooltip from interfering with mouse events */
+}
+
+.ms__option-tooltip--visible {
+  opacity: 1;
+  visibility: visible;
+}
+
 /* ==============================================================================
    SELECTED-ITEMS POPOVER
    ==============================================================================

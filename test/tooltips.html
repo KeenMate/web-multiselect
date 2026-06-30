@@ -37,6 +37,36 @@
             value-member="value" display-value-member="label"></web-multiselect>
     </div>
 
+    <div class="fixture">
+        <div class="fixture-label">enable-option-tooltips (default content) — hover a dropdown row</div>
+        <web-multiselect id="option-tt"
+            enable-option-tooltips="true" option-tooltip-delay="0"
+            value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">custom getOptionTooltipCallback — hover a dropdown row</div>
+        <web-multiselect id="option-custom-tt"
+            enable-option-tooltips="true" option-tooltip-delay="0"
+            value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">option-tooltip-placement="right" (side placement)</div>
+        <web-multiselect id="option-side-tt"
+            enable-option-tooltips="true" option-tooltip-delay="0"
+            option-tooltip-placement="right"
+            value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">option-tooltip-follow-cursor="true"</div>
+        <web-multiselect id="option-follow-tt"
+            enable-option-tooltips="true" option-tooltip-delay="0"
+            option-tooltip-follow-cursor="true"
+            value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
     <script type="module">
         import '/src/index.ts';
 
@@ -47,12 +77,17 @@
         ];
 
         customElements.whenDefined('web-multiselect').then(() => {
-            for (const id of ['default-tt', 'custom-tt', 'remove-tt']) {
+            const ids = ['default-tt', 'custom-tt', 'remove-tt',
+                'option-tt', 'option-custom-tt', 'option-side-tt', 'option-follow-tt'];
+            for (const id of ids) {
                 document.getElementById(id).options = items;
             }
 
             document.getElementById('custom-tt').getBadgeTooltipCallback = (item) =>
                 `${item.label}: ${item.description}`;
+
+            document.getElementById('option-custom-tt').getOptionTooltipCallback = (item) =>
+                `${item.label} — ${item.description}`;
         });
     </script>
 </body>

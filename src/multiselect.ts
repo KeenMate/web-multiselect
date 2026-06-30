@@ -525,7 +525,9 @@ export class WebMultiSelect<T = any> {
             return;
         }
 
-        html += this.renderActionsHTML();
+        const actionsHTML = this.renderActionsHTML();
+        const actionsAtBottom = this.options.actionsPosition === 'bottom';
+        if (!actionsAtBottom) html += actionsHTML;
 
         html += '<div class="ms__options">';
 
@@ -573,10 +575,13 @@ export class WebMultiSelect<T = any> {
         }
 
         html += '</div>';
+        if (actionsAtBottom) html += actionsHTML;
         this.dropdownInner.innerHTML = html;
 
         // Attach tooltips to action buttons after rendering
         this.attachActionButtonTooltips();
+        // Attach tooltips to dropdown options
+        this.attachOptionTooltips();
     }
 
     /**
@@ -590,14 +595,17 @@ export class WebMultiSelect<T = any> {
         if (!this.virtualScroll) {
             let html = '';
 
-            // Render actions (Select All/Clear All) outside virtual scroll
-            html += this.renderActionsHTML();
+            // Render actions (Select All/Clear All) outside the virtual scroll container.
+            const actionsHTML = this.renderActionsHTML();
+            const actionsAtBottom = this.options.actionsPosition === 'bottom';
+            if (!actionsAtBottom) html += actionsHTML;
 
             // Create options container for virtual scroll
             // Add inline styles to ensure proper height constraint and scrolling
             const maxHeight = this.options.maxHeight || '20rem';
             const optionHeight = this.options.optionHeight ?? 50;
             html += `<div class="ms__options ms__options--virtual" style="height: ${maxHeight}; max-height: ${maxHeight}; overflow-y: auto; position: relative; --ms-option-height: ${optionHeight}px;"></div>`;
+            if (actionsAtBottom) html += actionsHTML;
             this.dropdownInner.innerHTML = html;
 
             // Get options container
@@ -630,7 +638,11 @@ export class WebMultiSelect<T = any> {
                     itemHeight,
                     items: this.filteredOptions,
                     renderItem: (item, index) => this.renderOption(item, index),
-                    bufferSize
+                    bufferSize,
+                    onVisibleRangeChange: () => {
+                        // Re-attach tooltips to options recycled into view by virtual scrolling.
+                        this.attachOptionTooltips();
+                    }
                 });
             } else {
                 this.virtualScroll.setItems(this.filteredOptions);
@@ -645,18 +657,54 @@ export class WebMultiSelect<T = any> {
      * Render the Select All / Clear All / custom action buttons row.
      * Returns the empty string if multiple-select is off or no buttons are configured.
      */
+    /**
+     * Default enabled/disabled state for the built-in actions, applied only when the consumer hasn't
+     * set an explicit `isDisabled` / `getIsDisabledCallback`:
+     * - `select-all` is disabled when it would add nothing (every selectable, non-disabled filtered
+     *   option is already selected — this also covers an empty list).
+     * - `clear-all` is disabled when nothing is selected.
+     */
+    private getBuiltInActionDisabled(action: string): boolean {
+        if (action === 'select-all') {
+            return !this.filteredOptions.some(option =>
+                !this.getItemDisabled(option) && !this.selectedValues.has(String(this.getItemValue(option))));
+        }
+        if (action === 'clear-all') {
+            return this.selectedValues.size === 0;
+        }
+        return false;
+    }
+
     private renderActionsHTML(): string {
         const buttons = this.options.actionButtons;
         if (!this.options.isMultipleEnabled || !buttons || buttons.length === 0) return '';
 
+        const position = this.options.actionsPosition === 'bottom' ? 'bottom' : 'top';
+        const align = this.options.actionsAlign ?? 'stretch';
+
+        const positionClass = ` ms__actions--${position}`;
         const stickyClass = this.options.isActionsSticky ? ' ms__actions--sticky' : '';
         const wrapClass = this.options.actionsLayout === 'wrap' ? ' ms__actions--wrap' : '';
+        const alignClass = ` ms__actions--align-${align}`;
 
-        const buttonsHTML = buttons.map((button, buttonIndex) => {
+        // Group visible buttons by 1-based row (default 1), preserving the original index for
+        // data-button-index so click/tooltip lookups still resolve to the right config entry.
+        const rows = new Map<number, string[]>();
+        buttons.forEach((button, buttonIndex) => {
             const isVisible = button.getIsVisibleCallback ? button.getIsVisibleCallback(this) : (button.isVisible ?? true);
-            if (!isVisible) return '';
+            if (!isVisible) return;
 
-            const isDisabled = button.getIsDisabledCallback ? button.getIsDisabledCallback(this) : (button.isDisabled ?? false);
+            // Precedence: explicit dynamic callback > explicit static isDisabled > built-in default
+            // (so the built-in select-all/clear-all enabled state only applies when the consumer
+            // hasn't said otherwise).
+            let isDisabled: boolean;
+            if (button.getIsDisabledCallback) {
+                isDisabled = button.getIsDisabledCallback(this);
+            } else if (button.isDisabled !== undefined) {
+                isDisabled = button.isDisabled;
+            } else {
+                isDisabled = this.getBuiltInActionDisabled(button.action);
+            }
             const disabledAttr = isDisabled ? ' disabled' : '';
 
             const text = button.getTextCallback ? button.getTextCallback(this) : button.text;
@@ -669,10 +717,22 @@ export class WebMultiSelect<T = any> {
                 cssClass = ` ${button.cssClass}`;
             }
 
-            return `<button type="button"${disabledAttr} class="ms__action-btn${cssClass}" data-action="${button.action}" data-button-index="${buttonIndex}">${text}</button>`;
-        }).join('');
+            const rowNum = Math.max(1, Math.floor(button.row ?? 1));
+            const btnHTML = `<button type="button"${disabledAttr} class="ms__action-btn${cssClass}" data-action="${button.action}" data-button-index="${buttonIndex}">${text}</button>`;
+            if (!rows.has(rowNum)) rows.set(rowNum, []);
+            rows.get(rowNum)!.push(btnHTML);
+        });
 
-        return `<div class="ms__actions${stickyClass}${wrapClass}">${buttonsHTML}</div>`;
+        if (rows.size === 0) return '';
+
+        // Always emit rows in ascending row order. For the bottom position, CSS flips the visual
+        // stacking (column-reverse) so row 1 still lands at the panel's outer edge.
+        const rowsHTML = Array.from(rows.keys())
+            .sort((a, b) => a - b)
+            .map(rowNum => `<div class="ms__actions-row" data-row="${rowNum}">${rows.get(rowNum)!.join('')}</div>`)
+            .join('');
+
+        return `<div class="ms__actions${positionClass}${stickyClass}${wrapClass}${alignClass}">${rowsHTML}</div>`;
     }
 
     private renderOption(option: T, index: number): string {
@@ -1721,6 +1781,9 @@ export class WebMultiSelect<T = any> {
 
         this.focusedIndex = -1;
 
+        // Tear down option tooltips so they don't linger while the dropdown is hidden.
+        this.destroyAllOptionTooltips();
+
         this.renderBadges();
 
         if (this.dropdownCleanup) {
@@ -2333,6 +2396,18 @@ export class WebMultiSelect<T = any> {
         trigger: HTMLElement;
         content: string | HTMLElement;
         onBeforeShow?: () => void;
+        /** Override placement (default: `badgeTooltipPlacement`). */
+        placement?: Placement;
+        /** Override offset (default: `badgeTooltipOffset`). */
+        offsetDistance?: number;
+        /** Override show delay (default: `badgeTooltipDelay`). */
+        showDelay?: number;
+        /** Tooltip element CSS class (default: badge tooltip styling). */
+        cssClass?: string;
+        /** Visibility-toggle CSS class (default: badge tooltip visible class). */
+        visibleClass?: string;
+        /** Anchor to and follow the mouse pointer. */
+        followCursor?: boolean;
     }): void {
         this.tooltips.get(spec.id)?.destroy();
         // Prefer the shadow root over document.body so portaled tooltips inherit
@@ -2343,9 +2418,12 @@ export class WebMultiSelect<T = any> {
             trigger: spec.trigger,
             container: this.options.container ?? shadowContainer ?? document.body,
             content: spec.content,
-            placement: this.options.badgeTooltipPlacement || 'top',
-            offsetDistance: this.options.badgeTooltipOffset ?? 8,
-            showDelay: this.options.badgeTooltipDelay ?? 100,
+            placement: spec.placement ?? this.options.badgeTooltipPlacement ?? 'top',
+            offsetDistance: spec.offsetDistance ?? this.options.badgeTooltipOffset ?? 8,
+            showDelay: spec.showDelay ?? this.options.badgeTooltipDelay ?? 100,
+            cssClass: spec.cssClass,
+            visibleClass: spec.visibleClass,
+            followCursor: spec.followCursor,
             onBeforeShow: spec.onBeforeShow
         });
         this.tooltips.set(spec.id, tooltip);
@@ -2422,6 +2500,63 @@ export class WebMultiSelect<T = any> {
                     trigger: removeBtn,
                     content: this.buildRemoveButtonTooltipText(`${hiddenCount} hidden items`)
                 });
+            }
+        }
+    }
+
+    /** Build the option tooltip content (callback overrides; default = displayValue + optional subtitle on next line). */
+    private buildOptionTooltipContent(option: T): string | HTMLElement {
+        if (this.options.getOptionTooltipCallback) return this.options.getOptionTooltipCallback(option);
+        const displayValue = this.getItemDisplayValue(option);
+        const subtitle = this.getItemSubtitle(option);
+        return subtitle ? `${displayValue}\n${subtitle}` : displayValue;
+    }
+
+    /**
+     * Attach hover tooltips to the currently rendered dropdown options. Prunes existing option
+     * tooltips first, so it's safe to call on every render and on every virtual-scroll range change
+     * (where option DOM is recycled). Each option resolves its source object via `data-index` into
+     * `filteredOptions`, the same global index `renderOption` was given.
+     */
+    private attachOptionTooltips(): void {
+        this.destroyAllOptionTooltips();
+        if (!this.options.isOptionTooltipsEnabled) return;
+
+        const optionElements = this.dropdown.querySelectorAll('.ms__option');
+        optionElements.forEach((el: Element) => {
+            const optionEl = el as HTMLElement;
+            const index = parseInt(optionEl.dataset.index ?? '-1', 10);
+            if (index < 0) return;
+            const option = this.filteredOptions[index];
+            if (!option) return;
+
+            const content = this.buildOptionTooltipContent(option);
+            if (!content) return;
+            this.spawnTooltip({
+                id: `option-${index}`,
+                trigger: optionEl,
+                content,
+                // Default to `top-start` (anchored to the row's start edge) so the tooltip doesn't
+                // center on a full-width row. Falls through to the badge settings for delay/offset.
+                placement: this.options.optionTooltipPlacement ?? 'top-start',
+                offsetDistance: this.options.optionTooltipOffset ?? this.options.badgeTooltipOffset ?? 8,
+                showDelay: this.options.optionTooltipDelay ?? this.options.badgeTooltipDelay ?? 100,
+                cssClass: 'ms__option-tooltip',
+                visibleClass: 'ms__option-tooltip--visible',
+                followCursor: this.options.isOptionTooltipFollowCursor
+            });
+        });
+    }
+
+    /**
+     * Destroy only the option tooltips (prefixed `option-`). Called before re-rendering or
+     * recycling the options list so per-option tooltip state doesn't leak.
+     */
+    private destroyAllOptionTooltips(): void {
+        for (const id of Array.from(this.tooltips.keys())) {
+            if (id.startsWith('option-')) {
+                this.tooltips.get(id)?.destroy();
+                this.tooltips.delete(id);
             }
         }
     }
