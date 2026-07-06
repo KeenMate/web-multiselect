@@ -27,6 +27,7 @@
 @import url('./debug.css')          layer(component);
 @import url('./options.css')        layer(component);
 @import url('./rtl.css')            layer(component);
+@import url('./tree.css')           layer(component);
 
 /* === OVERRIDES === */
 @import url('./dark-mode.css')      layer(overrides);

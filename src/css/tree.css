@@ -1,0 +1,42 @@
+/* ==============================================================================
+   TREE OF OPTIONS
+   ==============================================================================
+   Tree mode renders options as an always-expanded hierarchy. The only visual
+   difference from a normal option is depth indentation: each row carries a
+   `--ms-tree-depth` custom property (0 for top-level nodes) set inline by the
+   renderer, and we translate it into inline-start padding here.
+
+   There is no chevron/toggle — the tree never collapses (that's web-treeview's
+   job). The `--tree-branch` / `--tree-leaf` classes are exposed purely as
+   theming hooks; they ship without opinionated styles.
+*/
+
+.ms__option--tree {
+  /* base = a leaf/first-level row's inline-start padding; step = per-level indent */
+  padding-inline-start: calc(
+    var(--ms-tree-base-indent, 0.75rem) +
+    var(--ms-tree-depth, 0) * var(--ms-tree-indent, 1.25rem)
+  );
+}
+
+/* Theming hooks — intentionally empty. Style branch vs leaf rows per app. */
+.ms__option--tree-branch {
+  /* e.g. font-weight: var(--ms-font-weight-medium); */
+}
+
+.ms__option--tree-leaf {
+  /* e.g. color: var(--ms-option-text-color); */
+}
+
+/* Non-selectable nodes (`isSelectableMember` / `getIsSelectableCallback`).
+   Deliberately NOT greyed like `--disabled` — the row reads as normal structure,
+   it simply can't be picked: no checkbox (dropped by the renderer), no pointer
+   affordance, no hover highlight. Keyboard focus skips it too. Restyle via this
+   hook if you want branches to look distinct (e.g. bolder, muted). */
+.ms__option--tree-unselectable {
+  cursor: default;
+}
+
+.ms__option--tree-unselectable:hover {
+  background: transparent;
+}

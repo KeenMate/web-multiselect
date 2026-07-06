@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Test — tree</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        web-multiselect { display: block; max-width: 340px; }
+    </style>
+</head>
+<body>
+    <h1>tree of options</h1>
+    <p>Options render as an always-expanded hierarchy (indented by depth, no
+       collapse). Tree mode auto-enables from <code>path-member</code>.</p>
+
+    <div class="fixture">
+        <div class="fixture-label">tree (path-member="path"), multi-select</div>
+        <web-multiselect id="tree-multi" multiple value-member="value" display-value-member="label" path-member="path"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">tree, single-select</div>
+        <web-multiselect id="tree-single" multiple="false" value-member="value" display-value-member="label" path-member="path"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">custom separator (path-member with "/"), getPathCallback</div>
+        <web-multiselect id="tree-cb" multiple value-member="value" display-value-member="label" tree-path-separator="/"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">leaves only (is-selectable-member="selectable")</div>
+        <web-multiselect id="tree-sel-member" multiple show-checkboxes value-member="value" display-value-member="label" path-member="path" is-selectable-member="selectable"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">leaves only (getIsSelectableCallback = node =&gt; !node.hasChildren)</div>
+        <web-multiselect id="tree-sel-cb" multiple show-checkboxes value-member="value" display-value-member="label" path-member="path"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">truncated long titles (--ms-option-title-white-space: nowrap; …ellipsis)</div>
+        <web-multiselect id="tree-truncate" multiple value-member="value" display-value-member="label" path-member="path"
+            style="max-width: 220px; --ms-option-title-white-space: nowrap; --ms-option-title-overflow: hidden; --ms-option-title-text-overflow: ellipsis;"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">fixed row height (--ms-option-min-height)</div>
+        <web-multiselect id="tree-tall" multiple value-member="value" display-value-member="label" path-member="path"
+            style="--ms-option-min-height: 56px;"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">cascade mode (checkbox-mode="cascade", policy rolled-up default)</div>
+        <web-multiselect id="tree-cascade" multiple show-checkboxes value-member="value" display-value-member="label"
+            path-member="path" checkbox-mode="cascade"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">cascade mode, policy=leaves</div>
+        <web-multiselect id="tree-cascade-leaves" multiple show-checkboxes value-member="value" display-value-member="label"
+            path-member="path" checkbox-mode="cascade" cascade-select-policy="leaves"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">cascade mode, leaves-only tree (branches non-selectable)</div>
+        <web-multiselect id="tree-cascade-leavesonly" multiple show-checkboxes value-member="value" display-value-member="label"
+            path-member="path" is-selectable-member="selectable" checkbox-mode="cascade"></web-multiselect>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+
+        // Materialized dot-path per option; parent/level are derived from it.
+        const items = [
+            { value: 'fruit',  label: 'Fruit',       path: '1' },
+            { value: 'apple',  label: 'Apple',       path: '1.1' },
+            { value: 'gala',   label: 'Gala',        path: '1.1.1' },
+            { value: 'fuji',   label: 'Fuji',        path: '1.1.2' },
+            { value: 'pear',   label: 'Pear',        path: '1.2' },
+            { value: 'veg',    label: 'Vegetables',  path: '2' },
+            { value: 'carrot', label: 'Carrot',      path: '2.1' },
+            { value: 'kale',   label: 'Kale',        path: '2.2' }
+        ];
+
+        // Same data but with a "/" separator, resolved via getPathCallback.
+        const slashItems = items.map(it => ({ ...it, p: it.path.replaceAll('.', '/') }));
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            document.getElementById('tree-multi').options = items;
+            document.getElementById('tree-single').options = items;
+
+            const cb = document.getElementById('tree-cb');
+            cb.getPathCallback = (it) => it.p;
+            cb.options = slashItems;
+
+            // Leaves-only via a data flag: a node is a branch when another path extends it.
+            const paths = new Set(items.map(it => it.path));
+            const withFlag = items.map(it => ({
+                ...it,
+                selectable: ![...paths].some(p => p.startsWith(it.path + '.'))
+            }));
+            document.getElementById('tree-sel-member').options = withFlag;
+
+            // Leaves-only via callback — the node exposes the derived hasChildren.
+            const selCb = document.getElementById('tree-sel-cb');
+            selCb.getIsSelectableCallback = (node) => !node.hasChildren;
+            selCb.options = items;
+
+            // Long labels for the truncation / row-height fixtures.
+            const longItems = [
+                { value: 'root',  label: 'Root category with an intentionally very long label that overflows', path: '1' },
+                { value: 'child', label: 'Child node whose title is also quite long and should be handled', path: '1.1' },
+                { value: 'short', label: 'Short', path: '1.2' }
+            ];
+            document.getElementById('tree-truncate').options = longItems;
+            document.getElementById('tree-tall').options = longItems;
+
+            // Cascade fixtures share the fruit/veg tree.
+            document.getElementById('tree-cascade').options = items;
+            document.getElementById('tree-cascade-leaves').options = items;
+            document.getElementById('tree-cascade-leavesonly').options = withFlag;
+        });
+    </script>
+</body>
+</html>

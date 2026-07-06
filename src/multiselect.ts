@@ -8,6 +8,17 @@ import type { MultiSelectConfig, BadgesPosition, SearchInputMode, SearchMode, Op
 import { initLogger, dataLogger, uiLogger, interactionLogger } from './logger';
 import { VirtualScroll } from './virtual-scroll';
 import { Tooltip } from './tooltip';
+import { createLTree, type LTree } from './tree/ltree';
+import type { LTreeNode } from './tree/ltree-node';
+import {
+    buildCascadeIndex,
+    nodeCheckState,
+    expandToAtoms,
+    toggleNodeCascade,
+    projectSelection,
+    type CascadeIndex,
+    type CascadeSelectPolicy
+} from './tree/cascade';
 
 /**
  * Resolve the nearest ancestor that genuinely establishes a containing block for a
@@ -101,6 +112,16 @@ export class WebMultiSelect<T = any> {
     private selectedOptions = new Map<string, T>();
     private allOptions: T[] = [];
     private filteredOptions: T[] = [];
+    // Tree mode: the hierarchy built from option paths, and the flat list of
+    // nodes currently shown. `treeNodes` stays index-aligned with
+    // `filteredOptions` so focus/keyboard/virtual-scroll keep working unchanged.
+    private tree: LTree<T> | null = null;
+    private treeNodes: LTreeNode<T>[] = [];
+    // Cascade checkbox mode (tree + multiple + checkbox-mode="cascade"): the index
+    // is rebuilt with the tree; `cascadeCheckedAtoms` is the derived set of checked
+    // leaf-level atoms, refreshed from `selectedValues` before each render.
+    private cascadeIndex: CascadeIndex<T> | null = null;
+    private cascadeCheckedAtoms: Set<string> = new Set();
     private hiddenInputs: HTMLInputElement[] = [];
     private focusedIndex = -1;
     private matchingIndices: Set<number> = new Set();
@@ -219,7 +240,25 @@ export class WebMultiSelect<T = any> {
      */
     private getItemBadgeDisplayValue(item: T): string {
         if (this.options.getBadgeDisplayCallback) return this.options.getBadgeDisplayCallback(item);
+        if (this.options.isBadgeFullTitleShown) {
+            const fullTitle = this.getItemFullTitle(item);
+            if (fullTitle) return fullTitle;
+        }
         return this.getItemDisplayValue(item);
+    }
+
+    /**
+     * Full title — a fully-qualified label supplied with the data (never computed here). Used by
+     * badges when `isBadgeFullTitleShown` is on. Returns undefined when the option has none.
+     */
+    private getItemFullTitle(item: T): string | undefined {
+        return this.extractField<string | undefined>(item, {
+            tupleSkip: true,
+            member: this.options.fullTitleMember,
+            callback: this.options.getFullTitleCallback,
+            transform: String,
+            fallback: undefined
+        });
     }
 
     private getItemSearchValue(item: T): string {
@@ -269,6 +308,29 @@ export class WebMultiSelect<T = any> {
             transform: Boolean,
             fallback: false
         });
+    }
+
+    /**
+     * Tree mode: whether the visible node at `index` may be selected. Non-selectable
+     * nodes (see `isSelectableMember`/`getIsSelectableCallback`) still render — just
+     * without a checkbox — but are skipped by focus and cannot be toggled. Always
+     * true outside tree mode. `treeNodes` is index-aligned with `filteredOptions`.
+     */
+    private isIndexSelectable(index: number): boolean {
+        if (!this.isTreeMode()) return true;
+        const node = this.treeNodes[index];
+        return node ? node.isSelectable !== false : true;
+    }
+
+    /** Whether an option may be selected. Always true outside tree mode. */
+    private isOptionSelectable(option: T): boolean {
+        if (!this.isTreeMode()) return true;
+        const index = this.filteredOptions.indexOf(option);
+        if (index >= 0) return this.isIndexSelectable(index);
+        // Option identity may not match (rebuilt list): fall back to a value match.
+        const value = String(this.getItemValue(option));
+        const node = this.treeNodes.find(n => String(this.getItemValue(n.data as T)) === value);
+        return node ? node.isSelectable !== false : true;
     }
 
     constructor(element: HTMLElement, options: Partial<MultiSelectConfig<T>> = {}) {
@@ -350,6 +412,188 @@ export class WebMultiSelect<T = any> {
         }
 
         this.filteredOptions = [...this.allOptions];
+
+        if (this.isTreeMode()) {
+            this.buildTree();
+        }
+    }
+
+    // ========================================================================
+    // TREE MODE
+    // ========================================================================
+
+    /** Whether options should be rendered as an (always-expanded) tree. */
+    private isTreeMode(): boolean {
+        if (this.options.isTreeEnabled === false) return false;
+        return !!(this.options.isTreeEnabled || this.options.pathMember || this.options.getPathCallback);
+    }
+
+    /** (Re)build the ltree from `allOptions` and derive the visible flat list. */
+    private buildTree(): void {
+        this.tree = createLTree<T>({
+            idMember: this.options.valueMember,
+            pathMember: this.options.pathMember,
+            getPathCallback: this.options.getPathCallback,
+            parentPathMember: this.options.parentPathMember,
+            levelMember: this.options.levelMember,
+            hasChildrenMember: this.options.hasChildrenMember,
+            isSelectableMember: this.options.isSelectableMember,
+            getIsSelectableCallback: this.options.getIsSelectableCallback,
+            treePathSeparator: this.options.treePathSeparator,
+            treeId: this.instanceId,
+            getDisplayValueCallback: (node) => this.getItemDisplayValue(node.data as T)
+        });
+        this.tree.insertArray(this.allOptions);
+        this.cascadeIndex = this.isCascadeMode()
+            ? buildCascadeIndex(this.tree, (d) => String(this.getItemValue(d)))
+            : null;
+        this.rebuildTreeVisible();
+    }
+
+    /**
+     * Whether cascade checkbox mode is active: a multi-select tree with
+     * `checkbox-mode="cascade"`. Checking a node then toggles its whole subtree
+     * and branches show a tristate box.
+     */
+    private isCascadeMode(): boolean {
+        return this.isTreeMode()
+            && this.options.isMultipleEnabled !== false
+            && this.options.checkboxMode === 'cascade';
+    }
+
+    private cascadePolicy(): CascadeSelectPolicy {
+        return this.options.cascadeSelectPolicy ?? 'rolled-up';
+    }
+
+    /** Refresh the derived checked-atom set from the emitted `selectedValues`. */
+    private refreshCascadeAtoms(): void {
+        if (this.isCascadeMode() && this.cascadeIndex) {
+            this.cascadeCheckedAtoms = expandToAtoms(this.cascadeIndex, this.selectedValues);
+        }
+    }
+
+    /**
+     * Toggle a tree node in cascade mode: flip its whole subtree, re-project the
+     * checked atoms to emitted values under the active policy, and commit the diff
+     * so badges / form / change events reflect the policy (rolled-up branches, etc.).
+     */
+    private toggleTreeCascade(node: LTreeNode<T>): void {
+        const index = this.cascadeIndex!;
+        const before = expandToAtoms(index, this.selectedValues);
+        const { checkedAtoms } = toggleNodeCascade(index, node, before);
+        const emitted = projectSelection(
+            index,
+            checkedAtoms,
+            this.cascadePolicy(),
+            (d) => String(this.getItemValue(d))
+        );
+
+        const newSet = new Set(emitted);
+        const added: T[] = [];
+        const removed: T[] = [];
+        for (const [val, opt] of this.selectedOptions) {
+            if (!newSet.has(val)) removed.push(opt);
+        }
+        const newOptions = new Map<string, T>();
+        for (const val of emitted) {
+            const resolved = index.nodeByValue.get(val)?.data as T | undefined;
+            const opt = resolved ?? this.selectedOptions.get(val);
+            if (opt === undefined) continue;
+            newOptions.set(val, opt);
+            if (!this.selectedValues.has(val)) added.push(opt);
+        }
+
+        this.selectedValues = newSet;
+        this.selectedOptions = newOptions;
+        this.cascadeCheckedAtoms = checkedAtoms;
+        this.commit({ added, removed });
+    }
+
+    /**
+     * Derive `treeNodes` + `filteredOptions` from the full tree, applying the
+     * current search term. Matching nodes keep all their ancestors visible so
+     * indentation stays coherent (the tree is always fully expanded).
+     */
+    private rebuildTreeVisible(): void {
+        if (!this.tree) {
+            this.treeNodes = [];
+            return;
+        }
+
+        const all = this.tree.flatNodes;
+        const term = this.options.isSearchEnabled ? (this.searchTerm || '').trim().toLowerCase() : '';
+
+        let nodes: LTreeNode<T>[];
+        if (!term) {
+            nodes = all;
+        } else {
+            const sep = this.tree.treePathSeparator;
+            const required = new Set<string>();
+            for (const node of all) {
+                const searchValue = this.getItemSearchValue(node.data as T).toLowerCase();
+                if (searchValue.includes(term)) {
+                    // Keep this node and every ancestor on its path.
+                    const segments = node.path.split(sep);
+                    for (let i = 1; i <= segments.length; i++) {
+                        required.add(segments.slice(0, i).join(sep));
+                    }
+                }
+            }
+            nodes = all.filter(node => required.has(node.path));
+        }
+
+        this.treeNodes = nodes;
+        this.filteredOptions = nodes.map(node => node.data as T);
+    }
+
+    /**
+     * Reset the visible list to "everything". **Tree-aware**: in tree mode it
+     * rebuilds `treeNodes` (kept index-aligned with `filteredOptions`) from the
+     * full tree, so the two never drift. A raw `filteredOptions = [...allOptions]`
+     * would leave `treeNodes` stale after clearing a search — the virtual list
+     * then reserves height for every option but renders blank rows because
+     * `treeNodes[index]` is undefined. Always use this to clear the visible list.
+     */
+    private resetVisibleToAll(): void {
+        if (this.isTreeMode()) {
+            this.rebuildTreeVisible();
+        } else {
+            this.filteredOptions = [...this.allOptions];
+        }
+    }
+
+    /**
+     * Tree mode: derive the visible list from an **external** set of matched
+     * options — e.g. the results returned by `searchCallback` — keeping each
+     * match's ancestors so indentation stays coherent. This is the async-search
+     * analogue of `rebuildTreeVisible`: the matching is done by the caller (their
+     * own index/engine) instead of a local substring test, but ancestor
+     * preservation and `treeNodes`/`filteredOptions` index-alignment still happen
+     * here. Pass all options to show the whole tree.
+     */
+    private rebuildTreeVisibleFromMatches(matches: T[]): void {
+        if (!this.tree) {
+            this.treeNodes = [];
+            this.filteredOptions = [];
+            return;
+        }
+        const all = this.tree.flatNodes;
+        const sep = this.tree.treePathSeparator;
+        const matchedValues = new Set((matches || []).map(m => String(this.getItemValue(m))));
+
+        const required = new Set<string>();
+        for (const node of all) {
+            if (matchedValues.has(String(this.getItemValue(node.data as T)))) {
+                const segments = node.path.split(sep);
+                for (let i = 1; i <= segments.length; i++) {
+                    required.add(segments.slice(0, i).join(sep));
+                }
+            }
+        }
+
+        const nodes = all.filter(node => required.has(node.path));
+        this.treeNodes = nodes;
+        this.filteredOptions = nodes.map(node => node.data as T);
     }
 
     private buildHTML(): void {
@@ -495,6 +739,10 @@ export class WebMultiSelect<T = any> {
         // Clean up any existing action button tooltips before re-rendering
         this.destroyAllActionButtonTooltips();
 
+        // Cascade tree rows derive their tristate from the checked-atom set — keep
+        // it in sync with the (policy-projected) selection before rendering.
+        this.refreshCascadeAtoms();
+
         // Check if we should use virtual scrolling
         if (this.shouldUseVirtualScroll()) {
             // Add virtual scroll class to dropdown for CSS adjustments
@@ -529,10 +777,23 @@ export class WebMultiSelect<T = any> {
         const actionsAtBottom = this.options.actionsPosition === 'bottom';
         if (!actionsAtBottom) html += actionsHTML;
 
-        html += '<div class="ms__options">';
+        // When virtual scroll is enabled but the current result count is below the
+        // threshold (so we render normally), pin rows to the same fixed row height
+        // the virtual list uses — otherwise the height visibly jumps as the result
+        // count crosses the threshold (e.g. filtering from many matches to few).
+        if (this.options.isVirtualScrollEnabled) {
+            const optionHeight = this.options.optionHeight ?? 50;
+            html += `<div class="ms__options ms__options--fixed-height" style="--ms-option-height: ${optionHeight}px;">`;
+        } else {
+            html += '<div class="ms__options">';
+        }
 
         if (this.filteredOptions.length === 0) {
             html += `<div class="ms__empty">${this.options.emptyMessage}</div>`;
+        } else if (this.isTreeMode()) {
+            this.treeNodes.forEach((node, index) => {
+                html += this.renderTreeNode(node, index);
+            });
         } else {
             if (this.options.isGroupsAllowed) {
                 const groups = this.groupOptions(this.filteredOptions);
@@ -637,7 +898,10 @@ export class WebMultiSelect<T = any> {
                     container: this.optionsContainer,
                     itemHeight,
                     items: this.filteredOptions,
-                    renderItem: (item, index) => this.renderOption(item, index),
+                    renderItem: (item, index) =>
+                        this.isTreeMode()
+                            ? this.renderTreeNode(this.treeNodes[index], index)
+                            : this.renderOption(item, index),
                     bufferSize,
                     onVisibleRangeChange: () => {
                         // Re-attach tooltips to options recycled into view by virtual scrolling.
@@ -794,6 +1058,90 @@ export class WebMultiSelect<T = any> {
                 html += `<div class="ms__option-subtitle">${subtitle}</div>`;
             }
 
+            html += '</div>';
+        }
+
+        html += '</div>';
+        html += '</div>';
+
+        return html;
+    }
+
+    /**
+     * Render a single tree-mode row. Separate from `renderOption`: a tree row is
+     * indented by its depth (via the `--ms-tree-depth` custom property) and
+     * tagged branch/leaf, but otherwise carries the same selection/checkbox/
+     * icon/subtitle content. The tree is always fully expanded, so there is no
+     * chevron/toggle — every node is just a normal, selectable option.
+     */
+    private renderTreeNode(node: LTreeNode<T>, index: number): string {
+        const option = node.data as T;
+        const value = this.getItemValue(option);
+        const displayValue = this.getItemDisplayValue(option);
+        const icon = this.getItemIcon(option);
+        const subtitle = this.getItemSubtitle(option);
+        const disabled = this.getItemDisabled(option);
+
+        // In cascade mode the checked/indeterminate state is derived from the
+        // node's subtree, not directly from `selectedValues` (which holds the
+        // policy-projected emitted values). Elsewhere it's a plain membership test.
+        const cascade = this.isCascadeMode() && this.cascadeIndex;
+        const cascadeState = cascade
+            ? nodeCheckState(this.cascadeIndex!, node, this.cascadeCheckedAtoms)
+            : null;
+        const isSelected = cascade ? cascadeState === 'checked' : this.selectedValues.has(String(value));
+        const isIndeterminate = cascadeState === 'indeterminate';
+        const isFocused = index === this.focusedIndex;
+        const selectable = node.isSelectable !== false;
+        const level = node.level ?? 1;
+        const depth = Math.max(0, level - 1);
+
+        const classes = ['ms__option', 'ms__option--tree'];
+        classes.push(node.hasChildren ? 'ms__option--tree-branch' : 'ms__option--tree-leaf');
+        if (isSelected) classes.push('ms__option--selected');
+        if (isIndeterminate) classes.push('ms__option--indeterminate');
+        if (isFocused) classes.push('ms__option--focused');
+        if (disabled) classes.push('ms__option--disabled');
+        // Non-selectable nodes look normal (NOT greyed like disabled) but carry a
+        // hook class and drop their checkbox so they read as structure, not choices.
+        if (!selectable) classes.push('ms__option--tree-unselectable');
+
+        const checkboxAlignAttr = this.options.checkboxAlign && this.options.checkboxAlign !== 'center'
+            ? ` data-checkbox-align="${this.options.checkboxAlign}"`
+            : '';
+
+        const selectableAttr = selectable ? '' : ' data-selectable="false"';
+        let html = `<div class="${classes.join(' ')}" data-value="${value}" data-index="${index}" data-path="${node.path}" data-level="${level}" style="--ms-tree-depth: ${depth};"${checkboxAlignAttr}${selectableAttr}>`;
+
+        if (this.options.isCheckboxesShown && this.options.isMultipleEnabled && selectable) {
+            // Indeterminate is a pure CSS state (the checkbox is `appearance: none`,
+            // so no native `input.indeterminate` needed) — virtual-scroll-safe.
+            const checkboxClass = isIndeterminate ? 'ms__checkbox ms__checkbox--indeterminate' : 'ms__checkbox';
+            const ariaChecked = isIndeterminate ? ' aria-checked="mixed"' : '';
+            html += `<input type="checkbox" class="${checkboxClass}" ${isSelected ? 'checked' : ''}${ariaChecked} ${disabled ? 'disabled' : ''}>`;
+        }
+
+        html += '<div class="ms__option-content">';
+
+        if (this.options.renderOptionContentCallback) {
+            const context: OptionContentRenderContext = {
+                index,
+                isSelected,
+                isFocused,
+                isMatched: false,
+                isDisabled: disabled
+            };
+            const customContent = this.options.renderOptionContentCallback(option, context);
+            html += typeof customContent === 'string' ? customContent : customContent.outerHTML;
+        } else {
+            if (icon) {
+                html += `<span class="ms__option-icon">${icon}</span>`;
+            }
+            html += '<div class="ms__option-text">';
+            html += `<div class="ms__option-title">${this.highlightMatch(displayValue, this.searchTerm)}</div>`;
+            if (subtitle) {
+                html += `<div class="ms__option-subtitle">${subtitle}</div>`;
+            }
             html += '</div>';
         }
 
@@ -1095,8 +1443,13 @@ export class WebMultiSelect<T = any> {
                 // beforeSearchCallback returned null - don't search, show all options
                 dataLogger.debug(`[${this.instanceId}] beforeSearchCallback blocked search for term:`, value);
                 this.abortInFlightSearch();
-                this.filteredOptions = [...this.allOptions];
                 this.matchingIndices.clear();
+                if (this.isTreeMode()) {
+                    this.searchTerm = '';
+                    this.rebuildTreeVisible();
+                } else {
+                    this.filteredOptions = [...this.allOptions];
+                }
                 this.renderDropdown();
                 return;
             }
@@ -1113,12 +1466,14 @@ export class WebMultiSelect<T = any> {
                 this.abortInFlightSearch(); // No longer want any in-flight results
                 this.isLoading = false; // Stop loading state
                 if (this.options.isKeepOptionsOnSearch) {
-                    // Keep showing initial options
-                    this.filteredOptions = [...this.allOptions];
+                    // Keep showing initial options (full tree in tree mode).
+                    if (this.isTreeMode()) this.rebuildTreeVisibleFromMatches(this.allOptions);
+                    else this.filteredOptions = [...this.allOptions];
                     dataLogger.debug(`[${this.instanceId}] Search term below minimum, showing ${this.allOptions.length} initial options`);
                 } else {
                     // Clear options (old behavior)
                     this.filteredOptions = [];
+                    if (this.isTreeMode()) this.treeNodes = [];
                 }
                 this.matchingIndices.clear();
                 this.renderDropdown();
@@ -1146,6 +1501,15 @@ export class WebMultiSelect<T = any> {
             }
         } else {
             // LOCAL SEARCH PATH
+            if (this.isTreeMode()) {
+                // Tree mode filters the hierarchy (matches + their ancestors)
+                // rather than the flat option list, keeping indentation coherent.
+                this.rebuildTreeVisible();
+                this.matchingIndices.clear();
+                this.focusedIndex = this.filteredOptions.length > 0 ? 0 : -1;
+                this.renderDropdown();
+                return;
+            }
             if (!processedValue) {
                 // Empty search - show all options
                 this.filteredOptions = [...this.allOptions];
@@ -1237,8 +1601,14 @@ export class WebMultiSelect<T = any> {
 
             const searchResults = results || [];
 
-            // Always show the search results in filtered options
-            this.filteredOptions = [...searchResults];
+            // Show the results. In tree mode, rebuild the hierarchy from the
+            // returned matches (adding ancestors) so external search renders as a
+            // coherent tree instead of a flat, mis-indexed list.
+            if (this.isTreeMode()) {
+                this.rebuildTreeVisibleFromMatches(searchResults);
+            } else {
+                this.filteredOptions = [...searchResults];
+            }
             this.isLoading = false;
             this.matchingIndices.clear(); // Async search doesn't use matching indices
 
@@ -1253,10 +1623,12 @@ export class WebMultiSelect<T = any> {
             dataLogger.error(`[${this.instanceId}] Error loading data:`, error);
             this.isLoading = false;
             if (this.options.isKeepOptionsOnSearch) {
-                // Show initial options on error
-                this.filteredOptions = [...this.allOptions];
+                // Show initial options on error (full tree in tree mode).
+                if (this.isTreeMode()) this.rebuildTreeVisibleFromMatches(this.allOptions);
+                else this.filteredOptions = [...this.allOptions];
             } else {
                 this.filteredOptions = [];
+                if (this.isTreeMode()) this.treeNodes = [];
             }
             this.matchingIndices.clear();
             this.renderDropdown();
@@ -1327,7 +1699,8 @@ export class WebMultiSelect<T = any> {
                 } else if (this.input.value) {
                     this.input.value = '';
                     this.searchTerm = '';
-                    this.filteredOptions = [...this.allOptions];
+                    this.resetVisibleToAll();
+                    this.matchingIndices.clear();
                     this.focusedIndex = -1;
                     this.renderDropdown();
                 } else {
@@ -1516,22 +1889,43 @@ export class WebMultiSelect<T = any> {
      * Move focus by computing a new index from (current, total).
      * Returning -1 from `compute` is a no-op (used for empty list / no match).
      */
-    private focusBy(compute: (current: number, total: number) => number): void {
+    private focusBy(compute: (current: number, total: number) => number, dir: 1 | -1 = 1): void {
         const total = this.filteredOptions.length;
         if (total === 0) return;
-        const next = compute(this.focusedIndex, total);
+        const target = compute(this.focusedIndex, total);
+        if (target < 0) return;
+        // Tree mode: never land focus on a non-selectable node — scan past it in
+        // the movement direction (then the opposite direction as a fallback).
+        const next = this.resolveSelectableIndex(target, dir, total);
         if (next < 0) return;
         this.focusedIndex = next;
         this.renderDropdown();
         this.scrollToFocused();
     }
 
-    private focusNext(): void     { this.focusBy((i, n) => Math.min(n - 1, i + 1)); }
-    private focusPrevious(): void { this.focusBy((i)    => Math.max(0, i - 1)); }
-    private focusFirst(): void    { this.focusBy(()     => 0); }
-    private focusLast(): void     { this.focusBy((_, n) => n - 1); }
-    private focusPageUp(): void   { this.focusBy((i)    => Math.max(0, i - 10)); }
-    private focusPageDown(): void { this.focusBy((i, n) => Math.min(n - 1, i + 10)); }
+    /**
+     * Given a target index and a preferred direction, return the nearest index
+     * whose node is selectable (skipping non-selectable tree nodes). Falls back to
+     * the opposite direction, then to -1 if nothing is selectable. No-op outside
+     * tree mode.
+     */
+    private resolveSelectableIndex(start: number, dir: 1 | -1, total: number): number {
+        if (!this.isTreeMode()) return start;
+        let i = start;
+        while (i >= 0 && i < total && !this.isIndexSelectable(i)) i += dir;
+        if (i < 0 || i >= total) {
+            i = start - dir;
+            while (i >= 0 && i < total && !this.isIndexSelectable(i)) i -= dir;
+        }
+        return (i >= 0 && i < total) ? i : -1;
+    }
+
+    private focusNext(): void     { this.focusBy((i, n) => Math.min(n - 1, i + 1), 1); }
+    private focusPrevious(): void { this.focusBy((i)    => Math.max(0, i - 1), -1); }
+    private focusFirst(): void    { this.focusBy(()     => 0, 1); }
+    private focusLast(): void     { this.focusBy((_, n) => n - 1, -1); }
+    private focusPageUp(): void   { this.focusBy((i)    => Math.max(0, i - 10), -1); }
+    private focusPageDown(): void { this.focusBy((i, n) => Math.min(n - 1, i + 10), 1); }
 
     private focusNextMatch(): void {
         if (this.matchingIndices.size === 0) return;
@@ -1572,9 +1966,27 @@ export class WebMultiSelect<T = any> {
             interactionLogger.debug(`[${this.instanceId}] toggleOption ignored — option is disabled`);
             return;
         }
+        // Tree mode: a non-selectable node (e.g. a branch in a leaves-only tree)
+        // must not toggle, no matter how we got here.
+        if (!this.isOptionSelectable(option)) {
+            interactionLogger.debug(`[${this.instanceId}] toggleOption ignored — node is not selectable`);
+            return;
+        }
         const value = this.getItemValue(option);
         const valueKey = String(value);
         interactionLogger.debug(`[${this.instanceId}] toggleOption called`, { value, multiple: this.options.isMultipleEnabled });
+
+        // Cascade mode: toggling a node flips its whole subtree and re-projects to
+        // emitted values. Route through the dedicated path (which commits its own
+        // added/removed diff) instead of the single-value select/deselect funnel.
+        if (this.isCascadeMode() && this.cascadeIndex) {
+            const node = this.cascadeIndex.nodeByValue.get(valueKey);
+            if (node) {
+                this.toggleTreeCascade(node);
+                if (this.options.isCloseOnSelect) this.close();
+                return;
+            }
+        }
 
         const wasSelected = this.selectedValues.has(valueKey);
         const changed = wasSelected
@@ -1679,8 +2091,9 @@ export class WebMultiSelect<T = any> {
 
     private selectAll(): void {
         const added: T[] = [];
-        this.filteredOptions.forEach(option => {
+        this.filteredOptions.forEach((option, index) => {
             if (this.getItemDisabled(option)) return;
+            if (!this.isIndexSelectable(index)) return;
             const valueKey = String(this.getItemValue(option));
             if (this.selectedValues.has(valueKey)) return;
             this.selectedValues.add(valueKey);
@@ -1776,7 +2189,7 @@ export class WebMultiSelect<T = any> {
                 this.input.value = '';
             }
 
-            this.filteredOptions = [...this.allOptions];
+            this.resetVisibleToAll();
         }
 
         this.focusedIndex = -1;
@@ -2305,10 +2718,27 @@ export class WebMultiSelect<T = any> {
 
         Object.assign(this.options, partial);
 
+        // Tree-affecting config keys — a change to any of these means the
+        // hierarchy must be rebuilt from `allOptions`.
+        const treeConfigChanged = 'pathMember' in partial || 'getPathCallback' in partial
+            || 'parentPathMember' in partial || 'levelMember' in partial
+            || 'hasChildrenMember' in partial || 'treePathSeparator' in partial
+            || 'isTreeEnabled' in partial || 'isSelectableMember' in partial
+            || 'getIsSelectableCallback' in partial;
+
         if ('options' in partial && partial.options !== undefined) {
             this.allOptions = partial.options;
-            this.filteredOptions = this.searchTerm ? this.filteredOptions : [...this.allOptions];
             this.reconcileSelectedOptions();
+            if (this.isTreeMode()) {
+                // buildTree derives filteredOptions from the tree, honouring the current search term.
+                this.buildTree();
+            } else {
+                this.filteredOptions = this.searchTerm ? this.filteredOptions : [...this.allOptions];
+            }
+        } else if (treeConfigChanged) {
+            // Tree config toggled/changed without new options — rebuild from the existing list.
+            if (this.isTreeMode()) this.buildTree();
+            else this.filteredOptions = this.searchTerm ? this.filteredOptions : [...this.allOptions];
         }
 
         // Structural class on host

@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tree of Options - MultiSelect</title>
+
+    <!-- Shared example styles -->
+    <link rel="stylesheet" href="examples-shared.css">
+
+    <!-- Page-specific styles -->
+    <style>
+        .demo-area {
+            background: #f7fafc;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+        }
+
+        .demo-label {
+            display: block;
+            font-size: 0.85rem;
+            color: #4a5568;
+            margin-bottom: 0.5rem;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 1.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="index.html" class="back-link">← Back to Examples</a>
+            <h1>🌳 Tree of Options</h1>
+            <p class="subtitle">Render options as an always-expanded hierarchy, indented by depth</p>
+        </header>
+
+        <!-- Example 1: Basic tree -->
+        <section class="example-section">
+            <h2>1. Basic Tree</h2>
+            <p class="description">
+                Give each option a materialized dot-path (<code>"1"</code>, <code>"1.1"</code>,
+                <code>"1.1.1"</code>, …) and set <code>path-member</code>. Tree mode auto-enables:
+                the component derives parent and depth from the path and renders the options
+                depth-first, indented by level. The model is a trimmed lift of
+                <code>@keenmate/web-treeview</code>'s <code>ltree</code>.
+            </p>
+
+            <div class="demo-area">
+                <label class="demo-label">Open the dropdown — every node is expanded:</label>
+                <web-multiselect id="tree-basic" multiple="true"></web-multiselect>
+            </div>
+
+            <div class="code-block"><pre>el.options = [
+  { value: 'fruit', label: 'Fruit', path: '1' },
+  { value: 'pome',  label: 'Pome fruit', path: '1.1' },
+  { value: 'apple', label: 'Apple', path: '1.1.1' },
+  { value: 'veg',   label: 'Vegetables', path: '2' }
+];
+el.pathMember = 'path';   // &lt;web-multiselect path-member="path"&gt;</pre></div>
+
+            <div class="note">
+                <div class="note-title">No collapse:</div>
+                The tree is always fully expanded — there is no chevron/toggle. Reach for
+                <a href="https://github.com/keenmate/web-treeview" target="_blank">@keenmate/web-treeview</a>
+                when you need expand/collapse.
+            </div>
+        </section>
+
+        <!-- Example 2: Single-select and checkboxes -->
+        <section class="example-section">
+            <h2>2. Single-Select &amp; Checkboxes</h2>
+            <p class="description">
+                Every node — branch or leaf — is a normal, selectable option. Selection, single/multi
+                mode, and checkboxes all behave exactly as they do for a flat list.
+            </p>
+
+            <div class="demo-grid">
+                <div>
+                    <label class="demo-label">Single-select (<code>multiple="false"</code>):</label>
+                    <web-multiselect id="tree-single" multiple="false"></web-multiselect>
+                </div>
+                <div>
+                    <label class="demo-label">With checkboxes (<code>show-checkboxes="true"</code>):</label>
+                    <web-multiselect id="tree-checks" multiple="true" show-checkboxes="true"></web-multiselect>
+                </div>
+            </div>
+        </section>
+
+        <!-- Example 3: Ancestor-preserving search -->
+        <section class="example-section">
+            <h2>3. Ancestor-Preserving Search</h2>
+            <p class="description">
+                Typing filters the hierarchy to the <strong>matching nodes plus their ancestors</strong>,
+                so the indentation of the results still makes sense.
+            </p>
+
+            <div class="demo-area">
+                <label class="demo-label">Open the list and type <code>kale</code> — you get Vegetables → Leafy → Kale:</label>
+                <web-multiselect id="tree-search" multiple="true"></web-multiselect>
+            </div>
+        </section>
+
+        <!-- Example 4: Custom separator -->
+        <section class="example-section">
+            <h2>4. Custom Path Separator</h2>
+            <p class="description">
+                When your paths use a different separator (e.g. <code>1/1/2</code>), set
+                <code>tree-path-separator</code>.
+            </p>
+
+            <div class="demo-area">
+                <label class="demo-label"><code>tree-path-separator="/"</code>:</label>
+                <web-multiselect id="tree-slash" multiple="true" tree-path-separator="/"></web-multiselect>
+            </div>
+
+            <div class="code-block"><pre>&lt;web-multiselect path-member="path" tree-path-separator="/"&gt;&lt;/web-multiselect&gt;</pre></div>
+        </section>
+
+        <!-- Example 5: Full breadcrumb on badges -->
+        <section class="example-section">
+            <h2>5. Full Breadcrumb on Badges</h2>
+            <p class="description">
+                A <strong>full title</strong> is a fully-qualified label that ships with the data
+                (never computed here). Set <code>full-title-member</code> (or
+                <code>getFullTitleCallback</code>) and turn on <code>show-badge-full-title</code>, and
+                badges render <em>Fruit / Pome fruit / Apple</em> instead of just <em>Apple</em> —
+                disambiguating leaves that share a name across branches. An explicit
+                <code>getBadgeDisplayCallback</code> still wins.
+            </p>
+
+            <div class="demo-area">
+                <label class="demo-label">Two items are pre-selected — see the breadcrumb badges:</label>
+                <web-multiselect id="tree-fulltitle" multiple="true" show-badge-full-title="true"></web-multiselect>
+            </div>
+
+            <div class="code-block"><pre>&lt;web-multiselect path-member="path" full-title-member="fullTitle" show-badge-full-title="true"&gt;</pre></div>
+        </section>
+
+        <!-- Example 6: Leaves-only selectability -->
+        <section class="example-section">
+            <h2>6. Selectable Leaves Only</h2>
+            <p class="description">
+                A node can be marked <strong>non-selectable</strong> — set
+                <code>is-selectable-member</code> (a data flag) or
+                <code>getIsSelectableCallback</code> (a predicate that receives the built node, so
+                it can read <code>node.hasChildren</code>). Non-selectable nodes render
+                <em>normally</em> — they are <strong>not</strong> greyed out like
+                <code>disabled</code> — but they drop their checkbox, are skipped by keyboard
+                arrows, and can't be toggled or picked by Select&nbsp;All. The classic use is a
+                tree where only the leaves are real choices and the branches are pure structure.
+            </p>
+
+            <div class="demo-area">
+                <label class="demo-label">Branches are labels only — try clicking one, then a leaf:</label>
+                <web-multiselect id="tree-leaves" multiple="true" show-checkboxes="true"></web-multiselect>
+            </div>
+
+            <div class="code-block"><pre>// Only leaves are selectable — the callback sees the derived hasChildren.
+el.getIsSelectableCallback = (node) =&gt; !node.hasChildren;
+
+// …or drive it from the data:
+// &lt;web-multiselect path-member="path" is-selectable-member="selectable"&gt;</pre></div>
+        </section>
+
+        <!-- Example 7: Styling the indentation -->
+        <section class="example-section">
+            <h2>7. Styling the Indentation</h2>
+            <p class="description">
+                Each row is indented via an inline <code>--ms-tree-depth</code> custom property
+                (0 at the top level). Tune the step with <code>--ms-tree-indent</code> and the
+                first-level offset with <code>--ms-tree-base-indent</code>. Branch/leaf rows also
+                carry <code>.ms__option--tree-branch</code> / <code>.ms__option--tree-leaf</code>
+                theming hooks.
+            </p>
+
+            <div class="demo-grid">
+                <div>
+                    <label class="demo-label">Wide indent (<code>--ms-tree-indent: 2rem</code>):</label>
+                    <web-multiselect id="tree-wide" multiple="true" style="--ms-tree-indent: 2rem;"></web-multiselect>
+                </div>
+                <div>
+                    <label class="demo-label">Bold branch labels (via <code>.ms__option--tree-branch</code>):</label>
+                    <web-multiselect id="tree-bold" multiple="true"></web-multiselect>
+                </div>
+            </div>
+
+            <div class="code-block"><pre>web-multiselect {
+  --ms-tree-indent: 1.25rem;      /* per-level step */
+  --ms-tree-base-indent: 0.75rem; /* first-level inline-start padding */
+}</pre></div>
+        </section>
+
+        <!-- Example 8: Row height & long labels -->
+        <section class="example-section">
+            <h2>8. Row Height &amp; Long Labels</h2>
+            <p class="description">
+                Deep indentation eats horizontal space, so long labels matter. By default a title
+                <strong>wraps</strong> to multiple lines (rows grow). Set a consistent row height with
+                <code>--ms-option-min-height</code>, and/or truncate long titles to a single line with
+                an ellipsis by flipping the three <code>--ms-option-title-*</code> variables.
+                <code>.ms__option-title</code> is the label hook (the analog of web-treeview's
+                <code>.wtv__node-label</code>). Pair truncation with
+                <code>enable-option-tooltips</code> to reveal the full text on hover. These apply to
+                flat lists too — they're option-level, not tree-only.
+            </p>
+
+            <div class="demo-grid">
+                <div>
+                    <label class="demo-label">Truncated (ellipsis) + tooltip:</label>
+                    <web-multiselect id="tree-truncate" multiple="true" enable-option-tooltips="true"
+                        style="--ms-option-title-white-space: nowrap; --ms-option-title-overflow: hidden; --ms-option-title-text-overflow: ellipsis;"></web-multiselect>
+                </div>
+                <div>
+                    <label class="demo-label">Taller rows (<code>--ms-option-min-height: 56px</code>):</label>
+                    <web-multiselect id="tree-tall" multiple="true" style="--ms-option-min-height: 56px;"></web-multiselect>
+                </div>
+            </div>
+
+            <div class="code-block"><pre>web-multiselect {
+  --ms-option-min-height: 56px;                 /* consistent row height */
+
+  /* truncate long titles to one line + ellipsis */
+  --ms-option-title-white-space: nowrap;
+  --ms-option-title-overflow: hidden;
+  --ms-option-title-text-overflow: ellipsis;
+}</pre></div>
+        </section>
+
+        <!-- Example 9: Real data — full ISCO-08 classification -->
+        <section class="example-section">
+            <h2>9. Real Data — Full ISCO-08 Classification</h2>
+            <p class="description">
+                Everything at once on real data: the whole
+                <strong>International Standard Classification of Occupations</strong> (ISCO-08) —
+                619 groups (10 major → 43 sub-major → 130 minor → 436 unit). The ISCO code
+                <em>is</em> the hierarchy (<code>2211</code> → path <code>2.22.221.2211</code>), so it
+                drops straight into <code>path-member</code>. Only the <strong>unit groups</strong>
+                (leaves) are selectable — you pick an occupation, not a category. A custom badge
+                shows just the <strong>leaf title</strong> (prefixed <code>.. /</code> when it has
+                ancestors), with the <strong>full breadcrumb in the badge tooltip</strong>; long
+                titles truncate; virtual scroll keeps 600+ rows smooth. A
+                <code>getSearchValueCallback</code> widens the built-in filter to match the
+                <strong>title, ISCO code, and full breadcrumb</strong> (matches keep their
+                ancestors), so you can search by any of them.
+            </p>
+
+            <div class="demo-area">
+                <label class="demo-label">Search e.g. <code>welder</code>, <code>2211</code>, or <code>health</code> — then hover a badge:</label>
+                <web-multiselect id="tree-isco" multiple="true"
+                    enable-virtual-scroll="true" option-height="32" enable-badge-tooltips="true" enable-option-tooltips="true"
+                    style="--ms-option-padding: 0.3rem 0.85rem; --ms-option-title-white-space: nowrap; --ms-option-title-overflow: hidden; --ms-option-title-text-overflow: ellipsis;"></web-multiselect>
+            </div>
+
+            <div class="code-block"><pre>const isco = await (await fetch('./examples-data/isco08.json')).json();
+el.pathMember = 'path';               // "2.22.221.2211"
+el.isSelectableMember = 'selectable'; // only 4-digit unit groups (leaves)
+el.options = isco;
+
+// Badge shows only the last segment; ".. /" hints at hidden ancestors.
+el.getBadgeDisplayCallback = (item) =&gt; {
+  const segs = String(item.fullTitle || item.label).split(' / ');
+  const last = segs[segs.length - 1];
+  return segs.length &gt; 1 ? `.. / ${last}` : last;
+};
+// Full breadcrumb in the badge tooltip (needs enable-badge-tooltips).
+el.getBadgeTooltipCallback = (item) =&gt; item.fullTitle || item.label;</pre></div>
+
+            <p class="description" style="font-size: 0.85rem; opacity: 0.8;">
+                Source: <em>International Standard Classification of Occupations, ISCO-08</em>
+                (© International Labour Organization) — demo data.
+            </p>
+        </section>
+
+        <!-- Example 10: Cascade checkbox mode + value policy -->
+        <section class="example-section">
+            <h2>10. Cascade Checkboxes &amp; Value Policy</h2>
+            <p class="description">
+                Set <code>checkbox-mode="cascade"</code> and checking a branch checks its
+                <strong>whole subtree</strong>; a partially-selected branch shows a
+                <strong>tristate</strong> (dash) box. Independent of the interaction, the
+                <code>cascade-select-policy</code> decides <em>which values</em> the selection emits
+                (badges / form / <code>change</code>):
+            </p>
+            <ul class="description">
+                <li><code>rolled-up</code> <em>(default)</em> — the <strong>minimal cover</strong>: a
+                    fully-selected subtree collapses to its root ("complete node"); a partially-selected
+                    branch emits its individually-checked descendants. Rolls to the nearest selectable
+                    descendant when the complete node itself is non-selectable.</li>
+                <li><code>leaves</code> — only the checked leaf nodes.</li>
+                <li><code>all</code> — every fully-checked node (branches + leaves), like
+                    <code>@keenmate/web-treeview</code>.</li>
+            </ul>
+
+            <div class="demo-grid">
+                <div>
+                    <label class="demo-label">rolled-up (check "Fruit" → one <em>Fruit</em> badge):</label>
+                    <web-multiselect id="tree-casc-rolled" multiple="true" show-checkboxes="true"
+                        checkbox-mode="cascade"></web-multiselect>
+                </div>
+                <div>
+                    <label class="demo-label">leaves (check "Fruit" → a badge per leaf):</label>
+                    <web-multiselect id="tree-casc-leaves" multiple="true" show-checkboxes="true"
+                        checkbox-mode="cascade" cascade-select-policy="leaves"></web-multiselect>
+                </div>
+                <div>
+                    <label class="demo-label">all (check "Fruit" → branches + leaves):</label>
+                    <web-multiselect id="tree-casc-all" multiple="true" show-checkboxes="true"
+                        checkbox-mode="cascade" cascade-select-policy="all"></web-multiselect>
+                </div>
+            </div>
+
+            <div class="code-block"><pre>&lt;web-multiselect path-member="path" checkbox-mode="cascade"
+    cascade-select-policy="rolled-up"&gt;&lt;/web-multiselect&gt;
+
+// checking a parent toggles the whole subtree; a partial parent is indeterminate.
+// rolled-up: a fully-checked subtree emits ONE value (its root); partial parents
+// emit their individually-checked descendants — the minimal set that covers the selection.</pre></div>
+        </section>
+    </div>
+
+    <script type="module" src="/src/index.ts"></script>
+    <script type="module">
+        // Each option carries a materialized dot-path; parent/level are derived from it.
+        const categories = [
+            { value: 'fruit',   label: 'Fruit',       path: '1' },
+            { value: 'pome',    label: 'Pome fruit',  path: '1.1' },
+            { value: 'apple',   label: 'Apple',       path: '1.1.1' },
+            { value: 'pear',    label: 'Pear',        path: '1.1.2' },
+            { value: 'stone',   label: 'Stone fruit', path: '1.2' },
+            { value: 'peach',   label: 'Peach',       path: '1.2.1' },
+            { value: 'plum',    label: 'Plum',        path: '1.2.2' },
+            { value: 'veg',     label: 'Vegetables',  path: '2' },
+            { value: 'root',    label: 'Root',        path: '2.1' },
+            { value: 'carrot',  label: 'Carrot',      path: '2.1.1' },
+            { value: 'beet',    label: 'Beetroot',    path: '2.1.2' },
+            { value: 'leafy',   label: 'Leafy',       path: '2.2' },
+            { value: 'kale',    label: 'Kale',        path: '2.2.1' },
+            { value: 'spinach', label: 'Spinach',     path: '2.2.2' }
+        ];
+
+        // Same data with a "/" separator.
+        const slashCategories = categories.map(c => ({ ...c, path: c.path.replaceAll('.', '/') }));
+
+        // A "full title" ships WITH the data. Here we build a breadcrumb by joining each
+        // option's ancestor labels — the component never computes it.
+        const labelByPath = new Map(categories.map(c => [c.path, c.label]));
+        const withFullTitles = categories.map(c => {
+            const segs = c.path.split('.');
+            const crumb = segs
+                .map((_, i) => labelByPath.get(segs.slice(0, i + 1).join('.')))
+                .filter(Boolean)
+                .join(' / ');
+            return { ...c, fullTitle: crumb };
+        });
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            // Dot-path examples.
+            for (const id of ['tree-basic', 'tree-single', 'tree-checks', 'tree-search', 'tree-wide', 'tree-bold']) {
+                const el = document.querySelector('#' + id);
+                el.valueMember = 'value';
+                el.displayValueMember = 'label';
+                el.pathMember = 'path';
+                el.options = categories;
+            }
+
+            // Custom separator example.
+            const slash = document.querySelector('#tree-slash');
+            slash.valueMember = 'value';
+            slash.displayValueMember = 'label';
+            slash.pathMember = 'path';
+            slash.options = slashCategories;
+
+            // Full breadcrumb on badges (two items pre-selected).
+            const ft = document.querySelector('#tree-fulltitle');
+            ft.valueMember = 'value';
+            ft.displayValueMember = 'label';
+            ft.pathMember = 'path';
+            ft.fullTitleMember = 'fullTitle';
+            ft.options = withFullTitles;
+            ft.setSelected(['apple', 'kale']);
+
+            // Real data — the full ISCO-08 occupation classification (619 groups),
+            // fetched as JSON. Leaves-only (unit groups) selectable; breadcrumb badges.
+            fetch('./examples-data/isco08.json')
+                .then(r => r.json())
+                .then(isco => {
+                    const el = document.querySelector('#tree-isco');
+                    el.valueMember = 'value';
+                    el.displayValueMember = 'label';
+                    el.pathMember = 'path';
+                    el.isSelectableMember = 'selectable';
+                    // Built-in search matches the display value only (the title). Widen
+                    // it to also match the ISCO code and the full breadcrumb, so "2211"
+                    // or "health" both find their nodes (matches keep their ancestors).
+                    el.getSearchValueCallback = (item) => `${item.label} ${item.value} ${item.fullTitle}`;
+                    // Badge = last segment only, with a ".. /" hint when ancestors exist.
+                    el.getBadgeDisplayCallback = (item) => {
+                        const segs = String(item.fullTitle || item.label).split(' / ');
+                        const last = segs[segs.length - 1];
+                        return segs.length > 1 ? `.. / ${last}` : last;
+                    };
+                    // Full breadcrumb in the badge tooltip.
+                    el.getBadgeTooltipCallback = (item) => item.fullTitle || item.label;
+                    el.options = isco;
+                });
+
+            // Leaves-only selectability: branches become pure structure (no checkbox,
+            // skipped by focus) while staying visually normal — not greyed out.
+            const leaves = document.querySelector('#tree-leaves');
+            leaves.valueMember = 'value';
+            leaves.displayValueMember = 'label';
+            leaves.pathMember = 'path';
+            leaves.getIsSelectableCallback = (node) => !node.hasChildren;
+            leaves.options = categories;
+
+            // Row-height + long-label handling — give these deliberately long labels.
+            for (const id of ['tree-truncate', 'tree-tall']) {
+                const el = document.querySelector('#' + id);
+                el.valueMember = 'value';
+                el.displayValueMember = 'label';
+                el.pathMember = 'path';
+                el.options = categories.map(c => ({ ...c, label: `${c.label} — long label that may need truncation or a taller row` }));
+            }
+
+            // Cascade checkbox mode — same tree, three value policies side by side.
+            for (const id of ['tree-casc-rolled', 'tree-casc-leaves', 'tree-casc-all']) {
+                const el = document.querySelector('#' + id);
+                el.valueMember = 'value';
+                el.displayValueMember = 'label';
+                el.pathMember = 'path';
+                el.options = categories;
+            }
+
+            // Bold the branch (parent) rows via a shadow-DOM stylesheet.
+            const bold = document.querySelector('#tree-bold');
+            bold.customStylesCallback = () => `
+                .ms__option--tree-branch .ms__option-title { font-weight: 600; }
+                .ms__option--tree-leaf   .ms__option-title { font-weight: 400; }
+            `;
+        });
+    </script>
+</body>
+</html>

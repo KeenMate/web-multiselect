@@ -44,6 +44,19 @@
   box-sizing: border-box;
 }
 
+/* Non-virtual rendering while virtual scroll is *enabled* (result count is below
+   the threshold): pin rows to the same fixed --ms-option-height so the row height
+   doesn't jump as filtering crosses the virtualization threshold. Mirrors the
+   rule above; applied only when the consumer opted into virtual scroll, so plain
+   non-virtual lists keep their natural content height. */
+.ms__options--fixed-height .ms__option {
+  height: var(--ms-option-height, 50px);
+  min-height: var(--ms-option-height, 50px);
+  max-height: var(--ms-option-height, 50px);
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
 /* ==============================================================================
    GROUPS
    ==============================================================================
@@ -77,6 +90,7 @@
   align-items: var(--ms-checkbox-align, center); /* Support checkbox alignment */
   gap: var(--ms-option-gap);
   padding: var(--ms-option-padding);
+  min-height: var(--ms-option-min-height, auto);
   color: var(--ms-option-text-color);
   background: var(--ms-option-bg);
   cursor: pointer;
@@ -206,7 +220,7 @@
   transform: translate(-50%, -50%) rotate(45deg);
   /* Checkmark shape (right and bottom borders form the check) */
   border: solid var(--ms-checkbox-checkmark-color);
-  border-width: 0 2px 2px 0;
+  border-width: 0 var(--ms-checkbox-checkmark-thickness, 2px) var(--ms-checkbox-checkmark-thickness, 2px) 0;
 }
 
 /* Hover state */
@@ -222,6 +236,32 @@
 
 .ms__checkbox:checked::after {
   display: block;
+}
+
+/* Indeterminate (tristate) — cascade checkbox-mode: a partially-selected branch.
+   Filled like the checked box but with a dash instead of a checkmark. Rendered
+   from a modifier class (not the native :indeterminate property) so it survives
+   string re-render + virtual scroll. */
+.ms__checkbox--indeterminate {
+  background: var(--ms-checkbox-checked-bg);
+  border: var(--ms-checkbox-checked-border);
+}
+
+.ms__checkbox--indeterminate::after {
+  display: block;
+  top: 50%;
+  left: 50%;
+  width: 55%;
+  height: 0;
+  /* Override the rotated checkmark: a centered horizontal dash. */
+  transform: translate(-50%, -50%);
+  border: none;
+  border-bottom: var(--ms-checkbox-checkmark-thickness, 2px) solid var(--ms-checkbox-checkmark-color);
+}
+
+.ms__checkbox--indeterminate:hover:not(:disabled) {
+  background: var(--ms-checkbox-checked-bg-hover);
+  border-color: var(--ms-checkbox-checked-border-color-hover);
 }
 
 /* Checked + Hover */
@@ -289,11 +329,16 @@
   min-width: 0;
 }
 
-/* Option title/main text */
+/* Option title/main text. This is the label hook (cf. `.wtv__node-label` /
+   `.stv__node-label` in the treeview packages) — flip the white-space/overflow/
+   text-overflow variables to truncate long labels; defaults keep them wrapping. */
 .ms__option-title {
   font-size: var(--ms-option-title-font-size);
   color: var(--ms-option-title-color);
   line-height: var(--ms-line-height-relaxed);
+  white-space: var(--ms-option-title-white-space, normal);
+  overflow: var(--ms-option-title-overflow, visible);
+  text-overflow: var(--ms-option-title-text-overflow, clip);
 }
 
 /* Title color states (for solid background themes) */

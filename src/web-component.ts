@@ -1,5 +1,6 @@
 import { WebMultiSelect } from './multiselect';
 import type { MultiSelectConfig, MultiSelectEventDetail, OptionContentRenderContext, BadgeContentRenderContext } from './types';
+import type { LTreeNode } from './tree/ltree-node';
 import styles from './css/main.css?inline';
 import { dataLogger } from './logger';
 
@@ -62,8 +63,21 @@ const ATTRIBUTE_TABLE: ReadonlyArray<AttrSpec> = [
     { attr: 'search-value-member',         key: 'searchValueMember',        parser: 'string-or-undefined' },
     { attr: 'icon-member',                 key: 'iconMember',               parser: 'string-or-undefined' },
     { attr: 'subtitle-member',             key: 'subtitleMember',           parser: 'string-or-undefined' },
+    { attr: 'full-title-member',           key: 'fullTitleMember',          parser: 'string-or-undefined' },
     { attr: 'group-member',                key: 'groupMember',              parser: 'string-or-undefined' },
     { attr: 'disabled-member',             key: 'disabledMember',           parser: 'string-or-undefined' },
+
+    // Tree of options (presence of path-member / getPathCallback auto-enables tree mode)
+    { attr: 'path-member',                 key: 'pathMember',               parser: 'string-or-undefined' },
+    { attr: 'parent-path-member',          key: 'parentPathMember',         parser: 'string-or-undefined' },
+    { attr: 'level-member',                key: 'levelMember',              parser: 'string-or-undefined' },
+    { attr: 'has-children-member',         key: 'hasChildrenMember',        parser: 'string-or-undefined' },
+    { attr: 'is-selectable-member',        key: 'isSelectableMember',       parser: 'string-or-undefined' },
+    { attr: 'tree-path-separator',         key: 'treePathSeparator',        parser: 'string', default: '.' },
+    { attr: 'checkbox-mode',               key: 'checkboxMode',             parser: 'enum',
+      enumValues: ['independent','cascade'], default: 'independent' },
+    { attr: 'cascade-select-policy',       key: 'cascadeSelectPolicy',      parser: 'enum',
+      enumValues: ['rolled-up','leaves','all'], default: 'rolled-up' },
 
     // Enums
     { attr: 'badges-display-mode',         key: 'badgesDisplayMode',        parser: 'enum',
@@ -121,6 +135,7 @@ const ATTRIBUTE_TABLE: ReadonlyArray<AttrSpec> = [
     { attr: 'close-on-select',             key: 'isCloseOnSelect',          parser: 'bool-default-false' },
     { attr: 'allow-add-new',               key: 'isAddNewAllowed',          parser: 'bool-default-false' },
     { attr: 'show-counter',                key: 'isCounterShown',           parser: 'bool-default-false' },
+    { attr: 'show-badge-full-title',       key: 'isBadgeFullTitleShown',    parser: 'bool-default-false' },
     { attr: 'enable-virtual-scroll',       key: 'isVirtualScrollEnabled',   parser: 'bool-default-false' },
     { attr: 'enable-badge-tooltips',       key: 'isBadgeTooltipsEnabled',   parser: 'bool-default-false' },
     { attr: 'enable-option-tooltips',      key: 'isOptionTooltipsEnabled',  parser: 'bool-default-false' },
@@ -223,11 +238,17 @@ export class MultiSelectElement<T = any> extends BaseElement {
     private _getIconCallback?: (item: T) => string;
     private _subtitleMember?: string;
     private _getSubtitleCallback?: (item: T) => string;
+    private _getFullTitleCallback?: (item: T) => string;
     private _groupMember?: string;
     private _getGroupCallback?: (item: T) => string;
     private _renderGroupLabelContentCallback?: (groupName: string) => string | HTMLElement;
     private _disabledMember?: string;
     private _getDisabledCallback?: (item: T) => boolean;
+
+    // Tree of options
+    private _getPathCallback?: (item: T) => string;
+    private _isTreeEnabled?: boolean;
+    private _getIsSelectableCallback?: (node: LTreeNode<T>) => boolean;
 
     // Value formatting callbacks
     private _getValueFormatCallback?: (selectedValues: (string | number)[]) => string;
@@ -703,7 +724,11 @@ export class MultiSelectElement<T = any> extends BaseElement {
             getSearchValueCallback: this._getSearchValueCallback,
             getIconCallback: this._getIconCallback,
             getSubtitleCallback: this._getSubtitleCallback,
+            getFullTitleCallback: this._getFullTitleCallback,
             getGroupCallback: this._getGroupCallback,
+            getPathCallback: this._getPathCallback,
+            isTreeEnabled: this._isTreeEnabled,
+            getIsSelectableCallback: this._getIsSelectableCallback,
             renderGroupLabelContentCallback: this._renderGroupLabelContentCallback,
             getDisabledCallback: this._getDisabledCallback,
             renderOptionContentCallback: this._renderOptionContentCallback,
@@ -882,6 +907,15 @@ export class MultiSelectElement<T = any> extends BaseElement {
         return this.getAttribute('subtitle-member');
     }
 
+    set fullTitleMember(value: string | null) {
+        if (value) this.setAttribute('full-title-member', value);
+        else this.removeAttribute('full-title-member');
+    }
+
+    get fullTitleMember(): string | null {
+        return this.getAttribute('full-title-member');
+    }
+
     set groupMember(value: string | null) {
         this._groupMember = value || undefined;
         if (value) this.setAttribute('group-member', value);
@@ -900,6 +934,81 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     get disabledMember(): string | null {
         return this.getAttribute('disabled-member');
+    }
+
+    // Tree-of-options members. Setting `pathMember` (like the `path-member`
+    // attribute) turns on tree mode. Each reflects to its kebab attribute, which
+    // is observed and applied in place — no separate wiring needed.
+    set pathMember(value: string | null) {
+        if (value) this.setAttribute('path-member', value);
+        else this.removeAttribute('path-member');
+    }
+
+    get pathMember(): string | null {
+        return this.getAttribute('path-member');
+    }
+
+    set parentPathMember(value: string | null) {
+        if (value) this.setAttribute('parent-path-member', value);
+        else this.removeAttribute('parent-path-member');
+    }
+
+    get parentPathMember(): string | null {
+        return this.getAttribute('parent-path-member');
+    }
+
+    set levelMember(value: string | null) {
+        if (value) this.setAttribute('level-member', value);
+        else this.removeAttribute('level-member');
+    }
+
+    get levelMember(): string | null {
+        return this.getAttribute('level-member');
+    }
+
+    set hasChildrenMember(value: string | null) {
+        if (value) this.setAttribute('has-children-member', value);
+        else this.removeAttribute('has-children-member');
+    }
+
+    get hasChildrenMember(): string | null {
+        return this.getAttribute('has-children-member');
+    }
+
+    set isSelectableMember(value: string | null) {
+        if (value) this.setAttribute('is-selectable-member', value);
+        else this.removeAttribute('is-selectable-member');
+    }
+
+    get isSelectableMember(): string | null {
+        return this.getAttribute('is-selectable-member');
+    }
+
+    set treePathSeparator(value: string | null) {
+        if (value) this.setAttribute('tree-path-separator', value);
+        else this.removeAttribute('tree-path-separator');
+    }
+
+    get treePathSeparator(): string | null {
+        return this.getAttribute('tree-path-separator');
+    }
+
+    set checkboxMode(value: 'independent' | 'cascade' | null) {
+        if (value) this.setAttribute('checkbox-mode', value);
+        else this.removeAttribute('checkbox-mode');
+    }
+
+    get checkboxMode(): 'independent' | 'cascade' | null {
+        return this.getAttribute('checkbox-mode') as 'independent' | 'cascade' | null;
+    }
+
+    set cascadeSelectPolicy(value: 'rolled-up' | 'leaves' | 'all' | null) {
+        if (value) this.setAttribute('cascade-select-policy', value);
+        else this.removeAttribute('cascade-select-policy');
+    }
+
+    get cascadeSelectPolicy(): 'rolled-up' | 'leaves' | 'all' | null {
+        return this.getAttribute('cascade-select-policy') as 'rolled-up' | 'leaves' | 'all' | null;
     }
 
     // Callback properties (JavaScript only - no attributes)
@@ -993,6 +1102,16 @@ export class MultiSelectElement<T = any> extends BaseElement {
         return this._getSubtitleCallback;
     }
 
+    /** Callback returning an option's full title (used by badges when show-badge-full-title is on). */
+    set getFullTitleCallback(callback: ((item: T) => string) | undefined) {
+        this._getFullTitleCallback = callback;
+        this.updatePicker({ getFullTitleCallback: callback });
+    }
+
+    get getFullTitleCallback() {
+        return this._getFullTitleCallback;
+    }
+
     set getGroupCallback(callback: ((item: T) => string) | undefined) {
         this._getGroupCallback = callback;
         this.updatePicker({ getGroupCallback: callback });
@@ -1000,6 +1119,40 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     get getGroupCallback() {
         return this._getGroupCallback;
+    }
+
+    /** Callback returning an option's materialized dot-path (enables tree mode). */
+    set getPathCallback(callback: ((item: T) => string) | undefined) {
+        this._getPathCallback = callback;
+        this.updatePicker({ getPathCallback: callback });
+    }
+
+    get getPathCallback() {
+        return this._getPathCallback;
+    }
+
+    /** Force tree mode on/off. When unset, tree mode auto-enables if a path source is present. */
+    set isTreeEnabled(value: boolean | undefined) {
+        this._isTreeEnabled = value;
+        this.updatePicker({ isTreeEnabled: value });
+    }
+
+    get isTreeEnabled() {
+        return this._isTreeEnabled;
+    }
+
+    /**
+     * Callback deciding whether a tree node is selectable (takes precedence over
+     * `is-selectable-member`). Receives the built node — e.g.
+     * `el.getIsSelectableCallback = (node) => !node.hasChildren` for leaves only.
+     */
+    set getIsSelectableCallback(callback: ((node: LTreeNode<T>) => boolean) | undefined) {
+        this._getIsSelectableCallback = callback;
+        this.updatePicker({ getIsSelectableCallback: callback });
+    }
+
+    get getIsSelectableCallback() {
+        return this._getIsSelectableCallback;
     }
 
     set renderGroupLabelContentCallback(callback: ((groupName: string) => string | HTMLElement) | undefined) {

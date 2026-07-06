@@ -131,7 +131,7 @@
         <header class="header-card">
             <h1>Web MultiSelect</h1>
             <p class="subtitle">Feature-rich multiselect web component with typeahead search, virtual scrolling, and extensive customization</p>
-            <span class="version-badge">v1.8.2</span>
+            <span class="version-badge" id="version-badge"></span>
         </header>
 
         <div class="cards" id="cards"></div>
@@ -164,6 +164,18 @@
                 icon: '🔔',
                 title: 'Events, Handlers & Interceptors',
                 description: 'DOM events and the on* property twin, plus beforeSelect/beforeDeselect interceptors that veto an action before it happens.'
+            },
+            {
+                href: 'examples-tree.html',
+                icon: '🌳',
+                title: 'Tree of Options',
+                description: 'Hierarchical options via a materialized path-member — always-expanded, indented by depth, branch/leaf hooks, ancestor-preserving search, custom separators.'
+            },
+            {
+                href: 'examples-search-index.html',
+                icon: '🔎',
+                title: 'External Search (FlexSearch)',
+                description: 'Externalize the whole search via searchCallback — fuzzy, partial-token, accent-insensitive, ranked matching backed by a batched FlexSearch index. Works on flat lists and trees; FlexSearch stays out of the library.'
             },
             {
                 href: 'examples-performance.html',
@@ -238,6 +250,14 @@
         }
 
         renderCards()
+    </script>
+
+    <!-- Version badge — sourced from package.json (vite provides named JSON exports),
+         so it never drifts from the real package version. -->
+    <script type="module">
+        import { version } from './package.json'
+        const badge = document.getElementById('version-badge')
+        if (badge) badge.textContent = `v${version}`
     </script>
 </body>
 </html>

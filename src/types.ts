@@ -3,6 +3,7 @@
  */
 
 import type { Placement } from '@floating-ui/dom';
+import type { LTreeNode } from './tree/ltree-node';
 
 
 /**
@@ -139,6 +140,16 @@ export interface MultiSelectConfig<T = any> {
     getDisplayValueCallback?: (item: T) => string;
     /** Callback to customize badge display text (defaults to display value if not provided) */
     getBadgeDisplayCallback?: (item: T) => string;
+
+    /**
+     * Member property name for a "full title" — a fully-qualified label that ships with the
+     * data (e.g. a breadcrumb like "Fruit / Pome fruit / Apple"). It is never computed by the
+     * component. When `isBadgeFullTitleShown` is on, badges display this instead of the display
+     * value (falling back to the display value when an option has none).
+     */
+    fullTitleMember?: string;
+    /** Callback to extract the full title from an item (takes precedence over `fullTitleMember`). */
+    getFullTitleCallback?: (item: T) => string;
     /** Callback to add custom CSS classes to badges - return string or array of class names */
     getBadgeClassCallback?: (item: T) => string | string[];
     /** Callback to inject custom CSS into Shadow DOM - return CSS string for styling custom classes */
@@ -158,6 +169,61 @@ export interface MultiSelectConfig<T = any> {
     subtitleMember?: string;
     /** Callback to extract subtitle from item */
     getSubtitleCallback?: (item: T) => string;
+
+    // ========================================================================
+    // TREE OF OPTIONS (hierarchical, always fully expanded)
+    // ========================================================================
+
+    /**
+     * Enable tree mode: options are rendered as a hierarchy, indented by depth.
+     * Auto-enabled when a path source (`pathMember`/`getPathCallback`) is set;
+     * pass `false` to force it off. The tree is always fully expanded — there is
+     * no collapse (use @keenmate/web-treeview if you need expand/collapse).
+     */
+    isTreeEnabled?: boolean;
+    /** Member property name holding each option's materialized dot-path (e.g. "1.2.3"). */
+    pathMember?: string;
+    /** Callback returning an option's materialized dot-path (takes precedence over pathMember). */
+    getPathCallback?: (item: T) => string;
+    /** Member holding an option's parent path (otherwise derived from its path). */
+    parentPathMember?: string;
+    /** Member holding an option's depth/level (otherwise derived from its path). */
+    levelMember?: string;
+    /** Member holding a precomputed hasChildren flag (otherwise derived from the tree). */
+    hasChildrenMember?: string;
+    /** Path separator for tree paths. Default: "." */
+    treePathSeparator?: string;
+    /**
+     * Member holding a per-option `isSelectable` flag for tree mode. A node with a
+     * falsy value renders normally (NOT greyed like `disabled`) but has no checkbox,
+     * is skipped by keyboard focus, and cannot be toggled or picked by Select-All.
+     * Options default to selectable. Tree mode only.
+     */
+    isSelectableMember?: string;
+    /**
+     * Callback deciding whether a tree node is selectable (takes precedence over
+     * `isSelectableMember`). Receives the built tree node, so `node.hasChildren` /
+     * `node.level` are available — e.g. `(node) => !node.hasChildren` for a
+     * leaves-only tree. Tree mode only.
+     */
+    getIsSelectableCallback?: (node: LTreeNode<T>) => boolean;
+
+    /**
+     * Tree checkbox interaction. `independent` (default) toggles only the clicked
+     * node. `cascade` checks a node's whole subtree and shows a tristate
+     * (checked / indeterminate / unchecked) box on branches. Tree + multiple only.
+     */
+    checkboxMode?: 'independent' | 'cascade';
+    /**
+     * In `cascade` mode, which values a selection emits (badges / form / change):
+     *   - `rolled-up` (default) — minimal cover: a fully-selected subtree collapses
+     *     to its root ("complete node"); partially-selected branches emit their
+     *     individually-checked descendants. Rolls to the nearest selectable
+     *     descendant when the complete node itself is non-selectable.
+     *   - `leaves` — only the checked leaf-level nodes.
+     *   - `all` — every fully-checked node (branches and leaves), like web-treeview.
+     */
+    cascadeSelectPolicy?: 'rolled-up' | 'leaves' | 'all';
 
     /** Member property name for group extraction */
     groupMember?: string;
@@ -221,6 +287,12 @@ export interface MultiSelectConfig<T = any> {
     isAddNewAllowed?: boolean;
     /** Show count badge next to toggle icon (internal: isCounterShown) */
     isCounterShown?: boolean;
+    /**
+     * Make badges display each option's `fullTitleMember` / `getFullTitleCallback` value
+     * instead of its display value. Falls back to the display value for options without a
+     * full title. An explicit `getBadgeDisplayCallback` still takes precedence. Off by default.
+     */
+    isBadgeFullTitleShown?: boolean;
     /** Keep initial options visible when searchCallback is active and search term is empty/short (internal: isKeepOptionsOnSearch) */
     isKeepOptionsOnSearch?: boolean;
     /** Keep search text and filtered results when dropdown closes (default: true) */

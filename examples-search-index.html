@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>External Search (FlexSearch) - MultiSelect</title>
+
+    <link rel="stylesheet" href="examples-shared.css">
+    <style>
+        .demo-area { background: #f7fafc; padding: 1.5rem; border-radius: 8px; margin: 1rem 0; }
+        .demo-label { display: block; font-size: 0.85rem; color: #4a5568; margin-bottom: 0.5rem; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="index.html" class="back-link">← Back to Examples</a>
+            <h1>🔎 External Search (FlexSearch)</h1>
+            <p class="subtitle">Plug a real search engine into <code>searchCallback</code> — the library stays dependency-free</p>
+        </header>
+
+        <section class="example-section">
+            <h2>Why</h2>
+            <p class="description">
+                The component's built-in search is a plain case-insensitive <strong>substring</strong> match
+                (<code>String.includes</code>) — deliberately lean, since that covers most multiselects. When you
+                need <strong>fuzzy / partial-token / accent-insensitive / ranked</strong> matching, don't bloat the
+                library: <strong>externalize the whole search</strong> via <code>searchCallback</code> and back it
+                with your own engine. Here that engine is
+                <a href="https://github.com/nextapps-de/flexsearch" target="_blank">FlexSearch</a>
+                (the same indexer <code>@keenmate/web-treeview</code> uses), wrapped in a small batched
+                <code>FlexIndexer</code> (a trimmed port of the treeview indexer) that builds the index off the main
+                thread via <code>requestIdleCallback</code>. <strong>FlexSearch is a dev/consumer dependency only —
+                it is never part of the shipped multiselect bundle.</strong>
+            </p>
+            <div class="code-block"><pre>import { FlexIndexer } from './examples-flex-indexer.js';
+
+const ix = new FlexIndexer();
+ix.build(options, (o) =&gt; `${o.label} ${o.code}`);   // index the options (batched)
+el.options = options;
+el.searchCallback = (term) =&gt; ix.search(term, 50);   // externalize the whole search</pre></div>
+        </section>
+
+        <!-- Demo A: flat + accent folding -->
+        <section class="example-section">
+            <h2>1. Fuzzy &amp; Accent-Insensitive (flat list)</h2>
+            <p class="description">
+                A flat list of cities with accented names. FlexSearch's <code>Charset.Normalize</code> folds accents
+                and <code>tokenize: "full"</code> matches partial tokens anywhere, with results in relevance order.
+                Try <code>zurich</code> → <em>Zürich</em>, <code>sao</code> → <em>São Paulo</em>,
+                <code>krak</code> → <em>Kraków</em>, <code>muenchen</code>/<code>munch</code> → <em>München</em>.
+                The built-in substring search would miss all of these.
+            </p>
+            <div class="demo-area">
+                <label class="demo-label">Search accent-free — it still matches:</label>
+                <web-multiselect id="cities" multiple="true" enable-search="true"></web-multiselect>
+            </div>
+        </section>
+
+        <!-- Demo B: ISCO tree + external index -->
+        <section class="example-section">
+            <h2>2. External Search on a Tree (full ISCO-08)</h2>
+            <p class="description">
+                External search now composes with <strong>tree mode</strong>: <code>searchCallback</code> returns the
+                matching nodes from the FlexSearch index and the component rebuilds the hierarchy from them, keeping
+                each match's <strong>ancestors</strong> so indentation stays coherent — the async analogue of the
+                built-in matches-plus-ancestors behaviour. The index here covers each occupation's title,
+                <strong>ISCO code, and full breadcrumb</strong>, so you can search by any of them (try
+                <code>2211 non</code>, <code>welder</code>, or <code>health</code>). 619 groups, indexed off the main
+                thread.
+            </p>
+            <div class="demo-area">
+                <label class="demo-label">Search by title, code, or breadcrumb:</label>
+                <web-multiselect id="isco-flex" multiple="true"
+                    enable-virtual-scroll="true" option-height="32"
+                    style="--ms-option-padding: 0.3rem 0.85rem; --ms-option-title-white-space: nowrap; --ms-option-title-overflow: hidden; --ms-option-title-text-overflow: ellipsis;"></web-multiselect>
+            </div>
+            <p class="description" style="font-size: 0.85rem; opacity: 0.8;">
+                Source: <em>International Standard Classification of Occupations, ISCO-08</em>
+                (© International Labour Organization) — demo data.
+            </p>
+        </section>
+    </div>
+
+    <script type="module" src="/src/index.ts"></script>
+    <script type="module">
+        import { FlexIndexer } from './examples-flex-indexer.js';
+
+        // --- Demo A: flat cities with accents ---
+        const cities = [
+            'Zürich', 'São Paulo', 'Kraków', 'München', 'Málaga', 'Düsseldorf', 'Reykjavík',
+            'Bogotá', 'Medellín', 'Łódź', 'Gdańsk', 'Tromsø', 'Skopje', 'Chișinău', 'Timișoara',
+            'Košice', 'Plzeň', 'Brno', 'Genève', 'Montréal', 'Québec', 'Đà Nẵng', 'Hạ Long',
+            'Nürnberg', 'Örebro', 'Aarhus', 'Bratislava', 'Ljubljana', 'Zagreb', 'Poznań'
+        ].map((name, i) => ({ value: String(i), label: name }));
+
+        // --- Demo B: full ISCO-08 tree ---
+        const isco = await (await fetch('./examples-data/isco08.json')).json();
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            // Flat + accents — one full-tokenize text field.
+            const cityIx = new FlexIndexer((c) => c.label);
+            cityIx.build(cities);
+            const citiesEl = document.querySelector('#cities');
+            citiesEl.valueMember = 'value';
+            citiesEl.displayValueMember = 'label';
+            citiesEl.options = cities;
+            citiesEl.searchCallback = (term) => cityIx.search(term, 20);
+
+            // ISCO tree — exact/prefix on the ISCO code (ranked first, so "2211" and
+            // "72" resolve to their own nodes), plus fuzzy text over title + code +
+            // breadcrumb (so "welder", "health", "2211 non" all work too).
+            const iscoIx = new FlexIndexer([
+                { getText: (o) => o.value, exact: true, numeric: true, boost: 2 },
+                { getText: (o) => `${o.label} ${o.value} ${o.fullTitle}`, boost: 1 }
+            ]);
+            iscoIx.build(isco);
+            const iscoEl = document.querySelector('#isco-flex');
+            iscoEl.valueMember = 'value';
+            iscoEl.displayValueMember = 'label';
+            iscoEl.pathMember = 'path';
+            iscoEl.isSelectableMember = 'selectable';
+            iscoEl.options = isco;
+            // Return matches from the index; the component adds ancestors + renders the tree.
+            iscoEl.searchCallback = (term) => iscoIx.search(term, 80);
+        });
+    </script>
+</body>
+</html>
