@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.0-rc07] - 2026-07-07 [PUBLISHED]
+
+### Added
+
+- **`setSelected(values, { notify: true })` — programmatic selection can now announce itself.** `setSelected()` stays **silent by default** (restoring saved state, cascade/dependent resets, and server-authoritative corrections must not fire events — otherwise they trip "the user changed it" handlers or bounce in a feedback loop). The new `{ notify: true }` option fires a **single aggregate `change`** (no per-item `select`/`deselect` flood) for the case where a programmatic change *is* a deliberate user gesture — e.g. a custom action button that sets the selection and should reach the same listeners a manual pick does. Threaded through the web component's `setSelected` too.
+- **Action buttons now demonstrated with tree mode** — new section 11 ("Action Buttons") on `examples-tree.html`: the built-in `select-all` / `clear-all` plus a custom `onClick(ms) => ms.setSelected(['fruit'], { notify: true })` action on a cascade tree (so the custom action emits a `change`). No code change to the buttons themselves — they already rendered independently of the tree — but the Select All behaviour was fixed for cascade (see below).
+
+### Fixed
+
+- **Option rows no longer text-select on click-drag.** Clicking a row — or dragging the mouse across the dropdown — highlighted the option labels as if they were selectable text, which reads as broken for what is a pure selection gesture (most visible on tree rows). Added `user-select: none` (+ `-webkit-user-select`) to `.ms__option`, so flat and tree options can't be text-selected. Purely presentational; no API change.
+- **Cascade Select All now honours the value policy.** The built-in `select-all` action added every selectable node's value directly, bypassing the cascade projection — so with `checkbox-mode="cascade"` + `cascade-select-policy="rolled-up"` it emitted *every* node instead of the rolled-up roots (unlike clicking a node, which rolls up). `selectAll()` is now cascade-aware: it fills the checked-atom set from the visible nodes and projects through the active policy, so Select All emits the same shape a click would (a shared `commitCascadeAtoms` helper backs both paths). Clear All was already correct. New `e2e/tree-cascade.spec.ts` case + `test/unit/cascade.test.ts` coverage.
+
 ## [1.12.0-rc06] - 2026-07-06 [PUBLISHED]
 
 _First unreleased RC after the published `rc05`; bundles all of the following._

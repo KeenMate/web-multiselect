@@ -136,6 +136,19 @@ describe('policy projection', () => {
 	});
 });
 
+describe('select-all parity (fill every atom, then project)', () => {
+	it('checking every atom projects to the same rolled-up roots as clicking each root', () => {
+		const tree = makeTree();
+		const index = buildCascadeIndex(tree, getValue);
+		// "Select All" = fill every atom in the tree.
+		const everyAtom = new Set(index.atomPaths); // atom paths == atom values here
+		expect(projectSelection(index, everyAtom, 'rolled-up', getValue)).toEqual(['1']);
+		expect(projectSelection(index, everyAtom, 'leaves', getValue).sort()).toEqual([
+			'1.1.1', '1.1.2', '1.2.1', '1.2.2'
+		]);
+	});
+});
+
 describe('rolled-up with non-selectable roots (leaves-only tree)', () => {
 	it('falls to the nearest selectable descendants when the complete node is non-selectable', () => {
 		const tree = makeTree({ leavesOnly: true });

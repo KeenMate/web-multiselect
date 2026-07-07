@@ -481,6 +481,17 @@ export class WebMultiSelect<T = any> {
         const index = this.cascadeIndex!;
         const before = expandToAtoms(index, this.selectedValues);
         const { checkedAtoms } = toggleNodeCascade(index, node, before);
+        this.commitCascadeAtoms(checkedAtoms);
+    }
+
+    /**
+     * Given a checked-atom set, project it to emitted values under the active
+     * policy, diff it against the current selection, and commit. Shared by every
+     * cascade entry point (node toggle, Select All) so they all emit the same
+     * policy-projected shape (e.g. a full subtree rolls up to one value).
+     */
+    private commitCascadeAtoms(checkedAtoms: Set<string>): void {
+        const index = this.cascadeIndex!;
         const emitted = projectSelection(
             index,
             checkedAtoms,
@@ -2090,6 +2101,22 @@ export class WebMultiSelect<T = any> {
     }
 
     private selectAll(): void {
+        // Cascade mode: check every selectable atom among the visible nodes, then
+        // project through the policy — so Select All emits the same rolled-up shape
+        // a click would (a fully-checked subtree collapses to its root), not a flat
+        // list of every node.
+        if (this.isCascadeMode() && this.cascadeIndex) {
+            const index = this.cascadeIndex;
+            const checkedAtoms = new Set(expandToAtoms(index, this.selectedValues));
+            for (const node of this.treeNodes) {
+                if (!index.atomPaths.has(node.path)) continue;
+                if (this.getItemDisabled(node.data as T)) continue;
+                checkedAtoms.add(String(this.getItemValue(node.data as T)));
+            }
+            this.commitCascadeAtoms(checkedAtoms);
+            return;
+        }
+
         const added: T[] = [];
         this.filteredOptions.forEach((option, index) => {
             if (this.getItemDisabled(option)) return;
@@ -2683,7 +2710,16 @@ export class WebMultiSelect<T = any> {
         return Array.from(this.selectedOptions.values());
     }
 
-    public setSelected(values: (string | number)[]): void {
+    /**
+     * Set the selection programmatically. **Silent by default** — it does not fire
+     * `select`/`deselect`/`change` (so restoring saved state, cascade resets, or a
+     * server-authoritative correction can't loop back or trip "user changed it"
+     * handlers). Pass `{ notify: true }` to announce the result as a **single
+     * aggregate `change`** — for a deliberate user gesture (e.g. an action button)
+     * that should reach the same listeners a manual pick does, without the per-item
+     * `select`/`deselect` flood a bulk change would otherwise cause.
+     */
+    public setSelected(values: (string | number)[], opts: { notify?: boolean } = {}): void {
         this.selectedValues = new Set(values.map(v => String(v)));
         this.selectedOptions.clear();
         values.forEach(value => {
@@ -2696,6 +2732,10 @@ export class WebMultiSelect<T = any> {
         this.renderDropdown();
         this.renderBadges();
         this.updateHiddenInput();
+
+        if (opts.notify && this.options.onChange) {
+            this.options.onChange(this.getSelected());
+        }
     }
 
     /**

@@ -94,6 +94,10 @@
   color: var(--ms-option-text-color);
   background: var(--ms-option-bg);
   cursor: pointer;
+  /* A click on a row (or a click-drag across the list) is a selection gesture,
+     not a text-selection one — stop the browser from highlighting the label. */
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .ms__option:hover {

@@ -1486,9 +1486,9 @@ export class MultiSelectElement<T = any> extends BaseElement {
         return this.picker ? this.picker.getSelected() : [];
     }
 
-    setSelected(values: (string | number)[]): void {
+    setSelected(values: (string | number)[], opts: { notify?: boolean } = {}): void {
         if (this.picker) {
-            this.picker.setSelected(values);
+            this.picker.setSelected(values, opts);
         }
     }
 

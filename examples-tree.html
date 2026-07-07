@@ -321,6 +321,33 @@ el.getBadgeTooltipCallback = (item) =&gt; item.fullTitle || item.label;</pre></d
 // rolled-up: a fully-checked subtree emits ONE value (its root); partial parents
 // emit their individually-checked descendants — the minimal set that covers the selection.</pre></div>
         </section>
+
+        <!-- Example 11: Action buttons + tree -->
+        <section class="example-section">
+            <h2>11. Action Buttons</h2>
+            <p class="description">
+                Action buttons work with tree mode. The built-in <code>select-all</code> /
+                <code>clear-all</code> honour selectability (non-selectable branches are skipped), and
+                in <strong>cascade</strong> mode <strong>Select All emits the same rolled-up shape a
+                click would</strong> — here selecting everything collapses to just the two roots
+                (<em>Fruit</em>, <em>Vegetables</em>), not one badge per node. Add custom actions with an
+                <code>onClick(ms)</code> that receives the picker instance.
+            </p>
+
+            <div class="demo-area">
+                <label class="demo-label">Cascade tree — Select All / Clear All + a custom "All fruit" action:</label>
+                <web-multiselect id="tree-actions" multiple="true" show-checkboxes="true"
+                    checkbox-mode="cascade" actions-position="top"></web-multiselect>
+            </div>
+
+            <div class="code-block"><pre>el.actionButtons = [
+  { action: 'select-all', text: 'Select All' },
+  { action: 'clear-all',  text: 'Clear All' },
+  // custom action — receives the picker instance. setSelected is silent by default;
+  // { notify: true } announces the result as a single `change` (so the server hears it).
+  { action: 'custom', text: 'All fruit', onClick: (ms) =&gt; ms.setSelected(['fruit'], { notify: true }) }
+];</pre></div>
+        </section>
     </div>
 
     <script type="module" src="/src/index.ts"></script>
@@ -435,6 +462,21 @@ el.getBadgeTooltipCallback = (item) =&gt; item.fullTitle || item.label;</pre></d
                 el.pathMember = 'path';
                 el.options = categories;
             }
+
+            // Action buttons + cascade tree. Built-in select-all/clear-all plus a custom
+            // action; Select All is cascade-aware, so it emits the rolled-up roots.
+            const actions = document.querySelector('#tree-actions');
+            actions.valueMember = 'value';
+            actions.displayValueMember = 'label';
+            actions.pathMember = 'path';
+            actions.options = categories;
+            actions.actionButtons = [
+                { action: 'select-all', text: 'Select All' },
+                { action: 'clear-all', text: 'Clear All' },
+                // setSelected is silent by default; { notify: true } fires one aggregate
+                // `change` so a deliberate button press reaches the same listeners a pick does.
+                { action: 'custom', text: 'All fruit', onClick: (ms) => ms.setSelected(['fruit'], { notify: true }) }
+            ];
 
             // Bold the branch (parent) rows via a shadow-DOM stylesheet.
             const bold = document.querySelector('#tree-bold');

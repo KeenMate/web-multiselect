@@ -117,7 +117,15 @@
             document.getElementById('tree-tall').options = longItems;
 
             // Cascade fixtures share the fruit/veg tree.
-            document.getElementById('tree-cascade').options = items;
+            const cascade = document.getElementById('tree-cascade');
+            cascade.options = items;
+            // Action buttons on a cascade tree — Select All must roll up to roots.
+            // The custom action uses setSelected(..., { notify: true }) so it fires one change.
+            cascade.actionButtons = [
+                { action: 'select-all', text: 'Select All' },
+                { action: 'clear-all', text: 'Clear All' },
+                { action: 'custom', text: 'All fruit', onClick: (ms) => ms.setSelected(['fruit'], { notify: true }) }
+            ];
             document.getElementById('tree-cascade-leaves').options = items;
             document.getElementById('tree-cascade-leavesonly').options = withFlag;
         });

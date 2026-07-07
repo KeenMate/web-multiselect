@@ -81,6 +81,32 @@ test.describe('tree-cascade (rolled-up default)', () => {
         await optAt(p, '2').click(); // Vegetables subtree
         expect((await val(p)).sort()).toEqual(['fruit', 'veg']);
     });
+
+    test('Select All action is cascade-aware — emits the rolled-up roots, not every node', async ({ page }) => {
+        const p = picker(page, 'tree-cascade');
+        await openDropdown(p);
+
+        await p.locator('.ms__action-btn', { hasText: 'Select All' }).click();
+        // Rolled-up: the whole tree collapses to its two roots (not 8 node values).
+        expect((await val(p)).sort()).toEqual(['fruit', 'veg']);
+
+        await p.locator('.ms__action-btn', { hasText: 'Clear All' }).click();
+        expect(await val(p)).toEqual([]);
+    });
+
+    test('a custom action using setSelected({ notify: true }) fires exactly one change', async ({ page }) => {
+        const p = picker(page, 'tree-cascade');
+        // Count bubbling `change` events on the element.
+        await p.evaluate((el: any) => {
+            (window as any).__changes = 0;
+            el.addEventListener('change', () => { (window as any).__changes++; });
+        });
+        await openDropdown(p);
+
+        await p.locator('.ms__action-btn', { hasText: 'All fruit' }).click();
+        expect(await val(p)).toEqual(['fruit']);           // selection actually changed
+        expect(await page.evaluate(() => (window as any).__changes)).toBe(1); // ...and announced once
+    });
 });
 
 test.describe('cascade-select-policy="leaves"', () => {

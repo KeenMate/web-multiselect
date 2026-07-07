@@ -1,6 +1,6 @@
 {
   "name": "@keenmate/web-multiselect",
-  "version": "1.12.0-rc06",
+  "version": "1.12.0-rc07",
   "description": "Lightweight multiselect web component with typeahead search, rich content support, and excellent keyboard navigation",
   "type": "module",
   "main": "./dist/multiselect.umd.js",
