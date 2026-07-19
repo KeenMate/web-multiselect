@@ -43,6 +43,14 @@
     </div>
 
     <div class="fixture">
+        <div class="fixture-label">independent panel widths (input 180px, dropdown 600px, popover 300px)</div>
+        <web-multiselect id="panel-widths" multiple="true" show-checkboxes="true"
+            badges-display-mode="count" show-counter="true"
+            dropdown-width="600px" selected-popover-width="300px"
+            value-member="value" display-value-member="label" style="width: 180px; max-width: 180px;"></web-multiselect>
+    </div>
+
+    <div class="fixture">
         <div class="fixture-label">picker stays anchored when ancestor scrolls (non-clipping container)</div>
         <div id="anchor-scroll" class="anchor-scroll">
             <web-multiselect id="anchor-picker" value-member="value" display-value-member="label"></web-multiselect>
@@ -72,7 +80,7 @@
         ];
 
         customElements.whenDefined('web-multiselect').then(() => {
-            for (const id of ['default-below', 'min-width', 'max-width', 'anchor-picker', 'outside-click', 'flip-above']) {
+            for (const id of ['default-below', 'min-width', 'max-width', 'panel-widths', 'anchor-picker', 'outside-click', 'flip-above']) {
                 document.getElementById(id).options = fruits;
             }
         });

@@ -63,6 +63,26 @@ export interface OptionContentRenderContext {
     isMatched: boolean;
     /** Whether the option is disabled */
     isDisabled: boolean;
+
+    // --- Tree fields (present only when rendering a tree-mode node) ---
+    /** True when this row is a tree node (path-member / tree mode). Absent/false for flat options. */
+    isTreeNode?: boolean;
+    /** Tree only: the node has children (a branch). */
+    isBranch?: boolean;
+    /** Tree only: the node has no children (a leaf). */
+    isLeaf?: boolean;
+    /** Tree only: number of direct children (0 for a leaf). */
+    childCount?: number;
+    /** Tree only: 1-based depth level as derived from the path (top level = 1). */
+    level?: number;
+    /** Tree only: 0-based indentation depth (`level - 1`), matching `--ms-tree-depth`. */
+    depth?: number;
+    /** Tree only: the node's materialized path (e.g. "1.1.2"). */
+    path?: string;
+    /** Tree only: the node is selectable (branches marked non-selectable are `false`). */
+    isSelectable?: boolean;
+    /** Tree only: cascade tristate — a partially-checked branch (some but not all descendants). */
+    isIndeterminate?: boolean;
 }
 
 /**

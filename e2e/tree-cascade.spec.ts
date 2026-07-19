@@ -121,6 +121,159 @@ test.describe('cascade-select-policy="leaves"', () => {
     });
 });
 
+test.describe('cascade-select-policy="all"', () => {
+    test('checking a branch emits the branch plus every descendant', async ({ page }) => {
+        const p = picker(page, 'tree-cascade-all');
+        await openDropdown(p);
+
+        await optAt(p, '1.1').click(); // Apple
+        // all: the branch and both its leaves.
+        expect((await val(p)).sort()).toEqual(['apple', 'fuji', 'gala']);
+    });
+
+    // Regression: removing a badge is a projection removal, not a raw value delete.
+    // With policy "all", deleting the branch badge must clear its whole subtree —
+    // otherwise its leaves stay checked and cascade re-derives the branch as checked
+    // (the removal appeared to do nothing).
+    test('removing a branch badge clears its whole subtree', async ({ page }) => {
+        const p = picker(page, 'tree-cascade-all');
+        await openDropdown(p);
+
+        await optAt(p, '1.1').click(); // Apple + Gala + Fuji all checked and emitted
+        expect((await val(p)).sort()).toEqual(['apple', 'fuji', 'gala']);
+
+        // Delete the "Apple" branch badge.
+        await p.locator('.ms__badge-remove[data-value="apple"]').click();
+
+        // The whole Apple subtree is now unchecked — nothing re-derives it.
+        expect(await val(p)).toEqual([]);
+        await expect(optAt(p, '1.1')).not.toHaveClass(/ms__option--selected/);
+        await expect(optAt(p, '1.1.1').locator('.ms__checkbox')).not.toBeChecked();
+        await expect(optAt(p, '1.1.2').locator('.ms__checkbox')).not.toBeChecked();
+    });
+
+    test('removing one leaf badge leaves the siblings and marks the branch indeterminate', async ({ page }) => {
+        const p = picker(page, 'tree-cascade-all');
+        await openDropdown(p);
+
+        await optAt(p, '1.1').click(); // Apple subtree fully checked
+        await p.locator('.ms__badge-remove[data-value="gala"]').click();
+
+        // Only Gala goes; Fuji stays, and Apple drops to indeterminate.
+        const v = await val(p);
+        expect(v).toContain('fuji');
+        expect(v).not.toContain('gala');
+        expect(v).not.toContain('apple');
+        await expect(optAt(p, '1.1')).toHaveClass(/ms__option--indeterminate/);
+    });
+});
+
+test.describe('live checkbox-mode / policy switch', () => {
+    // Regression: changing checkboxMode / cascadeSelectPolicy after init goes through
+    // updateOptions (not buildTree), which must rebuild the cascade index and re-project
+    // the current selection — silently, and without stale state.
+    test('switching independent → cascade rebuilds the index and cascades', async ({ page }) => {
+        const p = picker(page, 'tree-cascade-live');
+        await openDropdown(p);
+
+        // Independent by default: checking a branch selects only that node.
+        await optAt(p, '1.1').click(); // Apple
+        expect(await val(p)).toEqual(['apple']);
+        await expect(optAt(p, '1.1.1').locator('.ms__checkbox')).not.toBeChecked();
+
+        // Flip to cascade live; the existing pick re-projects (rolled-up: still just Apple),
+        // and now its subtree reads checked.
+        await p.evaluate((el: any) => { el.checkboxMode = 'cascade'; });
+        expect(await val(p)).toEqual(['apple']);
+        await expect(optAt(p, '1.1.1').locator('.ms__checkbox')).toBeChecked();
+        await expect(optAt(p, '1.1.2').locator('.ms__checkbox')).toBeChecked();
+    });
+
+    test('changing policy live re-projects the same selection', async ({ page }) => {
+        const p = picker(page, 'tree-cascade-live');
+        await p.evaluate((el: any) => { el.checkboxMode = 'cascade'; });
+        await openDropdown(p);
+
+        await optAt(p, '1.1').click(); // Apple subtree
+        expect(await val(p)).toEqual(['apple']); // rolled-up
+
+        await p.evaluate((el: any) => { el.cascadeSelectPolicy = 'all'; });
+        expect((await val(p)).sort()).toEqual(['apple', 'fuji', 'gala']);
+
+        await p.evaluate((el: any) => { el.cascadeSelectPolicy = 'leaves'; });
+        expect((await val(p)).sort()).toEqual(['fuji', 'gala']);
+    });
+});
+
+test.describe('renderOptionContentCallback tree context', () => {
+    // The callback fires per row; in tree mode ctx must carry tree metadata
+    // (isTreeNode/isBranch/isLeaf/level/depth/path/isSelectable/isIndeterminate).
+    const probe = (p: Locator, path: string) =>
+        p.locator(`.ms__option[data-path="${path}"] .ctx-probe`);
+
+    test('a branch row gets branch/level/path context', async ({ page }) => {
+        const p = picker(page, 'tree-render-ctx');
+        await openDropdown(p);
+
+        const apple = probe(p, '1.1'); // Apple — a branch (has Gala, Fuji)
+        await expect(apple).toHaveAttribute('data-is-tree-node', 'true');
+        await expect(apple).toHaveAttribute('data-is-branch', 'true');
+        await expect(apple).toHaveAttribute('data-is-leaf', 'false');
+        await expect(apple).toHaveAttribute('data-level', '2');
+        await expect(apple).toHaveAttribute('data-depth', '1');
+        await expect(apple).toHaveAttribute('data-path', '1.1');
+        await expect(apple).toHaveAttribute('data-is-selectable', 'true');
+        await expect(apple).toHaveAttribute('data-child-count', '2'); // Gala + Fuji
+    });
+
+    test('a leaf row reports isLeaf, its own level, and zero children', async ({ page }) => {
+        const p = picker(page, 'tree-render-ctx');
+        await openDropdown(p);
+
+        const gala = probe(p, '1.1.1'); // Gala — a leaf
+        await expect(gala).toHaveAttribute('data-is-branch', 'false');
+        await expect(gala).toHaveAttribute('data-is-leaf', 'true');
+        await expect(gala).toHaveAttribute('data-level', '3');
+        await expect(gala).toHaveAttribute('data-depth', '2');
+        await expect(gala).toHaveAttribute('data-child-count', '0');
+    });
+
+    test('cascade tristate reaches the callback as isIndeterminate', async ({ page }) => {
+        const p = picker(page, 'tree-render-ctx');
+        await openDropdown(p);
+
+        // Check one leaf under Apple → Apple becomes partially checked (tristate).
+        await optAt(p, '1.1.1').click(); // Gala only
+        await expect(probe(p, '1.1')).toHaveAttribute('data-is-indeterminate', 'true');
+        // A fully-checked branch is not indeterminate.
+        await optAt(p, '1.1.2').click(); // Fuji too → Apple fully checked
+        await expect(probe(p, '1.1')).toHaveAttribute('data-is-indeterminate', 'false');
+    });
+});
+
+test.describe('counter chip counts the rolled-up cover, not the emit policy', () => {
+    // The [N] counter (show-counter) summarizes the *meaningful* picks — the
+    // rolled-up minimal cover — regardless of cascade-select-policy. So one branch
+    // click reads as one selection whether the policy emits 1, its leaves, or all.
+    for (const policy of ['rolled-up', 'leaves', 'all'] as const) {
+        test(`policy=${policy}: two branch picks → counter [2]`, async ({ page }) => {
+            const p = picker(page, 'tree-cascade-all');
+            await p.evaluate((el: any, pol) => {
+                el.setAttribute('show-counter', 'true');
+                el.cascadeSelectPolicy = pol;
+            }, policy);
+            await openDropdown(p);
+
+            await optAt(p, '1').click(); // Fruit subtree
+            await optAt(p, '2').click(); // Vegetables subtree
+
+            // Emitted count varies with policy (2 / 5 / 8) but the counter stays [2].
+            await expect(p.locator('.ms__counter')).toHaveText('[2]');
+            await expect(p.locator('.ms__counter')).toHaveAttribute('title', /Fruit[\s\S]*Vegetables/);
+        });
+    }
+});
+
 test.describe('cascade in a leaves-only tree', () => {
     test('non-selectable branches roll up to the leaves', async ({ page }) => {
         const p = picker(page, 'tree-cascade-leavesonly');

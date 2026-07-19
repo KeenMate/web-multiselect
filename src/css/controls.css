@@ -54,8 +54,15 @@
 }
 
 /* ==============================================================================
-   INPUT SIZE VARIANTS
-   ============================================================================== */
+   INPUT SIZE VARIANTS — currently unused (commented out)
+   ==============================================================================
+   Preset size tiers for the input. Nothing toggles these .ms__input--* classes
+   (no `size` attribute is wired up), so they're inert. Commented out for now to
+   avoid dead theming surface — but kept, not deleted, because a future `size`
+   attribute could activate them as a named-preset API. We just haven't hit a case
+   that needs it yet. Until then, size via --ms-rem (global scale) or the individual
+   --ms-input-* vars (targeted overrides). Paired with the --ms-input-size-* var
+   chain in variables.css (also commented out).
 
 .ms__input.ms__input--xs {
   font-size: var(--ms-input-size-xs-font);
@@ -84,6 +91,7 @@
   padding-right: calc(var(--ms-input-size-xl-padding-h) * 2.5);
   height: var(--ms-input-size-xl-height);
 }
+*/
 
 /* ==============================================================================
    TOGGLE ICON

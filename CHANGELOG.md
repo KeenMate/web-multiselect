@@ -5,6 +5,27 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.12.0-rc08] - 2026-07-19 [PUBLISHED]
+
+### Added
+
+- **Tree metadata in the option render callback.** `renderOptionContentCallback(item, ctx)` now carries tree context when rendering a tree row: `isTreeNode`, `isBranch`, `isLeaf`, `childCount` (direct children), `level` (1-based), `depth` (0-based, matches `--ms-tree-depth`), `path`, `isSelectable`, and `isIndeterminate` (cascade tristate). Flat options get `isTreeNode: false`; all fields are optional, so existing callbacks are untouched. Makes it a one-liner to render a child-count badge on branches or branch/leaf-specific markup without re-deriving the hierarchy. Demoed as section 12 ("Custom Node Rendering") on `examples-tree.html`; browser coverage in `e2e/tree-cascade.spec.ts` with fixtures in `test/tree.html`.
+- **Independently sizable panels via CSS variables.** The options dropdown and the selected-items popover each have their own width, decoupled from the input: `--ms-dropdown-width` (defaults to the live input width) and `--ms-selected-popover-width` (intrinsic `32rem`), alongside the existing `--ms-options-max-height` / `--ms-selected-popover-max-height`. The CSS variables are the source of truth — set them at app/theme level (`web-multiselect { --ms-dropdown-width: 60rem }`) — and the new `dropdown-width` / `selected-popover-width` attributes are sugar that write those variables inline on the element (local override). No inline width is force-synced anymore; JS only publishes the live input width as `--ms-input-current-width` for the dropdown default. Demoed as section 14 ("Independent Panel Widths"); browser coverage in `e2e/positioning.spec.ts` (attribute, theme-level var, default-fallback, and both panel max-heights).
+- **Counter chip tooltip.** The `[N]` counter (`show-counter`) now has a native `title` listing the picked items (capped, newline-separated), so hovering it previews the selection.
+- **Richer tree demo data** on `examples-tree.html` — a 4-root, up-to-4-level catalogue (Fruit / Vegetables / Dairy / Grains, ~51 nodes) so cascade rollup, partial branches, and deep collapse are all exercisable.
+- **`make kill-port`** — frees the Vite dev-server ports (12200–12205); mirrors the `svelte-fluentui` netstat/taskkill mechanism.
+
+### Changed
+
+- **The counter counts the rolled-up cover, not the emit policy.** In cascade mode the `[N]` counter previously showed the emitted value count, which balloons under `cascade-select-policy="leaves"` / `"all"` (one branch click can emit five-plus values) — confusing next to a couple of rolled-up badges. It now always counts the rolled-up minimal cover (the branches a person actually picked), regardless of the active policy; under the default `rolled-up` policy this is unchanged. Backed by a `counterSelection()` helper; coverage across all three policies in `e2e/tree-cascade.spec.ts`.
+- **Selected-items popover honours `--ms-selected-popover-width`.** The popover width variable (`32rem`) was previously overridden by an inline width-sync to the input, leaving it dead. The popover now renders at its intended `32rem` default (override via the variable or the `selected-popover-width` attribute; set it to `var(--ms-input-current-width)` to track the input as before).
+- **Input size-variant classes commented out.** The unused `.ms__input--xs/sm/lg/xl` preset classes and their `--ms-input-size-*` variable chain are commented out (kept, not deleted, for a possible future `size` attribute). Nothing toggled them, so this only drops dead CSS (compiled `style.css` shrank ~2.3 kB). Size via `--ms-rem` (global) or the individual `--ms-input-*` vars (targeted), as before.
+
+### Fixed
+
+- **Badge hover no longer washes to white.** `--ms-badge-bg-hover` fell back to the white input background, so a light-blue badge went white on hover (reading as "background lost"). It now deepens the accent tint (dark-mode aware) via `--ms-accent-color-light-hover`.
+- **Live `checkbox-mode` / `cascade-select-policy` switch re-projects the selection.** Changing either after init goes through `updateOptions` (not `buildTree`); it now rebuilds the cascade index and silently re-projects the current selection so badges, form value, and checkboxes reflect the new mode/policy. Coverage in `e2e/tree-cascade.spec.ts`.
+
 ## [1.12.0-rc07] - 2026-07-07 [PUBLISHED]
 
 ### Added

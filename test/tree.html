@@ -63,9 +63,27 @@
     </div>
 
     <div class="fixture">
+        <div class="fixture-label">cascade mode, policy=all</div>
+        <web-multiselect id="tree-cascade-all" multiple show-checkboxes value-member="value" display-value-member="label"
+            path-member="path" checkbox-mode="cascade" cascade-select-policy="all"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">live mode/policy switch (starts independent, no attrs)</div>
+        <web-multiselect id="tree-cascade-live" multiple show-checkboxes value-member="value" display-value-member="label"
+            path-member="path"></web-multiselect>
+    </div>
+
+    <div class="fixture">
         <div class="fixture-label">cascade mode, leaves-only tree (branches non-selectable)</div>
         <web-multiselect id="tree-cascade-leavesonly" multiple show-checkboxes value-member="value" display-value-member="label"
             path-member="path" is-selectable-member="selectable" checkbox-mode="cascade"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">renderOptionContentCallback — tree context fields surfaced as data-* attrs</div>
+        <web-multiselect id="tree-render-ctx" multiple show-checkboxes value-member="value" display-value-member="label"
+            path-member="path" checkbox-mode="cascade"></web-multiselect>
     </div>
 
     <script type="module">
@@ -127,7 +145,28 @@
                 { action: 'custom', text: 'All fruit', onClick: (ms) => ms.setSelected(['fruit'], { notify: true }) }
             ];
             document.getElementById('tree-cascade-leaves').options = items;
+            document.getElementById('tree-cascade-all').options = items;
+            document.getElementById('tree-cascade-live').options = items;
             document.getElementById('tree-cascade-leavesonly').options = withFlag;
+
+            // Surface the render context's tree fields into the DOM so e2e can assert them.
+            const renderCtx = document.getElementById('tree-render-ctx');
+            renderCtx.renderOptionContentCallback = (item, ctx) => {
+                const span = document.createElement('span');
+                span.className = 'ctx-probe';
+                span.textContent = item.label;
+                span.dataset.isTreeNode = String(ctx.isTreeNode);
+                span.dataset.isBranch = String(ctx.isBranch);
+                span.dataset.isLeaf = String(ctx.isLeaf);
+                span.dataset.childCount = String(ctx.childCount);
+                span.dataset.level = String(ctx.level);
+                span.dataset.depth = String(ctx.depth);
+                span.dataset.path = String(ctx.path);
+                span.dataset.isSelectable = String(ctx.isSelectable);
+                span.dataset.isIndeterminate = String(ctx.isIndeterminate);
+                return span;
+            };
+            renderCtx.options = items;
         });
     </script>
 </body>

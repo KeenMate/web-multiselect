@@ -145,6 +145,17 @@ const ATTRIBUTE_TABLE: ReadonlyArray<AttrSpec> = [
 const ATTRIBUTE_TABLE_BY_ATTR = new Map(ATTRIBUTE_TABLE.map(s => [s.attr, s]));
 
 /**
+ * Attributes that are pure sugar over a host CSS variable — a local override of a
+ * themeable var. Setting the attribute writes the property inline on the host; the CSS
+ * cascade (and Floating UI's ResizeObserver) apply it. The variables can equally be set
+ * at app/theme level (e.g. `web-multiselect { --ms-dropdown-width: 60rem }`).
+ */
+const CSS_VAR_ATTRS: Record<string, string> = {
+    'dropdown-width': '--ms-dropdown-width',
+    'selected-popover-width': '--ms-selected-popover-width',
+};
+
+/**
  * Member-property attributes whose absence falls back to a programmatic getter.
  * The map's value is the field name on the element instance to read when the attribute is absent.
  */
@@ -292,7 +303,8 @@ export class MultiSelectElement<T = any> extends BaseElement {
             ...ATTRIBUTE_TABLE.map(s => s.attr),
             // Out-of-table attributes (handled by special-case logic in attributeChangedCallback)
             'initial-values',
-            'show-debug-info'
+            'show-debug-info',
+            ...Object.keys(CSS_VAR_ATTRS)
         ];
     }
 
@@ -360,6 +372,17 @@ export class MultiSelectElement<T = any> extends BaseElement {
 
     attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null) {
         if (oldValue === newValue) return;
+
+        // CSS-variable sugar: mirror the attribute onto the host's inline style. Handled before
+        // the picker guard so it applies at upgrade time (and needs no picker/reinit — CSS +
+        // Floating UI's resize observer pick up the width change live).
+        const cssVar = CSS_VAR_ATTRS[name];
+        if (cssVar !== undefined) {
+            if (newValue === null || newValue === '') this.style.removeProperty(cssVar);
+            else this.style.setProperty(cssVar, newValue);
+            return;
+        }
+
         if (!this.picker) return;
 
         // initial-values is consumed only at init time (or via declarative <option selected> children).

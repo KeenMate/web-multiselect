@@ -1,4 +1,4 @@
-.PHONY: help setup dev build package publish publish-rc publish-dry clean lint test-e2e test-e2e-ui test-e2e-headed test-e2e-install
+.PHONY: help setup dev build package publish publish-rc publish-dry clean lint test-e2e test-e2e-ui test-e2e-headed test-e2e-install kill-port
 
 help: ## Show this help message
 	@echo "Available targets:"
@@ -12,6 +12,22 @@ setup: ## Install dependencies and prepare project
 dev: ## Start development server with hot reload
 	@echo "Starting development server..."
 	npm run dev
+
+# Free the vite dev-server ports. Vite starts at 12200 and hops to the next free
+# port when one is busy, so a stale run can hold any of 12200-12205. Kills whatever
+# is LISTENING on those ports, covering both IPv4 and IPv6 (vite binds [::1] too).
+# Same netstat/taskkill mechanism as svelte-fluentui, widened to the 12200-12205 range.
+# Recipes here default to Git Bash (sh), so the recipe is written in sh and calls the
+# Windows netstat/taskkill directly rather than switching this target's SHELL to cmd.exe
+# (a target-specific SHELL leaks and breaks the grep/awk-based help target).
+kill-port: ## Free the vite dev-server ports (12200-12205)
+	@echo "Freeing ports 12200-12205..."
+ifeq ($(OS),Windows_NT)
+	-@netstat -ano | grep -E ':1220[0-5][^0-9]' | grep LISTENING | awk '{print $$5}' | sort -u | while read pid; do MSYS_NO_PATHCONV=1 taskkill /F /PID $$pid; done
+else
+	-@for p in 12200 12201 12202 12203 12204 12205; do lsof -ti tcp:$$p | xargs -r kill -9; done
+endif
+	@echo "Ports 12200-12205 are free"
 
 build: ## Build for production
 	@echo "Building for production..."

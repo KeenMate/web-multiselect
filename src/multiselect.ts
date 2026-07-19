@@ -521,6 +521,41 @@ export class WebMultiSelect<T = any> {
     }
 
     /**
+     * The "meaningful selection" list used by the counter chip — the rolled-up
+     * minimal cover, regardless of the active emit policy. In cascade mode
+     * `leaves`/`all` emit many values for a single branch pick, which made the
+     * counter read e.g. `[5]` for what a person experiences as two selections.
+     * The counter should count the branches actually chosen, and stay stable when
+     * the policy knob flips. Outside cascade this is just the selected options.
+     */
+    private counterSelection(): T[] {
+        if (this.isCascadeMode() && this.cascadeIndex) {
+            const emitted = projectSelection(
+                this.cascadeIndex,
+                this.cascadeCheckedAtoms,
+                'rolled-up',
+                (d) => String(this.getItemValue(d))
+            );
+            const out: T[] = [];
+            for (const val of emitted) {
+                const node = this.cascadeIndex.nodeByValue.get(val);
+                const opt = (node?.data as T | undefined) ?? this.selectedOptions.get(val);
+                if (opt !== undefined) out.push(opt);
+            }
+            return out;
+        }
+        return Array.from(this.selectedOptions.values());
+    }
+
+    /** Native `title` for the counter chip: the picked items, capped so it can't grow unbounded. */
+    private buildCounterTooltip(items: T[]): string {
+        const MAX = 12;
+        const labels = items.slice(0, MAX).map(o => this.getItemBadgeDisplayValue(o));
+        if (items.length > MAX) labels.push(`…and ${items.length - MAX} more`);
+        return labels.join('\n');
+    }
+
+    /**
      * Derive `treeNodes` + `filteredOptions` from the full tree, applying the
      * current search term. Matching nodes keep all their ancestors visible so
      * indentation stays coherent (the tree is always fully expanded).
@@ -1046,7 +1081,8 @@ export class WebMultiSelect<T = any> {
                 isSelected,
                 isFocused,
                 isMatched,
-                isDisabled: disabled
+                isDisabled: disabled,
+                isTreeNode: false
             };
             const customContent = this.options.renderOptionContentCallback(option, context);
 
@@ -1140,7 +1176,18 @@ export class WebMultiSelect<T = any> {
                 isSelected,
                 isFocused,
                 isMatched: false,
-                isDisabled: disabled
+                isDisabled: disabled,
+                // Tree metadata — lets the callback branch on depth / branch-vs-leaf /
+                // tristate without re-deriving any of it from the raw data item.
+                isTreeNode: true,
+                isBranch: node.hasChildren,
+                isLeaf: !node.hasChildren,
+                childCount: Object.keys(node.children).length,
+                level,
+                depth,
+                path: node.path,
+                isSelectable: selectable,
+                isIndeterminate
             };
             const customContent = this.options.renderOptionContentCallback(option, context);
             html += typeof customContent === 'string' ? customContent : customContent.outerHTML;
@@ -1252,9 +1299,16 @@ export class WebMultiSelect<T = any> {
         }
 
         if (this.options.isCounterShown && count > 0) {
-            this.counter.textContent = `[${count}]`;
-            this.counter.style.display = '';
+            // Counter counts the rolled-up cover (the branches a person picked),
+            // not the policy-expanded emitted values — so `all`/`leaves` don't
+            // balloon it. Under rolled-up this equals `count`, so nothing changes.
+            const counterItems = this.counterSelection();
+            const counterCount = counterItems.length;
+            this.counter.textContent = `[${counterCount}]`;
+            this.counter.title = this.buildCounterTooltip(counterItems);
+            this.counter.style.display = counterCount > 0 ? '' : 'none';
         } else {
+            this.counter.title = '';
             this.counter.style.display = 'none';
         }
 
@@ -2095,6 +2149,24 @@ export class WebMultiSelect<T = any> {
     private deselectOption(option: T): void {
         const value = this.getItemValue(option);
         const valueKey = String(value);
+
+        // Cascade mode: a badge/popover value is a policy *projection*, not a raw
+        // selectedValues entry. Deleting the value alone would leave the node's
+        // atoms checked elsewhere (e.g. policy "all" emits branch + every leaf),
+        // so refreshCascadeAtoms would re-derive the branch as checked and the
+        // removal would appear to do nothing. Route through the cascade path so
+        // removing a node unchecks its whole subtree, exactly like un-toggling it.
+        if (this.isCascadeMode() && this.cascadeIndex) {
+            const node = this.cascadeIndex.nodeByValue.get(valueKey);
+            if (node) {
+                const atoms = this.cascadeIndex.atomsUnder.get(node.path) ?? [];
+                const checkedAtoms = new Set(expandToAtoms(this.cascadeIndex, this.selectedValues));
+                for (const a of atoms) checkedAtoms.delete(a);
+                this.commitCascadeAtoms(checkedAtoms);
+                return;
+            }
+        }
+
         this.selectedValues.delete(valueKey);
         this.selectedOptions.delete(valueKey);
         this.commit({ removed: [option] });
@@ -2277,12 +2349,16 @@ export class WebMultiSelect<T = any> {
         };
 
         return autoUpdate(this.input, panel, () => {
-            // Clamp panel size BEFORE computePosition so shift() measures the final width.
-            // Otherwise shift() sees the panel's natural content width (which can be wider than
-            // the input — e.g. long option labels), pushes x left to keep the natural-width
-            // panel in viewport, and the subsequent `width: input.offsetWidth` clamp leaves
-            // the panel stranded to the left of the input.
-            panel.style.width = `${this.input.offsetWidth}px`;
+            // Panel widths are CSS-variable driven (themeable at app level, overridable per
+            // instance via the dropdown-width / selected-popover-width attributes). The dropdown
+            // defaults to the input width, which CSS can't measure — so we publish the live input
+            // width as --ms-input-current-width and let `.ms__dropdown { width: var(--ms-dropdown-width) }`
+            // (whose default is that var) resolve it. It MUST be set on the host: --ms-dropdown-width is
+            // declared on :host, so its nested var() resolves against the host, not the panel where the
+            // width is used. From there the resolved width inherits down to the shadow-tree panels.
+            // Set BEFORE computePosition so shift() measures the final width; otherwise it sees the
+            // natural content width and strands the panel.
+            (this.options.hostElement ?? this.element).style.setProperty('--ms-input-current-width', `${this.input.offsetWidth}px`);
             if (this.options.dropdownMinWidth) panel.style.minWidth = this.options.dropdownMinWidth;
             if (opts.applyMaxWidth && this.options.dropdownMaxWidth) panel.style.maxWidth = this.options.dropdownMaxWidth;
 
@@ -2779,6 +2855,35 @@ export class WebMultiSelect<T = any> {
             // Tree config toggled/changed without new options — rebuild from the existing list.
             if (this.isTreeMode()) this.buildTree();
             else this.filteredOptions = this.searchTerm ? this.filteredOptions : [...this.allOptions];
+        }
+
+        // Cascade config (checkbox-mode / cascade-select-policy) changed live. buildTree
+        // rebuilds the index on a tree/options change; when only these knobs move we must
+        // refresh it here and re-project the current selection so badges/form/UI reflect the
+        // new mode/policy. Silent (no select/deselect/change) — this is a config switch, not
+        // a user gesture; the projection is a pure re-derivation of the same underlying pick.
+        const cascadeConfigChanged = 'checkboxMode' in partial || 'cascadeSelectPolicy' in partial;
+        if (cascadeConfigChanged && !treeConfigChanged && !('options' in partial) && this.isTreeMode()) {
+            this.cascadeIndex = this.isCascadeMode()
+                ? buildCascadeIndex(this.tree!, (d) => String(this.getItemValue(d)))
+                : null;
+            if (this.isCascadeMode() && this.cascadeIndex) {
+                this.cascadeCheckedAtoms = expandToAtoms(this.cascadeIndex, this.selectedValues);
+                const emitted = projectSelection(
+                    this.cascadeIndex,
+                    this.cascadeCheckedAtoms,
+                    this.cascadePolicy(),
+                    (d) => String(this.getItemValue(d))
+                );
+                const newOptions = new Map<string, T>();
+                for (const v of emitted) {
+                    const opt = (this.cascadeIndex.nodeByValue.get(v)?.data as T | undefined)
+                        ?? this.selectedOptions.get(v);
+                    if (opt !== undefined) newOptions.set(v, opt);
+                }
+                this.selectedValues = new Set(emitted);
+                this.selectedOptions = newOptions;
+            }
         }
 
         // Structural class on host

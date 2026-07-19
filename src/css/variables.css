@@ -176,13 +176,15 @@
 
   /* Badge Semantic Variables */
   --ms-badge-bg: var(--ms-accent-color-light);
-  --ms-badge-bg-hover: var(--base-hover-bg, var(--ms-input-bg));
+  /* Hover deepens the accent tint (dark-mode aware). Using --ms-input-bg here
+     made a light-blue badge go WHITE on hover — reading as "background lost". */
+  --ms-badge-bg-hover: var(--base-hover-bg, var(--ms-accent-color-light-hover));
   --ms-badge-bg-active: var(--ms-accent-color-light-hover);
 
   /* Badge Text Semantic Variables */
   --ms-badge-text-bg: var(--ms-accent-color-light);
   --ms-badge-text-color: var(--ms-accent-color);
-  --ms-badge-text-bg-hover: var(--base-hover-bg, var(--ms-input-bg));
+  --ms-badge-text-bg-hover: var(--base-hover-bg, var(--ms-accent-color-light-hover));
   --ms-badge-text-color-hover: var(--ms-badge-text-color);
 
   /* Badge Remove Button Semantic Variables */
@@ -241,34 +243,41 @@
   --ms-input-bg-disabled: rgba(107, 114, 128, 0.05);
 
   /* ==========================================================================
-     INPUT SIZE VARIANTS
+     INPUT SIZE VARIANTS — currently unused (commented out)
      ==========================================================================
-     Five size variants for the input element (xs, sm, md, lg, xl)
-     Heights reference --base-input-size-*-height for consistency across components */
+     Preset size tiers (xs/sm/md/lg/xl) for the input. Read only by the
+     .ms__input--* classes in controls.css, which nothing toggles (no `size`
+     attribute), so this whole chain is inert. Commented out to drop dead theming
+     surface — kept, not deleted, in case a future `size` attribute turns it into a
+     named-preset API; no case has needed it yet. Size via --ms-rem (global) or the
+     individual --ms-input-* vars (targeted) instead. Heights reference
+     --base-input-size-*-height for cross-component consistency (px in parens):
+
   --ms-input-size-xs-font: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
   --ms-input-size-xs-padding-v: calc(0.4 * var(--ms-rem));
   --ms-input-size-xs-padding-h: calc(0.8 * var(--ms-rem));
-  --ms-input-size-xs-height: calc(var(--base-input-size-xs-height, 3.1) * var(--ms-rem));  /* 31px */
+  --ms-input-size-xs-height: calc(var(--base-input-size-xs-height, 3.1) * var(--ms-rem));  (31px)
 
   --ms-input-size-sm-font: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
   --ms-input-size-sm-padding-v: calc(0.5 * var(--ms-rem));
   --ms-input-size-sm-padding-h: calc(1.0 * var(--ms-rem));
-  --ms-input-size-sm-height: calc(var(--base-input-size-sm-height, 3.3) * var(--ms-rem));  /* 33px */
+  --ms-input-size-sm-height: calc(var(--base-input-size-sm-height, 3.3) * var(--ms-rem));  (33px)
 
   --ms-input-size-md-font: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
   --ms-input-size-md-padding-v: calc(0.8 * var(--ms-rem));
   --ms-input-size-md-padding-h: calc(1.2 * var(--ms-rem));
-  --ms-input-size-md-height: calc(var(--base-input-size-md-height, 3.5) * var(--ms-rem));  /* 35px */
+  --ms-input-size-md-height: calc(var(--base-input-size-md-height, 3.5) * var(--ms-rem));  (35px)
 
   --ms-input-size-lg-font: calc(var(--base-font-size-base, 1.6) * var(--ms-rem));
   --ms-input-size-lg-padding-v: calc(1.0 * var(--ms-rem));
   --ms-input-size-lg-padding-h: calc(1.4 * var(--ms-rem));
-  --ms-input-size-lg-height: calc(var(--base-input-size-lg-height, 3.8) * var(--ms-rem));  /* 38px */
+  --ms-input-size-lg-height: calc(var(--base-input-size-lg-height, 3.8) * var(--ms-rem));  (38px)
 
   --ms-input-size-xl-font: calc(var(--base-font-size-lg, 1.8) * var(--ms-rem));
   --ms-input-size-xl-padding-v: calc(1.2 * var(--ms-rem));
   --ms-input-size-xl-padding-h: calc(1.6 * var(--ms-rem));
-  --ms-input-size-xl-height: calc(var(--base-input-size-xl-height, 4.1) * var(--ms-rem));  /* 41px */
+  --ms-input-size-xl-height: calc(var(--base-input-size-xl-height, 4.1) * var(--ms-rem));  (41px)
+  */
 
   /* ==========================================================================
      TOGGLE ICON
@@ -306,6 +315,13 @@
   --ms-dropdown-border: var(--base-dropdown-border, 1px solid var(--ms-dropdown-border-color));
   --ms-dropdown-border-radius: var(--ms-border-radius-lg);
   --ms-dropdown-box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  /* Live input width, published by JS each positioning frame. It's the only panel
+     dimension CSS can't measure itself, so panels that "match the input" read it. */
+  --ms-input-current-width: auto;
+  /* Options dropdown width. Defaults to the input width; override at app/theme level
+     (web-multiselect { --ms-dropdown-width: 60rem }) or per-instance via the
+     dropdown-width attribute. dropdown-min-width / dropdown-max-width still clamp it. */
+  --ms-dropdown-width: var(--ms-input-current-width);
   --ms-options-max-height: calc(32 * var(--ms-rem));
   --ms-option-color: var(--ms-text-color-1);
   --ms-z-index-dropdown: 9999;
@@ -576,6 +592,9 @@
      SELECTED POPOVER
      ========================================================================== */
   --ms-z-index-popover: 10000;
+  /* Selected-items ("badges") popover width — intrinsic 32rem default, independent of the
+     input. Override at app/theme level or per-instance via the selected-popover-width
+     attribute. Set to var(--ms-input-current-width) to make it track the input instead. */
   --ms-selected-popover-width: calc(32 * var(--ms-rem));
   --ms-selected-popover-max-height: calc(32 * var(--ms-rem));
   --ms-selected-popover-border: 1px solid var(--ms-selected-popover-border-color);

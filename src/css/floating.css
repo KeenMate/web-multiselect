@@ -43,6 +43,7 @@
   border: var(--ms-dropdown-border);
   border-radius: var(--ms-dropdown-border-radius);
   box-shadow: var(--ms-dropdown-box-shadow);
+  width: var(--ms-dropdown-width); /* defaults to the live input width; themeable/attribute-overridable */
   max-height: var(--ms-options-max-height);
   overflow: hidden; /* Clips content to border-radius, inner container handles scrolling */
   color: var(--ms-dropdown-text-color);

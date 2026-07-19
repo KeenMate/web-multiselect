@@ -147,6 +147,7 @@
     { "name": "ms-dropdown-border-radius", "category": "dropdown", "usage": "Dropdown border radius" },
     { "name": "ms-dropdown-box-shadow", "category": "dropdown", "usage": "Dropdown shadow" },
     { "name": "ms-dropdown-box-shadow-semantic", "category": "dropdown", "usage": "Dropdown semantic shadow" },
+    { "name": "ms-dropdown-width", "category": "dropdown", "usage": "Options dropdown width (defaults to the input width; also set via the dropdown-width attribute)" },
     { "name": "ms-options-max-height", "category": "dropdown", "usage": "Options list max height" },
     { "name": "ms-z-index-dropdown", "category": "dropdown", "usage": "Dropdown z-index" },
     { "name": "ms-z-index-sticky", "category": "dropdown", "usage": "Sticky elements z-index" },
