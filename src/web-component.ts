@@ -621,22 +621,30 @@ export class MultiSelectElement<T = any> extends BlissElement<MultiSelectEvents>
   }
 
   get selectedValue(): string | number | (string | number)[] | null {
+    this.flush(); // apply a pending `options = …` before reading live picker state
     return this.#picker?.selectedValue ?? null;
   }
 
   get selectedItem(): T | null {
+    this.flush();
     return this.#picker?.selectedItem ?? null;
   }
 
   getSelected(): T[] {
+    this.flush();
     return this.#picker ? this.#picker.getSelected() : [];
   }
 
   setSelected(values: (string | number)[], opts: { notify?: boolean } = {}): void {
+    // Preserve the synchronous `el.options = data; el.setSelected(sel)` contract:
+    // property writes coalesce on a microtask, so flush the pending rebuild first
+    // or the picker would still hold the pre-write options (count/options mismatch).
+    this.flush();
     this.#picker?.setSelected(values, opts);
   }
 
   getValue(): string | number | (string | number)[] | null {
+    this.flush();
     return this.#picker ? this.#picker.getValue() : null;
   }
 

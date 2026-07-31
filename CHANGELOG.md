@@ -62,14 +62,27 @@ the custom-element plumbing that wrapped them is replaced by the shared core.
   use `el.batch(() => { el.setAttribute('search-placeholder', 'Search…'); … })`.
 - **Property writes are asynchronous (coalesced).** Setting a property (e.g.
   `el.options = […]`) applies on a microtask, not synchronously. Await
-  `el.whenSettled()` before reading back rendered state. `setAttributes()` and
-  `batch()` still flush synchronously.
+  `el.whenSettled()` before reading back rendered **DOM** state. `setAttributes()`
+  and `batch()` still flush synchronously, and the imperative methods
+  (`getSelected` / `setSelected` / `getValue` / `selectedValue` / `selectedItem`)
+  flush any pending write internally — so `el.options = data; el.setSelected(sel)`
+  works with no `await` in between (see Fixed).
 - **Tooltips mount on show.** Core tooltips are added to the DOM when shown and
   removed when hidden (the old ones were always present, toggled by a class) —
   query a tooltip element after triggering hover/focus.
 
 ### Fixed
 
+- **`el.options = data; el.setSelected(sel)` works synchronously again.** After
+  the move to coalesced (microtask) property writes, a `setSelected` on the very
+  next line ran against the picker's *previous* options: the requested count and
+  the found options diverged, and compact/partial badge rendering dereferenced a
+  missing option (`Cannot read properties of undefined (reading 'label')`),
+  throwing and aborting the caller's init script — which is why demo pickers set
+  up this way (e.g. the "Partial Mode" example on `examples-classic.html`) showed
+  no options. The imperative methods now `flush()` any pending input write before
+  touching the picker (via new core `BlissElement.flush()`), restoring the
+  intuitive ordering without an intervening `await`.
 - **Live `checkbox-mode` / `cascade-select-policy` switch keeps re-projecting the
   current selection** (the rc08 behaviour): these inputs are `on: 'update'`, so a
   live change patches the picker in place rather than rebuilding it.
