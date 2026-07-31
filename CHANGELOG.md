@@ -49,12 +49,6 @@ the custom-element plumbing that wrapped them is replaced by the shared core.
   `ShadowRoot` container. (Core grew these capabilities to absorb the picker
   without regressing — see the core CHANGELOG.)
 
-### Fixed
-
-- **Live `checkbox-mode` / `cascade-select-policy` switch keeps re-projecting the
-  current selection** (the rc08 behaviour): these inputs are `on: 'update'`, so a
-  live change patches the picker in place rather than rebuilding it.
-
 ### Breaking
 
 - **`onSelect` / `onDeselect` / `onChange` are now event-handler properties.**
@@ -70,6 +64,15 @@ the custom-element plumbing that wrapped them is replaced by the shared core.
   `el.options = […]`) applies on a microtask, not synchronously. Await
   `el.whenSettled()` before reading back rendered state. `setAttributes()` and
   `batch()` still flush synchronously.
+- **Tooltips mount on show.** Core tooltips are added to the DOM when shown and
+  removed when hidden (the old ones were always present, toggled by a class) —
+  query a tooltip element after triggering hover/focus.
+
+### Fixed
+
+- **Live `checkbox-mode` / `cascade-select-policy` switch keeps re-projecting the
+  current selection** (the rc08 behaviour): these inputs are `on: 'update'`, so a
+  live change patches the picker in place rather than rebuilding it.
 
 ## [1.12.0-rc08] - 2026-07-19 [PUBLISHED]
 
