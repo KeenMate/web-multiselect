@@ -148,6 +148,14 @@ export class WebMultiSelect<T = any> {
     // All hover tooltips (badge text, badge-remove buttons, action buttons), keyed by id.
     private tooltips = new Map<string, TooltipHandle>();
 
+    // Dismiss option tooltips the instant the list scrolls. Without this, a shown
+    // tooltip's floating-ui autoUpdate keeps chasing its anchor row as it scrolls
+    // (most visible under virtual scroll, where the row also recycles), so the
+    // tooltip visibly slides to the viewport edge before the next render clears it.
+    // Capturing so it catches scroll from the inner options container (scroll
+    // doesn't bubble). Same function ref → addEventListener dedupes across opens.
+    private readonly onDropdownScroll = (): void => this.hideOptionTooltips();
+
     // Virtual scroll instance
     private virtualScroll: VirtualScroll<T> | null = null;
     private optionsContainer: HTMLDivElement | null = null;
@@ -2266,6 +2274,9 @@ export class WebMultiSelect<T = any> {
         this.renderDropdown();
         this.positionDropdown();
 
+        // Dismiss option tooltips immediately on scroll (see field comment).
+        this.dropdown.addEventListener('scroll', this.onDropdownScroll, true);
+
         if (this.hint) {
             this.hint.classList.add('ms__hint--visible');
             this.positionHint();
@@ -2297,6 +2308,7 @@ export class WebMultiSelect<T = any> {
         this.focusedIndex = -1;
 
         // Tear down option tooltips so they don't linger while the dropdown is hidden.
+        this.dropdown.removeEventListener('scroll', this.onDropdownScroll, true);
         this.destroyAllOptionTooltips();
 
         this.renderBadges();
@@ -3122,6 +3134,18 @@ export class WebMultiSelect<T = any> {
                 followCursor: this.options.isOptionTooltipFollowCursor
             });
         });
+    }
+
+    /**
+     * Hide (don't destroy) every currently-shown option tooltip immediately,
+     * ignoring the hide delay. Wired to dropdown scroll so a tooltip can't trail
+     * its recycling/scrolling anchor row. Handles stay in the map; a fresh hover
+     * re-shows them.
+     */
+    private hideOptionTooltips(): void {
+        for (const [id, handle] of this.tooltips) {
+            if (id.startsWith('option-')) handle.hide();
+        }
     }
 
     /**

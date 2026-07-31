@@ -147,3 +147,24 @@ test('follow-cursor: option tooltip tracks the pointer as it moves along the row
 
     expect(Math.abs(left2 - left1)).toBeGreaterThan(20);
 });
+
+test('option tooltip is dismissed immediately when the list scrolls', async ({ page }) => {
+    const p = picker(page, 'option-scroll-tt');
+    await openDropdown(p);
+
+    // Show a tooltip on the first visible row.
+    await p.locator('.ms__option').first().hover();
+    const tooltip = page.locator('.ms__option-tooltip.ms__option-tooltip--visible');
+    await expect(tooltip).toBeVisible({ timeout: 2000 });
+
+    // Scroll the options list — a shown tooltip must not trail its anchor row; it
+    // should vanish at once (core hide() ignores the hide delay; mount-on-show
+    // means the visible element is also removed).
+    await p.evaluate((host: any) => {
+        const c = host.shadowRoot.querySelector('.ms__options--virtual, .ms__options');
+        c.scrollTop = 600;
+        c.dispatchEvent(new Event('scroll'));
+    });
+
+    await expect(tooltip).toHaveCount(0);
+});

@@ -73,6 +73,12 @@ the custom-element plumbing that wrapped them is replaced by the shared core.
 
 ### Fixed
 
+- **Option tooltips no longer trail the row when the list scrolls.** A shown
+  option tooltip's floating-ui `autoUpdate` kept chasing its anchor row as the
+  list scrolled — most visible under virtual scroll, where the row also recycles
+  — so the tooltip slid to the viewport edge before the next render cleared it.
+  Dropdown scroll now dismisses option tooltips immediately (a capturing scroll
+  listener → `hide()`, which ignores the hide delay); a fresh hover re-shows them.
 - **`el.options = data; el.setSelected(sel)` works synchronously again.** After
   the move to coalesced (microtask) property writes, a `setSelected` on the very
   next line ran against the picker's *previous* options: the requested count and

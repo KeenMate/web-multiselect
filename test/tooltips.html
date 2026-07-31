@@ -67,6 +67,14 @@
             value-member="value" display-value-member="label"></web-multiselect>
     </div>
 
+    <div class="fixture">
+        <div class="fixture-label">long list (virtual scroll) — tooltip dismisses on scroll</div>
+        <web-multiselect id="option-scroll-tt"
+            enable-option-tooltips="true" option-tooltip-delay="0"
+            max-height="12rem"
+            value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
     <script type="module">
         import '/src/index.ts';
 
@@ -88,6 +96,12 @@
 
             document.getElementById('option-custom-tt').getOptionTooltipCallback = (item) =>
                 `${item.label} — ${item.description}`;
+
+            // Long list to exercise scrolling (virtual scroll auto-enables past ~100 rows).
+            const many = Array.from({ length: 200 }, (_, i) => ({
+                value: `item-${i}`, label: `Item ${i}`, description: `Row number ${i}`
+            }));
+            document.getElementById('option-scroll-tt').options = many;
         });
     </script>
 </body>
