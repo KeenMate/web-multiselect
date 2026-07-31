@@ -21,6 +21,30 @@ Reads `--base-*` variables from the page if [`@keenmate/theme-designer`](https:/
 - Custom rendering callbacks for options, badges, and group headers.
 - Form integration via standard hidden inputs (FormData-compatible).
 
+## What's New in v2.0.0-rc01
+
+**The core-adoption major.** `<web-multiselect>` is now built on
+[`@keenmate/web-components-core`](https://www.npmjs.com/package/@keenmate/web-components-core)
+(`BlissElement`) — shared, tested custom-element plumbing (attribute parsing,
+reactivity, reflection, event handling, logging, registration, positioning). The
+dropdown, tree, virtual scroll, theming, and every attribute behave the same; the
+change is under the hood, with three **breaking** API changes to be aware of:
+
+- **`onSelect` / `onDeselect` / `onChange` are event-handler properties now.** They
+  receive the `CustomEvent` (like `el.onclick`), so read `e.detail.option` /
+  `e.detail.selectedOptions` / `e.detail.selectedValues` instead of a bare
+  argument — equivalent to `addEventListener('select', …)`. The bubbling
+  `select` / `deselect` / `change` events are unchanged.
+- **`setAttributes()` takes typed property values by camelCase key.**
+  `el.setAttributes({ searchPlaceholder: 'Search…', isCounterShown: true })`. To
+  batch attribute **strings**, use `el.batch(() => { el.setAttribute('search-placeholder', 'Search…'); … })`.
+- **Property writes are async (coalesced).** Setting a property (e.g.
+  `el.options = […]`) applies on a microtask; `await el.whenSettled()` before
+  reading back rendered state. `setAttributes()` / `batch()` still flush
+  synchronously.
+
+See `CHANGELOG.md` for the full list.
+
 ## What's New in v1.12.0-rc08
 
 - **Panel sizing — dropdown and popover are independently sizable via CSS variables** — The options dropdown and selected-items popover no longer inherit the input's width. `--ms-dropdown-width` (defaults to the live input width) and `--ms-selected-popover-width` (intrinsic 32rem) drive them, alongside the existing max-height variables. Set them at app level (`web-multiselect { --ms-dropdown-width: 60rem }`) or override a single instance with the new `dropdown-width` / `selected-popover-width` attributes, which write those variables inline on the element. This also fixes a latent bug where `--ms-selected-popover-width` was dead (an internal width-sync always overrode it), so the popover now honours its 32rem default. See section 14 of `examples-tree.html`.
