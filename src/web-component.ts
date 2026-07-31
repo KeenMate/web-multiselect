@@ -96,13 +96,13 @@ const INPUTS: readonly InputDef[] = [
   { configKey: 'isSelectableMember',      attribute: 'is-selectable-member',        converter: toText({ isNullable: true }), reflect: true, on: 'reinit', description: 'Property name marking whether a node can be selected.' },
   { configKey: 'treePathSeparator',       attribute: 'tree-path-separator',         converter: toText({ default: '.' }), reflect: true, on: 'reinit', description: 'Separator between segments in a materialized tree path.' },
   { configKey: 'isTreeEnabled',           converter: toBool('tristate'), on: 'reinit', type: 'boolean', description: 'Force tree mode on/off. Property-only; when unset (null) tree mode auto-enables if a path source (path-member / getPathCallback) is present.' },
-  { configKey: 'checkboxMode',            attribute: 'checkbox-mode',               converter: toEnum(['independent', 'cascade'] as const, { default: 'independent' }), reflect: true, on: 'reinit',
+  { configKey: 'checkboxMode',            attribute: 'checkbox-mode',               converter: toEnum(['independent', 'cascade'] as const, { default: 'independent' }), reflect: true, on: 'update',
     description: `Tree checkbox interaction.
 - \`independent\` (default) — toggles only the clicked node.
 - \`cascade\` — checks a node whole subtree and shows a tristate (checked / indeterminate / unchecked) box on branches.
 
 Tree + multiple only.` },
-  { configKey: 'cascadeSelectPolicy',     attribute: 'cascade-select-policy',       converter: toEnum(['rolled-up', 'leaves', 'all'] as const, { default: 'rolled-up' }), reflect: true, on: 'reinit',
+  { configKey: 'cascadeSelectPolicy',     attribute: 'cascade-select-policy',       converter: toEnum(['rolled-up', 'leaves', 'all'] as const, { default: 'rolled-up' }), reflect: true, on: 'update',
     description: `In \`cascade\` mode, which values a selection emits (badges / form / change):
 - \`rolled-up\` (default) — minimal cover: a fully-selected subtree collapses to its root; partially-selected branches emit their individually-checked descendants.
 - \`leaves\` — only the checked leaf-level nodes.

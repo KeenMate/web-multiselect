@@ -61,10 +61,12 @@ test('repopulating the option list returns to the search placeholder', async ({ 
 
 test('setAttributes applies several placeholder attributes at once', async ({ page }) => {
     const p = picker(page, 'ph-nosearch');
-    await p.evaluate((el: any) => el.setAttributes({
-        'search-placeholder': 'Search items',
-        'select-placeholder': 'Pick one please',
-        'no-data-placeholder': 'Nothing here'
+    // v2: batch attribute STRINGS via batch() (setAttributes now takes typed
+    // property values by configKey). Coalesced into a single update.
+    await p.evaluate((el: any) => el.batch(() => {
+        el.setAttribute('search-placeholder', 'Search items');
+        el.setAttribute('select-placeholder', 'Pick one please');
+        el.setAttribute('no-data-placeholder', 'Nothing here');
     }));
     // search is disabled on this instance → the select placeholder is what shows.
     await expect(p.locator('.ms__input')).toHaveAttribute('placeholder', 'Pick one please');

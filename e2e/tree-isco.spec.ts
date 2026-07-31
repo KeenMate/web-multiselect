@@ -123,11 +123,10 @@ test('badge shows only the leaf title with a ".. /" hint; full breadcrumb is in 
     await expect(badgeText).toHaveText('.. / Generalist Medical Practitioners');
 
     // getBadgeTooltipCallback → the badge-text tooltip carries the full breadcrumb.
-    // (Each badge also has a separate "Remove …" tooltip, so filter to this one.)
+    // (v2: core tooltips mount on show, so hover first, then assert. Each badge also
+    // has a separate "Remove …" tooltip, so filter to this one.)
+    await badgeText.dispatchEvent('mouseenter');
     const tip = p.locator('.ms__badge-tooltip').filter({ hasText: 'Health Professionals' });
     await expect(tip).toHaveText(FULL);
-
-    // …and hovering reveals it.
-    await badgeText.dispatchEvent('mouseenter');
     await expect(tip).toHaveClass(/ms__badge-tooltip--visible/);
 });

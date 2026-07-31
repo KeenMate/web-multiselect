@@ -3,11 +3,14 @@
  * Comprehensive multiselect component with rich content support and floating hints
  */
 
-import { computePosition, flip, offset, autoUpdate, shift, platform, type Placement } from '@floating-ui/dom';
+// Positioning runs on the core /positioning module. `platform` (floating-ui's
+// base platform object) is still imported to build the custom platform below —
+// core's `anchor` accepts it via its `platform` escape hatch.
+import { platform, type Placement } from '@floating-ui/dom';
+import { anchor, createTooltip, type TooltipHandle } from '@keenmate/web-components-core/positioning';
 import type { MultiSelectConfig, BadgesPosition, SearchInputMode, SearchMode, OptionContentRenderContext, BadgeContentRenderContext } from './types';
 import { initLogger, dataLogger, uiLogger, interactionLogger } from './logger';
 import { VirtualScroll } from './virtual-scroll';
-import { Tooltip } from './tooltip';
 import { createLTree, type LTree } from './tree/ltree';
 import type { LTreeNode } from './tree/ltree-node';
 import {
@@ -143,7 +146,7 @@ export class WebMultiSelect<T = any> {
     private selectedPopoverCleanup: (() => void) | null = null;
 
     // All hover tooltips (badge text, badge-remove buttons, action buttons), keyed by id.
-    private tooltips = new Map<string, Tooltip>();
+    private tooltips = new Map<string, TooltipHandle>();
 
     // Virtual scroll instance
     private virtualScroll: VirtualScroll<T> | null = null;
@@ -2348,40 +2351,45 @@ export class WebMultiSelect<T = any> {
             getOffsetParent: () => getFixedPositionOffsetParent(this.input)
         };
 
-        return autoUpdate(this.input, panel, () => {
-            // Panel widths are CSS-variable driven (themeable at app level, overridable per
-            // instance via the dropdown-width / selected-popover-width attributes). The dropdown
-            // defaults to the input width, which CSS can't measure — so we publish the live input
-            // width as --ms-input-current-width and let `.ms__dropdown { width: var(--ms-dropdown-width) }`
-            // (whose default is that var) resolve it. It MUST be set on the host: --ms-dropdown-width is
-            // declared on :host, so its nested var() resolves against the host, not the panel where the
-            // width is used. From there the resolved width inherits down to the shadow-tree panels.
-            // Set BEFORE computePosition so shift() measures the final width; otherwise it sees the
-            // natural content width and strands the panel.
-            (this.options.hostElement ?? this.element).style.setProperty('--ms-input-current-width', `${this.input.offsetWidth}px`);
-            if (this.options.dropdownMinWidth) panel.style.minWidth = this.options.dropdownMinWidth;
-            if (opts.applyMaxWidth && this.options.dropdownMaxWidth) panel.style.maxWidth = this.options.dropdownMaxWidth;
+        const locked = opts.isLocked?.() ?? true;
 
-            const locked = opts.isLocked?.() ?? true;
-            const current = opts.getPlacement();
-            const placement: Placement = (locked && current) ? current : 'bottom-start';
-            const middleware = [
-                offset(4),
-                ...(locked && current ? [] : [flip()]),
-                shift({ padding: 8 })
-            ];
-
-            computePosition(this.input, panel, { placement, strategy: 'fixed', middleware, platform: customPlatform }).then(({ x, y, placement: finalPlacement }) => {
-                if (!current) opts.setPlacement(finalPlacement);
-                Object.assign(panel.style, {
-                    position: 'fixed',
-                    left: `${x}px`,
-                    top: `${y}px`
-                });
+        const handle = anchor(panel, this.input, {
+            strategy: 'fixed',
+            placement: 'bottom-start',
+            offset: 4,
+            shift: 8,
+            // Locked → flip once to where it fits, then pin (core 'freeze'). Unlocked
+            // → re-flip every frame (default flip:true, no lock).
+            lockPlacement: locked ? 'freeze' : false,
+            // The custom platform narrows floating-ui's fixed-position containing-block
+            // heuristic for real-world shadow-DOM layouts (see getFixedPositionOffsetParent).
+            platform: customPlatform,
+            beforeCompute: () => {
+                // Panel widths are CSS-variable driven (themeable at app level, overridable per
+                // instance via the dropdown-width / selected-popover-width attributes). The dropdown
+                // defaults to the input width, which CSS can't measure — so we publish the live input
+                // width as --ms-input-current-width and let `.ms__dropdown { width: var(--ms-dropdown-width) }`
+                // (whose default is that var) resolve it. It MUST be set on the host: --ms-dropdown-width is
+                // declared on :host, so its nested var() resolves against the host, not the panel where the
+                // width is used. From there the resolved width inherits down to the shadow-tree panels.
+                // Set BEFORE positioning so shift() measures the final width; otherwise it sees the
+                // natural content width and strands the panel.
+                (this.options.hostElement ?? this.element).style.setProperty('--ms-input-current-width', `${this.input.offsetWidth}px`);
+                if (this.options.dropdownMinWidth) panel.style.minWidth = this.options.dropdownMinWidth;
+                if (opts.applyMaxWidth && this.options.dropdownMaxWidth) panel.style.maxWidth = this.options.dropdownMaxWidth;
+            },
+            onPlaced: (resolved) => {
+                // Record the placement once (the hint mirrors it); after freeze it never changes.
+                if (!opts.getPlacement()) opts.setPlacement(resolved);
+                // anchor() has written left/top to the panel style; read them back for the drift check.
+                const x = parseFloat(panel.style.left) || 0;
+                const y = parseFloat(panel.style.top) || 0;
                 this.verifyPanelLanded(panel, x, y);
                 opts.afterPosition?.();
-            });
+            }
         });
+
+        return () => handle.destroy();
     }
 
     /**
@@ -2436,43 +2444,32 @@ export class WebMultiSelect<T = any> {
     private positionHint(): void {
         if (!this.hint) return;
 
-        // Clean up previous autoUpdate if it exists
+        // Clean up previous anchor if it exists
         if (this.hintCleanup) {
             this.hintCleanup();
         }
 
-        this.hintCleanup = autoUpdate(
-            this.input,
-            this.hint,
-            () => {
-                // Calculate opposite placement of dropdown
-                let hintPlacement: Placement = 'top-start';
-                if (this.dropdownPlacement) {
-                    // If dropdown is on bottom, hint goes on top and vice versa
-                    if (this.dropdownPlacement.startsWith('bottom')) {
-                        hintPlacement = this.dropdownPlacement.replace('bottom', 'top') as Placement;
-                    } else if (this.dropdownPlacement.startsWith('top')) {
-                        hintPlacement = this.dropdownPlacement.replace('top', 'bottom') as Placement;
-                    }
-                }
-
-                computePosition(this.input, this.hint!, {
-                    placement: hintPlacement,
-                    strategy: 'fixed',
-                    middleware: [
-                        offset(4),
-                        // Don't use flip() - we want hint to stay opposite of dropdown
-                        shift({ padding: 8 })
-                    ]
-                }).then(({ x, y }) => {
-                    Object.assign(this.hint!.style, {
-                        position: 'fixed',
-                        left: `${x}px`,
-                        top: `${y}px`
-                    });
-                });
+        // Hint sits opposite the dropdown: if the dropdown is on the bottom, the hint
+        // goes on top and vice versa. flip:false keeps it there — it must not flip
+        // back over the dropdown. Re-derived (and re-anchored) whenever the dropdown
+        // placement changes (afterPosition calls this).
+        let hintPlacement: Placement = 'top-start';
+        if (this.dropdownPlacement) {
+            if (this.dropdownPlacement.startsWith('bottom')) {
+                hintPlacement = this.dropdownPlacement.replace('bottom', 'top') as Placement;
+            } else if (this.dropdownPlacement.startsWith('top')) {
+                hintPlacement = this.dropdownPlacement.replace('top', 'bottom') as Placement;
             }
-        );
+        }
+
+        const handle = anchor(this.hint, this.input, {
+            strategy: 'fixed',
+            placement: hintPlacement,
+            offset: 4,
+            shift: 8,
+            flip: false
+        });
+        this.hintCleanup = () => handle.destroy();
     }
 
     private parseInitialSelection(): void {
@@ -2989,15 +2986,19 @@ export class WebMultiSelect<T = any> {
         // the host's --ms-tooltip-* variables and data-theme overrides.
         const rootNode = this.element.getRootNode();
         const shadowContainer = rootNode instanceof ShadowRoot ? rootNode : null;
-        const tooltip = new Tooltip({
+        const tooltip = createTooltip({
             trigger: spec.trigger,
             container: this.options.container ?? shadowContainer ?? document.body,
             content: spec.content,
             placement: spec.placement ?? this.options.badgeTooltipPlacement ?? 'top',
-            offsetDistance: spec.offsetDistance ?? this.options.badgeTooltipOffset ?? 8,
-            showDelay: spec.showDelay ?? this.options.badgeTooltipDelay ?? 100,
-            cssClass: spec.cssClass,
-            visibleClass: spec.visibleClass,
+            offset: spec.offsetDistance ?? this.options.badgeTooltipOffset ?? 8,
+            // Core takes a {show, hide} delay; the old Tooltip defaulted hide to 100ms.
+            delay: { show: spec.showDelay ?? this.options.badgeTooltipDelay ?? 100, hide: 100 },
+            // Core createTooltip has no cssClass default and uses 'is-visible';
+            // fall back to the component's badge-tooltip classes the old Tooltip
+            // defaulted to (option tooltips override with ms__option-tooltip).
+            cssClass: spec.cssClass ?? 'ms__badge-tooltip',
+            visibleClass: spec.visibleClass ?? 'ms__badge-tooltip--visible',
             followCursor: spec.followCursor,
             onBeforeShow: spec.onBeforeShow
         });
@@ -3059,7 +3060,7 @@ export class WebMultiSelect<T = any> {
                 trigger: removeBtn,
                 content: this.buildRemoveButtonTooltipText(displayValue, option),
                 // Keep parent badge tooltip from overlapping the remove-button tooltip.
-                onBeforeShow: () => this.tooltips.get(textId)?.hideImmediate()
+                onBeforeShow: () => this.tooltips.get(textId)?.hide()
             });
         });
 

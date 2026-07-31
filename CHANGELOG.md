@@ -36,6 +36,24 @@ the custom-element plumbing that wrapped them is replaced by the shared core.
   `static inputs`/`static events` tables); the homegrown
   `cem/attribute-table-plugin.mjs` (which read the old `ATTRIBUTE_TABLE`) is
   removed. The VS Code / JetBrains editor-integration generators still run.
+- **Positioning runs on the core positioning module.** The dropdown, search hint,
+  selected-items popover, and all tooltips are positioned via core `anchor()` /
+  `createTooltip()` instead of a private `@floating-ui/dom` wrapper + the local
+  `tooltip.ts` (removed). The bespoke behaviours are preserved through core's
+  hooks: the narrowed shadow-DOM fixed-position containing-block heuristic + drift
+  diagnostics via `anchor`'s `platform` escape hatch, the themeable
+  `--ms-dropdown-width` (published before measuring) via `beforeCompute`, the
+  flip-once-then-pin dropdown via `lockPlacement: 'freeze'`, the no-flip hint via
+  `flip: false`, and the badge-remove-dismisses-parent tooltip via `onBeforeShow`.
+  Tooltips stay inside the shadow root (scoped styling) via `createTooltip`'s
+  `ShadowRoot` container. (Core grew these capabilities to absorb the picker
+  without regressing — see the core CHANGELOG.)
+
+### Fixed
+
+- **Live `checkbox-mode` / `cascade-select-policy` switch keeps re-projecting the
+  current selection** (the rc08 behaviour): these inputs are `on: 'update'`, so a
+  live change patches the picker in place rather than rebuilding it.
 
 ### Breaking
 
