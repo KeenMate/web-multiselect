@@ -5,6 +5,54 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0-rc01] - 2026-07-31
+
+The **core adoption** major: `<web-multiselect>` is now built on
+[`@keenmate/web-components-core`](../web-components-core) (`BlissElement`). The
+dropdown engine (`multiselect.ts`), CSS, tree, and virtual scroll are unchanged;
+the custom-element plumbing that wrapped them is replaced by the shared core.
+
+### Changed
+
+- **Element built on `BlissElement`.** The hand-coded custom-element plumbing —
+  `ATTRIBUTE_TABLE`, `observedAttributes`, `attributeChangedCallback`,
+  `parseAttrValue`, and the ~40 property/callback getters/setters — is replaced by
+  a single core input table (`static inputs`) + event table (`static events`).
+  Core owns attribute parsing, validation, reactivity coalescing, reflection, and
+  the managed `on<Name>` handler properties. Reactivity is now declared per input
+  (`on: 'reinit' | 'update'`) instead of discovered at runtime.
+- **Logging runs on the core logging module.** `logger.ts` is now a thin shim over
+  core's `createLoggers('MULTISELECT', …)`; the vendored `loglevel` +
+  `loglevel-plugin-prefix` copies under `src/vendor/` are gone. The category
+  loggers (`MULTISELECT:INIT/DATA/UI/INTERACTION`) and the control functions
+  (`enableLogging` / `disableLogging` / `setLogLevel` / `setCategoryLevel`) keep
+  their names.
+- **Global registration via `registerComponent()`.** The hand-rolled
+  `window.components['web-multiselect'] = { … }` block collapses to one core call;
+  `getInstances()` is now wired to the live-instance registry `BlissElement`
+  maintains automatically (add on connect / remove on disconnect).
+- **CEM manifest from the input table.** `custom-elements-manifest.config.mjs` now
+  extends core's `blissAnalyzerConfig()` (its `blissInputsPlugin()` reads the
+  `static inputs`/`static events` tables); the homegrown
+  `cem/attribute-table-plugin.mjs` (which read the old `ATTRIBUTE_TABLE`) is
+  removed. The VS Code / JetBrains editor-integration generators still run.
+
+### Breaking
+
+- **`onSelect` / `onDeselect` / `onChange` are now event-handler properties.**
+  They install real listeners (like `el.onclick`) and receive the `CustomEvent`,
+  so read `e.detail.option` / `e.detail.selectedOptions` / `e.detail.selectedValues`
+  — not a bare argument. Equivalent to `addEventListener('select', …)`. The
+  bubbling/composed `select` / `deselect` / `change` events are unchanged.
+- **`setAttributes()` takes typed property values by `configKey`, not attribute
+  strings.** `el.setAttributes({ searchPlaceholder: 'Search…' })` (a batched
+  property assignment, coalesced into one update). To batch attribute **strings**,
+  use `el.batch(() => { el.setAttribute('search-placeholder', 'Search…'); … })`.
+- **Property writes are asynchronous (coalesced).** Setting a property (e.g.
+  `el.options = […]`) applies on a microtask, not synchronously. Await
+  `el.whenSettled()` before reading back rendered state. `setAttributes()` and
+  `batch()` still flush synchronously.
+
 ## [1.12.0-rc08] - 2026-07-19 [PUBLISHED]
 
 ### Added

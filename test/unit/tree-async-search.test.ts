@@ -60,12 +60,14 @@ describe('tree mode — external searchCallback', () => {
     it('handles matches in two branches with each ancestry preserved', async () => {
         // Match both a fruit leaf and a veg leaf.
         el.searchCallback = async () => [TREE[2], TREE[5]]; // gala (1.1.1), carrot (2.1)
+        await el.whenSettled(); // apply the reassigned callback before searching
         await type('x');
         expect(rows().map(r => r.dataset.path)).toEqual(['1', '1.1', '1.1.1', '2', '2.1']);
     });
 
     it('renders nothing when the callback returns no matches', async () => {
         el.searchCallback = async () => [];
+        await el.whenSettled(); // apply the reassigned callback before searching
         await type('zzz');
         expect(rows().length).toBe(0);
     });

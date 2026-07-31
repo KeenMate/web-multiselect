@@ -88,13 +88,14 @@ describe('tree mode — search keeps ancestors', () => {
 });
 
 describe('tree mode — enabled via JS property (not just attribute)', () => {
-    it('renders a tree when pathMember is set as a property', () => {
+    it('renders a tree when pathMember is set as a property', async () => {
         const el2: any = document.createElement('web-multiselect');
         el2.valueMember = 'value';
         el2.displayValueMember = 'label';
         el2.pathMember = 'path'; // property, not setAttribute
         document.body.appendChild(el2);
         el2.options = TREE;
+        await el2.whenSettled();
 
         const paths = Array.from(el2.shadowRoot.querySelectorAll('.ms__option--tree')).map(
             (r: any) => r.dataset.path

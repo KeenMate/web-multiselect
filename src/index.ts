@@ -1,33 +1,41 @@
-// Import styles
+// Import styles (produces the shipped dist/style.css via Vite)
 import './css/main.css';
 
-// Import for export and global API
-import { getAllInstances, MultiSelectElement } from './web-component';
+import { registerComponent } from '@keenmate/web-components-core';
+import { MultiSelectElement } from './web-component';
+import { logging } from './logger';
 
 // Export the web component
 export { MultiSelectElement };
 
-// Export the base class if users want direct access
+// Export the base picker for users who want direct access
 export { WebMultiSelect } from './multiselect';
 
 // Export types
-export type { MultiSelectOption, MultiSelectOptions, MultiSelectEventDetail, BadgesDisplayMode, BadgesPosition, BadgesThresholdMode, SearchInputMode, SearchMode, ValueFormat } from './types';
+export type {
+  MultiSelectOption,
+  MultiSelectOptions,
+  MultiSelectEventDetail,
+  BadgesDisplayMode,
+  BadgesPosition,
+  BadgesThresholdMode,
+  SearchInputMode,
+  SearchMode,
+  ValueFormat,
+} from './types';
 
 // Export logging utilities for runtime control
 export {
-    setLogLevel,
-    enableLogging,
-    disableLogging,
-    setCategoryLevel,
-    LOGGING_CATEGORIES,
-    initLogger,
-    dataLogger,
-    uiLogger,
-    interactionLogger
+  setLogLevel,
+  enableLogging,
+  disableLogging,
+  setCategoryLevel,
+  LOGGING_CATEGORIES,
+  initLogger,
+  dataLogger,
+  uiLogger,
+  interactionLogger,
 } from './logger';
-
-// Auto-register the custom element
-import './web-component';
 
 // Type declarations for build-time constants
 declare const __VERSION__: string;
@@ -37,71 +45,28 @@ declare const __LICENSE__: string;
 declare const __REPOSITORY__: string;
 declare const __HOMEPAGE__: string;
 
-// Global API interface
-export interface GlobalMultiSelectAPI {
-    version: () => string;
-    config: {
-        name: string;
-        version: string;
-        author: string;
-        license: string;
-        repository: string;
-        homepage: string;
-    };
-    logging: {
-        enableLogging: () => void;
-        disableLogging: () => void;
-        setLogLevel: (level: string) => void;
-        setCategoryLevel: (category: string, level: string) => void;
-        getCategories: () => string[];
-    };
-    register: () => void;
-    getInstances: () => HTMLElement[];
-}
+// The whole hand-rolled `window.components['web-multiselect'] = { … }` block —
+// version/config/logging/register/getInstances — collapses to one core call.
+// registerComponent defines the element, publishes build metadata + the flattened
+// logging controls, and wires getInstances() to the live-instance registry that
+// BlissElement maintains automatically (add on connect / remove on disconnect).
+//
+//   window.components['web-multiselect'].getInstances()
+//   window.components['web-multiselect'].logging.enableLogging()
+registerComponent('web-multiselect', MultiSelectElement as unknown as CustomElementConstructor, {
+  config: {
+    name: typeof __PACKAGE_NAME__ !== 'undefined' ? __PACKAGE_NAME__ : '@keenmate/web-multiselect',
+    version: typeof __VERSION__ !== 'undefined' ? __VERSION__ : '0.0.0',
+    author: typeof __AUTHOR__ !== 'undefined' ? __AUTHOR__ : 'KeenMate',
+    license: typeof __LICENSE__ !== 'undefined' ? __LICENSE__ : 'MIT',
+    repository: typeof __REPOSITORY__ !== 'undefined' ? __REPOSITORY__ : '',
+    homepage: typeof __HOMEPAGE__ !== 'undefined' ? __HOMEPAGE__ : '',
+  },
+  logging,
+});
 
-// Declare global namespace
 declare global {
-    interface Window {
-        components?: {
-            'web-multiselect'?: GlobalMultiSelectAPI;
-        };
-    }
-}
-
-// Import logging functions for global API
-import {
-    setLogLevel,
-    enableLogging,
-    disableLogging,
-    setCategoryLevel,
-    LOGGING_CATEGORIES
-} from './logger';
-
-// Initialize global API
-if (typeof window !== 'undefined') {
-    window.components = window.components || {};
-    window.components['web-multiselect'] = {
-        version: () => __VERSION__,
-        config: {
-            name: __PACKAGE_NAME__,
-            version: __VERSION__,
-            author: __AUTHOR__,
-            license: __LICENSE__,
-            repository: __REPOSITORY__,
-            homepage: __HOMEPAGE__
-        },
-        logging: {
-            enableLogging,
-            disableLogging,
-            setLogLevel,
-            setCategoryLevel,
-            getCategories: () => [...LOGGING_CATEGORIES]
-        },
-        register: () => {
-            if (typeof customElements !== 'undefined' && !customElements.get('web-multiselect')) {
-                customElements.define('web-multiselect', MultiSelectElement);
-            }
-        },
-        getInstances: () => getAllInstances()
-    };
+  interface HTMLElementTagNameMap {
+    'web-multiselect': MultiSelectElement;
+  }
 }

@@ -1,1534 +1,653 @@
+/**
+ * `<web-multiselect>` — the custom element, now built on
+ * `@keenmate/web-components-core` (`BlissElement`).
+ *
+ * All the custom-element plumbing that used to live here by hand — the
+ * `ATTRIBUTE_TABLE`, `observedAttributes`, `attributeChangedCallback`,
+ * `parseAttrValue`, the `setAttributes` batch, and the ~40 property/callback
+ * getters/setters — is now declared ONCE as a core input table (`static inputs`)
+ * plus an event table (`static events`). Core owns parsing, validation,
+ * reactivity coalescing, reflection, and the managed `on<Name>` handler
+ * properties. This file keeps only what is genuinely multiselect-specific: the
+ * bridge from the merged `config` to the real dropdown engine (`WebMultiSelect`
+ * in `multiselect.ts`), declarative `<option>` parsing, form association, the
+ * CSS-var sugar, and the debug panel.
+ *
+ * Reactivity is declared per input via `on:`:
+ *   - `reinit`  — data shape / layout mode → rebuild the picker.
+ *   - `update`  — cosmetics → `picker.updateOptions(partial)` in place.
+ * A mixed batch runs `reinit()` only (the rebuild absorbs the update keys).
+ */
+import {
+  BlissElement,
+  toBool,
+  toEnum,
+  toInt,
+  toText,
+  toFunction,
+  toObjectArray,
+  toValue,
+  adoptStyles,
+  createStyleSlot,
+  type InputDef,
+  type StyleSlot,
+} from '@keenmate/web-components-core';
 import { WebMultiSelect } from './multiselect';
-import type { MultiSelectConfig, MultiSelectEventDetail, OptionContentRenderContext, BadgeContentRenderContext } from './types';
-import type { LTreeNode } from './tree/ltree-node';
+import type {
+  MultiSelectConfig,
+  MultiSelectEventDetail,
+  OptionContentRenderContext,
+  BadgeContentRenderContext,
+} from './types';
+import { toInitialValues } from './converters';
 import styles from './css/main.css?inline';
 import { dataLogger } from './logger';
-
-// SSR compatibility: provide stub HTMLElement if not in browser
-const BaseElement = (typeof HTMLElement !== 'undefined' ? HTMLElement : class {}) as typeof HTMLElement;
 
 // Type declarations for build-time constants
 declare const __VERSION__: string;
 
+/** Floating-UI placement values, shared by the two tooltip-placement enums. */
+const PLACEMENTS = [
+  'top', 'top-start', 'top-end',
+  'bottom', 'bottom-start', 'bottom-end',
+  'left', 'left-start', 'left-end',
+  'right', 'right-start', 'right-end',
+] as const;
+
+/** Any callback input. */
+const cb = (): ReturnType<typeof toFunction> => toFunction();
+
 // ============================================================================
-// ATTRIBUTE TABLE — single source of truth for HTML attribute → config option
+// INPUT TABLE — the whole @keenmate/web-multiselect public surface, one row each
 // ============================================================================
-// Drives:
-//   - static get observedAttributes()
-//   - initial parsing in initializePicker
-//   - attributeChangedCallback (to compute the partial options update)
-//
-// Boolean parser semantics (matches the original hand-coded behavior):
-//   - 'bool-default-true':  attribute missing, '', or anything other than 'false' → true.
-//                           Only the literal string 'false' makes it false.
-//   - 'bool-default-false': attribute missing or '' → false. Only 'true' makes it true.
+const INPUTS: readonly InputDef[] = [
+  // ── Strings (cosmetic → update). Optional ones are nullable: absent → null ─
+  { configKey: 'searchHint',              attribute: 'search-hint',                 converter: toText({ isNullable: true }),            on: 'update', description: 'Small hint text shown beneath the search input.' },
+  { configKey: 'searchPlaceholder',       attribute: 'search-placeholder',          converter: toText({ default: 'Search...' }),      on: 'update', description: 'Placeholder text for the search input.' },
+  { configKey: 'selectPlaceholder',       attribute: 'select-placeholder',          converter: toText({ default: 'Pick an option...' }), on: 'update', description: 'Placeholder shown on the control when nothing is selected.' },
+  { configKey: 'noDataPlaceholder',       attribute: 'no-data-placeholder',         converter: toText({ isNullable: true }),            on: 'update', description: 'Text shown when there are no options at all.' },
+  { configKey: 'dropdownMinWidth',        attribute: 'dropdown-min-width',          converter: toText({ isNullable: true }),            on: 'update', description: 'Minimum width of the dropdown panel (any CSS length).' },
+  { configKey: 'dropdownMaxWidth',        attribute: 'dropdown-max-width',          converter: toText({ isNullable: true }),            on: 'update', description: 'Maximum width of the dropdown panel (any CSS length).' },
+  { configKey: 'maxHeight',               attribute: 'max-height',                  converter: toText({ default: '20rem' }),          on: 'update', description: 'Maximum height of the dropdown list before it scrolls.' },
+  { configKey: 'emptyMessage',            attribute: 'empty-message',               converter: toText({ default: 'No results found' }), on: 'update', description: 'Message shown when a search yields no matches.' },
+  { configKey: 'loadingMessage',          attribute: 'loading-message',             converter: toText({ default: 'Loading...' }),     on: 'update', description: 'Message shown while options are loading.' },
+  { configKey: 'removeButtonTooltipText', attribute: 'remove-button-tooltip-text',  converter: toText({ isNullable: true }),            on: 'update', description: 'Tooltip text for a badge remove (×) button.' },
+  { configKey: 'formFieldId',             attribute: 'name',                        converter: toText({ isNullable: true }),            on: 'reinit', description: 'HTML form field name/id used for the hidden input(s).' },
 
-type AttrParser =
-    | 'string'                 // null/'' → default; otherwise raw
-    | 'string-or-undefined'    // null/'' → default (typically undefined)
-    | 'enum'                   // raw must be in enumValues, else default
-    | 'int'                    // parseInt; NaN/empty → default
-    | 'bool-default-true'
-    | 'bool-default-false';
+  // ── CSS-var sugar (mirrored to a host style prop in reinit()/update()) ────
+  { configKey: 'dropdownWidth',           attribute: 'dropdown-width',              converter: toText({ isNullable: true }),            on: 'update', description: 'Fixed dropdown width; mirrored to the `--ms-dropdown-width` CSS variable.' },
+  { configKey: 'selectedPopoverWidth',    attribute: 'selected-popover-width',      converter: toText({ isNullable: true }),            on: 'update', description: 'Selected-items popover width; mirrored to `--ms-selected-popover-width`.' },
 
-interface AttrSpec {
-    /** External (kebab-case) attribute name */
-    attr: string;
-    /** Internal MultiSelectConfig key */
-    key: keyof MultiSelectConfig;
-    parser: AttrParser;
-    /** Used when attribute is missing/empty/unparseable. */
-    default?: any;
-    /** Allowed values for 'enum' parser. */
-    enumValues?: readonly string[];
-}
+  // ── Member properties (structural → reinit; optional → nullable) ─────────
+  { configKey: 'valueMember',             attribute: 'value-member',                converter: toText({ isNullable: true }), reflect: true, on: 'reinit', description: 'Property name on an option object that holds its value.' },
+  { configKey: 'displayValueMember',      attribute: 'display-value-member',        converter: toText({ isNullable: true }), reflect: true, on: 'reinit', description: 'Property name that holds an option display label.' },
+  { configKey: 'searchValueMember',       attribute: 'search-value-member',         converter: toText({ isNullable: true }), reflect: true, on: 'reinit', description: 'Property name searched against (falls back to the display value).' },
+  { configKey: 'iconMember',              attribute: 'icon-member',                 converter: toText({ isNullable: true }), reflect: true, on: 'reinit', description: 'Property name that holds an option icon.' },
+  { configKey: 'subtitleMember',          attribute: 'subtitle-member',             converter: toText({ isNullable: true }), reflect: true, on: 'reinit', description: 'Property name that holds an option subtitle.' },
+  { configKey: 'fullTitleMember',         attribute: 'full-title-member',           converter: toText({ isNullable: true }), reflect: true, on: 'reinit', description: 'Property name that holds an option full/long title.' },
+  { configKey: 'groupMember',             attribute: 'group-member',                converter: toText({ isNullable: true }), reflect: true, on: 'reinit', description: 'Property name used to group options under headers.' },
+  { configKey: 'disabledMember',          attribute: 'disabled-member',             converter: toText({ isNullable: true }), reflect: true, on: 'reinit', description: 'Property name that marks an option disabled.' },
 
-const ATTRIBUTE_TABLE: ReadonlyArray<AttrSpec> = [
-    // Strings
-    { attr: 'search-hint',                 key: 'searchHint',               parser: 'string-or-undefined' },
-    { attr: 'search-placeholder',          key: 'searchPlaceholder',        parser: 'string', default: 'Search...' },
-    { attr: 'select-placeholder',          key: 'selectPlaceholder',        parser: 'string', default: 'Pick an option...' },
-    { attr: 'no-data-placeholder',         key: 'noDataPlaceholder',        parser: 'string-or-undefined' },
-    { attr: 'dropdown-min-width',          key: 'dropdownMinWidth',         parser: 'string-or-undefined' },
-    { attr: 'dropdown-max-width',          key: 'dropdownMaxWidth',         parser: 'string-or-undefined' },
-    { attr: 'max-height',                  key: 'maxHeight',                parser: 'string', default: '20rem' },
-    { attr: 'empty-message',               key: 'emptyMessage',             parser: 'string', default: 'No results found' },
-    { attr: 'loading-message',             key: 'loadingMessage',           parser: 'string', default: 'Loading...' },
-    { attr: 'remove-button-tooltip-text',  key: 'removeButtonTooltipText',  parser: 'string-or-undefined' },
-    { attr: 'name',                        key: 'formFieldId',              parser: 'string-or-undefined' },
+  // ── Tree of options (structural → reinit; optional → nullable) ───────────
+  { configKey: 'pathMember',              attribute: 'path-member',                 converter: toText({ isNullable: true }), reflect: true, on: 'reinit', description: 'Property name holding a node materialized tree path.' },
+  { configKey: 'parentPathMember',        attribute: 'parent-path-member',          converter: toText({ isNullable: true }), reflect: true, on: 'reinit', description: 'Property name holding a node parent path.' },
+  { configKey: 'levelMember',             attribute: 'level-member',                converter: toText({ isNullable: true }), reflect: true, on: 'reinit', description: 'Property name holding a node depth level.' },
+  { configKey: 'hasChildrenMember',       attribute: 'has-children-member',         converter: toText({ isNullable: true }), reflect: true, on: 'reinit', description: 'Property name flagging that a node has children.' },
+  { configKey: 'isSelectableMember',      attribute: 'is-selectable-member',        converter: toText({ isNullable: true }), reflect: true, on: 'reinit', description: 'Property name marking whether a node can be selected.' },
+  { configKey: 'treePathSeparator',       attribute: 'tree-path-separator',         converter: toText({ default: '.' }), reflect: true, on: 'reinit', description: 'Separator between segments in a materialized tree path.' },
+  { configKey: 'isTreeEnabled',           converter: toBool('tristate'), on: 'reinit', type: 'boolean', description: 'Force tree mode on/off. Property-only; when unset (null) tree mode auto-enables if a path source (path-member / getPathCallback) is present.' },
+  { configKey: 'checkboxMode',            attribute: 'checkbox-mode',               converter: toEnum(['independent', 'cascade'] as const, { default: 'independent' }), reflect: true, on: 'reinit',
+    description: `Tree checkbox interaction.
+- \`independent\` (default) — toggles only the clicked node.
+- \`cascade\` — checks a node whole subtree and shows a tristate (checked / indeterminate / unchecked) box on branches.
 
-    // Member properties (have programmatic fallback applied after parse)
-    { attr: 'value-member',                key: 'valueMember',              parser: 'string-or-undefined' },
-    { attr: 'display-value-member',        key: 'displayValueMember',       parser: 'string-or-undefined' },
-    { attr: 'search-value-member',         key: 'searchValueMember',        parser: 'string-or-undefined' },
-    { attr: 'icon-member',                 key: 'iconMember',               parser: 'string-or-undefined' },
-    { attr: 'subtitle-member',             key: 'subtitleMember',           parser: 'string-or-undefined' },
-    { attr: 'full-title-member',           key: 'fullTitleMember',          parser: 'string-or-undefined' },
-    { attr: 'group-member',                key: 'groupMember',              parser: 'string-or-undefined' },
-    { attr: 'disabled-member',             key: 'disabledMember',           parser: 'string-or-undefined' },
+Tree + multiple only.` },
+  { configKey: 'cascadeSelectPolicy',     attribute: 'cascade-select-policy',       converter: toEnum(['rolled-up', 'leaves', 'all'] as const, { default: 'rolled-up' }), reflect: true, on: 'reinit',
+    description: `In \`cascade\` mode, which values a selection emits (badges / form / change):
+- \`rolled-up\` (default) — minimal cover: a fully-selected subtree collapses to its root; partially-selected branches emit their individually-checked descendants.
+- \`leaves\` — only the checked leaf-level nodes.
+- \`all\` — every fully-checked node (branches and leaves).` },
 
-    // Tree of options (presence of path-member / getPathCallback auto-enables tree mode)
-    { attr: 'path-member',                 key: 'pathMember',               parser: 'string-or-undefined' },
-    { attr: 'parent-path-member',          key: 'parentPathMember',         parser: 'string-or-undefined' },
-    { attr: 'level-member',                key: 'levelMember',              parser: 'string-or-undefined' },
-    { attr: 'has-children-member',         key: 'hasChildrenMember',        parser: 'string-or-undefined' },
-    { attr: 'is-selectable-member',        key: 'isSelectableMember',       parser: 'string-or-undefined' },
-    { attr: 'tree-path-separator',         key: 'treePathSeparator',        parser: 'string', default: '.' },
-    { attr: 'checkbox-mode',               key: 'checkboxMode',             parser: 'enum',
-      enumValues: ['independent','cascade'], default: 'independent' },
-    { attr: 'cascade-select-policy',       key: 'cascadeSelectPolicy',      parser: 'enum',
-      enumValues: ['rolled-up','leaves','all'], default: 'rolled-up' },
+  // ── Enums ────────────────────────────────────────────────────────────────
+  { configKey: 'badgesDisplayMode',       attribute: 'badges-display-mode',         converter: toEnum(['badges', 'count', 'compact', 'partial', 'none'] as const, { default: 'badges' }), on: 'reinit', description: 'How the current selection is shown in the control.' },
+  { configKey: 'badgesPosition',          attribute: 'badges-position',             converter: toEnum(['top', 'bottom', 'left', 'right'] as const, { default: 'bottom' }), on: 'reinit', description: 'Where the badges/selection appear relative to the input.' },
+  { configKey: 'badgesThresholdMode',     attribute: 'badges-threshold-mode',       converter: toEnum(['count', 'partial'] as const, { default: 'count' }), on: 'update', description: 'How `badgesThreshold` is interpreted: collapse to a count badge, or keep partial badges + a "more" badge.' },
+  { configKey: 'searchInputMode',         attribute: 'search-input-mode',           converter: toEnum(['normal', 'readonly', 'hidden'] as const, { default: 'normal' }), on: 'reinit', description: 'Search field mode: editable, read-only, or hidden.' },
+  { configKey: 'searchMode',              attribute: 'search-mode',                 converter: toEnum(['filter', 'navigate'] as const, { default: 'filter' }), on: 'reinit', description: 'Whether typing filters the list or navigates it.' },
+  { configKey: 'actionsLayout',           attribute: 'actions-layout',              converter: toEnum(['nowrap', 'wrap'] as const, { default: 'nowrap' }), on: 'reinit', description: 'Whether the action bar wraps or stays on one line.' },
+  { configKey: 'actionsPosition',         attribute: 'actions-position',            converter: toEnum(['top', 'bottom'] as const, { default: 'top' }), on: 'reinit', description: 'Whether the action bar sits above or below the list.' },
+  { configKey: 'actionsAlign',            attribute: 'actions-align',               converter: toEnum(['stretch', 'left', 'right', 'center', 'space-between'] as const, { default: 'stretch' }), on: 'update', description: 'Horizontal alignment of the action buttons.' },
+  { configKey: 'checkboxAlign',           attribute: 'checkbox-align',              converter: toEnum(['top', 'center', 'bottom'] as const, { default: 'center' }), on: 'update', description: 'Vertical alignment of an option checkbox.' },
+  { configKey: 'valueFormat',             attribute: 'value-format',                converter: toEnum(['json', 'csv', 'array'] as const, { default: 'json' }), on: 'reinit', description: 'Serialization format the control emits its value in.' },
+  { configKey: 'badgeTooltipPlacement',   attribute: 'badge-tooltip-placement',     converter: toEnum(PLACEMENTS, { default: 'top' }), on: 'update', description: 'Preferred placement of a badge tooltip relative to its badge (floating-ui placement).' },
+  { configKey: 'optionTooltipPlacement',  attribute: 'option-tooltip-placement',    converter: toEnum(PLACEMENTS, { default: 'top-start' }), on: 'update', description: 'Preferred placement of an option tooltip (floating-ui placement).' },
 
-    // Enums
-    { attr: 'badges-display-mode',         key: 'badgesDisplayMode',        parser: 'enum',
-      enumValues: ['badges','count','compact','partial','none'], default: 'badges' },
-    { attr: 'badges-position',             key: 'badgesPosition',           parser: 'enum',
-      enumValues: ['top','bottom','left','right'], default: 'bottom' },
-    { attr: 'badges-threshold-mode',       key: 'badgesThresholdMode',      parser: 'enum',
-      enumValues: ['count','partial'], default: 'count' },
-    { attr: 'search-input-mode',           key: 'searchInputMode',          parser: 'enum',
-      enumValues: ['normal','readonly','hidden'], default: 'normal' },
-    { attr: 'search-mode',                 key: 'searchMode',               parser: 'enum',
-      enumValues: ['filter','navigate'], default: 'filter' },
-    { attr: 'actions-layout',              key: 'actionsLayout',            parser: 'enum',
-      enumValues: ['nowrap','wrap'], default: 'nowrap' },
-    { attr: 'actions-position',            key: 'actionsPosition',          parser: 'enum',
-      enumValues: ['top','bottom'], default: 'top' },
-    { attr: 'actions-align',               key: 'actionsAlign',             parser: 'enum',
-      enumValues: ['stretch','left','right','center','space-between'], default: 'stretch' },
-    { attr: 'checkbox-align',              key: 'checkboxAlign',            parser: 'enum',
-      enumValues: ['top','center','bottom'], default: 'center' },
-    { attr: 'value-format',                key: 'valueFormat',              parser: 'enum',
-      enumValues: ['json','csv','array'], default: 'json' },
-    { attr: 'badge-tooltip-placement',     key: 'badgeTooltipPlacement',    parser: 'enum',
-      enumValues: ['top','top-start','top-end','bottom','bottom-start','bottom-end','left','left-start','left-end','right','right-start','right-end'],
-      default: 'top' },
-    { attr: 'option-tooltip-placement',    key: 'optionTooltipPlacement',   parser: 'enum',
-      enumValues: ['top','top-start','top-end','bottom','bottom-start','bottom-end','left','left-start','left-end','right','right-start','right-end'],
-      default: 'top-start' },
+  // ── Numbers ──────────────────────────────────────────────────────────────
+  { configKey: 'badgesThreshold',         attribute: 'badges-threshold',            converter: toInt(),               on: 'update', description: 'Threshold at which badges collapse to a count/compact view.' },
+  { configKey: 'badgesMaxVisible',        attribute: 'badges-max-visible',          converter: toInt(),               on: 'update', description: 'Maximum number of badges rendered before overflow.' },
+  { configKey: 'minSearchLength',         attribute: 'min-search-length',           converter: toInt({ default: 0 }), on: 'update', description: 'Minimum characters before searching/filtering starts.' },
+  { configKey: 'searchDebounce',          attribute: 'search-debounce',             converter: toInt({ default: 0 }), on: 'update', description: 'Debounce delay in ms applied to the search input.' },
+  { configKey: 'virtualScrollThreshold',  attribute: 'virtual-scroll-threshold',    converter: toInt({ default: 100 }), on: 'reinit', description: 'Option count above which virtual scrolling turns on.' },
+  { configKey: 'optionHeight',            attribute: 'option-height',               converter: toInt({ default: 50 }), on: 'update', description: 'Fixed row height in px used by virtual scrolling.' },
+  { configKey: 'badgeHeight',             attribute: 'badge-height',                converter: toInt({ default: 36 }), on: 'update', description: 'Fixed badge height in px used for layout/virtualization.' },
+  { configKey: 'virtualScrollBuffer',     attribute: 'virtual-scroll-buffer',       converter: toInt({ default: 10 }), on: 'update', description: 'Extra rows rendered above/below the viewport when virtualizing.' },
+  { configKey: 'badgeTooltipDelay',       attribute: 'badge-tooltip-delay',         converter: toInt({ default: 100 }), on: 'update', description: 'Delay in ms before a badge tooltip appears.' },
+  { configKey: 'badgeTooltipOffset',      attribute: 'badge-tooltip-offset',        converter: toInt({ default: 8 }), on: 'update', description: 'Gap in px between a badge and its tooltip.' },
+  { configKey: 'optionTooltipDelay',      attribute: 'option-tooltip-delay',        converter: toInt(),               on: 'update', description: 'Delay in ms before an option tooltip appears (falls back to badgeTooltipDelay).' },
+  { configKey: 'optionTooltipOffset',     attribute: 'option-tooltip-offset',       converter: toInt(),               on: 'update', description: 'Gap in px between an option and its tooltip.' },
 
-    // Numbers
-    { attr: 'badges-threshold',            key: 'badgesThreshold',          parser: 'int' },
-    { attr: 'badges-max-visible',          key: 'badgesMaxVisible',         parser: 'int' },
-    { attr: 'min-search-length',           key: 'minSearchLength',          parser: 'int', default: 0 },
-    { attr: 'search-debounce',             key: 'searchDebounce',           parser: 'int', default: 0 },
-    { attr: 'virtual-scroll-threshold',    key: 'virtualScrollThreshold',   parser: 'int', default: 100 },
-    { attr: 'option-height',               key: 'optionHeight',             parser: 'int', default: 50 },
-    { attr: 'badge-height',                key: 'badgeHeight',              parser: 'int', default: 36 },
-    { attr: 'virtual-scroll-buffer',       key: 'virtualScrollBuffer',      parser: 'int', default: 10 },
-    { attr: 'badge-tooltip-delay',         key: 'badgeTooltipDelay',        parser: 'int', default: 100 },
-    { attr: 'badge-tooltip-offset',        key: 'badgeTooltipOffset',       parser: 'int', default: 8 },
-    { attr: 'option-tooltip-delay',        key: 'optionTooltipDelay',       parser: 'int' },
-    { attr: 'option-tooltip-offset',       key: 'optionTooltipOffset',      parser: 'int' },
+  // ── Booleans (default true) ──────────────────────────────────────────────
+  { configKey: 'isMultipleEnabled',       attribute: 'multiple',                    converter: toBool('default-true'), on: 'reinit', description: 'Allow selecting multiple options. When off, selecting one replaces the previous.' },
+  { configKey: 'isGroupsAllowed',         attribute: 'allow-groups',                converter: toBool('default-true'), on: 'reinit', description: 'Allow grouping options under group headers.' },
+  { configKey: 'isCheckboxesShown',       attribute: 'show-checkboxes',             converter: toBool('default-true'), on: 'reinit', description: 'Show a checkbox on each option.' },
+  { configKey: 'isActionsSticky',         attribute: 'sticky-actions',              converter: toBool('default-true'), on: 'update', description: 'Keep the action bar pinned while the list scrolls.' },
+  { configKey: 'isPlacementLocked',       attribute: 'lock-placement',              converter: toBool('default-true'), on: 'update', description: 'Keep the dropdown initial placement instead of flipping when it fits.' },
+  { configKey: 'isSearchEnabled',         attribute: 'enable-search',               converter: toBool('default-true'), on: 'reinit', description: 'Show the search input.' },
+  { configKey: 'isKeepOptionsOnSearch',   attribute: 'keep-options-on-search',      converter: toBool('default-true'), on: 'update', description: 'Keep already-selected options visible while filtering.' },
+  { configKey: 'shouldKeepSearchOnClose', attribute: 'should-keep-search-on-close', converter: toBool('default-true'), on: 'update', description: 'Preserve the search text after the dropdown closes.' },
 
-    // Booleans (default true: presence/empty = true; only 'false' negates)
-    { attr: 'multiple',                    key: 'isMultipleEnabled',        parser: 'bool-default-true' },
-    { attr: 'allow-groups',                key: 'isGroupsAllowed',          parser: 'bool-default-true' },
-    { attr: 'show-checkboxes',             key: 'isCheckboxesShown',        parser: 'bool-default-true' },
-    { attr: 'sticky-actions',              key: 'isActionsSticky',          parser: 'bool-default-true' },
-    { attr: 'lock-placement',              key: 'isPlacementLocked',        parser: 'bool-default-true' },
-    { attr: 'enable-search',               key: 'isSearchEnabled',          parser: 'bool-default-true' },
-    { attr: 'keep-options-on-search',      key: 'isKeepOptionsOnSearch',    parser: 'bool-default-true' },
-    { attr: 'should-keep-search-on-close', key: 'shouldKeepSearchOnClose',  parser: 'bool-default-true' },
+  // ── Booleans (default false) ─────────────────────────────────────────────
+  { configKey: 'isCloseOnSelect',         attribute: 'close-on-select',             converter: toBool('default-false'), on: 'update', description: 'Close the dropdown immediately after a selection.' },
+  { configKey: 'isAddNewAllowed',         attribute: 'allow-add-new',               converter: toBool('default-false'), on: 'reinit', description: 'Allow adding a new option from the search text.' },
+  { configKey: 'isCounterShown',          attribute: 'show-counter',                converter: toBool('default-false'), on: 'update', description: 'Show a selected-count indicator.' },
+  { configKey: 'isBadgeFullTitleShown',   attribute: 'show-badge-full-title',       converter: toBool('default-false'), on: 'update', description: 'Show the full title on badges instead of the short label.' },
+  { configKey: 'isVirtualScrollEnabled',  attribute: 'enable-virtual-scroll',       converter: toBool('default-false'), on: 'reinit', description: 'Force virtual scrolling on regardless of the threshold.' },
+  { configKey: 'isBadgeTooltipsEnabled',  attribute: 'enable-badge-tooltips',       converter: toBool('default-false'), on: 'update', description: 'Enable tooltips on badges.' },
+  { configKey: 'isOptionTooltipsEnabled', attribute: 'enable-option-tooltips',      converter: toBool('default-false'), on: 'update', description: 'Enable tooltips on options.' },
+  { configKey: 'isOptionTooltipFollowCursor', attribute: 'option-tooltip-follow-cursor', converter: toBool('default-false'), on: 'update', description: 'Make option tooltips follow the pointer.' },
 
-    // Booleans (default false: only 'true' enables)
-    { attr: 'close-on-select',             key: 'isCloseOnSelect',          parser: 'bool-default-false' },
-    { attr: 'allow-add-new',               key: 'isAddNewAllowed',          parser: 'bool-default-false' },
-    { attr: 'show-counter',                key: 'isCounterShown',           parser: 'bool-default-false' },
-    { attr: 'show-badge-full-title',       key: 'isBadgeFullTitleShown',    parser: 'bool-default-false' },
-    { attr: 'enable-virtual-scroll',       key: 'isVirtualScrollEnabled',   parser: 'bool-default-false' },
-    { attr: 'enable-badge-tooltips',       key: 'isBadgeTooltipsEnabled',   parser: 'bool-default-false' },
-    { attr: 'enable-option-tooltips',      key: 'isOptionTooltipsEnabled',  parser: 'bool-default-false' },
-    { attr: 'option-tooltip-follow-cursor', key: 'isOptionTooltipFollowCursor', parser: 'bool-default-false' }
+  // ── Special attributes ───────────────────────────────────────────────────
+  { configKey: 'initialValues',           attribute: 'initial-values',              converter: toInitialValues(), default: [], on: 'reinit', type: 'Array<string | number>', description: 'Values selected on first render. Accepts a JSON array (`["a","b"]`) or a bare CSV (`a,b,c`).' },
+  { configKey: 'showDebugInfo',           attribute: 'show-debug-info',             converter: toBool('default-false'), on: 'update', description: 'Render an in-component debug panel.', deprecated: 'Use per-instance logging (el.enableLogging()) instead.' },
+
+  // ── Complex property (data) ──────────────────────────────────────────────
+  { configKey: 'options',                                                            converter: toObjectArray(),        on: 'reinit', type: 'ReadonlyArray<Record<string, unknown>>', description: 'The array of option objects to render. Property-only (no attribute); shape-validated by toObjectArray. Also accepts a `data-options` JSON attribute as a fallback.' },
+  { configKey: 'actionButtons',                                                      converter: toValue({ validate: (v): v is unknown[] => Array.isArray(v) }), on: 'reinit', type: 'Array<Record<string, unknown>>', description: 'Custom action buttons for the dropdown footer/header. Property-only; when unset the default Select-All / Clear buttons apply.' },
+
+  // ── Callbacks: data shape (structural → reinit) ──────────────────────────
+  { configKey: 'getValueCallback',        converter: cb(), on: 'reinit', type: '(item: unknown) => string | number', description: 'Extract an option value (overrides valueMember).' },
+  { configKey: 'getPathCallback',         converter: cb(), on: 'reinit', type: '(item: unknown) => string', description: 'Extract a node tree path (enables tree mode; overrides pathMember).' },
+  { configKey: 'getGroupCallback',        converter: cb(), on: 'reinit', type: '(item: unknown) => string', description: 'Extract the group name from an option (overrides groupMember).' },
+  { configKey: 'getDisabledCallback',     converter: cb(), on: 'reinit', type: '(item: unknown) => boolean', description: 'Whether an option is disabled (overrides disabledMember).' },
+  { configKey: 'getIsSelectableCallback', converter: cb(), on: 'reinit', type: '(node: unknown) => boolean', description: 'Whether a tree node can be selected (overrides is-selectable-member).' },
+  { configKey: 'getSearchValueCallback',  converter: cb(), on: 'reinit', type: '(item: unknown) => string', description: 'Text an option is searched against (overrides searchValueMember).' },
+  { configKey: 'searchCallback',          converter: cb(), on: 'reinit', type: '(searchTerm: string, signal?: AbortSignal) => Promise<unknown[]>', description: 'Custom / async search; return the filtered options.' },
+
+  // ── Callbacks: display / render (cosmetic → update) ──────────────────────
+  { configKey: 'getDisplayValueCallback',        converter: cb(), on: 'update', type: '(item: unknown) => string', description: 'Compute the display label for an option (overrides displayValueMember).' },
+  { configKey: 'getBadgeDisplayCallback',        converter: cb(), on: 'update', type: '(item: unknown) => string', description: 'Compute the text shown on an option badge.' },
+  { configKey: 'getBadgeClassCallback',          converter: cb(), on: 'update', type: '(item: unknown) => string | string[]', description: 'Extra CSS class(es) for an option badge.' },
+  { configKey: 'getIconCallback',                converter: cb(), on: 'update', type: '(item: unknown) => string', description: 'Icon for an option (overrides iconMember).' },
+  { configKey: 'getSubtitleCallback',            converter: cb(), on: 'update', type: '(item: unknown) => string', description: 'Subtitle for an option (overrides subtitleMember).' },
+  { configKey: 'getFullTitleCallback',           converter: cb(), on: 'update', type: '(item: unknown) => string', description: 'Full title for an option (used by badges when show-badge-full-title is on).' },
+  { configKey: 'getCounterCallback',             converter: cb(), on: 'update', type: '(count: number, moreCount?: number) => string', description: 'Render the selected-count label.' },
+  { configKey: 'getValueFormatCallback',         converter: cb(), on: 'update', type: '(selectedValues: (string | number)[]) => string', description: 'Serialize the selected values for form submission.' },
+  { configKey: 'getBadgeTooltipCallback',        converter: cb(), on: 'update', type: '(item: unknown) => string | HTMLElement', description: 'Tooltip content for an option badge.' },
+  { configKey: 'getOptionTooltipCallback',       converter: cb(), on: 'update', type: '(item: unknown) => string | HTMLElement', description: 'Tooltip content for an option row.' },
+  { configKey: 'getRemoveButtonTooltipCallback', converter: cb(), on: 'update', type: '(item: unknown) => string', description: 'Tooltip text for a badge remove button.' },
+  { configKey: 'getSelectedItemClassCallback',   converter: cb(), on: 'update', type: '(item: unknown) => string | string[]', description: 'Extra CSS class(es) for a selected item.' },
+  { configKey: 'renderOptionContentCallback',    converter: cb(), on: 'update', type: '(item: unknown, context: OptionContentRenderContext) => string | HTMLElement', description: 'Custom render for an option row; may return HTML or an element.' },
+  { configKey: 'renderBadgeContentCallback',     converter: cb(), on: 'update', type: '(item: unknown, context: BadgeContentRenderContext) => string | HTMLElement', description: 'Custom render for a badge; may return HTML or an element.' },
+  { configKey: 'renderGroupLabelContentCallback', converter: cb(), on: 'update', type: '(groupName: string) => string | HTMLElement', description: 'Customize a group label; may return an HTML string or element.' },
+  { configKey: 'renderSelectedContentCallback',  converter: cb(), on: 'update', type: '(item: unknown) => string', description: 'Custom render for the whole selected area.' },
+  { configKey: 'renderSelectedItemContentCallback', converter: cb(), on: 'update', type: '(item: unknown) => string | HTMLElement', description: 'Custom render for one selected item.' },
+  { configKey: 'customStylesCallback',           converter: cb(), on: 'update', type: '() => string', description: 'Returns a CSS string injected into the component via a replaceable style slot (§12.8).' },
+
+  // ── Callbacks: before-hooks (behavior-shaping) ───────────────────────────
+  { configKey: 'beforeSearchCallback',    converter: cb(), on: 'update', type: '(searchTerm: string) => string | null', description: 'Runs before a search; return a rewritten term or null to veto.' },
+  { configKey: 'beforeSelectCallback',    converter: cb(), on: 'update', type: '(option: unknown, selectedOptions: unknown[]) => boolean | void', description: 'Runs before selecting; return false to veto.' },
+  { configKey: 'beforeDeselectCallback',  converter: cb(), on: 'update', type: '(option: unknown, selectedOptions: unknown[]) => boolean | void', description: 'Runs before deselecting; return false to veto.' },
+  { configKey: 'addNewCallback',          converter: cb(), on: 'update', type: '(value: string) => unknown | Promise<unknown>', description: 'Create a new option from the typed text.' },
 ];
 
-const ATTRIBUTE_TABLE_BY_ATTR = new Map(ATTRIBUTE_TABLE.map(s => [s.attr, s]));
+// Outward events (core §12.5). These install managed `onSelect`/`onDeselect`/
+// `onChange` handler properties — each receives the CustomEvent, exactly like
+// addEventListener. NOTE: this replaces the old bare-arg `onSelect(option)`
+// callbacks; consumers now read `e.detail.option` (breaking, rides the 2.0 bump).
+type MultiSelectEvents = {
+  select: MultiSelectEventDetail;
+  deselect: MultiSelectEventDetail;
+  change: MultiSelectEventDetail;
+};
+const EVENTS = [
+  { name: 'select', description: 'An option was selected. `detail.option` is the selected option; `detail.selectedOptions`/`detail.selectedValues` are the full selection.' },
+  { name: 'deselect', description: 'An option was removed from the selection. `detail.option` is that option.' },
+  { name: 'change', description: 'The selection changed. `detail.selectedOptions`/`detail.selectedValues` are the full selection.' },
+] as const;
 
 /**
- * Attributes that are pure sugar over a host CSS variable — a local override of a
- * themeable var. Setting the attribute writes the property inline on the host; the CSS
- * cascade (and Floating UI's ResizeObserver) apply it. The variables can equally be set
- * at app/theme level (e.g. `web-multiselect { --ms-dropdown-width: 60rem }`).
+ * configKeys that are NOT part of the picker's `MultiSelectConfig` — handled by
+ * this element directly (CSS-var sugar, debug panel, initial values). Stripped
+ * before the merged config is handed to the picker.
  */
-const CSS_VAR_ATTRS: Record<string, string> = {
-    'dropdown-width': '--ms-dropdown-width',
-    'selected-popover-width': '--ms-selected-popover-width',
+const NON_PICKER_KEYS = new Set(['dropdownWidth', 'selectedPopoverWidth', 'showDebugInfo', 'initialValues']);
+
+/** CSS-var sugar: configKey → the host CSS custom property it mirrors to. */
+const CSS_VARS: Record<string, string> = {
+  dropdownWidth: '--ms-dropdown-width',
+  selectedPopoverWidth: '--ms-selected-popover-width',
 };
 
 /**
- * Member-property attributes whose absence falls back to a programmatic getter.
- * The map's value is the field name on the element instance to read when the attribute is absent.
+ * Member defaults written into each parsed option when declarative
+ * <option>/<optgroup> children were used, and only for members the consumer
+ * hasn't otherwise configured (attribute, property, or get*Callback).
  */
-const MEMBER_PROPERTY_FALLBACKS: ReadonlyArray<{ key: keyof MultiSelectConfig; field: string }> = [
-    { key: 'valueMember',         field: '_valueMember' },
-    { key: 'displayValueMember',  field: '_displayValueMember' },
-    { key: 'searchValueMember',   field: '_searchValueMember' },
-    { key: 'iconMember',          field: '_iconMember' },
-    { key: 'subtitleMember',      field: '_subtitleMember' },
-    { key: 'groupMember',         field: '_groupMember' },
-    { key: 'disabledMember',      field: '_disabledMember' }
+const DECLARATIVE_MEMBER_DEFAULTS: ReadonlyArray<{ key: keyof MultiSelectConfig; member: string; callbackKey: string }> = [
+  { key: 'valueMember',        member: 'value',    callbackKey: 'getValueCallback' },
+  { key: 'displayValueMember', member: 'label',    callbackKey: 'getDisplayValueCallback' },
+  { key: 'groupMember',        member: 'group',    callbackKey: 'getGroupCallback' },
+  { key: 'iconMember',         member: 'icon',     callbackKey: 'getIconCallback' },
+  { key: 'subtitleMember',     member: 'subtitle', callbackKey: 'getSubtitleCallback' },
+  { key: 'disabledMember',     member: 'disabled', callbackKey: 'getDisabledCallback' },
 ];
 
-/**
- * Member defaults for the keys parseDeclarativeOptions writes into each parsed option object.
- * Applied only when declarative <option>/<optgroup> children were parsed, and only for members
- * the consumer hasn't explicitly configured via attribute, property, or programmatic callback.
- * Without these, the picker has no idea which key holds the value/label/group and falls through
- * to its '[N/A]' fallback.
- */
-const DECLARATIVE_MEMBER_DEFAULTS: ReadonlyArray<{ key: keyof MultiSelectConfig; member: string }> = [
-    { key: 'valueMember',         member: 'value' },
-    { key: 'displayValueMember',  member: 'label' },
-    { key: 'groupMember',         member: 'group' },
-    { key: 'iconMember',          member: 'icon' },
-    { key: 'subtitleMember',      member: 'subtitle' },
-    { key: 'disabledMember',      member: 'disabled' }
-];
+export class MultiSelectElement<T = any> extends BlissElement<MultiSelectEvents> {
+  // Opt into the form-associated custom element lifecycle so form.reset() and
+  // form.elements see the control.
+  static formAssociated = true;
 
-/** Parse a single attribute value through its spec. Used by both initial parse and live updates. */
-function parseAttrValue(spec: AttrSpec, raw: string | null): any {
-    // Treat null and empty string the same (so `<el foo>` and `<el foo="">` work like a missing attribute
-    // for everything except the boolean parsers, which already handle empty strings explicitly).
-    if (raw === null || raw === '') {
-        switch (spec.parser) {
-            case 'bool-default-true': return true;
-            case 'bool-default-false': return false;
-            default: return spec.default;
-        }
-    }
-    switch (spec.parser) {
-        case 'string':
-        case 'string-or-undefined':
-            return raw;
-        case 'enum':
-            return spec.enumValues!.includes(raw) ? raw : spec.default;
-        case 'int': {
-            const n = parseInt(raw);
-            return isNaN(n) ? spec.default : n;
-        }
-        case 'bool-default-true':  return raw !== 'false';
-        case 'bool-default-false': return raw === 'true';
-    }
-}
+  protected static override inputs = INPUTS;
+  protected static override events = EVENTS;
 
-// Instance tracking for global API
-const instances = new Set<MultiSelectElement>();
+  // Type-only: core installs the managed accessors at runtime (§12.5).
+  declare onSelect: ((e: CustomEvent<MultiSelectEventDetail<T>>) => void) | null;
+  declare onDeselect: ((e: CustomEvent<MultiSelectEventDetail<T>>) => void) | null;
+  declare onChange: ((e: CustomEvent<MultiSelectEventDetail<T>>) => void) | null;
 
-// Export for global API
-export function getAllInstances(): MultiSelectElement[] {
-    return Array.from(instances);
-}
+  #shadow: ShadowRoot;
+  #picker?: WebMultiSelect<T>;
+  #container?: HTMLDivElement;
+  #internals?: ElementInternals;
+  #customStyles: StyleSlot | null = null;
 
-export class MultiSelectElement<T = any> extends BaseElement {
-    // Opt into the form-associated custom element lifecycle. This is what
-    // makes `form.reset()`, `form.elements`, and (in the future) constraint
-    // validation actually do something. Without this flag the element is
-    // invisible to the form lifecycle even when it has a `name`.
-    static formAssociated = true;
+  // Declarative <option>/<optgroup> state (parsed once from light DOM).
+  #declParsed = false;
+  #hasDeclarativeOptions = false;
+  #declarativeOptions?: T[];
+  #declarativeSelectedValues?: (string | number)[];
 
-    private picker?: WebMultiSelect<T>;
-    private containerElement?: HTMLDivElement;
-    private shadow: ShadowRoot;
-    private internals?: ElementInternals;
+  constructor() {
+    super();
+    this.#shadow = this.attachShadow({ mode: 'open' });
 
-    // Properties for complex data (not attributes)
-    private _options?: T[];
-    private _hasDeclarativeOptions = false;
-
-    // Member/Callback properties
-    private _valueMember?: string;
-    private _getValueCallback?: (item: T) => string | number;
-    private _displayValueMember?: string;
-    private _getDisplayValueCallback?: (item: T) => string;
-    private _getBadgeDisplayCallback?: (item: T) => string;
-    private _getBadgeClassCallback?: (item: T) => string | string[];
-    private _customStylesCallback?: () => string;
-    private _searchValueMember?: string;
-    private _getSearchValueCallback?: (item: T) => string;
-    private _iconMember?: string;
-    private _getIconCallback?: (item: T) => string;
-    private _subtitleMember?: string;
-    private _getSubtitleCallback?: (item: T) => string;
-    private _getFullTitleCallback?: (item: T) => string;
-    private _groupMember?: string;
-    private _getGroupCallback?: (item: T) => string;
-    private _renderGroupLabelContentCallback?: (groupName: string) => string | HTMLElement;
-    private _disabledMember?: string;
-    private _getDisabledCallback?: (item: T) => boolean;
-
-    // Tree of options
-    private _getPathCallback?: (item: T) => string;
-    private _isTreeEnabled?: boolean;
-    private _getIsSelectableCallback?: (node: LTreeNode<T>) => boolean;
-
-    // Value formatting callbacks
-    private _getValueFormatCallback?: (selectedValues: (string | number)[]) => string;
-
-    // Tooltip callbacks
-    private _getBadgeTooltipCallback?: (item: T) => string | HTMLElement;
-    private _getOptionTooltipCallback?: (item: T) => string | HTMLElement;
-    private _getRemoveButtonTooltipCallback?: (item: T) => string;
-
-    // Custom rendering callbacks
-    private _renderOptionContentCallback?: (item: T, context: OptionContentRenderContext) => string | HTMLElement;
-    private _renderBadgeContentCallback?: (item: T, context: BadgeContentRenderContext) => string | HTMLElement;
-    private _renderSelectedItemContentCallback?: (item: T) => string | HTMLElement;
-    private _getSelectedItemClassCallback?: (item: T) => string | string[];
-    private _renderSelectedContentCallback?: (item: T) => string;
-
-    // Count badge callback
-    private _getCounterCallback?: (count: number, moreCount?: number) => string;
-
-    // Action buttons
-    private _actionButtons?: any[];
-
-    // Batch-update state (setAttributes): collects per-attribute changes so a group of
-    // attribute writes applies as a single in-place update instead of one re-render each.
-    private _batchDepth = 0;
-    private _batchPartial: Partial<MultiSelectConfig<T>> = {};
-    private _batchNeedsReinit = false;
-
-    // Event callbacks
-    private _beforeSearchCallback?: (searchTerm: string) => string | null;
-    private _beforeSelectCallback?: (option: T, selectedOptions: T[]) => boolean | void;
-    private _beforeDeselectCallback?: (option: T, selectedOptions: T[]) => boolean | void;
-    private _searchCallback?: (searchTerm: string, signal?: AbortSignal) => Promise<T[]>;
-    private _addNewCallback?: (value: string) => T | Promise<T>;
-    private _onSelect?: (option: T) => void;
-    private _onDeselect?: (option: T) => void;
-    private _onChange?: (selectedOptions: T[]) => void;
-
-    static get observedAttributes() {
-        return [
-            ...ATTRIBUTE_TABLE.map(s => s.attr),
-            // Out-of-table attributes (handled by special-case logic in attributeChangedCallback)
-            'initial-values',
-            'show-debug-info',
-            ...Object.keys(CSS_VAR_ATTRS)
-        ];
+    // attachInternals is only available on form-associated elements and may be
+    // missing (jsdom, sandboxes). Failing closed beats throwing on construction.
+    if (typeof (this as any).attachInternals === 'function') {
+      try {
+        this.#internals = (this as any).attachInternals();
+      } catch {
+        /* ignore */
+      }
     }
 
-    constructor() {
-        super();
-        this.shadow = this.attachShadow({ mode: 'open' });
+    // §12.8: static shell CSS via one shared, cached CSSStyleSheet (per string),
+    // replacing the per-instance inline <style>.
+    adoptStyles(this.#shadow, styles);
 
-        // attachInternals() is only available in form-associated elements and
-        // older browsers may lack support entirely. Failing closed (without
-        // form integration) is better than throwing on construction.
-        if (typeof (this as any).attachInternals === 'function') {
-            try {
-                this.internals = (this as any).attachInternals();
-            } catch {
-                // jsdom or sandboxed environments may reject; ignore.
-            }
-        }
+    // Mark ready on the next frame so placeholder-visibility CSS can key off it.
+    if (typeof requestAnimationFrame === 'function') {
+      requestAnimationFrame(() => this.setAttribute('data-ready', ''));
+    } else {
+      this.setAttribute('data-ready', '');
+    }
+  }
 
-        // Inject styles immediately to prevent FOUC
-        const styleSheet = document.createElement('style');
-        styleSheet.textContent = styles;
-        this.shadow.appendChild(styleSheet);
+  /**
+   * Called by the browser when the surrounding <form> is reset. Clears the
+   * picker's selection so the control participates in the standard reset.
+   */
+  formResetCallback(): void {
+    this.#picker?.clearAll();
+  }
 
-        // Mark as ready after initialization to enable placeholder visibility
-        requestAnimationFrame(() => {
-            this.setAttribute('data-ready', '');
-        });
+  // ── core lifecycle hooks ──────────────────────────────────────────────────
+
+  /** Structural change (or first connect): mirror CSS vars, then (re)build the picker. */
+  protected override reinit(): void {
+    this.#mirrorAllCssVars();
+    // reinit() runs on first connect (isConnected true) and on later on:'reinit'
+    // changes. Build/rebuild here; connect() covers the plain-reconnect case.
+    if (this.isConnected) this.#rebuildPicker();
+  }
+
+  /** Cosmetic change: mirror CSS vars / custom styles / debug, patch the picker in place. */
+  protected override update(partial: Record<string, unknown>): void {
+    this.#mirrorCssVars(partial);
+    if ('customStylesCallback' in partial) this.#applyCustomStyles();
+    if ('showDebugInfo' in partial) this.#syncDebugPanel();
+
+    // Everything else goes to the live picker as an in-place patch; null clears
+    // (matches the old `undefined` semantics), NON_PICKER_KEYS are handled above.
+    const pickerPartial: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(partial)) {
+      if (NON_PICKER_KEYS.has(key)) continue;
+      pickerPartial[key] = value === null ? undefined : value;
+    }
+    if (this.#picker && Object.keys(pickerPartial).length > 0) {
+      if (!this.#picker.updateOptions(pickerPartial as Partial<MultiSelectConfig<T>>)) this.#rebuildPicker();
+    }
+  }
+
+  /** Activate: ensure the picker exists (a DOM move destroyed it in disconnect()). */
+  protected override connect(): void {
+    if (!this.#picker) this.#buildPicker();
+  }
+
+  /** Deactivate: tear the picker down (rebuilt on the next connect). */
+  protected override disconnect(): void {
+    this.#picker?.destroy();
+    this.#picker = undefined;
+  }
+
+  // ── picker lifecycle ──────────────────────────────────────────────────────
+
+  #rebuildPicker(): void {
+    this.#picker?.destroy();
+    this.#picker = undefined;
+    this.#buildPicker();
+  }
+
+  #buildPicker(): void {
+    this.#ensureContainer();
+    this.#parseDeclarativeOptionsOnce();
+
+    const cfg = this.#assembleConfig();
+
+    // The picker reads initial values off the container dataset.
+    const initialValues = this.#resolveInitialValues();
+    if (initialValues && initialValues.length > 0) {
+      this.#container!.dataset.initialValues = JSON.stringify(initialValues);
+    } else {
+      delete this.#container!.dataset.initialValues;
     }
 
-    /**
-     * Called by the browser when the surrounding <form> is reset. Clears the
-     * picker's selection so the multiselect actually participates in the
-     * standard reset lifecycle. (Before form-association, reset was a no-op
-     * because the hidden inputs were re-stamped from internal state on every
-     * render.)
-     */
-    formResetCallback() {
-        this.picker?.clearAll();
+    this.#picker = new WebMultiSelect<T>(this.#container!, cfg as any);
+    this.#applyCustomStyles();
+    this.#syncDebugPanel();
+  }
+
+  #ensureContainer(): void {
+    if (this.#container) return;
+    const container = document.createElement('div');
+    container.setAttribute('data-multiselect', '');
+    if (this.className) container.className = this.className;
+    this.#shadow.appendChild(container);
+    // Per-instance slot for customStylesCallback CSS, kept at the top of the
+    // root so consumer @import/@font-face rules work; re-setting replaces it.
+    this.#customStyles = createStyleSlot(this.#shadow, { position: 'first', className: 'ms-custom-styles' });
+    this.#container = container;
+  }
+
+  /**
+   * Build the picker config from the merged `this.config`, minus the keys the
+   * picker doesn't own, plus the runtime wiring (event bridges, container, host,
+   * declarative option data + member defaults, counter default).
+   */
+  #assembleConfig(): Record<string, unknown> {
+    const cfg: Record<string, unknown> = { ...this.config };
+    // Drop element-only keys and normalize "unset" (null) → absent, so the picker
+    // sees exactly what the old hand-coded parser handed it (undefined).
+    for (const key of NON_PICKER_KEYS) delete cfg[key];
+    for (const key of Object.keys(cfg)) {
+      if (cfg[key] === null) delete cfg[key];
     }
 
-    connectedCallback() {
-        instances.add(this);
-        this.render();
-
-        // Parse declarative options before initializing picker
-        const declarativeOptions = this.parseDeclarativeOptions();
-        if (declarativeOptions) {
-            // Declarative options take priority over programmatically set options
-            if (this._options && this._options.length > 0) {
-                dataLogger.warn('[MultiSelectElement] Both declarative <option> elements and programmatic .options detected. Using declarative options.');
-            }
-            this._options = declarativeOptions as T[];
-            this._hasDeclarativeOptions = true;
-        }
-
-        this.initializePicker();
+    // Option data: declarative <option> children win over the property/attribute.
+    let optionData = cfg.options as T[] | undefined;
+    if (this.#hasDeclarativeOptions && this.#declarativeOptions) {
+      if (optionData && optionData.length > 0) {
+        dataLogger.warn('[MultiSelectElement] Both declarative <option> elements and programmatic .options detected. Using declarative options.');
+      }
+      optionData = this.#declarativeOptions;
     }
-
-    disconnectedCallback() {
-        instances.delete(this);
-        if (this.picker) {
-            this.picker.destroy();
-        }
-    }
-
-    attributeChangedCallback(name: string, oldValue: string | null, newValue: string | null) {
-        if (oldValue === newValue) return;
-
-        // CSS-variable sugar: mirror the attribute onto the host's inline style. Handled before
-        // the picker guard so it applies at upgrade time (and needs no picker/reinit — CSS +
-        // Floating UI's resize observer pick up the width change live).
-        const cssVar = CSS_VAR_ATTRS[name];
-        if (cssVar !== undefined) {
-            if (newValue === null || newValue === '') this.style.removeProperty(cssVar);
-            else this.style.setProperty(cssVar, newValue);
-            return;
-        }
-
-        if (!this.picker) return;
-
-        // initial-values is consumed only at init time (or via declarative <option selected> children).
-        // show-debug-info toggles the debug panel; rebuild not needed.
-        if (name === 'initial-values') return;
-        if (name === 'show-debug-info') {
-            // Re-render the debug panel without rebuilding the picker.
-            const existing = this.shadow.querySelector('.ms__debug-info');
-            if (existing) existing.remove();
-            if (newValue === 'true') this.renderDebugInfo();
-            return;
-        }
-
-        // Table-driven update: parse the new value through the spec and feed it to the picker.
-        const spec = ATTRIBUTE_TABLE_BY_ATTR.get(name);
-        if (spec) {
-            const value = parseAttrValue(spec, newValue);
-            // Member properties keep the programmatic fallback.
-            const fallbackField = MEMBER_PROPERTY_FALLBACKS.find(f => f.key === spec.key)?.field;
-            const finalValue = (value === undefined && fallbackField)
-                ? (this as any)[fallbackField]
-                : value;
-            // During a setAttributes() batch, accumulate the change instead of applying it now;
-            // the whole partial is flushed in one updateOptions call when the batch ends.
-            if (this._batchDepth > 0) {
-                (this._batchPartial as any)[spec.key] = finalValue;
-                return;
-            }
-            const partial = { [spec.key]: finalValue } as Partial<MultiSelectConfig<T>>;
-            const applied = this.picker.updateOptions(partial);
-            if (applied) return;
-            // Falls through to full reinit below if updateOptions returned false (structural change).
-        }
-
-        // Fallback: full destroy + re-init for attributes the picker can't apply in place.
-        if (this._batchDepth > 0) {
-            this._batchNeedsReinit = true;
-            return;
-        }
-        this.reinitialize();
-    }
-
-    /**
-     * Set several attributes in one in-place update — a single re-render instead of one per
-     * attribute (and a single reinit at most if any change is structural). Keys are attribute
-     * names in kebab-case, exactly as `setAttribute`. A value of `null`/`undefined`/`false`
-     * removes the attribute; `true` sets it to an empty string; anything else is stringified.
-     *
-     * @example
-     *   el.setAttributes({
-     *     'search-placeholder': t('search'),
-     *     'select-placeholder': t('pick'),
-     *     'no-data-placeholder': t('noData'),
-     *   });
-     */
-    public setAttributes(attrs: Record<string, string | number | boolean | null | undefined>): void {
-        this._batchDepth++;
+    if (!optionData || optionData.length === 0) {
+      const attr = this.getAttribute('data-options');
+      if (attr) {
         try {
-            for (const [name, value] of Object.entries(attrs)) {
-                if (value === null || value === undefined || value === false) {
-                    this.removeAttribute(name);
-                } else {
-                    this.setAttribute(name, value === true ? '' : String(value));
-                }
-            }
-        } finally {
-            this._batchDepth--;
+          optionData = JSON.parse(attr);
+        } catch (e) {
+          dataLogger.error('[MultiSelectElement] Failed to parse data-options:', e);
         }
+      }
+    }
+    cfg.options = optionData;
 
-        if (this._batchDepth > 0) return; // nested batch; let the outermost call flush
+    // Declarative member defaults: only when <option> children were parsed and
+    // the member isn't otherwise configured (member key or its get*Callback).
+    if (this.#hasDeclarativeOptions) {
+      for (const { key, member, callbackKey } of DECLARATIVE_MEMBER_DEFAULTS) {
+        if (cfg[key] === undefined && !cfg[callbackKey]) cfg[key] = member;
+      }
+    }
 
-        const partial = this._batchPartial;
-        const needsReinit = this._batchNeedsReinit;
-        this._batchPartial = {};
-        this._batchNeedsReinit = false;
+    // Counter callback default (matches the historical fallback text).
+    if (!cfg.getCounterCallback) {
+      cfg.getCounterCallback = (count: number, moreCount?: number) =>
+        moreCount !== undefined ? `+${moreCount} more` : `${count} selected`;
+    }
 
-        if (!this.picker) return;
-        if (needsReinit) {
-            this.reinitialize();
-            return;
+    // Event bridges: the picker fires these; we re-emit as bubbling/composed
+    // CustomEvents (the managed on<Name> handler properties fire as listeners).
+    cfg.onSelect = (option: T) => {
+      this.emit('select', {
+        option,
+        selectedOptions: this.#picker?.getSelected() ?? [],
+        selectedValues: this.#collectSelectedValues(),
+      });
+    };
+    cfg.onDeselect = (option: T) => {
+      this.emit('deselect', {
+        option,
+        selectedOptions: this.#picker?.getSelected() ?? [],
+        selectedValues: this.#collectSelectedValues(),
+      });
+    };
+    cfg.onChange = (selectedOptions: T[]) => {
+      this.emit('change', {
+        selectedOptions,
+        selectedValues: this.#collectSelectedValues(),
+      });
+    };
+
+    // Container (shadow) for the dropdown/hint/popover; host for light-DOM inputs.
+    cfg.container = this.#shadow as unknown as HTMLElement;
+    cfg.hostElement = this;
+    return cfg;
+  }
+
+  #resolveInitialValues(): (string | number)[] | undefined {
+    if (this.#declarativeSelectedValues && this.#declarativeSelectedValues.length > 0) {
+      return this.#declarativeSelectedValues;
+    }
+    const fromConfig = this.config.initialValues as (string | number)[] | undefined;
+    return fromConfig && fromConfig.length > 0 ? fromConfig : undefined;
+  }
+
+  #collectSelectedValues(): (string | number)[] {
+    const val = this.#picker?.getValue();
+    if (val == null) return [];
+    return Array.isArray(val) ? val : [val];
+  }
+
+  // ── §12.8 custom styles ───────────────────────────────────────────────────
+
+  #applyCustomStyles(): void {
+    const slot = this.#customStyles;
+    if (!slot) return;
+    const callback = this.config.customStylesCallback as (() => string | null | undefined) | null | undefined;
+    if (typeof callback !== 'function') {
+      slot.clear();
+      return;
+    }
+    try {
+      slot.set(callback());
+    } catch (e) {
+      dataLogger.warn('[MultiSelectElement] customStylesCallback threw', e);
+      slot.clear();
+    }
+  }
+
+  // ── CSS-var sugar ─────────────────────────────────────────────────────────
+
+  #mirrorAllCssVars(): void {
+    for (const key of Object.keys(CSS_VARS)) this.#setVar(CSS_VARS[key], this.config[key]);
+  }
+
+  #mirrorCssVars(partial: Record<string, unknown>): void {
+    for (const key of Object.keys(CSS_VARS)) {
+      if (key in partial) this.#setVar(CSS_VARS[key], partial[key]);
+    }
+  }
+
+  #setVar(name: string, value: unknown): void {
+    if (value == null || value === '') this.style.removeProperty(name);
+    else this.style.setProperty(name, String(value));
+  }
+
+  // ── declarative <option> parsing (light DOM, once) ────────────────────────
+
+  #parseDeclarativeOptionsOnce(): void {
+    if (this.#declParsed) return;
+    this.#declParsed = true;
+    const parsed = this.#parseDeclarativeOptions();
+    if (parsed) {
+      this.#declarativeOptions = parsed as T[];
+      this.#hasDeclarativeOptions = true;
+    }
+  }
+
+  #parseDeclarativeOptions(): any[] | null {
+    const children = Array.from(this.children);
+    if (children.length === 0) return null;
+
+    const options: any[] = [];
+    let hasValidOptions = false;
+
+    const parseOption = (option: HTMLOptionElement, group?: string): void => {
+      const parsed: any = {
+        value: option.value || option.textContent?.trim() || '',
+        label: option.textContent?.trim() || option.value || '',
+      };
+      if (group) parsed.group = group;
+      if (option.hasAttribute('selected')) {
+        (this.#declarativeSelectedValues ??= []).push(parsed.value);
+      }
+      if (option.hasAttribute('disabled')) parsed.disabled = true;
+      if (option.hasAttribute('data-icon')) parsed.icon = option.getAttribute('data-icon');
+      if (option.hasAttribute('data-subtitle')) parsed.subtitle = option.getAttribute('data-subtitle');
+      options.push(parsed);
+      hasValidOptions = true;
+    };
+
+    for (const child of children) {
+      if (child.tagName === 'OPTION') {
+        parseOption(child as HTMLOptionElement);
+      } else if (child.tagName === 'OPTGROUP') {
+        const optgroup = child as HTMLOptGroupElement;
+        const groupLabel = optgroup.label || optgroup.getAttribute('label') || 'Group';
+        for (const option of Array.from(optgroup.querySelectorAll('option'))) {
+          parseOption(option, groupLabel);
         }
-        if (Object.keys(partial).length > 0) {
-            const applied = this.picker.updateOptions(partial);
-            if (!applied) this.reinitialize();
-        }
-    }
-
-    private render() {
-        // Create container element
-        this.containerElement = document.createElement('div');
-        this.containerElement.setAttribute('data-multiselect', '');
-
-        // Copy any CSS classes from the host element to the container
-        if (this.className) {
-            this.containerElement.className = this.className;
-        }
-
-        this.shadow.appendChild(this.containerElement);
-
-        // Add debug info if enabled
-        if (this.getAttribute('show-debug-info') === 'true') {
-            this.renderDebugInfo();
-        }
-    }
-
-    private renderDebugInfo() {
-        // Remove existing debug info if present
-        const existingDebug = this.shadow.querySelector('.ms__debug-info');
-        if (existingDebug) {
-            existingDebug.remove();
-        }
-
-        // Create debug info container
-        const debugContainer = document.createElement('div');
-        debugContainer.className = 'ms__debug-info';
-
-        const details = document.createElement('details');
-        const summary = document.createElement('summary');
-        summary.textContent = 'Debug Info';
-
-        const statsDiv = document.createElement('div');
-        statsDiv.className = 'ms__debug-stats';
-
-        details.appendChild(summary);
-        details.appendChild(statsDiv);
-        debugContainer.appendChild(details);
-
-        this.shadow.appendChild(debugContainer);
-
-        // Update debug info periodically
-        this.updateDebugInfo();
-    }
-
-    private updateDebugInfo() {
-        const statsDiv = this.shadow.querySelector('.ms__debug-stats');
-        if (!statsDiv || !this.picker) return;
-
-        const version = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'unknown';
-        const totalInstances = getAllInstances().length;
-        const selected = this.picker.getSelected();
-        const selectedCount = selected.length;
-        const totalOptions = this._options?.length || 0;
-
-        // Access internal state via any type cast to avoid TS errors
-        const pickerAny = this.picker as any;
-        const isDropdownOpen = pickerAny.isOpen || false;
-        const searchTerm = pickerAny.searchTerm || '';
-        const isLoading = pickerAny.isLoading || false;
-        const filteredCount = pickerAny.filteredOptions?.length || 0;
-
-        statsDiv.innerHTML = `
-            <span>Version: ${version}</span>
-            <span>Total Instances: ${totalInstances}</span>
-            <span>Options: ${totalOptions}</span>
-            <span>Filtered: ${filteredCount}</span>
-            <span>Selected: ${selectedCount}</span>
-            <span>Dropdown: ${isDropdownOpen ? 'Open' : 'Closed'}</span>
-            <span>Search: ${searchTerm || 'none'}</span>
-            <span>Loading: ${isLoading ? 'Yes' : 'No'}</span>
-        `;
-
-        // Update again after a delay to catch state changes
-        setTimeout(() => {
-            if (this.getAttribute('show-debug-info') === 'true') {
-                this.updateDebugInfo();
-            }
-        }, 500);
-    }
-
-    /**
-     * Parse declarative <option> and <optgroup> elements from Light DOM
-     * Returns array of options in the format expected by the picker
-     */
-    private parseDeclarativeOptions(): any[] | null {
-        const options: any[] = [];
-
-        // Get all direct children (option and optgroup elements)
-        const children = Array.from(this.children);
-
-        if (children.length === 0) {
-            return null; // No declarative options
-        }
-
-        let hasValidOptions = false;
-
-        for (const child of children) {
-            if (child.tagName === 'OPTION') {
-                const option = child as HTMLOptionElement;
-                const parsed: any = {
-                    value: option.value || option.textContent?.trim() || '',
-                    label: option.textContent?.trim() || option.value || ''
-                };
-
-                // Handle selected attribute
-                if (option.hasAttribute('selected')) {
-                    if (!this._declarativeSelectedValues) {
-                        this._declarativeSelectedValues = [];
-                    }
-                    this._declarativeSelectedValues.push(parsed.value);
-                }
-
-                // Handle disabled attribute
-                if (option.hasAttribute('disabled')) {
-                    parsed.disabled = true;
-                }
-
-                // Handle data-icon attribute for icons
-                if (option.hasAttribute('data-icon')) {
-                    parsed.icon = option.getAttribute('data-icon');
-                }
-
-                // Handle data-subtitle attribute for subtitles
-                if (option.hasAttribute('data-subtitle')) {
-                    parsed.subtitle = option.getAttribute('data-subtitle');
-                }
-
-                options.push(parsed);
-                hasValidOptions = true;
-            } else if (child.tagName === 'OPTGROUP') {
-                const optgroup = child as HTMLOptGroupElement;
-                const groupLabel = optgroup.label || optgroup.getAttribute('label') || 'Group';
-
-                // Parse options within the optgroup
-                const groupOptions = Array.from(optgroup.querySelectorAll('option'));
-                for (const option of groupOptions) {
-                    const parsed: any = {
-                        value: option.value || option.textContent?.trim() || '',
-                        label: option.textContent?.trim() || option.value || '',
-                        group: groupLabel
-                    };
-
-                    // Handle selected attribute
-                    if (option.hasAttribute('selected')) {
-                        if (!this._declarativeSelectedValues) {
-                            this._declarativeSelectedValues = [];
-                        }
-                        this._declarativeSelectedValues.push(parsed.value);
-                    }
-
-                    // Handle disabled attribute
-                    if (option.hasAttribute('disabled')) {
-                        parsed.disabled = true;
-                    }
-
-                    // Handle data-icon attribute
-                    if (option.hasAttribute('data-icon')) {
-                        parsed.icon = option.getAttribute('data-icon');
-                    }
-
-                    // Handle data-subtitle attribute
-                    if (option.hasAttribute('data-subtitle')) {
-                        parsed.subtitle = option.getAttribute('data-subtitle');
-                    }
-
-                    options.push(parsed);
-                    hasValidOptions = true;
-                }
-            }
-        }
-
-        if (hasValidOptions) {
-            dataLogger.debug(`[MultiSelectElement] Parsed ${options.length} declarative options from Light DOM`);
-
-            // Remove parsed elements from DOM (clean up)
-            children.forEach(child => {
-                if (child.tagName === 'OPTION' || child.tagName === 'OPTGROUP') {
-                    child.remove();
-                }
-            });
-
-            return options;
-        }
-
-        return null;
-    }
-
-    private _declarativeSelectedValues?: (string | number)[];
-
-    /** Parse all observed attributes via ATTRIBUTE_TABLE into a partial config object. */
-    private parseAttributesFromTable(): Partial<MultiSelectConfig<T>> {
-        const out: Partial<MultiSelectConfig<T>> = {};
-        for (const spec of ATTRIBUTE_TABLE) {
-            const value = parseAttrValue(spec, this.getAttribute(spec.attr));
-            // Only assign defined values so member-property fallback can detect "attribute not set".
-            if (value !== undefined) (out as any)[spec.key] = value;
-        }
-        return out;
-    }
-
-    private initializePicker() {
-        if (!this.containerElement) return;
-
-        // Parse `data-options` from the host into a usable array. JS-property
-        // assignment (`element.options = [...]`) takes precedence; the
-        // attribute is the fallback for declarative / HTML-only usage where
-        // no inline <script> is practical (SSR, SharePoint, Office Add-ins).
-        let parsedDataOptions: T[] | undefined;
-        const dataOptionsAttr = this.getAttribute('data-options');
-        if (dataOptionsAttr && this._options === undefined) {
-            try {
-                parsedDataOptions = JSON.parse(dataOptionsAttr);
-            } catch (e) {
-                dataLogger.error('[MultiSelectElement] Failed to parse data-options:', e);
-            }
-        }
-
-        // Parse initial values - prioritize declarative selected options
-        let initialValues: (string | number)[] | undefined;
-
-        // Check for declarative selected values first (from <option selected>)
-        if (this._declarativeSelectedValues && this._declarativeSelectedValues.length > 0) {
-            initialValues = this._declarativeSelectedValues;
-            dataLogger.debug(`[MultiSelectElement] Using ${initialValues.length} declaratively selected values`);
-        } else {
-            // Fall back to initial-values attribute
-            const initialValuesAttr = this.getAttribute('initial-values');
-            if (initialValuesAttr) {
-                try {
-                    initialValues = JSON.parse(initialValuesAttr);
-                } catch (e) {
-                    dataLogger.error('[MultiSelectElement] Failed to parse initial-values:', e);
-                }
-            }
-        }
-
-        // Build options from the attribute table, then layer on programmatic-only fields below.
-        const options: Partial<MultiSelectConfig<T>> = this.parseAttributesFromTable();
-
-        // Member properties: attribute wins, fall back to programmatic getter if attribute is unset.
-        for (const { key, field } of MEMBER_PROPERTY_FALLBACKS) {
-            if (options[key] === undefined) (options as any)[key] = (this as any)[field];
-        }
-
-        // Declarative member defaults: only when <option>/<optgroup> children were parsed and the
-        // consumer hasn't already set the corresponding member (via attribute, property, or
-        // get*Callback). Without this, the picker can't read value/label/group off the parsed
-        // objects and every row renders as '[N/A]'.
-        if (this._hasDeclarativeOptions) {
-            const callbackOverrides: Partial<Record<keyof MultiSelectConfig, unknown>> = {
-                valueMember: this._getValueCallback,
-                displayValueMember: this._getDisplayValueCallback,
-                groupMember: this._getGroupCallback,
-                iconMember: this._getIconCallback,
-                subtitleMember: this._getSubtitleCallback,
-                disabledMember: this._getDisabledCallback
-            };
-            for (const { key, member } of DECLARATIVE_MEMBER_DEFAULTS) {
-                if (options[key] === undefined && !callbackOverrides[key]) {
-                    (options as any)[key] = member;
-                }
-            }
-        }
-
-        // Programmatic-only fields (no attribute equivalent).
-        Object.assign(options, {
-            actionButtons: this._actionButtons,
-            getValueCallback: this._getValueCallback,
-            getDisplayValueCallback: this._getDisplayValueCallback,
-            getBadgeDisplayCallback: this._getBadgeDisplayCallback,
-            getBadgeClassCallback: this._getBadgeClassCallback,
-            customStylesCallback: this._customStylesCallback,
-            getSearchValueCallback: this._getSearchValueCallback,
-            getIconCallback: this._getIconCallback,
-            getSubtitleCallback: this._getSubtitleCallback,
-            getFullTitleCallback: this._getFullTitleCallback,
-            getGroupCallback: this._getGroupCallback,
-            getPathCallback: this._getPathCallback,
-            isTreeEnabled: this._isTreeEnabled,
-            getIsSelectableCallback: this._getIsSelectableCallback,
-            renderGroupLabelContentCallback: this._renderGroupLabelContentCallback,
-            getDisabledCallback: this._getDisabledCallback,
-            renderOptionContentCallback: this._renderOptionContentCallback,
-            renderBadgeContentCallback: this._renderBadgeContentCallback,
-            renderSelectedItemContentCallback: this._renderSelectedItemContentCallback,
-            getSelectedItemClassCallback: this._getSelectedItemClassCallback,
-            renderSelectedContentCallback: this._renderSelectedContentCallback,
-            getValueFormatCallback: this._getValueFormatCallback,
-            getBadgeTooltipCallback: this._getBadgeTooltipCallback,
-            getOptionTooltipCallback: this._getOptionTooltipCallback,
-            getRemoveButtonTooltipCallback: this._getRemoveButtonTooltipCallback,
-            getCounterCallback: this._getCounterCallback || ((count: number, moreCount?: number) => {
-                if (moreCount !== undefined) return `+${moreCount} more`;
-                return `${count} selected`;
-            }),
-            options: this._options ?? parsedDataOptions,
-            beforeSearchCallback: this._beforeSearchCallback,
-            beforeSelectCallback: this._beforeSelectCallback,
-            beforeDeselectCallback: this._beforeDeselectCallback,
-            searchCallback: this._searchCallback,
-            addNewCallback: this._addNewCallback,
-            onSelect: (option: T) => {
-                if (this._onSelect) this._onSelect(option);
-                // bubbles + composed so framework delegation (Svelte 5
-                // onchange, React onChange, etc.) and ancestor listeners
-                // receive the event. Necessary because Svelte 5 routes
-                // 'change' via doc-level event delegation and won't see
-                // non-bubbling CustomEvents.
-                this.dispatchEvent(new CustomEvent('select', {
-                    bubbles: true,
-                    composed: true,
-                    detail: {
-                        option,
-                        selectedOptions: this.picker?.getSelected(),
-                        selectedValues: this.collectSelectedValues()
-                    } as MultiSelectEventDetail<T>
-                }));
-            },
-            onDeselect: (option) => {
-                if (this._onDeselect) this._onDeselect(option);
-                this.dispatchEvent(new CustomEvent('deselect', {
-                    bubbles: true,
-                    composed: true,
-                    detail: {
-                        option,
-                        selectedOptions: this.picker?.getSelected(),
-                        selectedValues: this.collectSelectedValues()
-                    } as MultiSelectEventDetail<T>
-                }));
-            },
-            onChange: (selectedOptions) => {
-                if (this._onChange) this._onChange(selectedOptions);
-                this.dispatchEvent(new CustomEvent('change', {
-                    bubbles: true,
-                    composed: true,
-                    detail: {
-                        selectedOptions,
-                        selectedValues: this.collectSelectedValues()
-                    } as MultiSelectEventDetail<T>
-                }));
-            },
-            // Pass shadow root as container for dropdown/hint/popover
-            container: this.shadow as unknown as HTMLElement,
-            // Pass host element (this) for hidden inputs in light DOM
-            hostElement: this
-        });
-
-        // Set data attributes on container
-        if (initialValues) {
-            this.containerElement.dataset.initialValues = JSON.stringify(initialValues);
-        }
-
-        this.picker = new WebMultiSelect<T>(this.containerElement, options);
-
-        // Inject custom styles if callback provided
-        // Prepend to shadow root so @import rules work (must be at top of stylesheet)
-        if (this._customStylesCallback) {
-            const customStyles = this._customStylesCallback();
-            if (customStyles) {
-                const customStyleSheet = document.createElement('style');
-                customStyleSheet.className = 'ms-custom-styles';
-                customStyleSheet.textContent = customStyles;
-                // Insert at beginning of shadow root so @import/@font-face work
-                this.shadow.insertBefore(customStyleSheet, this.shadow.firstChild);
-            }
-        }
-    }
-
-    private reinitialize() {
-        if (this.picker) {
-            this.picker.destroy();
-            this.initializePicker();
-        }
-    }
-
-    /**
-     * Apply a partial config update to the live picker. Falls back to a full reinit if the
-     * picker can't apply the change in place (e.g. adding/removing the `searchHint` element).
-     * No-op if the picker hasn't been initialized yet — the next `initializePicker` will pick
-     * up the new programmatic state.
-     */
-    private updatePicker(partial: Partial<MultiSelectConfig<T>>): void {
-        if (!this.picker) return;
-        if (!this.picker.updateOptions(partial)) this.reinitialize();
-    }
-
-    /** Normalize the picker's getValue() return into the array form expected by event detail. */
-    private collectSelectedValues(): (string | number)[] {
-        const val = this.picker?.getValue();
-        if (val == null) return [];
-        return Array.isArray(val) ? val : [val];
-    }
-
-    // ========================================================================
-    // PUBLIC API - PROPERTIES
-    // ========================================================================
-
-    // Data options
-    get options(): T[] | undefined {
-        return this._options;
-    }
-
-    set options(value: T[] | undefined) {
-        this._options = value;
-        this.updatePicker({ options: value });
-    }
-
-    // Member properties (can also be set via attributes)
-    set valueMember(value: string | null) {
-        this._valueMember = value || undefined;
-        if (value) this.setAttribute('value-member', value);
-        else this.removeAttribute('value-member');
-    }
-
-    get valueMember(): string | null {
-        return this.getAttribute('value-member');
-    }
-
-    set displayValueMember(value: string | null) {
-        this._displayValueMember = value || undefined;
-        if (value) this.setAttribute('display-value-member', value);
-        else this.removeAttribute('display-value-member');
-    }
-
-    get displayValueMember(): string | null {
-        return this.getAttribute('display-value-member');
-    }
-
-    set searchValueMember(value: string | null) {
-        this._searchValueMember = value || undefined;
-        if (value) this.setAttribute('search-value-member', value);
-        else this.removeAttribute('search-value-member');
-    }
-
-    get searchValueMember(): string | null {
-        return this.getAttribute('search-value-member');
-    }
-
-    set iconMember(value: string | null) {
-        this._iconMember = value || undefined;
-        if (value) this.setAttribute('icon-member', value);
-        else this.removeAttribute('icon-member');
-    }
-
-    get iconMember(): string | null {
-        return this.getAttribute('icon-member');
-    }
-
-    set subtitleMember(value: string | null) {
-        this._subtitleMember = value || undefined;
-        if (value) this.setAttribute('subtitle-member', value);
-        else this.removeAttribute('subtitle-member');
-    }
-
-    get subtitleMember(): string | null {
-        return this.getAttribute('subtitle-member');
-    }
-
-    set fullTitleMember(value: string | null) {
-        if (value) this.setAttribute('full-title-member', value);
-        else this.removeAttribute('full-title-member');
-    }
-
-    get fullTitleMember(): string | null {
-        return this.getAttribute('full-title-member');
-    }
-
-    set groupMember(value: string | null) {
-        this._groupMember = value || undefined;
-        if (value) this.setAttribute('group-member', value);
-        else this.removeAttribute('group-member');
-    }
-
-    get groupMember(): string | null {
-        return this.getAttribute('group-member');
-    }
-
-    set disabledMember(value: string | null) {
-        this._disabledMember = value || undefined;
-        if (value) this.setAttribute('disabled-member', value);
-        else this.removeAttribute('disabled-member');
-    }
-
-    get disabledMember(): string | null {
-        return this.getAttribute('disabled-member');
-    }
-
-    // Tree-of-options members. Setting `pathMember` (like the `path-member`
-    // attribute) turns on tree mode. Each reflects to its kebab attribute, which
-    // is observed and applied in place — no separate wiring needed.
-    set pathMember(value: string | null) {
-        if (value) this.setAttribute('path-member', value);
-        else this.removeAttribute('path-member');
-    }
-
-    get pathMember(): string | null {
-        return this.getAttribute('path-member');
-    }
-
-    set parentPathMember(value: string | null) {
-        if (value) this.setAttribute('parent-path-member', value);
-        else this.removeAttribute('parent-path-member');
-    }
-
-    get parentPathMember(): string | null {
-        return this.getAttribute('parent-path-member');
-    }
-
-    set levelMember(value: string | null) {
-        if (value) this.setAttribute('level-member', value);
-        else this.removeAttribute('level-member');
-    }
-
-    get levelMember(): string | null {
-        return this.getAttribute('level-member');
-    }
-
-    set hasChildrenMember(value: string | null) {
-        if (value) this.setAttribute('has-children-member', value);
-        else this.removeAttribute('has-children-member');
-    }
-
-    get hasChildrenMember(): string | null {
-        return this.getAttribute('has-children-member');
-    }
-
-    set isSelectableMember(value: string | null) {
-        if (value) this.setAttribute('is-selectable-member', value);
-        else this.removeAttribute('is-selectable-member');
-    }
-
-    get isSelectableMember(): string | null {
-        return this.getAttribute('is-selectable-member');
-    }
-
-    set treePathSeparator(value: string | null) {
-        if (value) this.setAttribute('tree-path-separator', value);
-        else this.removeAttribute('tree-path-separator');
-    }
-
-    get treePathSeparator(): string | null {
-        return this.getAttribute('tree-path-separator');
-    }
-
-    set checkboxMode(value: 'independent' | 'cascade' | null) {
-        if (value) this.setAttribute('checkbox-mode', value);
-        else this.removeAttribute('checkbox-mode');
-    }
-
-    get checkboxMode(): 'independent' | 'cascade' | null {
-        return this.getAttribute('checkbox-mode') as 'independent' | 'cascade' | null;
-    }
-
-    set cascadeSelectPolicy(value: 'rolled-up' | 'leaves' | 'all' | null) {
-        if (value) this.setAttribute('cascade-select-policy', value);
-        else this.removeAttribute('cascade-select-policy');
-    }
-
-    get cascadeSelectPolicy(): 'rolled-up' | 'leaves' | 'all' | null {
-        return this.getAttribute('cascade-select-policy') as 'rolled-up' | 'leaves' | 'all' | null;
-    }
-
-    // Callback properties (JavaScript only - no attributes)
-    set getValueCallback(callback: ((item: T) => string | number) | undefined) {
-        this._getValueCallback = callback;
-        this.updatePicker({ getValueCallback: callback });
-    }
-
-    get getValueCallback() {
-        return this._getValueCallback;
-    }
-
-    set getDisplayValueCallback(callback: ((item: T) => string) | undefined) {
-        this._getDisplayValueCallback = callback;
-        this.updatePicker({ getDisplayValueCallback: callback });
-    }
-
-    get getDisplayValueCallback() {
-        return this._getDisplayValueCallback;
-    }
-
-    set getBadgeDisplayCallback(callback: ((item: T) => string) | undefined) {
-        this._getBadgeDisplayCallback = callback;
-        this.updatePicker({ getBadgeDisplayCallback: callback });
-    }
-
-    get getBadgeDisplayCallback() {
-        return this._getBadgeDisplayCallback;
-    }
-
-    set getBadgeClassCallback(callback: ((item: T) => string | string[]) | undefined) {
-        this._getBadgeClassCallback = callback;
-        this.updatePicker({ getBadgeClassCallback: callback });
-    }
-
-    get getBadgeClassCallback() {
-        return this._getBadgeClassCallback;
-    }
-
-    set customStylesCallback(value: (() => string) | undefined) {
-        this._customStylesCallback = value;
-        // If picker already exists, we need to reinject styles
-        // Remove old custom styles and inject new ones
-        if (this.picker && value) {
-            const customStyles = value();
-            if (customStyles) {
-                // Remove old custom stylesheet if exists
-                const oldCustomStyle = this.shadow.querySelector('style.ms-custom-styles');
-                if (oldCustomStyle) {
-                    oldCustomStyle.remove();
-                }
-                // Inject new custom styles
-                const customStyleSheet = document.createElement('style');
-                customStyleSheet.className = 'ms-custom-styles';
-                customStyleSheet.textContent = customStyles;
-                this.shadow.appendChild(customStyleSheet);
-                // Trigger re-render to apply new styles
-                (this.picker as any).renderBadges();
-            }
-        }
-    }
-
-    get customStylesCallback(): (() => string) | undefined {
-        return this._customStylesCallback;
-    }
-
-    set getSearchValueCallback(callback: ((item: T) => string) | undefined) {
-        this._getSearchValueCallback = callback;
-        this.updatePicker({ getSearchValueCallback: callback });
-    }
-
-    get getSearchValueCallback() {
-        return this._getSearchValueCallback;
-    }
-
-    set getIconCallback(callback: ((item: T) => string) | undefined) {
-        this._getIconCallback = callback;
-        this.updatePicker({ getIconCallback: callback });
-    }
-
-    get getIconCallback() {
-        return this._getIconCallback;
-    }
-
-    set getSubtitleCallback(callback: ((item: T) => string) | undefined) {
-        this._getSubtitleCallback = callback;
-        this.updatePicker({ getSubtitleCallback: callback });
-    }
-
-    get getSubtitleCallback() {
-        return this._getSubtitleCallback;
-    }
-
-    /** Callback returning an option's full title (used by badges when show-badge-full-title is on). */
-    set getFullTitleCallback(callback: ((item: T) => string) | undefined) {
-        this._getFullTitleCallback = callback;
-        this.updatePicker({ getFullTitleCallback: callback });
-    }
-
-    get getFullTitleCallback() {
-        return this._getFullTitleCallback;
-    }
-
-    set getGroupCallback(callback: ((item: T) => string) | undefined) {
-        this._getGroupCallback = callback;
-        this.updatePicker({ getGroupCallback: callback });
-    }
-
-    get getGroupCallback() {
-        return this._getGroupCallback;
-    }
-
-    /** Callback returning an option's materialized dot-path (enables tree mode). */
-    set getPathCallback(callback: ((item: T) => string) | undefined) {
-        this._getPathCallback = callback;
-        this.updatePicker({ getPathCallback: callback });
-    }
-
-    get getPathCallback() {
-        return this._getPathCallback;
-    }
-
-    /** Force tree mode on/off. When unset, tree mode auto-enables if a path source is present. */
-    set isTreeEnabled(value: boolean | undefined) {
-        this._isTreeEnabled = value;
-        this.updatePicker({ isTreeEnabled: value });
-    }
-
-    get isTreeEnabled() {
-        return this._isTreeEnabled;
-    }
-
-    /**
-     * Callback deciding whether a tree node is selectable (takes precedence over
-     * `is-selectable-member`). Receives the built node — e.g.
-     * `el.getIsSelectableCallback = (node) => !node.hasChildren` for leaves only.
-     */
-    set getIsSelectableCallback(callback: ((node: LTreeNode<T>) => boolean) | undefined) {
-        this._getIsSelectableCallback = callback;
-        this.updatePicker({ getIsSelectableCallback: callback });
-    }
-
-    get getIsSelectableCallback() {
-        return this._getIsSelectableCallback;
-    }
-
-    set renderGroupLabelContentCallback(callback: ((groupName: string) => string | HTMLElement) | undefined) {
-        this._renderGroupLabelContentCallback = callback;
-        this.updatePicker({ renderGroupLabelContentCallback: callback });
-    }
-
-    get renderGroupLabelContentCallback() {
-        return this._renderGroupLabelContentCallback;
-    }
-
-    set getDisabledCallback(callback: ((item: T) => boolean) | undefined) {
-        this._getDisabledCallback = callback;
-        this.updatePicker({ getDisabledCallback: callback });
-    }
-
-    get getDisabledCallback() {
-        return this._getDisabledCallback;
-    }
-
-    // Custom rendering callbacks
-    set renderOptionContentCallback(callback: ((item: T, context: OptionContentRenderContext) => string | HTMLElement) | undefined) {
-        this._renderOptionContentCallback = callback;
-        this.updatePicker({ renderOptionContentCallback: callback });
-    }
-
-    get renderOptionContentCallback() {
-        return this._renderOptionContentCallback;
-    }
-
-    set renderBadgeContentCallback(callback: ((item: T, context: BadgeContentRenderContext) => string | HTMLElement) | undefined) {
-        this._renderBadgeContentCallback = callback;
-        this.updatePicker({ renderBadgeContentCallback: callback });
-    }
-
-    get renderBadgeContentCallback() {
-        return this._renderBadgeContentCallback;
-    }
-
-    set renderSelectedItemContentCallback(callback: ((item: T) => string | HTMLElement) | undefined) {
-        this._renderSelectedItemContentCallback = callback;
-        this.updatePicker({ renderSelectedItemContentCallback: callback });
-    }
-
-    get renderSelectedItemContentCallback() {
-        return this._renderSelectedItemContentCallback;
-    }
-
-    set getSelectedItemClassCallback(callback: ((item: T) => string | string[]) | undefined) {
-        this._getSelectedItemClassCallback = callback;
-        this.updatePicker({ getSelectedItemClassCallback: callback });
-    }
-
-    get getSelectedItemClassCallback() {
-        return this._getSelectedItemClassCallback;
-    }
-
-    set renderSelectedContentCallback(callback: ((item: T) => string) | undefined) {
-        this._renderSelectedContentCallback = callback;
-        this.updatePicker({ renderSelectedContentCallback: callback });
-    }
-
-    get renderSelectedContentCallback() {
-        return this._renderSelectedContentCallback;
-    }
-
-    // Form integration
-    set name(value: string | null) {
-        if (value) this.setAttribute('name', value);
-        else this.removeAttribute('name');
-    }
-
-    get name(): string | null {
-        return this.getAttribute('name');
-    }
-
-    set valueFormat(value: 'json' | 'csv' | 'array' | null) {
-        if (value) this.setAttribute('value-format', value);
-        else this.removeAttribute('value-format');
-    }
-
-    get valueFormat(): string | null {
-        return this.getAttribute('value-format');
-    }
-
-    set getValueFormatCallback(callback: ((values: (string | number)[]) => string) | undefined) {
-        this._getValueFormatCallback = callback;
-        this.updatePicker({ getValueFormatCallback: callback });
-    }
-
-    get getValueFormatCallback() {
-        return this._getValueFormatCallback;
-    }
-
-    // Badges display options
-    set thresholdMode(value: 'count' | 'partial' | null) {
-        if (value) this.setAttribute('threshold-mode', value);
-        else this.removeAttribute('threshold-mode');
-    }
-
-    get thresholdMode(): string | null {
-        return this.getAttribute('threshold-mode');
-    }
-
-    set badgesMaxVisible(value: number | null) {
-        if (value !== null) this.setAttribute('badges-max-visible', String(value));
-        else this.removeAttribute('badges-max-visible');
-    }
-
-    get badgesMaxVisible(): number | null {
-        const value = this.getAttribute('badges-max-visible');
-        return value ? parseInt(value) : null;
-    }
-
-    // Checkbox options
-    set checkboxAlign(value: 'top' | 'center' | 'bottom' | null) {
-        if (value) this.setAttribute('checkbox-align', value);
-        else this.removeAttribute('checkbox-align');
-    }
-
-    get checkboxAlign(): string | null {
-        return this.getAttribute('checkbox-align');
-    }
-
-    // Tooltip options
-    set enableBadgeTooltips(value: boolean) {
-        if (value) this.setAttribute('enable-badge-tooltips', 'true');
-        else this.removeAttribute('enable-badge-tooltips');
-    }
-
-    get enableBadgeTooltips(): boolean {
-        return this.getAttribute('enable-badge-tooltips') === 'true';
-    }
-
-    set enableOptionTooltips(value: boolean) {
-        if (value) this.setAttribute('enable-option-tooltips', 'true');
-        else this.removeAttribute('enable-option-tooltips');
-    }
-
-    get enableOptionTooltips(): boolean {
-        return this.getAttribute('enable-option-tooltips') === 'true';
-    }
-
-    set getOptionTooltipCallback(callback: ((item: T) => string | HTMLElement) | undefined) {
-        this._getOptionTooltipCallback = callback;
-        this.updatePicker({ getOptionTooltipCallback: callback });
-    }
-
-    get getOptionTooltipCallback() {
-        return this._getOptionTooltipCallback;
-    }
-
-    set optionTooltipPlacement(value: string | null) {
-        if (value) this.setAttribute('option-tooltip-placement', value);
-        else this.removeAttribute('option-tooltip-placement');
-    }
-
-    get optionTooltipPlacement(): string | null {
-        return this.getAttribute('option-tooltip-placement');
-    }
-
-    set optionTooltipFollowCursor(value: boolean) {
-        if (value) this.setAttribute('option-tooltip-follow-cursor', 'true');
-        else this.removeAttribute('option-tooltip-follow-cursor');
-    }
-
-    get optionTooltipFollowCursor(): boolean {
-        return this.getAttribute('option-tooltip-follow-cursor') === 'true';
-    }
-
-    set actionsPosition(value: string | null) {
-        if (value) this.setAttribute('actions-position', value);
-        else this.removeAttribute('actions-position');
-    }
-
-    get actionsPosition(): string | null {
-        return this.getAttribute('actions-position');
-    }
-
-    set actionsAlign(value: string | null) {
-        if (value) this.setAttribute('actions-align', value);
-        else this.removeAttribute('actions-align');
-    }
-
-    get actionsAlign(): string | null {
-        return this.getAttribute('actions-align');
-    }
-
-    set badgeTooltipPlacement(value: string | null) {
-        if (value) this.setAttribute('badge-tooltip-placement', value);
-        else this.removeAttribute('badge-tooltip-placement');
-    }
-
-    get badgeTooltipPlacement(): string | null {
-        return this.getAttribute('badge-tooltip-placement');
-    }
-
-    set getBadgeTooltipCallback(callback: ((item: T) => string | HTMLElement) | undefined) {
-        this._getBadgeTooltipCallback = callback;
-        this.updatePicker({ getBadgeTooltipCallback: callback });
-    }
-
-    get getBadgeTooltipCallback() {
-        return this._getBadgeTooltipCallback;
-    }
-
-    set getRemoveButtonTooltipCallback(callback: ((item: T) => string) | undefined) {
-        this._getRemoveButtonTooltipCallback = callback;
-        this.updatePicker({ getRemoveButtonTooltipCallback: callback });
-    }
-
-    get getRemoveButtonTooltipCallback() {
-        return this._getRemoveButtonTooltipCallback;
-    }
-
-    set removeButtonTooltipText(value: string | null) {
-        if (value) {
-            this.setAttribute('remove-button-tooltip-text', value);
-        } else {
-            this.removeAttribute('remove-button-tooltip-text');
-        }
-    }
-
-    get removeButtonTooltipText(): string | null {
-        return this.getAttribute('remove-button-tooltip-text');
-    }
-
-    set getCounterCallback(callback: ((count: number, moreCount?: number) => string) | undefined) {
-        this._getCounterCallback = callback;
-        this.updatePicker({ getCounterCallback: callback });
-    }
-
-    get getCounterCallback() {
-        return this._getCounterCallback;
-    }
-
-    // Event callbacks
-    get beforeSearchCallback(): ((searchTerm: string) => string | null) | undefined {
-        return this._beforeSearchCallback;
-    }
-
-    set beforeSearchCallback(callback: ((searchTerm: string) => string | null) | undefined) {
-        this._beforeSearchCallback = callback;
-        this.updatePicker({ beforeSearchCallback: callback });
-    }
-
-    get beforeSelectCallback(): ((option: T, selectedOptions: T[]) => boolean | void) | undefined {
-        return this._beforeSelectCallback;
-    }
-
-    set beforeSelectCallback(callback: ((option: T, selectedOptions: T[]) => boolean | void) | undefined) {
-        this._beforeSelectCallback = callback;
-        this.updatePicker({ beforeSelectCallback: callback });
-    }
-
-    get beforeDeselectCallback(): ((option: T, selectedOptions: T[]) => boolean | void) | undefined {
-        return this._beforeDeselectCallback;
-    }
-
-    set beforeDeselectCallback(callback: ((option: T, selectedOptions: T[]) => boolean | void) | undefined) {
-        this._beforeDeselectCallback = callback;
-        this.updatePicker({ beforeDeselectCallback: callback });
-    }
-
-    get searchCallback(): ((searchTerm: string, signal?: AbortSignal) => Promise<T[]>) | undefined {
-        return this._searchCallback;
-    }
-
-    set searchCallback(callback: ((searchTerm: string, signal?: AbortSignal) => Promise<T[]>) | undefined) {
-        this._searchCallback = callback;
-        this.updatePicker({ searchCallback: callback });
-    }
-
-    get addNewCallback(): ((value: string) => T | Promise<T>) | undefined {
-        return this._addNewCallback;
-    }
-
-    set addNewCallback(callback: ((value: string) => T | Promise<T>) | undefined) {
-        this._addNewCallback = callback;
-        this.updatePicker({ addNewCallback: callback });
-    }
-
-    get onSelect(): ((option: T) => void) | undefined {
-        return this._onSelect;
-    }
-
-    set onSelect(callback: ((option: T) => void) | undefined) {
-        this._onSelect = callback;
-    }
-
-    get onDeselect(): ((option: T) => void) | undefined {
-        return this._onDeselect;
-    }
-
-    set onDeselect(callback: ((option: T) => void) | undefined) {
-        this._onDeselect = callback;
-    }
-
-    get onChange(): ((selectedOptions: T[]) => void) | undefined {
-        return this._onChange;
-    }
-
-    set onChange(callback: ((selectedOptions: T[]) => void) | undefined) {
-        this._onChange = callback;
-    }
-
-    // Action buttons
-    get actionButtons(): any[] | undefined {
-        return this._actionButtons;
-    }
-
-    set actionButtons(value: any[] | undefined) {
-        this._actionButtons = value;
-        this.updatePicker({ actionButtons: value });
-    }
-
-    // New public properties
-    get selectedValue(): string | number | (string | number)[] | null {
-        return this.picker?.selectedValue ?? null;
-    }
-
-    get selectedItem(): T | null {
-        return this.picker?.selectedItem ?? null;
-    }
-
-    // ========================================================================
-    // PUBLIC API - METHODS
-    // ========================================================================
-
-    getSelected(): T[] {
-        return this.picker ? this.picker.getSelected() : [];
-    }
-
-    setSelected(values: (string | number)[], opts: { notify?: boolean } = {}): void {
-        if (this.picker) {
-            this.picker.setSelected(values, opts);
-        }
-    }
-
-    getValue(): string | number | (string | number)[] | null {
-        return this.picker ? this.picker.getValue() : null;
-    }
-
-    destroy(): void {
-        if (this.picker) {
-            this.picker.destroy();
-        }
-    }
+      }
+    }
+
+    if (!hasValidOptions) return null;
+
+    dataLogger.debug(`[MultiSelectElement] Parsed ${options.length} declarative options from Light DOM`);
+    // Clean up the parsed light-DOM children.
+    for (const child of children) {
+      if (child.tagName === 'OPTION' || child.tagName === 'OPTGROUP') child.remove();
+    }
+    return options;
+  }
+
+  // ── debug panel (deprecated; kept for back-compat) ────────────────────────
+
+  #syncDebugPanel(): void {
+    const existing = this.#shadow.querySelector('.ms__debug-info');
+    if (existing) existing.remove();
+    if (!this.config.showDebugInfo) return;
+
+    const debugContainer = document.createElement('div');
+    debugContainer.className = 'ms__debug-info';
+    const details = document.createElement('details');
+    const summary = document.createElement('summary');
+    summary.textContent = 'Debug Info';
+    const statsDiv = document.createElement('div');
+    statsDiv.className = 'ms__debug-stats';
+    details.appendChild(summary);
+    details.appendChild(statsDiv);
+    debugContainer.appendChild(details);
+    this.#shadow.appendChild(debugContainer);
+    this.#updateDebugInfo();
+  }
+
+  #updateDebugInfo(): void {
+    const statsDiv = this.#shadow.querySelector('.ms__debug-stats');
+    if (!statsDiv || !this.#picker) return;
+
+    const version = typeof __VERSION__ !== 'undefined' ? __VERSION__ : 'unknown';
+    const totalInstances = (typeof window !== 'undefined' && window.components?.['web-multiselect']?.getInstances().length) || 0;
+    const selectedCount = this.#picker.getSelected().length;
+    const totalOptions = (this.config.options as unknown[] | undefined)?.length || 0;
+    const pickerAny = this.#picker as any;
+
+    statsDiv.innerHTML = `
+      <span>Version: ${version}</span>
+      <span>Total Instances: ${totalInstances}</span>
+      <span>Options: ${totalOptions}</span>
+      <span>Filtered: ${pickerAny.filteredOptions?.length || 0}</span>
+      <span>Selected: ${selectedCount}</span>
+      <span>Dropdown: ${pickerAny.isOpen ? 'Open' : 'Closed'}</span>
+      <span>Search: ${pickerAny.searchTerm || 'none'}</span>
+      <span>Loading: ${pickerAny.isLoading ? 'Yes' : 'No'}</span>
+    `;
+    setTimeout(() => {
+      if (this.config.showDebugInfo) this.#updateDebugInfo();
+    }, 500);
+  }
+
+  // ── non-input public API ──────────────────────────────────────────────────
+
+  /** Form field name (mirrors the `name` attribute → `formFieldId`). */
+  get name(): string | null {
+    return this.getAttribute('name');
+  }
+
+  set name(value: string | null) {
+    if (value) this.setAttribute('name', value);
+    else this.removeAttribute('name');
+  }
+
+  get selectedValue(): string | number | (string | number)[] | null {
+    return this.#picker?.selectedValue ?? null;
+  }
+
+  get selectedItem(): T | null {
+    return this.#picker?.selectedItem ?? null;
+  }
+
+  getSelected(): T[] {
+    return this.#picker ? this.#picker.getSelected() : [];
+  }
+
+  setSelected(values: (string | number)[], opts: { notify?: boolean } = {}): void {
+    this.#picker?.setSelected(values, opts);
+  }
+
+  getValue(): string | number | (string | number)[] | null {
+    return this.#picker ? this.#picker.getValue() : null;
+  }
+
+  destroy(): void {
+    this.#picker?.destroy();
+  }
 }
 
-// Auto-register the custom element (browser only)
-if (typeof window !== 'undefined' && typeof customElements !== 'undefined') {
-    if (!customElements.get('web-multiselect')) {
-        customElements.define('web-multiselect', MultiSelectElement);
-    }
+// Importing this module registers the element (back-compat contract). The full
+// global-API publish + logger-bundle wiring happens in index.ts via
+// registerComponent(); both defines are idempotent, so importing either works.
+if (typeof customElements !== 'undefined' && !customElements.get('web-multiselect')) {
+  customElements.define('web-multiselect', MultiSelectElement);
 }
