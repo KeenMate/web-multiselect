@@ -41,6 +41,7 @@ import type {
 } from './types';
 import { toInitialValues } from './converters';
 import styles from './css/main.css?inline';
+import { extractConsumedMsVars, declaredMsVars, suggestMsVars } from './css-var-lint.js';
 import { dataLogger } from './logger';
 
 // Type declarations for build-time constants
@@ -228,6 +229,15 @@ const CSS_VARS: Record<string, string> = {
   selectedPopoverWidth: '--ms-selected-popover-width',
 };
 
+// customStylesCallback dev-mode lint (see #checkCustomStyleVars). The set of
+// `--ms-*` variables the stylesheet reads is computed once from the (static)
+// bundled stylesheet. Empty when the CSS isn't inlined (e.g. under vitest),
+// which the check treats as "no ground truth" and skips.
+let consumedMsVarsCache: Set<string> | null = null;
+function consumedMsVars(): Set<string> {
+  return (consumedMsVarsCache ??= extractConsumedMsVars(styles));
+}
+
 /**
  * Member defaults written into each parsed option when declarative
  * <option>/<optgroup> children were used, and only for members the consumer
@@ -260,6 +270,8 @@ export class MultiSelectElement<T = any> extends BlissElement<MultiSelectEvents>
   #container?: HTMLDivElement;
   #internals?: ElementInternals;
   #customStyles: StyleSlot | null = null;
+  // Dev-mode customStylesCallback lint: unknown --ms-* names already warned about.
+  #warnedCssVars = new Set<string>();
 
   // Declarative <option>/<optgroup> state (parsed once from light DOM).
   #declParsed = false;
@@ -481,10 +493,37 @@ export class MultiSelectElement<T = any> extends BlissElement<MultiSelectEvents>
       return;
     }
     try {
-      slot.set(callback());
+      const css = callback();
+      slot.set(css);
+      if (import.meta.env?.DEV && css) this.#checkCustomStyleVars(css);
     } catch (e) {
       dataLogger.warn('[MultiSelectElement] customStylesCallback threw', e);
       slot.clear();
+    }
+  }
+
+  /**
+   * Dev-only lint: warn when `customStylesCallback` *sets* a `--ms-*` variable
+   * that no web-multiselect style ever reads (`var(--ms-…)`) — a misspelled or
+   * renamed variable fails silently otherwise (e.g. `--ms-badge-text-background`
+   * instead of `--ms-badge-text-bg`). Guarded by `import.meta.env.DEV`, so it's
+   * stripped from the production build and never fires for shipped consumers.
+   * De-duped per instance. If you genuinely define a `--ms-*` var for your own
+   * custom-rendered content, ignore the warning (or use a different prefix).
+   */
+  #checkCustomStyleVars(css: string): void {
+    const consumed = consumedMsVars();
+    if (consumed.size === 0) return; // stylesheet not inlined (e.g. vitest) — no ground truth
+    for (const name of declaredMsVars(css)) {
+      if (consumed.has(name) || this.#warnedCssVars.has(name)) continue;
+      this.#warnedCssVars.add(name);
+      const hint = suggestMsVars(name, consumed);
+      console.warn(
+        `[web-multiselect] customStylesCallback sets "${name}", which no ` +
+          `web-multiselect style consumes — it will have no effect.` +
+          (hint.length ? ` Did you mean: ${hint.join(', ')}?` : '') +
+          ` (If it's for your own custom-rendered content, ignore this.)`
+      );
     }
   }
 

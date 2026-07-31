@@ -12,6 +12,15 @@ The **core adoption** major: `<web-multiselect>` is now built on
 dropdown engine (`multiselect.ts`), CSS, tree, and virtual scroll are unchanged;
 the custom-element plumbing that wrapped them is replaced by the shared core.
 
+### Added
+
+- **Dev-mode lint for `customStylesCallback`.** When the callback sets a `--ms-*`
+  variable that no web-multiselect style reads (a misspelled/renamed variable
+  that silently does nothing — e.g. `--ms-badge-text-background` instead of
+  `--ms-badge-text-bg`), the element now `console.warn`s once with the closest
+  real variable names. Guarded by `import.meta.env.DEV`, so it is stripped from
+  the production build and never fires for shipped consumers.
+
 ### Changed
 
 - **Element built on `BlissElement`.** The hand-coded custom-element plumbing —
