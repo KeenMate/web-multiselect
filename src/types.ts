@@ -235,7 +235,8 @@ export interface MultiSelectConfig<T = any> {
      */
     checkboxMode?: 'independent' | 'cascade';
     /**
-     * In `cascade` mode, which values a selection emits (badges / form / change):
+     * In `cascade` mode, which values a selection emits (badges / form / change).
+     *
      *   - `rolled-up` (default) — minimal cover: a fully-selected subtree collapses
      *     to its root ("complete node"); partially-selected branches emit their
      *     individually-checked descendants. Rolls to the nearest selectable
@@ -278,7 +279,13 @@ export interface MultiSelectConfig<T = any> {
 
     /** HTML form field ID/name for hidden input */
     formFieldId?: string;
-    /** Format for value serialization (forms and callbacks) */
+    /**
+     * Format for value serialization (hidden form inputs and callbacks). Default: `json`.
+     *
+     * - `json` — a JSON array string, e.g. `["a","b"]`
+     * - `csv` — comma-separated values, e.g. `a,b`
+     * - `array` — one hidden input per value (`name[]` entries)
+     */
     valueFormat?: ValueFormat;
     /** Custom callback to format value */
     getValueFormatCallback?: (selectedValues: (string | number)[]) => string;
@@ -324,7 +331,13 @@ export interface MultiSelectConfig<T = any> {
     // STRING OPTIONS
     // ========================================================================
 
-    /** Vertical alignment of checkboxes relative to option content */
+    /**
+     * Vertical alignment of checkboxes relative to option content. Default: `center`.
+     *
+     * - `top` — align to the top of the row
+     * - `center` — vertically centered
+     * - `bottom` — align to the bottom of the row
+     */
     checkboxAlign?: 'top' | 'center' | 'bottom';
 
     /** Hint text shown above the input while the dropdown is open. */
@@ -347,11 +360,31 @@ export interface MultiSelectConfig<T = any> {
     dropdownMinWidth?: string | null;
     /** Maximum width for the dropdown (e.g., '40rem', '500px') */
     dropdownMaxWidth?: string | null;
-    /** Display mode for selected items in badges area */
+    /**
+     * Display mode for selected items in the badges area. Default: `badges`.
+     *
+     * - `badges` — one removable badge per selected option
+     * - `count` — a single "N selected" count badge
+     * - `compact` — condensed badges (first few, tighter spacing)
+     * - `partial` — a limited number of badges plus a "+X more" badge
+     * - `none` — hide the badges area entirely
+     */
     badgesDisplayMode?: BadgesDisplayMode;
-    /** Position of badges container */
+    /**
+     * Position of the badges container relative to the input. Default: `bottom`.
+     *
+     * - `top` — above the input
+     * - `bottom` — below the input
+     * - `left` — to the left of the input
+     * - `right` — to the right of the input
+     */
     badgesPosition?: BadgesPosition;
-    /** Threshold behavior mode: 'count' shows count badge, 'partial' shows limited badges + more badge */
+    /**
+     * How the display switches once `badgesThreshold` is exceeded. Default: `count`.
+     *
+     * - `count` — collapse all selections into a single count badge
+     * - `partial` — keep up to `badgesMaxVisible` badges and add a "+X more" badge
+     */
     badgesThresholdMode?: BadgesThresholdMode;
     /** Maximum height for dropdown */
     maxHeight?: string;
@@ -359,15 +392,44 @@ export interface MultiSelectConfig<T = any> {
     emptyMessage?: string;
     /** Message shown while loading async data */
     loadingMessage?: string;
-    /** Search input display mode */
+    /**
+     * How the search input behaves. Default: `normal`.
+     *
+     * - `normal` — editable search box
+     * - `readonly` — visible but not editable (acts as a picker; uses `selectPlaceholder`)
+     * - `hidden` — no search box at all
+     */
     searchInputMode?: SearchInputMode;
-    /** Search behavior mode: 'filter' (hide non-matches) or 'navigate' (jump to matches, keep all visible) */
+    /**
+     * Search behavior mode. Default: `filter`.
+     *
+     * - `filter` — hide options that don't match
+     * - `navigate` — keep all options visible and jump focus to matches
+     */
     searchMode?: SearchMode;
-    /** Layout mode for action buttons: 'nowrap' (default) or 'wrap' for multi-row */
+    /**
+     * Layout mode for the action buttons. Default: `nowrap`.
+     *
+     * - `nowrap` — buttons stay on a single row
+     * - `wrap` — buttons wrap onto multiple rows
+     */
     actionsLayout?: ActionsLayout;
-    /** Where the action-buttons block sits in the dropdown: 'top' (default) or 'bottom' (sticky footer). */
+    /**
+     * Where the action-buttons block sits in the dropdown. Default: `top`.
+     *
+     * - `top` — above the options list
+     * - `bottom` — sticky footer below the options list
+     */
     actionsPosition?: ActionsPosition;
-    /** Horizontal arrangement of buttons within a row: 'stretch' (default, full-width), 'left', 'right', 'center', or 'space-between'. */
+    /**
+     * Horizontal arrangement of buttons within a row. Default: `stretch`.
+     *
+     * - `stretch` — full-width, evenly divided
+     * - `left` — packed to the start
+     * - `right` — packed to the end
+     * - `center` — centered
+     * - `space-between` — spread to the edges with gaps between
+     */
     actionsAlign?: ActionsAlign;
 
     // ========================================================================
@@ -449,7 +511,12 @@ export interface MultiSelectConfig<T = any> {
     getRemoveButtonTooltipCallback?: ((item: T) => string) | null;
     /** Format string for remove button tooltip text. Use {0} as placeholder for item name. Default: "Remove {0}" */
     removeButtonTooltipText?: string;
-    /** Tooltip placement relative to badge */
+    /**
+     * Tooltip placement relative to the badge (Floating UI `Placement`). Default: `top`.
+     *
+     * One of: `top`, `top-start`, `top-end`, `bottom`, `bottom-start`, `bottom-end`,
+     * `left`, `left-start`, `left-end`, `right`, `right-start`, `right-end`.
+     */
     badgeTooltipPlacement?: Placement;
     /** Delay before showing tooltip in milliseconds */
     badgeTooltipDelay?: number;
@@ -460,7 +527,14 @@ export interface MultiSelectConfig<T = any> {
     isOptionTooltipsEnabled?: boolean;
     /** Callback to generate custom tooltip content for a dropdown option. Default: display value, plus subtitle on the next line when present. */
     getOptionTooltipCallback?: ((item: T) => string | HTMLElement) | null;
-    /** Option tooltip placement. Default `'top-start'` (anchored to the row's start edge, so it doesn't center on a full-width row). Use `'left'`/`'right'` (start/end side) for a narrow multiselect. */
+    /**
+     * Option tooltip placement (Floating UI `Placement`). Default `top-start`
+     * (anchored to the row's start edge, so it doesn't center on a full-width row).
+     * Use `left`/`right` (or their start/end variants) for a narrow multiselect.
+     *
+     * One of: `top`, `top-start`, `top-end`, `bottom`, `bottom-start`, `bottom-end`,
+     * `left`, `left-start`, `left-end`, `right`, `right-start`, `right-end`.
+     */
     optionTooltipPlacement?: Placement;
     /** Delay before showing an option tooltip (ms). Falls back to `badgeTooltipDelay`, then `100`. */
     optionTooltipDelay?: number;
