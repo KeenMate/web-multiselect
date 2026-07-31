@@ -1,4 +1,4 @@
-import { test, expect, Page, Locator } from '@playwright/test';
+import { test, expect, Page, Locator } from './fixtures';
 
 /**
  * E2E for the option row-height and long-title knobs (used by tree rows, but

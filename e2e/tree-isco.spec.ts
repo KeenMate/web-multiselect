@@ -1,4 +1,4 @@
-import { test, expect, Page, Locator } from '@playwright/test';
+import { test, expect, Page, Locator } from './fixtures';
 
 /**
  * E2E for the "real data" demo on examples-tree.html: the full ISCO-08

@@ -1,4 +1,4 @@
-import { test, expect, Page, Locator } from '@playwright/test';
+import { test, expect, Page, Locator } from './fixtures';
 
 /**
  * External search demo: the whole search is delegated to a FlexSearch index via

@@ -1,4 +1,4 @@
-import { test, expect, Page, Locator } from '@playwright/test';
+import { test, expect, Page, Locator } from './fixtures';
 
 /**
  * Section 4 (remaining) — dropdown positioning concerns.

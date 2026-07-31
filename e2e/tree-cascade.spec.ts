@@ -1,4 +1,4 @@
-import { test, expect, Page, Locator } from '@playwright/test';
+import { test, expect, Page, Locator } from './fixtures';
 
 /**
  * E2E for cascade checkbox mode (checkbox-mode="cascade") + the cascade value
