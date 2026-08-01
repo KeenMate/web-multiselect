@@ -3,17 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MultiSelect - Logging Examples</title>
+    <title>MultiSelect - window.components & Logging</title>
 
-    <!-- Shared example styles -->
     <link rel="stylesheet" href="examples-shared.css">
     <link rel="stylesheet" href="/dist/style.css">
 
-    <!-- Page-specific styles (uses shared button and note styles) -->
     <style>
-        /* Adjust button margins for this demo */
-        .controls button {
-            margin: 0.25rem;
+        .controls button { margin: 0.25rem; }
+
+        /* Live registry inspector */
+        .registry {
+            display: grid;
+            grid-template-columns: max-content 1fr;
+            gap: 0.4rem 1rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 0.85rem;
+            background: #0f172a;
+            color: #e2e8f0;
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        .registry dt { color: #7dd3fc; white-space: nowrap; }
+        .registry dd { margin: 0; color: #e2e8f0; word-break: break-word; }
+        .registry .muted { color: #94a3b8; }
+        .pill {
+            display: inline-block;
+            background: #1e293b;
+            color: #7dd3fc;
+            border: 1px solid #334155;
+            border-radius: 999px;
+            padding: 0.05rem 0.5rem;
+            margin: 0 0.2rem 0.2rem 0;
+            font-size: 0.78rem;
+        }
+        .pill.on { color: #86efac; border-color: #166534; background: #052e16; }
+        .count-badge {
+            display: inline-block;
+            min-width: 1.4rem;
+            text-align: center;
+            background: #2563eb;
+            color: #fff;
+            border-radius: 999px;
+            padding: 0.05rem 0.5rem;
+            font-weight: 700;
+        }
+        #dynamic-hosts { display: flex; flex-direction: column; gap: 0.75rem; margin-top: 0.75rem; }
+        #dynamic-hosts:empty::after {
+            content: "No dynamic instances yet — click \"Add a picker\".";
+            color: #6b7280; font-style: italic;
         }
     </style>
 </head>
@@ -21,313 +59,283 @@
     <div class="container">
         <header>
             <a href="index.html" class="back-link">← Back to Examples</a>
-            <h1>🔍 Logging & Debugging</h1>
-            <p class="subtitle">Explore the categorized logging system with runtime controls</p>
+            <h1>🌐 <code>window.components</code> &amp; Logging</h1>
+            <p class="subtitle">The global component registry from <code>@keenmate/web-components-core</code> — introspection, logging controls, and the live-instance list</p>
         </header>
 
         <div class="note warning">
-            <strong>Note:</strong> Open your browser's Developer Console (F12) to see the log messages.
-            By default, all logging is disabled in production.
+            <strong>Open the DevTools Console (F12).</strong> On load the component
+            registers itself on <code>window.components['web-multiselect']</code>. Try
+            <code>window.components['web-multiselect']</code> in the console, then use the
+            buttons below — everything here goes through that global, nothing else.
         </div>
 
+        <!-- ── 1. The registry ─────────────────────────────────────────────── -->
         <div class="card">
-            <h2>Example 1: Basic Logging Control</h2>
-            <p>Enable and disable logging at runtime. Watch the console as you interact with the multiselect.</p>
+            <h2>1. The registry entry</h2>
+            <p>
+                Every KeenMate component publishes one entry via core's
+                <code>registerComponent()</code>. Below is a live view of
+                <code>window.components['web-multiselect']</code>, refreshed automatically
+                as instances connect and disconnect.
+            </p>
+
+            <div class="output">
+                <div class="output-label">window.components['web-multiselect']</div>
+                <dl class="registry" id="registry-view"></dl>
+            </div>
 
             <div class="controls">
-                <button onclick="enableAllLogging()">Enable All Logging</button>
-                <button onclick="disableAllLogging()" class="secondary">Disable All Logging</button>
-                <button onclick="setInfoLevel()">Set to INFO level</button>
-            </div>
-
-            <div class="form-group">
-                <web-multiselect
-                    id="basic-example"
-                    search-placeholder="Search fruits..."
-                    is-multiple-enabled="true"
-                ></web-multiselect>
+                <button onclick="refreshRegistry()">Refresh</button>
+                <button class="btn-outline" onclick="dumpToConsole()">console.log the entry</button>
             </div>
         </div>
 
+        <!-- ── 2. Logging through the registry ─────────────────────────────── -->
         <div class="card">
-            <h2>Example 2: Category-Specific Logging</h2>
-            <p>Enable logging for specific categories only. This example has async search enabled - type to see DATA logs.
-            Try enabling different categories to see different types of logs.</p>
+            <h2>2. Logging controls — via <code>.logging</code></h2>
+            <p>
+                The <code>.logging</code> object is the flattened logger bundle. These
+                buttons call it directly (e.g.
+                <code>window.components['web-multiselect'].logging.setCategoryLevel('DATA','debug')</code>).
+                The active category level is reflected in the registry panel above. Interact
+                with the pickers to produce logs.
+            </p>
 
             <div class="controls">
-                <button onclick="enableInitLogging()">INIT Logs Only</button>
-                <button onclick="enableDataLogging()">DATA Logs Only</button>
-                <button onclick="enableUILogging()">UI Logs Only</button>
-                <button onclick="enableInteractionLogging()">INTERACTION Logs Only</button>
+                <button onclick="reg().logging.enableLogging()">Enable all (debug)</button>
+                <button class="secondary" onclick="reg().logging.disableLogging()">Disable all</button>
+                <button class="btn-outline" onclick="reg().logging.setLogLevel('info')">All → info</button>
+            </div>
+            <div class="controls">
+                <button onclick="onlyCategory('INIT')">Only INIT</button>
+                <button onclick="onlyCategory('DATA')">Only DATA</button>
+                <button onclick="onlyCategory('UI')">Only UI</button>
+                <button onclick="onlyCategory('INTERACTION')">Only INTERACTION</button>
             </div>
 
-            <div class="form-group">
-                <web-multiselect
-                    id="category-example"
-                    search-placeholder="Search colors..."
-                    is-multiple-enabled="true"
-                    is-close-on-select="false"
-                ></web-multiselect>
+            <div class="grid grid-2" style="margin-top: 1rem;">
+                <div class="form-group">
+                    <label>Fruits (basic)</label>
+                    <web-multiselect id="fruits" search-placeholder="Search fruits..." is-multiple-enabled="true"></web-multiselect>
+                </div>
+                <div class="form-group">
+                    <label>Colors (async search → DATA logs)</label>
+                    <web-multiselect id="colors" search-placeholder="Search colors..." is-multiple-enabled="true" is-close-on-select="false"></web-multiselect>
+                </div>
             </div>
         </div>
 
+        <!-- ── 3. Live instances ───────────────────────────────────────────── -->
         <div class="card">
-            <h2>Example 3: Hybrid Static + Dynamic Search</h2>
-            <p>Show popular items initially, then switch to web service search. Demonstrates beforeSearchCallback for accent removal.</p>
+            <h2>3. Live instances — <code>.getInstances()</code></h2>
+            <p>
+                <code>getInstances()</code> returns the connected elements of this tag —
+                maintained automatically (added on connect, removed on disconnect). Add and
+                remove pickers below and watch the count in the registry panel change; then
+                fan a call out across every live instance.
+            </p>
 
             <div class="controls">
-                <button onclick="enableDataLogging()">Enable DATA Logs</button>
-                <button onclick="enableAllLogging()">Enable All Logs</button>
-                <button onclick="disableAllLogging()" class="secondary">Disable All</button>
+                <button onclick="addPicker()">Add a picker</button>
+                <button class="secondary" onclick="removePicker()">Remove last</button>
+                <button class="btn-outline" onclick="logAllSelections()">Log every instance's selection</button>
             </div>
 
-            <div class="form-group">
-                <web-multiselect
-                    id="hybrid-example"
-                    search-placeholder="Search fruits (try 'açaí' or 'acai')..."
-                    is-multiple-enabled="true"
-                    min-search-length="3"
-                ></web-multiselect>
-                <small style="color: #6b7280; margin-top: 0.5rem; display: block;">
-                    Opens with 5 popular fruits. Type 3+ characters to search "database". Try "açaí" or "acai" to see accent removal working.
-                </small>
-            </div>
+            <div id="dynamic-hosts"></div>
         </div>
 
+        <!-- ── Reference ───────────────────────────────────────────────────── -->
         <div class="card">
-            <h2>📝 Available Log Categories</h2>
+            <h2>📝 Log categories</h2>
             <ul>
-                <li><strong>INIT</strong> - Component initialization, configuration parsing, RTL detection, destruction</li>
-                <li><strong>DATA</strong> - Async data loading, option parsing, adding new options, errors</li>
-                <li><strong>UI</strong> - Dropdown/popover/tooltip rendering, positioning, badges display</li>
-                <li><strong>INTERACTION</strong> - Clicks, selections, keyboard events, closeOnSelect behavior</li>
+                <li><strong>INIT</strong> — initialization, config parsing, RTL detection, destruction</li>
+                <li><strong>DATA</strong> — async loading, option parsing, adding options, errors</li>
+                <li><strong>UI</strong> — dropdown/popover/tooltip rendering, positioning, badges</li>
+                <li><strong>INTERACTION</strong> — clicks, selections, keyboard, close-on-select</li>
             </ul>
         </div>
 
         <div class="card">
-            <h2>💡 Usage in Your Code</h2>
-            <p>Here's how to control logging programmatically:</p>
+            <h2>💡 Usage</h2>
+            <div class="code-block">
+// No import needed at call sites — the registry is a global, populated the
+// moment the component module is loaded anywhere on the page.
+const ms = window.components['web-multiselect'];
 
-        <div class="code-block">
-// Import logging utilities
-import { enableLogging, setLogLevel, setCategoryLevel, disableLogging }
-    from '@keenmate/web-multiselect';
+ms.version();                       // "2.0.0-rc01"
+ms.config;                          // { name, version, author, license, … }
+ms.getInstances();                  // live &lt;web-multiselect&gt; elements
 
-// Enable all logging at debug level
-enableLogging();
+// Logging (a flattened view of the core logger bundle)
+ms.logging.getCategories();         // ["INIT", "DATA", "UI", "INTERACTION"]
+ms.logging.enableLogging();         // all categories → debug
+ms.logging.setLogLevel('info');     // all → info
+ms.logging.setCategoryLevel('DATA', 'debug');
+ms.logging.disableLogging();        // silence everything (production default)
 
-// Set specific log level for all categories
-setLogLevel('info');  // 'trace' | 'debug' | 'info' | 'warn' | 'error' | 'silent'
+// Fan out across instances
+for (const el of ms.getInstances()) console.log(el.id, el.getSelected());
 
-// Enable/disable specific categories
-disableLogging();  // First disable all
-setCategoryLevel('UI', 'debug');  // Debug only UI operations
-setCategoryLevel('DATA', 'info');  // Info level for data operations
-setCategoryLevel('INTERACTION', 'silent');  // Disable interaction logs
-
-// Disable all logging (default for production)
-disableLogging();
-        </div>
+// Advanced: BlissElement also supports a per-instance override —
+// el.enableLogging('debug') makes ONE element verbose for a devtools overlay
+// (targets el.log; the shared category loggers above stay unchanged).
+            </div>
         </div>
     </div>
 
     <script type="module">
-        import { WebMultiSelect } from '/dist/multiselect.js';
-        // Import logging controls
-        import { enableLogging, setLogLevel, setCategoryLevel, disableLogging } from '/dist/multiselect.js';
+        // Importing the module runs registerComponent() → window.components is populated.
+        import '/dist/multiselect.js';
 
-        // Sample data
+        const TAG = 'web-multiselect';
+        const reg = () => window.components?.[TAG];
+        window.reg = reg;
+
+        // ── sample data ──────────────────────────────────────────────────────
         const fruits = [
-            { id: 1, name: 'Apple', emoji: '🍎' },
-            { id: 2, name: 'Banana', emoji: '🍌' },
-            { id: 3, name: 'Cherry', emoji: '🍒' },
-            { id: 4, name: 'Grape', emoji: '🍇' },
-            { id: 5, name: 'Orange', emoji: '🍊' },
-            { id: 6, name: 'Strawberry', emoji: '🍓' },
+            { id: 1, name: 'Apple', emoji: '🍎' }, { id: 2, name: 'Banana', emoji: '🍌' },
+            { id: 3, name: 'Cherry', emoji: '🍒' }, { id: 4, name: 'Grape', emoji: '🍇' },
+            { id: 5, name: 'Orange', emoji: '🍊' }, { id: 6, name: 'Strawberry', emoji: '🍓' },
             { id: 7, name: 'Watermelon', emoji: '🍉' }
         ];
-
         const colors = [
-            { id: 1, name: 'Red', hex: '#ef4444' },
-            { id: 2, name: 'Blue', hex: '#3b82f6' },
-            { id: 3, name: 'Green', hex: '#10b981' },
-            { id: 4, name: 'Yellow', hex: '#f59e0b' },
-            { id: 5, name: 'Purple', hex: '#8b5cf6' },
-            { id: 6, name: 'Pink', hex: '#ec4899' }
+            { id: 1, name: 'Red', hex: '#ef4444' }, { id: 2, name: 'Blue', hex: '#3b82f6' },
+            { id: 3, name: 'Green', hex: '#10b981' }, { id: 4, name: 'Yellow', hex: '#f59e0b' },
+            { id: 5, name: 'Purple', hex: '#8b5cf6' }, { id: 6, name: 'Pink', hex: '#ec4899' }
         ];
+        const fruitCfg = (el) => {
+            el.options = fruits;
+            el.getValueCallback = (i) => i.id;
+            el.getDisplayValueCallback = (i) => `${i.emoji} ${i.name}`;
+        };
 
-        // Wait for custom element to be defined, then initialize
-        customElements.whenDefined('web-multiselect').then(() => {
-            // Initialize Example 1 - Basic multiselect with fruits
-            const basicElement = document.getElementById('basic-example');
-            if (basicElement) {
-                basicElement.options = fruits;
-                basicElement.getValueCallback = (item) => item.id;
-                basicElement.getDisplayValueCallback = (item) => `${item.emoji} ${item.name}`;
-            }
+        // ── 1. registry inspector ────────────────────────────────────────────
+        const esc = (s) => String(s).replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]));
 
-            // Initialize Example 2 - Async search with colors
-            const categoryElement = document.getElementById('category-example');
-            if (categoryElement) {
-                categoryElement.options = colors;
-                categoryElement.getValueCallback = (item) => item.id;
-                categoryElement.getDisplayValueCallback = (item) => item.name;
-                categoryElement.getSubtitleCallback = (item) => item.hex;
+        window.refreshRegistry = () => {
+            const view = document.getElementById('registry-view');
+            const r = reg();
+            if (!r) { view.innerHTML = '<dt>status</dt><dd class="muted">not registered</dd>'; return; }
 
-                // Add search callback to demonstrate DATA logging
-                categoryElement.searchCallback = async (searchTerm) => {
-                    // Simulate async search with delay
-                    await new Promise(resolve => setTimeout(resolve, 300));
+            const cfg = r.config || {};
+            const cats = r.logging?.getCategories() ?? [];
+            const instances = r.getInstances();
+            const catPills = cats.map((c) => {
+                // Reflect each category's effective level from the underlying loggers.
+                const lvl = window.__catLevel?.[c];
+                const on = lvl && lvl !== 'silent';
+                return `<span class="pill ${on ? 'on' : ''}">${esc(c.split(':')[1] || c)}${on ? ` · ${lvl}` : ''}</span>`;
+            }).join('');
+            const instPills = instances.length
+                ? instances.map((el, i) => `<span class="pill">${esc(el.id || `#${i}`)}</span>`).join('')
+                : '<span class="muted">none connected</span>';
 
-                    // Filter colors based on search term
-                    if (!searchTerm) return colors;
+            view.innerHTML = `
+                <dt>version()</dt><dd>${esc(r.version())}</dd>
+                <dt>config.name</dt><dd>${esc(cfg.name ?? '—')}</dd>
+                <dt>config.author</dt><dd>${esc(cfg.author ?? '—')}</dd>
+                <dt>config.license</dt><dd>${esc(cfg.license ?? '—')}</dd>
+                <dt>logging</dt><dd>${cats.length ? catPills : '<span class="muted">no bundle</span>'}</dd>
+                <dt>getInstances()</dt><dd><span class="count-badge">${instances.length}</span> &nbsp; ${instPills}</dd>
+            `;
+        };
 
-                    const lowerSearch = searchTerm.toLowerCase();
-                    return colors.filter(color =>
-                        color.name.toLowerCase().includes(lowerSearch) ||
-                        color.hex.includes(lowerSearch)
-                    );
-                };
-            }
+        window.dumpToConsole = () => {
+            const r = reg();
+            console.log('%cwindow.components[\'web-multiselect\']', 'color:#3b82f6;font-weight:bold;font-size:1.1rem;', r);
+            console.log('config:', r?.config);
+            console.log('getInstances():', r?.getInstances());
+        };
 
-            // Initialize Example 3 - Hybrid static + dynamic search
-            const hybridElement = document.getElementById('hybrid-example');
-            if (hybridElement) {
-                // 5 popular fruits shown initially
-                const popularFruits = [
-                    { id: 1, name: 'Apple', emoji: '🍎' },
-                    { id: 2, name: 'Banana', emoji: '🍌' },
-                    { id: 3, name: 'Orange', emoji: '🍊' },
-                    { id: 4, name: 'Strawberry', emoji: '🍓' },
-                    { id: 5, name: 'Watermelon', emoji: '🍉' }
-                ];
+        // Track category levels we set so the panel can reflect them (the bundle
+        // has no getter for effective level, so we mirror what we set here).
+        window.__catLevel = {};
+        window.onlyCategory = (cat) => {
+            const r = reg();
+            r.logging.disableLogging();
+            r.logging.setCategoryLevel(cat, 'debug');
+            const cats = r.logging.getCategories();
+            window.__catLevel = {};
+            for (const c of cats) window.__catLevel[c] = 'silent';
+            const full = cats.find((c) => c.endsWith(':' + cat)) ?? cat;
+            window.__catLevel[full] = 'debug';
+            console.log(`%c▶ only ${cat} → debug`, 'color:#8b5cf6;font-weight:bold;');
+            refreshRegistry();
+        };
+        // Mirror the bulk controls too.
+        const origReg = reg;
+        const wrapLevels = () => {
+            const r = origReg(); if (!r?.logging) return;
+            const l = r.logging;
+            const cats = l.getCategories();
+            const _enable = l.enableLogging.bind(l), _disable = l.disableLogging.bind(l), _set = l.setLogLevel.bind(l);
+            l.enableLogging = (lvl = 'debug') => { _enable(lvl); cats.forEach((c) => (window.__catLevel[c] = lvl)); refreshRegistry(); };
+            l.disableLogging = () => { _disable(); cats.forEach((c) => (window.__catLevel[c] = 'silent')); refreshRegistry(); };
+            l.setLogLevel = (lvl) => { _set(lvl); cats.forEach((c) => (window.__catLevel[c] = lvl)); refreshRegistry(); };
+        };
 
-                // Helper function to normalize names for searching
-                const normalizeForSearch = (text) => {
-                    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-                };
+        // ── 3. live instances ────────────────────────────────────────────────
+        let dynN = 0;
+        window.addPicker = () => {
+            const host = document.getElementById('dynamic-hosts');
+            const wrap = document.createElement('div');
+            wrap.className = 'form-group';
+            const label = document.createElement('label');
+            label.textContent = `Dynamic picker #${++dynN}`;
+            const el = document.createElement('web-multiselect');
+            el.id = `dyn-${dynN}`;
+            el.setAttribute('is-multiple-enabled', 'true');
+            el.setAttribute('search-placeholder', 'Search fruits...');
+            wrap.append(label, el);
+            host.appendChild(wrap);
+            fruitCfg(el); // connectedCallback already fired on append
+            console.log(`%c＋ connected ${el.id} — getInstances(): ${reg().getInstances().length}`, 'color:#10b981;font-weight:bold;');
+            refreshRegistry();
+        };
+        window.removePicker = () => {
+            const host = document.getElementById('dynamic-hosts');
+            const last = host.lastElementChild;
+            if (!last) return;
+            const id = last.querySelector('web-multiselect')?.id;
+            host.removeChild(last);
+            console.log(`%c－ disconnected ${id} — getInstances(): ${reg().getInstances().length}`, 'color:#ef4444;font-weight:bold;');
+            refreshRegistry();
+        };
+        window.logAllSelections = () => {
+            const rows = reg().getInstances().map((el) => ({ id: el.id, selected: el.getSelected().map((o) => o.name ?? o.value ?? o) }));
+            console.log('%c🗂 selections across all live instances', 'color:#3b82f6;font-weight:bold;');
+            console.table(rows);
+        };
 
-                // "Database" with all fruits for search (including accented names)
-                const allFruitsRaw = [
-                    ...popularFruits,
-                    { id: 6, name: 'Cherry', emoji: '🍒' },
-                    { id: 7, name: 'Grape', emoji: '🍇' },
-                    { id: 8, name: 'Lemon', emoji: '🍋' },
-                    { id: 9, name: 'Peach', emoji: '🍑' },
-                    { id: 10, name: 'Pear', emoji: '🍐' },
-                    { id: 11, name: 'Pineapple', emoji: '🍍' },
-                    { id: 12, name: 'Mango', emoji: '🥭' },
-                    { id: 13, name: 'Kiwi', emoji: '🥝' },
-                    { id: 14, name: 'Coconut', emoji: '🥥' },
-                    { id: 15, name: 'Avocado', emoji: '🥑' },
-                    { id: 16, name: 'Açaí', emoji: '🫐' },
-                    { id: 17, name: 'Açerola', emoji: '🍒' },
-                    { id: 18, name: 'Papaya', emoji: '🟠' }
-                ];
+        // ── boot ─────────────────────────────────────────────────────────────
+        customElements.whenDefined(TAG).then(() => {
+            wrapLevels();
 
-                // Add normalized search values to all fruits
-                const allFruits = allFruitsRaw.map(fruit => ({
-                    ...fruit,
-                    searchValue: normalizeForSearch(fruit.name)
-                }));
+            fruitCfg(document.getElementById('fruits'));
 
-                // Log the database contents
-                console.log('%c📊 Example 3: Fruit Database Contents', 'color: #3b82f6; font-size: 1.2rem; font-weight: bold;');
-                console.log('%cPopular fruits (shown initially):', 'color: #10b981; font-weight: bold;');
-                console.table(popularFruits);
-                console.log('%cAll fruits (searchable via database):', 'color: #10b981; font-weight: bold;');
-                console.table(allFruits);
+            const colorsEl = document.getElementById('colors');
+            colorsEl.options = colors;
+            colorsEl.getValueCallback = (i) => i.id;
+            colorsEl.getDisplayValueCallback = (i) => i.name;
+            colorsEl.getSubtitleCallback = (i) => i.hex;
+            colorsEl.searchCallback = async (term) => {
+                await new Promise((r) => setTimeout(r, 300));
+                if (!term) return colors;
+                const q = term.toLowerCase();
+                return colors.filter((c) => c.name.toLowerCase().includes(q) || c.hex.includes(q));
+            };
 
-                // Set initial popular fruits
-                hybridElement.options = popularFruits;
-                hybridElement.getValueCallback = (item) => item.id;
-                hybridElement.getDisplayValueCallback = (item) => `${item.emoji} ${item.name}`;
+            // Start silent (production default), then paint the panel.
+            reg().logging.disableLogging();
+            refreshRegistry();
 
-                // beforeSearchCallback: Remove accents and validate
-                hybridElement.beforeSearchCallback = (searchTerm) => {
-                    // Remove accents (e.g., café → cafe)
-                    const normalized = searchTerm.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-
-                    // If different, log the transformation
-                    if (normalized !== searchTerm) {
-                        console.log(`%c🔄 beforeSearchCallback: "${searchTerm}" → "${normalized}"`,
-                            'color: #8b5cf6; font-weight: bold;');
-                    }
-
-                    return normalized;
-                };
-
-                // searchCallback: Simulate database search
-                hybridElement.searchCallback = async (searchTerm) => {
-                    console.log(`%c🔍 Searching database for: "${searchTerm}"`,
-                        'color: #3b82f6; font-weight: bold;');
-
-                    // Simulate network delay
-                    await new Promise(resolve => setTimeout(resolve, 500));
-
-                    // Search in "database" using normalized searchValue field
-                    const lowerSearch = searchTerm.toLowerCase();
-                    console.log(`%c   Searching for "${lowerSearch}" in searchValues:`, 'color: #6b7280;',
-                        allFruits.map(f => `${f.name} (${f.searchValue})`));
-
-                    const results = allFruits.filter(fruit => {
-                        const matches = fruit.searchValue.includes(lowerSearch);
-                        if (matches) {
-                            console.log(`%c   ✓ Match: "${fruit.name}" (searchValue: "${fruit.searchValue}")`, 'color: #10b981;');
-                        }
-                        return matches;
-                    });
-
-                    console.log(`%c✅ Database returned ${results.length} results`,
-                        'color: #10b981; font-weight: bold;', results);
-
-                    return results;
-                };
-            }
+            console.log('%c🌐 window.components demo ready', 'color:#3b82f6;font-size:1.3rem;font-weight:bold;');
+            console.log('Try: %cwindow.components[\'web-multiselect\']', 'font-family:monospace;background:#eef;padding:2px 4px;');
         });
 
-        // Make logging functions globally available
-        window.enableAllLogging = () => {
-            enableLogging();
-            console.log('%c✅ All logging enabled at DEBUG level', 'color: #10b981; font-weight: bold;');
-        };
-
-        window.disableAllLogging = () => {
-            disableLogging();
-            console.log('%c❌ All logging disabled', 'color: #ef4444; font-weight: bold;');
-        };
-
-        window.setInfoLevel = () => {
-            setLogLevel('info');
-            console.log('%cℹ️ Log level set to INFO', 'color: #3b82f6; font-weight: bold;');
-        };
-
-        window.enableInitLogging = () => {
-            disableLogging();
-            setCategoryLevel('INIT', 'debug');
-            console.log('%c🚀 INIT logging enabled', 'color: #8b5cf6; font-weight: bold;');
-        };
-
-        window.enableDataLogging = () => {
-            disableLogging();
-            setCategoryLevel('DATA', 'debug');
-            console.log('%c📦 DATA logging enabled', 'color: #8b5cf6; font-weight: bold;');
-        };
-
-        window.enableUILogging = () => {
-            disableLogging();
-            setCategoryLevel('UI', 'debug');
-            console.log('%c🎨 UI logging enabled', 'color: #8b5cf6; font-weight: bold;');
-        };
-
-        window.enableInteractionLogging = () => {
-            disableLogging();
-            setCategoryLevel('INTERACTION', 'debug');
-            console.log('%c👆 INTERACTION logging enabled', 'color: #8b5cf6; font-weight: bold;');
-        };
-
-        console.log('%c📊 MultiSelect Logging Examples', 'color: #3b82f6; font-size: 1.5rem; font-weight: bold;');
-        console.log('%cBy default, logging is DISABLED. Use the buttons above to enable specific categories.', 'color: #6b7280;');
+        // Keep the instance list honest even if instances change outside our buttons.
+        setInterval(() => refreshRegistry(), 2000);
     </script>
 </body>
 </html>
