@@ -1,6 +1,6 @@
 # web-multiselect → core migration — status
 
-_Snapshot: 2026-08-01 (demo sweep completed)_
+_Snapshot: 2026-08-02 (v2.0.0 promoted; cold review + core enrichments done)_
 
 ## Summary
 
@@ -67,20 +67,66 @@ Verification after the fixes: **94 unit + 206 e2e + typecheck + build** all pass
 (e2e +1: a new regression guard asserting a `transform` ancestor anchors without
 warning — confirmed to fail without the fix).
 
+## Docs re-check + v2.0.0 promotion — DONE ✅ (commit `d10f554`)
+
+All of `docs/*` re-checked against the v2 API. Stale v1 API corrected in
+`usage.md`, `examples.md`, and `api-reference.html`:
+
+- `onSearch` → `searchCallback` (canonical name; `(searchTerm, signal)` sig — the
+  property never existed as `onSearch`).
+- `on*` handler signatures → `(e: CustomEvent) => void` (read `e.detail.*`); the
+  api-reference table still showed the v1 bare-arg forms.
+- `setAttributes()` — was documented as raw kebab attribute strings with
+  `setAttribute` semantics; actually takes **typed property values** by
+  `configKey`/attribute (routed through the property path). Fixed in both docs.
+- Added a `usage.md` note on the async property-write model (`await whenSettled()`
+  before reading rendered DOM; imperative methods flush internally).
+- `api-reference.html` methods table rounded out with `getValue` + `setAttributes`.
+
+Also recorded in the CHANGELOG under `[2.0.0]`: the false-positive
+positioning-drift fix (from `5d1b85d`) and the doc corrections.
+
+Version promoted: `package.json` + README + CHANGELOG heading `2.0.0-rc01` →
+`2.0.0` (dated 2026-08-02). `dist/` rebuilt (embeds `__VERSION__ = 2.0.0`).
+94 unit tests pass; build clean.
+
+## Cold core-conformance review + enrichments — DONE ✅
+
+A fresh "did we shortcut around core?" review (see the `web-multiselect-v2-core-review`
+memory) found the migration is a clean adopter — but flagged one rule-bend and a
+set of generic capabilities that had been solved in the component instead of core.
+All addressed:
+
+| Fix | Repo / commit | What |
+|---|---|---|
+| `data-options` was hand-parsed, non-reactive | ms `f21ca88` | now the `options` input's reactive, validated attribute path |
+| direct `@floating-ui/dom` dep (drift vs core) | core `e76fb3b`, ms `f21ca88` | core re-exports `platform`; component dropped its own pin |
+| `data-options-format` (json/csv/plain) + `data-options-splitter`/`-row-splitter` | ms `85ba4c3`, `e5572b9` | HTML-authoring formats via pure `parseOptionsData()` |
+| css-var lint was component-local | core `7619075`, ms `e2c927d` | promoted to core `lintCssVars` (pure/bundler-agnostic) |
+| `createPopover` under-powered | core `ca7ef8c` | forwards `platform`/`beforeCompute`/`flip`/`shift`/`freeze` |
+| fixed-CB heuristic + drift diagnostic component-local | core `f36f72a`, ms `8055d6b` | moved to core `getFixedPositionOffsetParent` / `detectFixedDrift` |
+
+Verification after all of the above: **core 177 + component 119 unit + 206 e2e +
+builds** all green.
+
+Remaining review minors (not done, low priority): `setSelected({ notify })` →
+`shouldNotify`; component `test/unit/*` don't use the core `/testing` subpath (so
+the `select`/`deselect`/`change` event surface is untested at the DOM level).
+
 ## What's NOT done
 
-1. **Still an rc** — no final `2.0.0` tag. `docs/usage.md` has had its `on*`
-   section corrected, but the rest of `docs/*` is not yet re-checked against the
-   v2 API.
-2. **The sweep is console-level + a screenshot glance.** It catches thrown
+1. **Not yet published / tagged, and nothing is pushed.** `package.json` is at
+   `2.0.0` but `npm publish` + a `v2.0.0` tag haven't run. Local, unpushed:
+   web-multiselect `main` (release `d10f554` → `8055d6b`); core `prod` (the six
+   enrichment/changelog commits). Push when ready.
+2. **The demo sweep was console-level + a screenshot glance.** It catches thrown
    errors, warnings and gross layout breakage, not subtle visual regressions on
    the pages' non-default states (themes were eyeballed; per-page interactive
    toggles largely were not).
 
 ## Recommended next steps
 
-1. Re-check the rest of `docs/*` against the v2 API (the `on*` signature change
-   is the one most likely to be stale elsewhere), then promote rc01 → `2.0.0`.
+1. Push `main`, tag `v2.0.0`, and `npm publish` when you're ready to ship.
 
 ## Gotchas worth remembering
 
