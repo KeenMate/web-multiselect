@@ -113,8 +113,9 @@
             const tracker = document.getElementById('tracker');
             window.__trackerSelected = [];
             window.__trackerDeselected = [];
-            tracker.onSelect = (item) => { window.__trackerSelected.push(item.value); };
-            tracker.onDeselect = (item) => { window.__trackerDeselected.push(item.value); };
+            // The on* properties are real listeners — each receives the CustomEvent.
+            tracker.onSelect = (e) => { window.__trackerSelected.push(e.detail.option.value); };
+            tracker.onDeselect = (e) => { window.__trackerDeselected.push(e.detail.option.value); };
             tracker.actionButtons = [
                 { action: 'select-all', text: 'Select all' },
                 { action: 'clear-all',  text: 'Clear all'  }

@@ -175,17 +175,19 @@ multiselect.beforeDeselectCallback = (option, selectedOptions) => {
   if (option.value === 'item1') return false;
 };
 
-// Event callbacks
-multiselect.onSelect = (option) => {
-  console.log('Selected:', option);
+// Event handler properties. Since v2 these are real listeners: each receives
+// the same CustomEvent addEventListener('select', ...) would get, so read the
+// payload off `e.detail` — NOT as a bare argument.
+multiselect.onSelect = (e) => {
+  console.log('Selected:', e.detail.option);
 };
 
-multiselect.onDeselect = (option) => {
-  console.log('Deselected:', option);
+multiselect.onDeselect = (e) => {
+  console.log('Deselected:', e.detail.option);
 };
 
-multiselect.onChange = (selectedOptions) => {
-  console.log('Changed:', selectedOptions);
+multiselect.onChange = (e) => {
+  console.log('Changed:', e.detail.selectedOptions, e.detail.selectedValues);
 };
 
 // Badge display customization (show different text in badges vs dropdown)

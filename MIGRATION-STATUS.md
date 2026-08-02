@@ -1,15 +1,17 @@
 # web-multiselect → core migration — status
 
-_Snapshot: 2026-08-01_
+_Snapshot: 2026-08-01 (demo sweep completed)_
 
 ## Summary
 
 The **v2.0.0-rc01 core adoption** is complete, green, and shippable as an rc.
-Remaining work is polish/confidence: finish sweeping the demo pages, push the
-trailing commits, and eventually promote rc01 → 2.0.0.
+The demo-page sweep is now finished; remaining work is re-checking `docs/*`
+against the v2 API and promoting rc01 → 2.0.0.
 
-- Verification (current): **94 unit + 205 e2e (chromium) + typecheck + build** all pass.
+- Verification (current): **94 unit + 206 e2e (chromium) + typecheck + build** all pass.
 - `dist/` rebuilt (gitignored; demos load `dist/`, so rebuild before eyeballing a demo).
+- Both repos were level with `origin/prod` at the start of this session; the
+  sweep's fixes are **uncommitted** in the web-multiselect working tree.
 
 ## The migration itself — DONE ✅
 
@@ -25,7 +27,7 @@ consumed via `file:../web-components-core` → its built `dist/`. Replaced:
 
 The dropdown engine (`multiselect.ts`), CSS, tree, and virtual scroll are unchanged.
 
-## This session — demo-sweep bug hunt (6 issues fixed)
+## Earlier demo-sweep bug hunt — first 4 pages (6 issues fixed)
 
 | Commit | Fix | Kind |
 |---|---|---|
@@ -40,25 +42,45 @@ The dropdown engine (`multiselect.ts`), CSS, tree, and virtual scroll are unchan
 **Core:** `1452d64` added `BlissElement.flush()` (synchronous pending-write flush)
 to support the first fix.
 
+## Demo sweep — COMPLETE ✅
+
+All ~15 demo pages have now been swept (the remaining 11: action-buttons,
+base-variables, events-callbacks, new-api, performance, positioning,
+search-index, sizes, theming, tree, index). Method: load each page in chromium,
+exercise every `<web-multiselect>` on it (open → search → select → close), and
+fail on uncaught page errors, `console.error`/`warn`, or failed requests. 173
+component instances exercised; **15/15 pages now console-clean**.
+
+Two issues found and fixed (uncommitted, in the working tree):
+
+| Fix | Kind |
+|---|---|
+| `examples-events-callbacks.html` used the **v1 bare-arg `on*` signature** — `onChange` threw `selectedOptions.map is not a function`, `onSelect`/`onDeselect` silently logged `undefined`. Live code + shown sample updated to `e.detail.*`. | real demo bug (stale v1 API) |
+| **False-positive drift warning**: `verifyPanelLanded` compared floating-ui's written `left`/`top` against a *viewport* rect. When a recognized ancestor (`transform`/`filter`/…) anchors the panel, those coords are relative to that ancestor's padding box — so a correctly-placed dropdown was reported as drifting by exactly the ancestor's offset, telling consumers to "fix" working CSS. Now translated into viewport space. | real library bug |
+
+Same stale-`on*` pattern also fixed in `docs/usage.md` and in the
+`test/action-buttons.html` e2e fixture — where the spec asserted only
+`toHaveLength(8)`, so it passed on 8 `undefined`s. That assertion now checks the
+actual values, so a stale handler signature can't hide there again.
+
+Verification after the fixes: **94 unit + 206 e2e + typecheck + build** all pass
+(e2e +1: a new regression guard asserting a `transform` ancestor anchors without
+warning — confirmed to fail without the fix).
+
 ## What's NOT done
 
-1. **Demo sweep incomplete** — swept 4 of ~15 pages (classic, templating,
-   tooltips, logging). Untouched: action-buttons, base-variables,
-   events-callbacks, new-api, performance, positioning, search-index, sizes,
-   theming, tree, index. Each could hide bugs like those above.
-2. **Unpushed commits:**
-   - web-multiselect: `d318a6c` (logging demo rework) — 1 ahead of `origin/prod`.
-     (The other 6 session fixes already show as on `origin/prod`.)
-   - core: 3 ahead of `origin/prod` — `flush` (`1452d64`), plus earlier
-     `positioning` (`9a5e4a8`) and `cem` (`301ea15`).
-3. **Still an rc** — no final `2.0.0` tag; `docs/usage.md` etc. not yet
-   re-checked against the v2 API.
+1. **Still an rc** — no final `2.0.0` tag. `docs/usage.md` has had its `on*`
+   section corrected, but the rest of `docs/*` is not yet re-checked against the
+   v2 API.
+2. **The sweep is console-level + a screenshot glance.** It catches thrown
+   errors, warnings and gross layout breakage, not subtle visual regressions on
+   the pages' non-default states (themes were eyeballed; per-page interactive
+   toggles largely were not).
 
 ## Recommended next steps
 
-1. Finish the demo-page sweep (highest bug yield so far).
-2. Push the trailing commits (web-multiselect `d318a6c`; core `1452d64`).
-3. Re-check `docs/*` against the v2 API, then promote rc01 → `2.0.0`.
+1. Re-check the rest of `docs/*` against the v2 API (the `on*` signature change
+   is the one most likely to be stale elsewhere), then promote rc01 → `2.0.0`.
 
 ## Gotchas worth remembering
 

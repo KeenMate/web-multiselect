@@ -195,6 +195,32 @@ test.describe('anchor stability', () => {
     });
 });
 
+test.describe('containing-block drift detection', () => {
+    // Regression: the drift check compared floating-ui's written left/top against a
+    // VIEWPORT rect. When an ancestor the heuristic recognizes (transform/filter/…)
+    // anchors the panel, those coordinates are relative to that ancestor's padding
+    // box, so the check measured the ancestor's own offset and warned that a
+    // perfectly-placed dropdown had "drifted" — telling consumers to fix working CSS.
+    test('a transform ancestor anchors the panel without a false drift warning', async ({ page }) => {
+        const warnings: string[] = [];
+        page.on('console', (m) => {
+            if (m.text().includes('away from where the library positioned it')) warnings.push(m.text());
+        });
+        await page.goto(PAGE); // re-navigate so the listener sees load-time warnings too
+
+        const p = picker(page, 'transform-anchored');
+        const dropdown = await openDropdown(p);
+
+        // The panel really is where it belongs: left-aligned with the input, just below it.
+        const inputBox = (await p.locator('.ms__input').boundingBox())!;
+        const dropBox = (await dropdown.boundingBox())!;
+        expect(Math.abs(dropBox.x - inputBox.x)).toBeLessThan(2);
+        expect(dropBox.y - (inputBox.y + inputBox.height)).toBeLessThan(12);
+
+        expect(warnings, 'drift warning fired for a correctly-anchored panel').toEqual([]);
+    });
+});
+
 test.describe('outside-click behavior', () => {
     test('clicking outside closes the dropdown', async ({ page }) => {
         const p = picker(page, 'outside-click');

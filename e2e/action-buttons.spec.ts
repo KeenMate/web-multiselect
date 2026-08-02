@@ -89,7 +89,11 @@ test.describe('per-item callbacks fire on bulk operations', () => {
         await p.locator('.ms__action-btn[data-action="select-all"]').click();
 
         const selected = await page.evaluate(() => (window as any).__trackerSelected);
-        expect(selected).toHaveLength(8);
+        // Assert the payload, not just the fire count — a length-only check passes
+        // on 8 `undefined`s, which is exactly how a stale handler signature hides.
+        expect([...selected].sort()).toEqual(
+            Array.from({ length: 8 }, (_, i) => `item-${i}`).sort()
+        );
     });
 
     test('clear-all fires onDeselect once per removed item', async ({ page }) => {
@@ -102,6 +106,8 @@ test.describe('per-item callbacks fire on bulk operations', () => {
         await p.locator('.ms__action-btn[data-action="clear-all"]').click();
 
         const deselected = await page.evaluate(() => (window as any).__trackerDeselected);
-        expect(deselected).toHaveLength(8);
+        expect([...deselected].sort()).toEqual(
+            Array.from({ length: 8 }, (_, i) => `item-${i}`).sort()
+        );
     });
 });

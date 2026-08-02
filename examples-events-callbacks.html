@@ -68,10 +68,11 @@
 
             <details style="margin-top: 1rem;">
                 <summary>Show code</summary>
-<pre><code>// Property handlers (the on* form) — return value ignored
-el.onSelect   = (option)          =&gt; log('prop', 'onSelect', option.label);
-el.onDeselect = (option)          =&gt; log('prop', 'onDeselect', option.label);
-el.onChange   = (selectedOptions) =&gt; log('prop', 'onChange', selectedOptions.map(o =&gt; o.value));
+<pre><code>// Property handlers (the on* form) — real listeners, so each receives
+// the SAME CustomEvent addEventListener would get (v2 change).
+el.onSelect   = (e) =&gt; log('prop', 'onSelect', e.detail.option.label);
+el.onDeselect = (e) =&gt; log('prop', 'onDeselect', e.detail.option.label);
+el.onChange   = (e) =&gt; log('prop', 'onChange', e.detail.selectedOptions.map(o =&gt; o.value));
 
 // The very same notifications as bubbling DOM events
 el.addEventListener('change', (e) =&gt; {
@@ -203,10 +204,10 @@ el.setSelected(['lead']);    // pre-select (bypasses the veto)</code></pre>
             const eventsLog = logger(document.getElementById('events-log'));
             eventsSelect.options = skills;
 
-            eventsSelect.onSelect   = (option) => eventsLog('tag-prop', '[prop] onSelect', option.label);
-            eventsSelect.onDeselect = (option) => eventsLog('tag-prop', '[prop] onDeselect', option.label);
-            eventsSelect.onChange   = (selectedOptions) =>
-                eventsLog('tag-prop', '[prop] onChange', JSON.stringify(selectedOptions.map(o => o.value)));
+            eventsSelect.onSelect   = (e) => eventsLog('tag-prop', '[prop] onSelect', e.detail.option.label);
+            eventsSelect.onDeselect = (e) => eventsLog('tag-prop', '[prop] onDeselect', e.detail.option.label);
+            eventsSelect.onChange   = (e) =>
+                eventsLog('tag-prop', '[prop] onChange', JSON.stringify(e.detail.selectedOptions.map(o => o.value)));
             eventsSelect.addEventListener('change', (e) =>
                 eventsLog('tag-event', '[event] change', JSON.stringify(e.detail.selectedValues)));
 
@@ -232,7 +233,7 @@ el.setSelected(['lead']);    // pre-select (bypasses the veto)</code></pre>
                 }
                 // allow
             };
-            exclusiveSelect.onSelect = (option) => exclusiveLog('tag-ok', '[allowed] onSelect', option.label);
+            exclusiveSelect.onSelect = (e) => exclusiveLog('tag-ok', '[allowed] onSelect', e.detail.option.label);
 
             // --- 3. beforeDeselectCallback (required item) ------------
             const team = [
@@ -251,7 +252,7 @@ el.setSelected(['lead']);    // pre-select (bypasses the veto)</code></pre>
                     return false;
                 }
             };
-            requiredSelect.onDeselect = (option) => requiredLog('tag-ok', '[removed] onDeselect', option.label);
+            requiredSelect.onDeselect = (e) => requiredLog('tag-ok', '[removed] onDeselect', e.detail.option.label);
             requiredSelect.setSelected(['lead']); // pre-select; bypasses the veto
         });
     </script>

@@ -2358,9 +2358,16 @@ export class WebMultiSelect<T = any> {
         // The `verifyPanelLanded` check below catches the inverse edge case — if a consumer's
         // ancestor genuinely anchors fixed (browser-side) but we returned `window`, the panel
         // would drift, and we surface a console.warn pointing at the likely culprit.
+        //
+        // Remember what the heuristic resolved on the latest pass. When it returns an
+        // Element, Floating UI's coordinates are relative to THAT element's padding box
+        // rather than the viewport, and the drift check has to compare in the same space
+        // (see verifyPanelLanded) — otherwise it measures the ancestor's own offset and
+        // cries wolf on a correctly-placed panel.
+        let resolvedOffsetParent: Element | Window = window;
         const customPlatform = {
             ...platform,
-            getOffsetParent: () => getFixedPositionOffsetParent(this.input)
+            getOffsetParent: () => (resolvedOffsetParent = getFixedPositionOffsetParent(this.input))
         };
 
         const locked = opts.isLocked?.() ?? true;
@@ -2396,7 +2403,7 @@ export class WebMultiSelect<T = any> {
                 // anchor() has written left/top to the panel style; read them back for the drift check.
                 const x = parseFloat(panel.style.left) || 0;
                 const y = parseFloat(panel.style.top) || 0;
-                this.verifyPanelLanded(panel, x, y);
+                this.verifyPanelLanded(panel, x, y, resolvedOffsetParent);
                 opts.afterPosition?.();
             }
         });
@@ -2405,22 +2412,47 @@ export class WebMultiSelect<T = any> {
     }
 
     /**
-     * Sanity-check that the browser placed the panel where we told it to. With `position: fixed`
-     * and no transformed/perspective/filter ancestor, `left: ${x}px` must render at viewport-x = x.
-     * If the rendered position drifts, the consumer has an ancestor that establishes a fixed
-     * containing block but isn't on our reliable-anchors list (likely `contain: paint|layout|strict`
+     * Sanity-check that the browser placed the panel where we told it to. If the rendered
+     * position drifts, the consumer has an ancestor that establishes a fixed containing
+     * block but isn't on our reliable-anchors list (likely `contain: paint|layout|strict`
      * or `container-type` — which the spec says creates a CB but the browser's actual behavior
      * varies across shadow-DOM scenarios). We can't fix it from inside the library, but we can
      * surface a clear warning so the developer knows where to look.
      *
+     * The written `left`/`top` are relative to the panel's containing block, which is the
+     * viewport ONLY when `getFixedPositionOffsetParent` found no anchoring ancestor. When it
+     * did find one, those coordinates are relative to that ancestor's PADDING box, so the
+     * expectation must be translated into viewport space before comparing — otherwise this
+     * check reports the ancestor's own offset as drift and warns about a perfectly placed
+     * panel (e.g. any `transform: translateZ(0)` wrapper).
+     *
      * Fires at most once per multiselect instance to avoid flooding the console during autoUpdate.
      */
-    private verifyPanelLanded(panel: HTMLElement, expectedX: number, expectedY: number): void {
+    private verifyPanelLanded(
+        panel: HTMLElement,
+        expectedX: number,
+        expectedY: number,
+        offsetParent: Element | Window = window
+    ): void {
         if (this.positioningDriftWarned) return;
+
+        // Translate the expectation into viewport space when the panel is anchored to an
+        // ancestor rather than the viewport.
+        let originX = 0;
+        let originY = 0;
+        if (offsetParent instanceof Element) {
+            const cbRect = offsetParent.getBoundingClientRect();
+            const cbStyle = getComputedStyle(offsetParent);
+            originX = cbRect.x + (parseFloat(cbStyle.borderLeftWidth) || 0);
+            originY = cbRect.y + (parseFloat(cbStyle.borderTopWidth) || 0);
+        }
+
         const rect = panel.getBoundingClientRect();
-        const driftX = rect.x - expectedX;
-        const driftY = rect.y - expectedY;
-        if (Math.abs(driftX) < 1 && Math.abs(driftY) < 1) return;
+        const driftX = rect.x - (originX + expectedX);
+        const driftY = rect.y - (originY + expectedY);
+        // 1.5px tolerance: sub-pixel layout rounding, more forgiving than the old 1px now
+        // that two rects (panel + containing block) contribute rounding error.
+        if (Math.abs(driftX) < 1.5 && Math.abs(driftY) < 1.5) return;
 
         this.positioningDriftWarned = true;
         const culprit = findDriftCulprit(this.input, driftX, driftY);

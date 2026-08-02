@@ -21,6 +21,9 @@
             padding: 12px;
         }
         .anchor-scroll .spacer { height: 800px; }
+        /* Establishes a fixed-positioning containing block the library DOES recognize,
+           so floating-ui writes ancestor-relative coordinates. */
+        .cb-transform { transform: translateZ(0); }
     </style>
 </head>
 <body>
@@ -63,6 +66,13 @@
         <web-multiselect id="outside-click" value-member="value" display-value-member="label"></web-multiselect>
     </div>
 
+    <div class="fixture">
+        <div class="fixture-label">transform ancestor — anchors correctly, must NOT warn about drift</div>
+        <div class="cb-transform">
+            <web-multiselect id="transform-anchored" value-member="value" display-value-member="label"></web-multiselect>
+        </div>
+    </div>
+
     <!-- Bottom-pinned picker to force flip-above. Outside the .fixture flow. -->
     <div id="bottom-fixture" class="bottom-pinned">
         <div class="fixture-label">bottom-pinned — should flip above</div>
@@ -80,7 +90,7 @@
         ];
 
         customElements.whenDefined('web-multiselect').then(() => {
-            for (const id of ['default-below', 'min-width', 'max-width', 'panel-widths', 'anchor-picker', 'outside-click', 'flip-above']) {
+            for (const id of ['default-below', 'min-width', 'max-width', 'panel-widths', 'anchor-picker', 'outside-click', 'flip-above', 'transform-anchored']) {
                 document.getElementById(id).options = fruits;
             }
         });
