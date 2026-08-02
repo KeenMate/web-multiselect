@@ -3,11 +3,12 @@
  * Comprehensive multiselect component with rich content support and floating hints
  */
 
-// Positioning runs entirely on the core /positioning module — including
-// floating-ui's base `platform` object (re-exported by core), which we spread to
-// build the custom platform passed to `anchor`'s `platform` escape hatch below.
-// No direct `@floating-ui/dom` dependency: core owns the one pinned version.
-import { anchor, createTooltip, platform, getFixedPositionOffsetParent, detectFixedDrift, type Placement, type TooltipHandle } from '@keenmate/web-components-core/positioning';
+// Positioning runs entirely on the core /positioning module. The dropdown/popover
+// use `anchor`'s first-class `fixedContainingBlock` + `onDrift` options — core owns
+// the fixed-position containing-block heuristic and the drift measurement; this file
+// keeps only the multiselect-branded warning copy (see warnDrift). No direct
+// `@floating-ui/dom` dependency: core owns the one pinned version.
+import { anchor, createTooltip, type Placement, type TooltipHandle, type DriftReport } from '@keenmate/web-components-core/positioning';
 import type { MultiSelectConfig, BadgesPosition, SearchInputMode, SearchMode, OptionContentRenderContext, BadgeContentRenderContext } from './types';
 import { initLogger, dataLogger, uiLogger, interactionLogger } from './logger';
 import { VirtualScroll } from './virtual-scroll';
@@ -22,11 +23,6 @@ import {
     type CascadeIndex,
     type CascadeSelectPolicy
 } from './tree/cascade';
-
-// The fixed-positioning containing-block heuristic (getFixedPositionOffsetParent)
-// and the drift diagnostic (detectFixedDrift — measure + culprit + CSS) now live
-// in core's /positioning module, shared across all portaled components. This file
-// keeps only the multiselect-branded warning wiring (see verifyPanelLanded).
 
 export class WebMultiSelect<T = any> {
     private element: HTMLElement;
@@ -2266,33 +2262,6 @@ export class WebMultiSelect<T = any> {
         applyMaxWidth?: boolean;
         afterPosition?: () => void;
     }): () => void {
-        // Floating UI's default `getOffsetParent` walks ancestors looking for any element with
-        // a CB-establishing property, including `contain: layout|paint|strict|content` and
-        // `container-type: <non-normal>`. In some real-world shadow-DOM layouts (e.g. a
-        // <web-multiselect> nested under `.pa-layout__main { container-type: inline-size }`)
-        // the browser does NOT actually anchor the panel to that ancestor, and Floating UI's
-        // resulting coordinates end up offset by the ancestor's viewport-x.
-        //
-        // To match what the browser reliably does for `position: fixed`, this override
-        // narrows the heuristic to the properties that every browser definitively honors
-        // as a fixed-positioning CB: `transform`, `perspective`, `filter`, `backdrop-filter`,
-        // and qualifying `will-change`. For other CB-establishing properties (contain,
-        // container-type) we fall back to `window` and trust the browser's actual layout.
-        // The `verifyPanelLanded` check below catches the inverse edge case — if a consumer's
-        // ancestor genuinely anchors fixed (browser-side) but we returned `window`, the panel
-        // would drift, and we surface a console.warn pointing at the likely culprit.
-        //
-        // Remember what the heuristic resolved on the latest pass. When it returns an
-        // Element, Floating UI's coordinates are relative to THAT element's padding box
-        // rather than the viewport, and the drift check has to compare in the same space
-        // (see verifyPanelLanded) — otherwise it measures the ancestor's own offset and
-        // cries wolf on a correctly-placed panel.
-        let resolvedOffsetParent: Element | Window = window;
-        const customPlatform = {
-            ...platform,
-            getOffsetParent: () => (resolvedOffsetParent = getFixedPositionOffsetParent(this.input))
-        };
-
         const locked = opts.isLocked?.() ?? true;
 
         const handle = anchor(panel, this.input, {
@@ -2303,9 +2272,16 @@ export class WebMultiSelect<T = any> {
             // Locked → flip once to where it fits, then pin (core 'freeze'). Unlocked
             // → re-flip every frame (default flip:true, no lock).
             lockPlacement: locked ? 'freeze' : false,
-            // The custom platform narrows floating-ui's fixed-position containing-block
-            // heuristic for real-world shadow-DOM layouts (see getFixedPositionOffsetParent).
-            platform: customPlatform,
+            // Narrow floating-ui's fixed-position containing-block heuristic to what browsers
+            // reliably honour (transform/perspective/filter/backdrop-filter/will-change),
+            // resolved from the portaled panel — core builds the custom platform for us. The
+            // panel is appended to `container` (default document.body), so its containing block
+            // can differ from the input's; measuring from the panel is what the browser does.
+            // For other CB-establishing properties (contain, container-type) the browser keeps
+            // fixed elements viewport-anchored, so `onDrift` catches the inverse edge case and
+            // warns, pointing at the likely culprit.
+            fixedContainingBlock: true,
+            onDrift: (report) => this.warnDrift(report),
             beforeCompute: () => {
                 // Panel widths are CSS-variable driven (themeable at app level, overridable per
                 // instance via the dropdown-width / selected-popover-width attributes). The dropdown
@@ -2323,10 +2299,6 @@ export class WebMultiSelect<T = any> {
             onPlaced: (resolved) => {
                 // Record the placement once (the hint mirrors it); after freeze it never changes.
                 if (!opts.getPlacement()) opts.setPlacement(resolved);
-                // anchor() has written left/top to the panel style; read them back for the drift check.
-                const x = parseFloat(panel.style.left) || 0;
-                const y = parseFloat(panel.style.top) || 0;
-                this.verifyPanelLanded(panel, x, y, resolvedOffsetParent);
                 opts.afterPosition?.();
             }
         });
@@ -2335,25 +2307,15 @@ export class WebMultiSelect<T = any> {
     }
 
     /**
-     * Sanity-check that the browser placed the panel where we told it to, using core's
-     * `detectFixedDrift` (the measurement + culprit-finding + CB-CSS diagnostic). If the
-     * rendered position drifts, the consumer has an ancestor that establishes a fixed
-     * containing block but isn't on the reliable-anchors list (likely `contain:
-     * paint|layout|strict` or `container-type`). We can't fix it from inside the library,
-     * but we surface a clear, multiselect-branded warning pointing at the culprit.
-     *
-     * Fires at most once per instance to avoid flooding the console during autoUpdate.
+     * Surface a multiselect-branded, once-per-instance warning when core's drift check
+     * (`anchor`'s `onDrift`) reports the panel didn't land where it was positioned. The
+     * consumer has an ancestor that establishes a fixed containing block but isn't on the
+     * reliable-anchors list (likely `contain: paint|layout|strict` or `container-type`).
+     * We can't fix it from inside the library, but we point at the likely culprit. Core
+     * owns the measurement + culprit-finding + CB-CSS diagnostic (`detectFixedDrift`).
      */
-    private verifyPanelLanded(
-        panel: HTMLElement,
-        expectedX: number,
-        expectedY: number,
-        offsetParent: Element | Window = window
-    ): void {
+    private warnDrift(drift: DriftReport): void {
         if (this.positioningDriftWarned) return;
-        const drift = detectFixedDrift({ panel, reference: this.input, expectedX, expectedY, offsetParent });
-        if (!drift) return;
-
         this.positioningDriftWarned = true;
         console.warn(
             `[@keenmate/web-multiselect] Dropdown panel rendered ${drift.driftX.toFixed(0)}px / ${drift.driftY.toFixed(0)}px ` +

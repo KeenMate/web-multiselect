@@ -110,6 +110,28 @@ the custom-element plumbing that wrapped them is replaced by the shared core.
 
 ### Fixed
 
+- **Dropdown/popover no longer render off-screen when the trigger's own cell (or
+  the trigger) establishes a fixed containing block.** The custom positioning
+  platform resolved the offset parent from the *reference* (`this.input`) instead
+  of the *floating* panel. The panel is portaled to `document.body`, so when an
+  ancestor of the host establishes a fixed CB (e.g. `transform`) the input
+  resolved to that ancestor while the body-portaled panel is viewport-anchored —
+  and floating-ui then computed ancestor-relative coordinates that placed the
+  panel off-screen. Now resolves from the panel (core's `fixedContainingBlock`),
+  agreeing with the browser in both the portaled and in-shadow-tree cases.
+
+### Changed (positioning internals)
+
+- **Dropdown/popover positioning now uses core `anchor()`'s first-class
+  `fixedContainingBlock` + `onDrift` options** instead of a hand-built custom
+  platform and a local `verifyPanelLanded`/`detectFixedDrift` wiring. Behaviour is
+  identical (same narrowed fixed-CB heuristic, same once-per-instance branded
+  drift warning); the boilerplate — the spread platform, the `resolvedOffsetParent`
+  side-channel, and the `platform`/`getFixedPositionOffsetParent`/`detectFixedDrift`
+  imports — is gone. No consumer-facing change.
+
+### Fixed
+
 - **Option tooltips no longer trail the row when the list scrolls.** A shown
   option tooltip's floating-ui `autoUpdate` kept chasing its anchor row as the
   list scrolled — most visible under virtual scroll, where the row also recycles
