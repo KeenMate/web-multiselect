@@ -16,25 +16,51 @@ export interface ParsedOptions {
     error?: string;
 }
 
+export interface ParseOptionsOptions {
+    /** Field/cell delimiter for `csv` and `plain` (default `,`). Escapes `\t \n \r \\` are honoured. */
+    splitter?: string;
+    /** Row/record delimiter for `csv` and `plain` (default newline). Escapes honoured. */
+    rowSplitter?: string;
+}
+
+/** Default field and row delimiters (used by `csv` and `plain`; ignored by `json`). */
+export const DEFAULT_SPLITTER = ',';
+export const DEFAULT_ROW_SPLITTER = '\n';
+
 /**
  * Parse a `data-options` payload per `format`:
  *  - `json`  — a JSON array of option objects or `[value, label]` tuples.
- *  - `csv`   — first row is a header; each later row becomes an object keyed by
- *              the header cells (map columns via `*-member`). RFC-4180-ish quoting.
- *  - `plain` — comma/newline-separated bare values -> `[value, label]` tuples
- *              (value === label), so it renders with no member config.
+ *              (`splitter`/`rowSplitter` do not apply.)
+ *  - `csv`   — rows split on `rowSplitter`, cells on `splitter`; the first row is a
+ *              header and each later row becomes an object keyed by the header cells
+ *              (map columns via `*-member`). RFC-4180-ish quoting on the cell splitter.
+ *  - `plain` — bare values split on `splitter` and `rowSplitter` -> `[value, label]`
+ *              tuples (value === label), so it renders with no member config.
  */
-export function parseOptionsData(raw: string | null | undefined, format: OptionsFormat): ParsedOptions {
+export function parseOptionsData(
+    raw: string | null | undefined,
+    format: OptionsFormat,
+    opts: ParseOptionsOptions = {},
+): ParsedOptions {
     if (raw == null || raw.trim() === '') return { options: [] };
+    const splitter = interpretEscapes(opts.splitter ?? DEFAULT_SPLITTER) || DEFAULT_SPLITTER;
+    const rowSplitter = interpretEscapes(opts.rowSplitter ?? DEFAULT_ROW_SPLITTER) || DEFAULT_ROW_SPLITTER;
     switch (format) {
         case 'csv':
-            return parseCsv(raw);
+            return parseCsv(raw, splitter, rowSplitter);
         case 'plain':
-            return parsePlain(raw);
+            return parsePlain(raw, splitter, rowSplitter);
         case 'json':
         default:
             return parseJson(raw);
     }
+}
+
+/** Turn attribute-friendly escape sequences (`\t \n \r \\`) into their characters. */
+function interpretEscapes(s: string): string {
+    return s.replace(/\\[ntr\\]/g, (m) =>
+        m === '\\n' ? '\n' : m === '\\t' ? '\t' : m === '\\r' ? '\r' : '\\',
+    );
 }
 
 function parseJson(raw: string): ParsedOptions {
@@ -50,16 +76,17 @@ function parseJson(raw: string): ParsedOptions {
     return { options: parsed };
 }
 
-function parsePlain(raw: string): ParsedOptions {
+function parsePlain(raw: string, cellDelim: string, rowDelim: string): ParsedOptions {
     const tokens = raw
-        .split(/[\r\n,]+/)
+        .split(rowDelim)
+        .flatMap((row) => row.split(cellDelim))
         .map((t) => t.trim())
         .filter((t) => t.length > 0);
     return { options: tokens.map((t) => [t, t]) };
 }
 
-function parseCsv(raw: string): ParsedOptions {
-    const rows = tokenizeCsv(raw).filter((r) => !(r.length === 1 && r[0].trim() === ''));
+function parseCsv(raw: string, cellDelim: string, rowDelim: string): ParsedOptions {
+    const rows = tokenizeCsv(raw, cellDelim, rowDelim).filter((r) => !(r.length === 1 && r[0].trim() === ''));
     if (rows.length < 2) {
         return { options: [], error: 'data-options CSV needs a header row and at least one data row' };
     }
@@ -75,44 +102,51 @@ function parseCsv(raw: string): ParsedOptions {
 }
 
 /**
- * Minimal RFC-4180-ish CSV tokenizer: comma-separated cells, newline-separated
- * rows; a double-quoted field may contain commas and newlines, and `""` is an
- * escaped quote.
+ * Minimal RFC-4180-ish CSV tokenizer parameterized by the cell and row
+ * delimiters (both may be multi-character). A double-quoted field may contain
+ * either delimiter, `""` is an escaped quote, and a bare `\r` is tolerated so
+ * CRLF works whatever `rowDelim` is.
  */
-function tokenizeCsv(input: string): string[][] {
+function tokenizeCsv(input: string, cellDelim: string, rowDelim: string): string[][] {
     const rows: string[][] = [];
     let row: string[] = [];
     let cell = '';
     let inQuotes = false;
-    for (let i = 0; i < input.length; i++) {
+    for (let i = 0; i < input.length; ) {
         const ch = input[i];
         if (inQuotes) {
             if (ch === '"') {
                 if (input[i + 1] === '"') {
                     cell += '"';
-                    i++;
+                    i += 2;
                 } else {
                     inQuotes = false;
+                    i += 1;
                 }
             } else {
                 cell += ch;
+                i += 1;
             }
             continue;
         }
         if (ch === '"') {
             inQuotes = true;
-        } else if (ch === ',') {
+            i += 1;
+        } else if (cellDelim && input.startsWith(cellDelim, i)) {
             row.push(cell);
             cell = '';
-        } else if (ch === '\r') {
-            // ignore — handled by the \n branch
-        } else if (ch === '\n') {
+            i += cellDelim.length;
+        } else if (rowDelim && input.startsWith(rowDelim, i)) {
             row.push(cell);
             rows.push(row);
             row = [];
             cell = '';
+            i += rowDelim.length;
+        } else if (ch === '\r') {
+            i += 1; // tolerate CRLF regardless of rowDelim
         } else {
             cell += ch;
+            i += 1;
         }
     }
     row.push(cell);

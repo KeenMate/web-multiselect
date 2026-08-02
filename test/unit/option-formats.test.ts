@@ -76,6 +76,46 @@ describe('parseOptionsData — csv (first row header)', () => {
     });
 });
 
+describe('parseOptionsData — custom splitters', () => {
+    it('csv: uses a semicolon cell delimiter', () => {
+        const r = parseOptionsData('value;label\njs;JavaScript', 'csv', { splitter: ';' });
+        expect(r.options).toEqual([{ value: 'js', label: 'JavaScript' }]);
+    });
+
+    it('csv: uses a custom row delimiter for single-line data', () => {
+        const r = parseOptionsData('value,label;js,JavaScript;ts,TypeScript', 'csv', { rowSplitter: ';' });
+        expect(r.options).toEqual([
+            { value: 'js', label: 'JavaScript' },
+            { value: 'ts', label: 'TypeScript' },
+        ]);
+    });
+
+    it('csv: honours a \\t (TSV) escape in the splitter', () => {
+        const r = parseOptionsData('value\tlabel\njs\tJavaScript', 'csv', { splitter: '\\t' });
+        expect(r.options).toEqual([{ value: 'js', label: 'JavaScript' }]);
+    });
+
+    it('csv: quoting still protects the custom delimiter', () => {
+        const r = parseOptionsData('value;label\n1;"a;b"', 'csv', { splitter: ';' });
+        expect(r.options).toEqual([{ value: '1', label: 'a;b' }]);
+    });
+
+    it('plain: uses a pipe delimiter', () => {
+        const r = parseOptionsData('apple|banana|cherry', 'plain', { splitter: '|' });
+        expect(r.options).toEqual([['apple', 'apple'], ['banana', 'banana'], ['cherry', 'cherry']]);
+    });
+
+    it('json: ignores splitters', () => {
+        const r = parseOptionsData('[["a","A"]]', 'json', { splitter: ';', rowSplitter: '|' });
+        expect(r.options).toEqual([['a', 'A']]);
+    });
+
+    it('empty/whitespace splitter falls back to the default', () => {
+        const r = parseOptionsData('a,b,c', 'plain', { splitter: '' });
+        expect(r.options).toEqual([['a', 'a'], ['b', 'b'], ['c', 'c']]);
+    });
+});
+
 describe('parseOptionsData — plain', () => {
     it('splits comma-separated bare values into [value, label] tuples', () => {
         const r = parseOptionsData('apple,banana,cherry', 'plain');

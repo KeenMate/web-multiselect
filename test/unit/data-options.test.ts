@@ -61,6 +61,29 @@ describe('data-options — csv (first row header)', () => {
     });
 });
 
+describe('data-options — custom delimiters', () => {
+    it('csv honours data-options-splitter (semicolon) and data-options-row-splitter', async () => {
+        make({
+            'data-options': 'value;label|js;JavaScript|ts;TypeScript',
+            'data-options-format': 'csv',
+            'data-options-splitter': ';',
+            'data-options-row-splitter': '|',
+        });
+        await el.whenSettled();
+        expect(placeholder()).toBe('Search...');
+        el.setSelected(['ts']);
+        expect(el.getSelected()[0].label).toBe('TypeScript');
+    });
+
+    it('plain honours a pipe data-options-splitter', async () => {
+        make({ 'data-options': 'apple|banana', 'data-options-format': 'plain', 'data-options-splitter': '|', 'no-data-placeholder': 'Empty' });
+        await el.whenSettled();
+        expect(placeholder()).toBe('Search...');
+        el.setSelected(['banana']);
+        expect(el.getValue()).toEqual(['banana']);
+    });
+});
+
 describe('data-options — plain', () => {
     it('parses comma/newline bare values into selectable value=label options', async () => {
         make({ 'data-options': 'apple,banana,cherry', 'data-options-format': 'plain', 'no-data-placeholder': 'Empty' });

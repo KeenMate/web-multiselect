@@ -19,11 +19,14 @@ the custom-element plumbing that wrapped them is replaced by the shared core.
   `data-options-format` attribute (default `json`): `json` (a JSON array of
   objects or `[value, label]` tuples), `csv` (first row is a header; each row
   becomes an object keyed by the header cells — map columns via `*-member`), and
-  `plain` (comma/newline-separated bare values → `value=label` tuples, no member
-  config). Parsing is a pure, unit-tested `parseOptionsData()` (also exported);
-  both attributes are reactive inputs, so changing *either* re-renders. Precedence
-  is unchanged: declarative `<option>` children > the `.options` property >
-  `data-options`.
+  `plain` (bare values → `value=label` tuples, no member config). The `csv` and
+  `plain` delimiters are configurable via `data-options-splitter` (field/cell,
+  default `,`) and `data-options-row-splitter` (row/record, default newline) —
+  both honour `\t` `\n` `\r` escapes so a tab (TSV) or custom separator is
+  expressible in an attribute. Parsing is a pure, unit-tested `parseOptionsData()`
+  (also exported); all of these are reactive inputs, so changing *any* of them
+  re-renders. Precedence is unchanged: declarative `<option>` children > the
+  `.options` property > `data-options`.
 
 - **Dev-mode lint for `customStylesCallback`.** When the callback sets a `--ms-*`
   variable that no web-multiselect style reads (a misspelled/renamed variable

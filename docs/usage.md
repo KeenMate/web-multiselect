@@ -55,7 +55,19 @@ in the `data-options` attribute and pick a format with `data-options-format`:
 
 <!-- plain: comma/newline-separated bare values (value === label), no member config -->
 <web-multiselect data-options-format="plain" data-options="Apple,Banana,Cherry"></web-multiselect>
+
+<!-- custom delimiters: semicolon cells, pipe rows (single-line csv) -->
+<web-multiselect
+  data-options-format="csv"
+  data-options-splitter=";" data-options-row-splitter="|"
+  value-member="value" display-value-member="label"
+  data-options="value;label|js;JavaScript|ts;TypeScript">
+</web-multiselect>
 ```
+
+`data-options-splitter` / `data-options-row-splitter` customize the `csv` and
+`plain` delimiters (default `,` and newline); use `\t` for a tab (TSV). They're
+ignored for `json`.
 
 Both attributes are reactive — changing either re-renders. Declarative `<option>`
 children and a `.options` property set in JS both take precedence over `data-options`.
@@ -155,7 +167,9 @@ multiselect.setSelected(['js', 'ts']);
 | `value-format` | `'json' \| 'csv' \| 'array'` | `'json'` | Format for form value serialization |
 | `initial-values` | `string` (JSON array or CSV) | - | Pre-selected values. Accepts `["js","ts"]` or a bare `js,ts` |
 | `data-options` | `string` | - | HTML-authoring source for the option list, parsed per `data-options-format`. Prefer the `options` property in JS. Reactive; declarative `<option>` children and a set `options` property both take precedence |
-| `data-options-format` | `'json' \| 'csv' \| 'plain'` | `'json'` | How to parse `data-options`: `json` (array of objects or `[value,label]` tuples), `csv` (first row = header → object per row, keyed by the header cells; map columns via `*-member`), or `plain` (comma/newline-separated bare values → `value=label` options) |
+| `data-options-format` | `'json' \| 'csv' \| 'plain'` | `'json'` | How to parse `data-options`: `json` (array of objects or `[value,label]` tuples), `csv` (first row = header → object per row, keyed by the header cells; map columns via `*-member`), or `plain` (bare values → `value=label` options) |
+| `data-options-splitter` | `string` | `','` | Field/cell delimiter for the `csv` and `plain` formats (e.g. `;`, `\|`). Escapes `\t` `\n` `\r` are honoured (`"\t"` → TSV). Ignored for `json` |
+| `data-options-row-splitter` | `string` | newline | Row/record delimiter for the `csv` and `plain` formats (e.g. `;` for single-line data). Escapes honoured. Ignored for `json` |
 | `enable-virtual-scroll` | `boolean` | `false` | Enable virtual scrolling for large datasets |
 | `virtual-scroll-threshold` | `number` | `100` | Minimum items before virtual scroll activates |
 | `option-height` | `number` | `50` | Fixed height for each option in pixels (required for virtual scroll) |
