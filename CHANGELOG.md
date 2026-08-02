@@ -14,6 +14,17 @@ the custom-element plumbing that wrapped them is replaced by the shared core.
 
 ### Added
 
+- **`data-options-format` — JSON / CSV / plain option data in HTML.** The
+  `data-options` attribute now supports three formats, selected by the new
+  `data-options-format` attribute (default `json`): `json` (a JSON array of
+  objects or `[value, label]` tuples), `csv` (first row is a header; each row
+  becomes an object keyed by the header cells — map columns via `*-member`), and
+  `plain` (comma/newline-separated bare values → `value=label` tuples, no member
+  config). Parsing is a pure, unit-tested `parseOptionsData()` (also exported);
+  both attributes are reactive inputs, so changing *either* re-renders. Precedence
+  is unchanged: declarative `<option>` children > the `.options` property >
+  `data-options`.
+
 - **Dev-mode lint for `customStylesCallback`.** When the callback sets a `--ms-*`
   variable that no web-multiselect style reads (a misspelled/renamed variable
   that silently does nothing — e.g. `--ms-badge-text-background` instead of

@@ -34,6 +34,32 @@ Perfect for simple forms — just use standard HTML `<option>` and `<optgroup>` 
 </web-multiselect>
 ```
 
+### Option data in HTML (`data-options`)
+
+For simple static lists without `<option>` children or JavaScript, put the data
+in the `data-options` attribute and pick a format with `data-options-format`:
+
+```html
+<!-- json (default): array of objects or [value, label] tuples -->
+<web-multiselect
+  value-member="value" display-value-member="label"
+  data-options='[{"value":"js","label":"JavaScript"},{"value":"ts","label":"TypeScript"}]'>
+</web-multiselect>
+
+<!-- csv: first row is a header; map the columns via *-member -->
+<web-multiselect
+  data-options-format="csv"
+  value-member="value" display-value-member="label"
+  data-options="value,label&#10;js,JavaScript&#10;ts,TypeScript">
+</web-multiselect>
+
+<!-- plain: comma/newline-separated bare values (value === label), no member config -->
+<web-multiselect data-options-format="plain" data-options="Apple,Banana,Cherry"></web-multiselect>
+```
+
+Both attributes are reactive — changing either re-renders. Declarative `<option>`
+children and a `.options` property set in JS both take precedence over `data-options`.
+
 ## Programmatic (with JavaScript)
 
 For dynamic data and advanced features:
@@ -127,7 +153,9 @@ multiselect.setSelected(['js', 'ts']);
 | `disabled-member` | `string` | - | Property name for disabled state extraction from custom objects |
 | `name` | `string` | - | HTML form field name for form integration (creates hidden input) |
 | `value-format` | `'json' \| 'csv' \| 'array'` | `'json'` | Format for form value serialization |
-| `initial-values` | `string` (JSON array) | - | Pre-selected values |
+| `initial-values` | `string` (JSON array or CSV) | - | Pre-selected values. Accepts `["js","ts"]` or a bare `js,ts` |
+| `data-options` | `string` | - | HTML-authoring source for the option list, parsed per `data-options-format`. Prefer the `options` property in JS. Reactive; declarative `<option>` children and a set `options` property both take precedence |
+| `data-options-format` | `'json' \| 'csv' \| 'plain'` | `'json'` | How to parse `data-options`: `json` (array of objects or `[value,label]` tuples), `csv` (first row = header → object per row, keyed by the header cells; map columns via `*-member`), or `plain` (comma/newline-separated bare values → `value=label` options) |
 | `enable-virtual-scroll` | `boolean` | `false` | Enable virtual scrolling for large datasets |
 | `virtual-scroll-threshold` | `number` | `100` | Minimum items before virtual scroll activates |
 | `option-height` | `number` | `50` | Fixed height for each option in pixels (required for virtual scroll) |

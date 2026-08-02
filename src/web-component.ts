@@ -40,6 +40,7 @@ import type {
   BadgeContentRenderContext,
 } from './types';
 import { toInitialValues } from './converters';
+import { parseOptionsData, OPTIONS_FORMATS, type OptionsFormat } from './option-formats';
 import styles from './css/main.css?inline';
 import { extractConsumedMsVars, declaredMsVars, suggestMsVars } from './css-var-lint.js';
 import { dataLogger } from './logger';
@@ -162,7 +163,9 @@ Tree + multiple only.` },
   { configKey: 'showDebugInfo',           attribute: 'show-debug-info',             converter: toBool('default-false'), on: 'update', description: 'Render an in-component debug panel.', deprecated: 'Use per-instance logging (el.enableLogging()) instead.' },
 
   // ── Complex property (data) ──────────────────────────────────────────────
-  { configKey: 'options', attribute: 'data-options',                                 converter: toObjectArray(),        on: 'reinit', type: 'ReadonlyArray<Record<string, unknown>>', description: 'The array of option objects to render. Assign the property directly, or set the `data-options` attribute as a JSON array of objects — parsed, shape-validated, and reactive via toObjectArray (JSON only; option objects have no CSV form). Declarative <option> children still win over both.' },
+  { configKey: 'options',                                                            converter: toObjectArray(),        on: 'reinit', type: 'ReadonlyArray<Record<string, unknown>>', description: 'The array of option objects to render. The JS API — assign `el.options` directly. For HTML authoring use the `data-options` attribute (parsed per `data-options-format`) or declarative <option> children; both feed the same list and take precedence over this property in the order: <option> children > property > data-options.' },
+  { configKey: 'optionsSource', attribute: 'data-options',                            converter: toText({ isNullable: true }), on: 'reinit', type: 'string', description: 'HTML-authoring source for the option list, parsed per `data-options-format`. Reactive: changing either attribute re-renders. Prefer the `options` property in JS; a set `options` property and declarative <option> children both win over this.' },
+  { configKey: 'optionsFormat', attribute: 'data-options-format',                     converter: toEnum(OPTIONS_FORMATS, { default: 'json' }), on: 'reinit', type: "'json' | 'csv' | 'plain'", description: 'How to parse the `data-options` attribute: `json` (a JSON array of objects or [value, label] tuples), `csv` (first row is a header; each row becomes an object keyed by the header cells — map columns via *-member), or `plain` (comma/newline-separated bare values -> [value, label] tuples, value === label). Default `json`.' },
   { configKey: 'actionButtons',                                                      converter: toValue({ validate: (v): v is unknown[] => Array.isArray(v) }), on: 'reinit', type: 'Array<Record<string, unknown>>', description: 'Custom action buttons for the dropdown footer/header. Property-only; when unset the default Select-All / Clear buttons apply.' },
 
   // ── Callbacks: data shape (structural → reinit) ──────────────────────────
@@ -221,7 +224,7 @@ const EVENTS = [
  * this element directly (CSS-var sugar, debug panel, initial values). Stripped
  * before the merged config is handed to the picker.
  */
-const NON_PICKER_KEYS = new Set(['dropdownWidth', 'selectedPopoverWidth', 'showDebugInfo', 'initialValues']);
+const NON_PICKER_KEYS = new Set(['dropdownWidth', 'selectedPopoverWidth', 'showDebugInfo', 'initialValues', 'optionsSource', 'optionsFormat']);
 
 /** CSS-var sugar: configKey → the host CSS custom property it mirrors to. */
 const CSS_VARS: Record<string, string> = {
@@ -405,16 +408,26 @@ export class MultiSelectElement<T = any> extends BlissElement<MultiSelectEvents>
       if (cfg[key] === null) delete cfg[key];
     }
 
-    // Option data: declarative <option> children win over the property/attribute.
+    // Option-data precedence: declarative <option> children > the `options`
+    // property (JS) > the `data-options` attribute (parsed per data-options-format).
+    // `optionsSource`/`optionsFormat` are reactive inputs (observed by the table),
+    // so this whole derivation re-runs on reinit when either attribute changes —
+    // no hand-rolled getAttribute, no non-reactive parse.
     let optionData = cfg.options as T[] | undefined;
     if (this.#hasDeclarativeOptions && this.#declarativeOptions) {
       if (optionData && optionData.length > 0) {
         dataLogger.warn('[MultiSelectElement] Both declarative <option> elements and programmatic .options detected. Using declarative options.');
       }
       optionData = this.#declarativeOptions;
+    } else if (!optionData || optionData.length === 0) {
+      const source = this.config.optionsSource as string | null | undefined;
+      if (source != null) {
+        const format = (this.config.optionsFormat as OptionsFormat) ?? 'json';
+        const { options: parsed, error } = parseOptionsData(source, format);
+        if (error) dataLogger.error(`[MultiSelectElement] ${error}`);
+        optionData = parsed as T[];
+      }
     }
-    // The `data-options` attribute is now a first-class input (configKey `options`,
-    // parsed/validated/observed by core's toObjectArray) — no hand-rolled JSON.parse.
     cfg.options = optionData;
 
     // Declarative member defaults: only when <option> children were parsed and

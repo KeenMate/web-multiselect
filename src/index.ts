@@ -11,6 +11,10 @@ export { MultiSelectElement };
 // Export the base picker for users who want direct access
 export { WebMultiSelect } from './multiselect';
 
+// data-options authoring formats (data-options-format)
+export { parseOptionsData, OPTIONS_FORMATS } from './option-formats';
+export type { OptionsFormat, ParsedOptions } from './option-formats';
+
 // Export types
 export type {
   MultiSelectOption,
