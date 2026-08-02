@@ -29,6 +29,8 @@ import {
   toValue,
   adoptStyles,
   createStyleSlot,
+  extractConsumedCssVars,
+  lintCssVars,
   type InputDef,
   type StyleSlot,
 } from '@keenmate/web-components-core';
@@ -42,7 +44,6 @@ import type {
 import { toInitialValues } from './converters';
 import { parseOptionsData, OPTIONS_FORMATS, type OptionsFormat } from './option-formats';
 import styles from './css/main.css?inline';
-import { extractConsumedMsVars, declaredMsVars, suggestMsVars } from './css-var-lint.js';
 import { dataLogger } from './logger';
 
 // Type declarations for build-time constants
@@ -240,7 +241,7 @@ const CSS_VARS: Record<string, string> = {
 // which the check treats as "no ground truth" and skips.
 let consumedMsVarsCache: Set<string> | null = null;
 function consumedMsVars(): Set<string> {
-  return (consumedMsVarsCache ??= extractConsumedMsVars(styles));
+  return (consumedMsVarsCache ??= extractConsumedCssVars(styles, '--ms-'));
 }
 
 /**
@@ -524,14 +525,15 @@ export class MultiSelectElement<T = any> extends BlissElement<MultiSelectEvents>
   #checkCustomStyleVars(css: string): void {
     const consumed = consumedMsVars();
     if (consumed.size === 0) return; // stylesheet not inlined (e.g. vitest) — no ground truth
-    for (const name of declaredMsVars(css)) {
-      if (consumed.has(name) || this.#warnedCssVars.has(name)) continue;
+    // Pure lint lives in core (lintCssVars); the element owns only the dev gate
+    // (see the call site), per-instance de-dup, and the console message.
+    for (const { name, suggestions } of lintCssVars(css, { prefix: '--ms-', consumed })) {
+      if (this.#warnedCssVars.has(name)) continue;
       this.#warnedCssVars.add(name);
-      const hint = suggestMsVars(name, consumed);
       console.warn(
         `[web-multiselect] customStylesCallback sets "${name}", which no ` +
           `web-multiselect style consumes — it will have no effect.` +
-          (hint.length ? ` Did you mean: ${hint.join(', ')}?` : '') +
+          (suggestions.length ? ` Did you mean: ${suggestions.join(', ')}?` : '') +
           ` (If it's for your own custom-rendered content, ignore this.)`
       );
     }

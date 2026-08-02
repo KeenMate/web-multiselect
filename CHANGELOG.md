@@ -33,7 +33,9 @@ the custom-element plumbing that wrapped them is replaced by the shared core.
   that silently does nothing — e.g. `--ms-badge-text-background` instead of
   `--ms-badge-text-bg`), the element now `console.warn`s once with the closest
   real variable names. Guarded by `import.meta.env.DEV`, so it is stripped from
-  the production build and never fires for shipped consumers.
+  the production build and never fires for shipped consumers. The pure lint logic
+  now lives in core (`lintCssVars` / `extractConsumedCssVars`, SPEC §12.8); the
+  element keeps only the dev gate, per-instance de-dup, and the message.
 
 ### Changed
 
