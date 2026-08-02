@@ -142,9 +142,10 @@ multiselect.options = [
   { value: 'ts', label: 'TypeScript' }
 ];
 
-// Async data loading
-multiselect.onSearch = async (searchTerm) => {
-  const response = await fetch(`/api/search?q=${searchTerm}`);
+// Async data loading. `signal` aborts when a newer search supersedes this one —
+// forward it to fetch to cancel the stale request.
+multiselect.searchCallback = async (searchTerm, signal) => {
+  const response = await fetch(`/api/search?q=${searchTerm}`, { signal });
   return await response.json();
 };
 
@@ -304,6 +305,18 @@ multiselect.addNewCallback = async (value) => {
 };
 ```
 
+### Reading back state after a write (v2)
+
+Since v2, **property writes are coalesced** — setting a property (e.g. `el.options = […]`) applies on a microtask, not synchronously. This only matters when you read *rendered DOM* right after a write:
+
+```javascript
+el.options = data;
+await el.whenSettled();      // wait for the pending re-render
+console.log(el.shadowRoot.querySelectorAll('.ms__option').length);
+```
+
+You do **not** need to await between a property write and an imperative method — `getSelected()` / `setSelected()` / `getValue()` / `selectedValue` / `selectedItem` flush any pending write internally, so `el.options = data; el.setSelected(sel)` works with no `await` in between. `setAttributes()` and `batch()` also flush synchronously.
+
 ## Methods
 
 | Method | Description |
@@ -311,7 +324,7 @@ multiselect.addNewCallback = async (value) => {
 | `getSelected()` | Get currently selected options as array of option objects |
 | `setSelected(values: (string \| number)[])` | Set selected values by ID/value |
 | `getValue()` | Get selected value(s) — returns single value in single-select mode, array in multi-select mode |
-| `setAttributes(attrs: Record<string, string \| number \| boolean \| null>)` | Set several attributes in a single in-place update (one re-render instead of one per attribute). Keys are kebab-case attribute names, as `setAttribute`; `null`/`undefined`/`false` removes the attribute, `true` sets it to `""`. Handy for i18n switches that change multiple strings at once |
+| `setAttributes(values: Record<string, unknown>)` | Apply several inputs as a single in-place update (one re-render instead of one per property). Keys are property names (`configKey`, e.g. `searchPlaceholder`) or their kebab attribute (`search-placeholder`); values are **typed property values**, validated exactly like a direct property assignment — not raw attribute strings. Flushes synchronously. Handy for i18n switches that change several strings at once. To batch raw attribute **strings** instead, use `batch(() => { setAttribute('search-placeholder', '…'); … })` |
 | `destroy()` | Clean up and destroy instance |
 
 ## Events

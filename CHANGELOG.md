@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0-rc01] - 2026-07-31
+## [2.0.0] - 2026-08-02
 
 The **core adoption** major: `<web-multiselect>` is now built on
 [`@keenmate/web-components-core`](../web-components-core) (`BlissElement`). The
@@ -101,6 +101,22 @@ the custom-element plumbing that wrapped them is replaced by the shared core.
 - **Live `checkbox-mode` / `cascade-select-policy` switch keeps re-projecting the
   current selection** (the rc08 behaviour): these inputs are `on: 'update'`, so a
   live change patches the picker in place rather than rebuilding it.
+- **No more false-positive positioning drift warning.** The `verifyPanelLanded`
+  self-check compared Floating UI's written `left`/`top` against a *viewport*
+  rect. When an ancestor the heuristic recognizes (`transform`/`filter`/…) anchors
+  the panel, those coordinates are relative to that ancestor's padding box — so a
+  correctly-placed dropdown was reported as having "drifted" by exactly the
+  ancestor's offset, telling consumers to fix working CSS. The expectation is now
+  translated into viewport space before comparing.
+
+### Docs
+
+- Corrected stale v1 API in `docs/*` and the runnable examples: `onSearch` →
+  `searchCallback` (with the `(searchTerm, signal)` signature), the `on*`
+  handler signatures (now `(e: CustomEvent) => void` — read `e.detail.*`), and
+  `setAttributes()` (typed property values by `configKey`/attribute, not raw
+  attribute strings). Added a note on the async property-write model
+  (`await whenSettled()` before reading rendered DOM).
 
 ## [1.12.0-rc08] - 2026-07-19 [PUBLISHED]
 

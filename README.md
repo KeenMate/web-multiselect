@@ -21,7 +21,7 @@ Reads `--base-*` variables from the page if [`@keenmate/theme-designer`](https:/
 - Custom rendering callbacks for options, badges, and group headers.
 - Form integration via standard hidden inputs (FormData-compatible).
 
-## What's New in v2.0.0-rc01
+## What's New in v2.0.0
 
 **The core-adoption major.** `<web-multiselect>` is now built on
 [`@keenmate/web-components-core`](https://www.npmjs.com/package/@keenmate/web-components-core)

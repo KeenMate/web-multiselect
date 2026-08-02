@@ -166,8 +166,8 @@ Show popular items initially, then switch to full database search when the user 
   };
 
   // Search full database when user types 3+ characters
-  select.onSearch = async (searchTerm) => {
-    const response = await fetch(`/api/frameworks/search?q=${searchTerm}`);
+  select.searchCallback = async (searchTerm, signal) => {
+    const response = await fetch(`/api/frameworks/search?q=${searchTerm}`, { signal });
     return await response.json();
   };
 </script>

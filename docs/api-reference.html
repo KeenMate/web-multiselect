@@ -317,8 +317,8 @@
             <tbody>
                 <tr>
                     <td><code>searchCallback</code></td>
-                    <td class="type">(searchTerm: string) => Promise&lt;MultiSelectOption[]&gt;</td>
-                    <td>Async function to load options based on search term. Returns array of options.</td>
+                    <td class="type">(searchTerm: string, signal?: AbortSignal) => Promise&lt;MultiSelectOption[]&gt;</td>
+                    <td>Async function to load options based on search term. Returns array of options. The optional <code>signal</code> aborts when a newer search supersedes this one — forward it to <code>fetch</code> to cancel the stale request.</td>
                 </tr>
                 <tr>
                     <td><code>addNewCallback</code></td>
@@ -342,18 +342,18 @@
                 </tr>
                 <tr>
                     <td><code>onSelect</code></td>
-                    <td class="type">(option: MultiSelectOption) => void</td>
-                    <td>Called when an option is selected.</td>
+                    <td class="type">(e: CustomEvent&lt;MultiSelectEventDetail&gt;) => void</td>
+                    <td>Called when an option is selected. Since v2 this is a real listener — it receives the same <code>CustomEvent</code> as <code>addEventListener('select', …)</code>, so read the payload off <code>e.detail.option</code> (not a bare argument).</td>
                 </tr>
                 <tr>
                     <td><code>onDeselect</code></td>
-                    <td class="type">(option: MultiSelectOption) => void</td>
-                    <td>Called when an option is deselected.</td>
+                    <td class="type">(e: CustomEvent&lt;MultiSelectEventDetail&gt;) => void</td>
+                    <td>Called when an option is deselected. Receives the <code>deselect</code> CustomEvent; payload on <code>e.detail.option</code>.</td>
                 </tr>
                 <tr>
                     <td><code>onChange</code></td>
-                    <td class="type">(selectedOptions: MultiSelectOption[]) => void</td>
-                    <td>Called whenever the selection changes (after select or deselect).</td>
+                    <td class="type">(e: CustomEvent&lt;MultiSelectEventDetail&gt;) => void</td>
+                    <td>Called whenever the selection changes (after select or deselect). Receives the <code>change</code> CustomEvent; payload on <code>e.detail.selectedOptions</code> / <code>e.detail.selectedValues</code>.</td>
                 </tr>
             </tbody>
         </table>
@@ -407,8 +407,18 @@
                 </tr>
                 <tr>
                     <td><code>setSelected</code></td>
-                    <td class="type">(values: string[]) => void</td>
+                    <td class="type">(values: (string | number)[]) => void</td>
                     <td>Programmatically set selected options by their values.</td>
+                </tr>
+                <tr>
+                    <td><code>getValue</code></td>
+                    <td class="type">() => (string | number) | (string | number)[] | null</td>
+                    <td>Returns the selected value(s) — a single value in single-select mode, an array in multi-select mode.</td>
+                </tr>
+                <tr>
+                    <td><code>setAttributes</code></td>
+                    <td class="type">(values: Record&lt;string, unknown&gt;) => void</td>
+                    <td>Apply several inputs as one in-place update (one re-render instead of one per property). Keys are property names (<code>configKey</code>, e.g. <code>searchPlaceholder</code>) or their kebab attribute (<code>search-placeholder</code>); values are <strong>typed property values</strong>, validated like a direct property assignment — not raw attribute strings. Flushes synchronously. To batch raw attribute strings, use <code>batch(() =&gt; { setAttribute(…) })</code>.</td>
                 </tr>
                 <tr>
                     <td><code>destroy</code></td>
