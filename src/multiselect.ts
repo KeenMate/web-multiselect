@@ -7,7 +7,7 @@
 // floating-ui's base `platform` object (re-exported by core), which we spread to
 // build the custom platform passed to `anchor`'s `platform` escape hatch below.
 // No direct `@floating-ui/dom` dependency: core owns the one pinned version.
-import { anchor, createTooltip, platform, type Placement, type TooltipHandle } from '@keenmate/web-components-core/positioning';
+import { anchor, createTooltip, platform, getFixedPositionOffsetParent, detectFixedDrift, type Placement, type TooltipHandle } from '@keenmate/web-components-core/positioning';
 import type { MultiSelectConfig, BadgesPosition, SearchInputMode, SearchMode, OptionContentRenderContext, BadgeContentRenderContext } from './types';
 import { initLogger, dataLogger, uiLogger, interactionLogger } from './logger';
 import { VirtualScroll } from './virtual-scroll';
@@ -23,87 +23,10 @@ import {
     type CascadeSelectPolicy
 } from './tree/cascade';
 
-/**
- * Resolve the nearest ancestor that genuinely establishes a containing block for a
- * `position: fixed` descendant — walking across shadow-DOM boundaries. Returns `window`
- * if none is found, matching the browser's actual layout behavior.
- *
- * Per CSS specs, ONLY these properties cause the browser to anchor a fixed-positioned
- * descendant to an ancestor (instead of the viewport):
- *   - `transform` (non-none)
- *   - `perspective` (non-none)
- *   - `filter` / `backdrop-filter` (non-none)
- *   - `will-change: transform | filter | perspective`
- *
- * Floating UI's default `getOffsetParent` ALSO treats `contain: layout|paint|strict|content`
- * and `container-type` as containing-block-establishing for fixed positioning, but those
- * properties only create a CB for *absolute* positioning — the browser keeps fixed elements
- * anchored to the viewport. The mismatch surfaces as the panel landing `ancestor.x` pixels
- * off from where Floating UI computed it.
- *
- * This function intentionally omits `contain` and `container-type` so the result agrees
- * with what the browser actually does, regardless of where the panel lives in the tree
- * (shadow DOM or light DOM).
- */
-function getFixedPositionOffsetParent(el: Element): Element | Window {
-    let node: Node | null = el;
-    while (node) {
-        if (node === document.body || node === document.documentElement) break;
-        if (node instanceof Element) {
-            const cs = getComputedStyle(node);
-            if (cs.transform !== 'none') return node;
-            if (cs.perspective !== 'none') return node;
-            if (cs.filter !== 'none') return node;
-            const bdf = (cs as any).backdropFilter;
-            if (bdf && bdf !== 'none') return node;
-            if (cs.willChange && /\b(transform|filter|perspective)\b/.test(cs.willChange)) return node;
-        }
-        // Cross shadow root boundary so we see light-DOM ancestors of the host too.
-        const parent = (node as any).parentNode;
-        node = parent instanceof ShadowRoot ? parent.host : parent;
-    }
-    return window;
-}
-
-/**
- * Given an observed drift of the panel from its expected viewport position, walk up from the
- * input and find the first ancestor whose `getBoundingClientRect().{x,y}` matches the drift.
- * That ancestor is the most likely containing block the browser actually anchored the fixed
- * panel to. Returns null if no match is found (drift caused by something else — visual viewport,
- * iframe, scrollbar gutter, etc.).
- */
-function findDriftCulprit(el: Element, driftX: number, driftY: number): Element | null {
-    let node: Node | null = el;
-    while (node) {
-        if (node === document.body || node === document.documentElement) break;
-        if (node instanceof Element) {
-            const rect = node.getBoundingClientRect();
-            if (Math.abs(rect.x - driftX) < 2 && Math.abs(rect.y - driftY) < 2) return node;
-        }
-        const parent = (node as any).parentNode;
-        node = parent instanceof ShadowRoot ? parent.host : parent;
-    }
-    return null;
-}
-
-/**
- * Report which CB-establishing properties (per Floating UI's `isContainingBlock`) are set on
- * the given element. Used by the drift warning to point at the specific CSS that's likely
- * responsible — so the developer doesn't have to manually inspect computed styles.
- */
-function listContainingBlockProps(el: Element): string {
-    const cs = getComputedStyle(el);
-    const props: string[] = [];
-    if (cs.transform !== 'none') props.push(`transform: ${cs.transform}`);
-    if (cs.perspective !== 'none') props.push(`perspective: ${cs.perspective}`);
-    if (cs.filter !== 'none') props.push(`filter: ${cs.filter}`);
-    const bdf = (cs as any).backdropFilter;
-    if (bdf && bdf !== 'none') props.push(`backdrop-filter: ${bdf}`);
-    if (cs.willChange && /\b(transform|filter|perspective)\b/.test(cs.willChange)) props.push(`will-change: ${cs.willChange}`);
-    if (cs.contain && /\b(paint|layout|strict|content)\b/.test(cs.contain)) props.push(`contain: ${cs.contain}`);
-    if ((cs as any).containerType && (cs as any).containerType !== 'normal') props.push(`container-type: ${(cs as any).containerType}`);
-    return props.join('; ');
-}
+// The fixed-positioning containing-block heuristic (getFixedPositionOffsetParent)
+// and the drift diagnostic (detectFixedDrift — measure + culprit + CSS) now live
+// in core's /positioning module, shared across all portaled components. This file
+// keeps only the multiselect-branded warning wiring (see verifyPanelLanded).
 
 export class WebMultiSelect<T = any> {
     private element: HTMLElement;
@@ -2412,21 +2335,14 @@ export class WebMultiSelect<T = any> {
     }
 
     /**
-     * Sanity-check that the browser placed the panel where we told it to. If the rendered
-     * position drifts, the consumer has an ancestor that establishes a fixed containing
-     * block but isn't on our reliable-anchors list (likely `contain: paint|layout|strict`
-     * or `container-type` — which the spec says creates a CB but the browser's actual behavior
-     * varies across shadow-DOM scenarios). We can't fix it from inside the library, but we can
-     * surface a clear warning so the developer knows where to look.
+     * Sanity-check that the browser placed the panel where we told it to, using core's
+     * `detectFixedDrift` (the measurement + culprit-finding + CB-CSS diagnostic). If the
+     * rendered position drifts, the consumer has an ancestor that establishes a fixed
+     * containing block but isn't on the reliable-anchors list (likely `contain:
+     * paint|layout|strict` or `container-type`). We can't fix it from inside the library,
+     * but we surface a clear, multiselect-branded warning pointing at the culprit.
      *
-     * The written `left`/`top` are relative to the panel's containing block, which is the
-     * viewport ONLY when `getFixedPositionOffsetParent` found no anchoring ancestor. When it
-     * did find one, those coordinates are relative to that ancestor's PADDING box, so the
-     * expectation must be translated into viewport space before comparing — otherwise this
-     * check reports the ancestor's own offset as drift and warns about a perfectly placed
-     * panel (e.g. any `transform: translateZ(0)` wrapper).
-     *
-     * Fires at most once per multiselect instance to avoid flooding the console during autoUpdate.
+     * Fires at most once per instance to avoid flooding the console during autoUpdate.
      */
     private verifyPanelLanded(
         panel: HTMLElement,
@@ -2435,36 +2351,14 @@ export class WebMultiSelect<T = any> {
         offsetParent: Element | Window = window
     ): void {
         if (this.positioningDriftWarned) return;
-
-        // Translate the expectation into viewport space when the panel is anchored to an
-        // ancestor rather than the viewport.
-        let originX = 0;
-        let originY = 0;
-        if (offsetParent instanceof Element) {
-            const cbRect = offsetParent.getBoundingClientRect();
-            const cbStyle = getComputedStyle(offsetParent);
-            originX = cbRect.x + (parseFloat(cbStyle.borderLeftWidth) || 0);
-            originY = cbRect.y + (parseFloat(cbStyle.borderTopWidth) || 0);
-        }
-
-        const rect = panel.getBoundingClientRect();
-        const driftX = rect.x - (originX + expectedX);
-        const driftY = rect.y - (originY + expectedY);
-        // 1.5px tolerance: sub-pixel layout rounding, more forgiving than the old 1px now
-        // that two rects (panel + containing block) contribute rounding error.
-        if (Math.abs(driftX) < 1.5 && Math.abs(driftY) < 1.5) return;
+        const drift = detectFixedDrift({ panel, reference: this.input, expectedX, expectedY, offsetParent });
+        if (!drift) return;
 
         this.positioningDriftWarned = true;
-        const culprit = findDriftCulprit(this.input, driftX, driftY);
-        const culpritDescription = culprit
-            ? `<${culprit.tagName.toLowerCase()}${culprit.id ? '#' + culprit.id : ''}${typeof culprit.className === 'string' && culprit.className ? '.' + culprit.className.split(/\s+/).filter(Boolean).slice(0, 2).join('.') : ''}>`
-            : 'an ancestor element (could not auto-identify)';
-        const culpritCss = culprit ? listContainingBlockProps(culprit) : '';
-
         console.warn(
-            `[@keenmate/web-multiselect] Dropdown panel rendered ${driftX.toFixed(0)}px / ${driftY.toFixed(0)}px ` +
-            `away from where the library positioned it. Most likely culprit: ${culpritDescription}` +
-            (culpritCss ? ` (has ${culpritCss})` : '') + `.\n` +
+            `[@keenmate/web-multiselect] Dropdown panel rendered ${drift.driftX.toFixed(0)}px / ${drift.driftY.toFixed(0)}px ` +
+            `away from where the library positioned it. Most likely culprit: ${drift.culpritDescription}` +
+            (drift.culpritCss ? ` (has ${drift.culpritCss})` : '') + `.\n` +
             `An ancestor of <web-multiselect> establishes a fixed-positioning containing block that the library's ` +
             `heuristic doesn't recognize. Fix on your side: replace the property with \`transform: translateZ(0)\` ` +
             `on that ancestor, OR move the trigger out of that ancestor's subtree. If neither is acceptable, ` +

@@ -73,6 +73,12 @@ the custom-element plumbing that wrapped them is replaced by the shared core.
   Tooltips stay inside the shadow root (scoped styling) via `createTooltip`'s
   `ShadowRoot` container. (Core grew these capabilities to absorb the picker
   without regressing — see the core CHANGELOG.)
+- **Containing-block drift diagnostic runs on core.** The fixed-positioning
+  offset-parent heuristic and the drift self-check (measure + name-the-culprit)
+  moved into core `/positioning` (`getFixedPositionOffsetParent` /
+  `detectFixedDrift`), shared across portaled components. No consumer-facing
+  change — the warning message and once-per-instance behaviour are identical; the
+  element keeps only the branded message wiring.
 - **No direct `@floating-ui/dom` dependency.** The package no longer pins
   `@floating-ui/dom` itself; the base `platform` object needed for the custom-
   platform escape hatch is now imported from `@keenmate/web-components-core/positioning`
