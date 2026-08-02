@@ -3,11 +3,11 @@
  * Comprehensive multiselect component with rich content support and floating hints
  */
 
-// Positioning runs on the core /positioning module. `platform` (floating-ui's
-// base platform object) is still imported to build the custom platform below —
-// core's `anchor` accepts it via its `platform` escape hatch.
-import { platform, type Placement } from '@floating-ui/dom';
-import { anchor, createTooltip, type TooltipHandle } from '@keenmate/web-components-core/positioning';
+// Positioning runs entirely on the core /positioning module — including
+// floating-ui's base `platform` object (re-exported by core), which we spread to
+// build the custom platform passed to `anchor`'s `platform` escape hatch below.
+// No direct `@floating-ui/dom` dependency: core owns the one pinned version.
+import { anchor, createTooltip, platform, type Placement, type TooltipHandle } from '@keenmate/web-components-core/positioning';
 import type { MultiSelectConfig, BadgesPosition, SearchInputMode, SearchMode, OptionContentRenderContext, BadgeContentRenderContext } from './types';
 import { initLogger, dataLogger, uiLogger, interactionLogger } from './logger';
 import { VirtualScroll } from './virtual-scroll';

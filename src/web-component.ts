@@ -162,7 +162,7 @@ Tree + multiple only.` },
   { configKey: 'showDebugInfo',           attribute: 'show-debug-info',             converter: toBool('default-false'), on: 'update', description: 'Render an in-component debug panel.', deprecated: 'Use per-instance logging (el.enableLogging()) instead.' },
 
   // ── Complex property (data) ──────────────────────────────────────────────
-  { configKey: 'options',                                                            converter: toObjectArray(),        on: 'reinit', type: 'ReadonlyArray<Record<string, unknown>>', description: 'The array of option objects to render. Property-only (no attribute); shape-validated by toObjectArray. Also accepts a `data-options` JSON attribute as a fallback.' },
+  { configKey: 'options', attribute: 'data-options',                                 converter: toObjectArray(),        on: 'reinit', type: 'ReadonlyArray<Record<string, unknown>>', description: 'The array of option objects to render. Assign the property directly, or set the `data-options` attribute as a JSON array of objects — parsed, shape-validated, and reactive via toObjectArray (JSON only; option objects have no CSV form). Declarative <option> children still win over both.' },
   { configKey: 'actionButtons',                                                      converter: toValue({ validate: (v): v is unknown[] => Array.isArray(v) }), on: 'reinit', type: 'Array<Record<string, unknown>>', description: 'Custom action buttons for the dropdown footer/header. Property-only; when unset the default Select-All / Clear buttons apply.' },
 
   // ── Callbacks: data shape (structural → reinit) ──────────────────────────
@@ -413,16 +413,8 @@ export class MultiSelectElement<T = any> extends BlissElement<MultiSelectEvents>
       }
       optionData = this.#declarativeOptions;
     }
-    if (!optionData || optionData.length === 0) {
-      const attr = this.getAttribute('data-options');
-      if (attr) {
-        try {
-          optionData = JSON.parse(attr);
-        } catch (e) {
-          dataLogger.error('[MultiSelectElement] Failed to parse data-options:', e);
-        }
-      }
-    }
+    // The `data-options` attribute is now a first-class input (configKey `options`,
+    // parsed/validated/observed by core's toObjectArray) — no hand-rolled JSON.parse.
     cfg.options = optionData;
 
     // Declarative member defaults: only when <option> children were parsed and

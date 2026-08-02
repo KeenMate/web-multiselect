@@ -2,7 +2,7 @@
  * Type definitions for the MultiSelect component
  */
 
-import type { Placement } from '@floating-ui/dom';
+import type { Placement } from '@keenmate/web-components-core/positioning';
 import type { LTreeNode } from './tree/ltree-node';
 
 

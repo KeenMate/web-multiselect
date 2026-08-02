@@ -57,6 +57,12 @@ the custom-element plumbing that wrapped them is replaced by the shared core.
   Tooltips stay inside the shadow root (scoped styling) via `createTooltip`'s
   `ShadowRoot` container. (Core grew these capabilities to absorb the picker
   without regressing — see the core CHANGELOG.)
+- **No direct `@floating-ui/dom` dependency.** The package no longer pins
+  `@floating-ui/dom` itself; the base `platform` object needed for the custom-
+  platform escape hatch is now imported from `@keenmate/web-components-core/positioning`
+  (which re-exports it), and `Placement` comes from core too. Core owns the single
+  pinned floating-ui version — no more risk of the component drifting to a
+  different one.
 
 ### Breaking
 
@@ -101,6 +107,14 @@ the custom-element plumbing that wrapped them is replaced by the shared core.
 - **Live `checkbox-mode` / `cascade-select-policy` switch keeps re-projecting the
   current selection** (the rc08 behaviour): these inputs are `on: 'update'`, so a
   live change patches the picker in place rather than rebuilding it.
+- **`data-options` is now a proper reactive, validated input.** It was hand-parsed
+  once at build time (`JSON.parse` outside the input table) — so it lived outside
+  `observedAttributes`, never reacted to changes, and wasn't shape-validated. It is
+  now the `options` input's attribute (converter core `toObjectArray`, `on: 'reinit'`):
+  changing or removing `data-options` re-renders, invalid/non-array JSON falls back
+  to an empty list instead of passing through unchecked, and declarative `<option>`
+  children still win. Format is unchanged — a JSON array of option objects (JSON
+  only; option objects have no CSV form, unlike `initial-values`).
 - **No more false-positive positioning drift warning.** The `verifyPanelLanded`
   self-check compared Floating UI's written `left`/`top` against a *viewport*
   rect. When an ancestor the heuristic recognizes (`transform`/`filter`/…) anchors
