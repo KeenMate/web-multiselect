@@ -115,6 +115,32 @@ npm install @keenmate/web-multiselect
 
 See [docs/usage.md](./docs/usage.md) for the full API and [docs/examples.md](./docs/examples.md) for advanced patterns (async data, virtual scrolling, custom rendering, form integration).
 
+## Editor IntelliSense
+
+The package ships editor metadata so you get autocomplete and hover docs for the
+element's attributes, events, and all `--ms-*` CSS custom properties. All of it is
+generated from the component's source on every build, so it never drifts.
+
+- **JetBrains** (WebStorm / IntelliJ) — works automatically. The IDE discovers
+  `web-types.json` via the `web-types` field in `package.json`; no setup needed.
+- **VS Code** — the data files ship but VS Code doesn't auto-discover them from a
+  dependency, so point your workspace at them once in `.vscode/settings.json`:
+
+  ```json
+  {
+    "html.customData": [
+      "./node_modules/@keenmate/web-multiselect/vscode.html-custom-data.json"
+    ],
+    "css.customData": [
+      "./node_modules/@keenmate/web-multiselect/vscode.css-custom-data.json"
+    ]
+  }
+  ```
+
+  `html.customData` powers tag/attribute completion on `<web-multiselect>`;
+  `css.customData` powers completion for the `--ms-*` theming variables. Reload
+  the window after adding them.
+
 ## Browser support
 
 Modern evergreen browsers — anything with native `customElements`, Shadow DOM, and CSS `@layer` support:

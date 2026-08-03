@@ -5,6 +5,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0-rc02] - 2026-08-03
+
+### Docs
+
+- **README "Editor IntelliSense" section.** Documents the editor metadata the
+  package already ships — JetBrains `web-types.json` (auto-discovered via the
+  `web-types` field) and the VS Code `vscode.html-custom-data.json` /
+  `vscode.css-custom-data.json` files covering attributes, events, and all 324
+  `--ms-*` CSS variables — plus the one-time `.vscode/settings.json`
+  `html.customData` / `css.customData` pointer VS Code needs, since (unlike
+  JetBrains) it doesn't auto-discover custom-data from a dependency. Mirrors the
+  section added to `web-daterangepicker`.
+
 ## [2.0.0-rc01] - 2026-08-03 [PUBLISHED]
 
 The **core adoption** major: `<web-multiselect>` is now built on
