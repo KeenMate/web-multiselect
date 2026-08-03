@@ -1,6 +1,6 @@
 {
   "name": "@keenmate/web-multiselect",
-  "version": "2.0.0",
+  "version": "2.0.0-rc01",
   "description": "Lightweight multiselect web component with typeahead search, rich content support, and excellent keyboard navigation",
   "type": "module",
   "main": "./dist/multiselect.umd.js",
@@ -39,7 +39,8 @@
     "component-variables.manifest.json",
     "custom-elements.json",
     "web-types.json",
-    "vscode.html-custom-data.json"
+    "vscode.html-custom-data.json",
+    "vscode.css-custom-data.json"
   ],
   "scripts": {
     "dev": "vite --port 12200",

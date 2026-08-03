@@ -1,6 +1,7 @@
 import { blissAnalyzerConfig } from '@keenmate/web-components-core/cem';
 import { customElementVsCodePlugin } from 'custom-element-vs-code-integration';
 import { customElementJetBrainsPlugin } from 'custom-element-jet-brains-integration';
+import { cssVariablesFromManifestPlugin } from './cem/css-variables-plugin.mjs';
 
 /**
  * The element's ~70 attributes/members/events are declared in the `static inputs`
@@ -13,12 +14,18 @@ import { customElementJetBrainsPlugin } from 'custom-element-jet-brains-integrat
  *
  * (Replaces the former homegrown `cem/attribute-table-plugin.mjs`, which read the
  * old hand-coded `ATTRIBUTE_TABLE`.)
+ *
+ * `cssVariablesFromManifestPlugin()` runs before the editor-integration
+ * generators and injects the `--ms-*` surface (from
+ * `component-variables.manifest.json`) as `cssProperties`, so both the VS Code
+ * CSS custom-data file and `web-types.json` carry the theming variables.
  */
 export default blissAnalyzerConfig({
   globs: ['src/**/*.ts'],
   exclude: ['src/**/*.spec.ts', 'src/**/*.test.ts', 'src/**/*.d.ts', 'src/index.ts'],
   outdir: '.',
   plugins: [
+    cssVariablesFromManifestPlugin(),
     customElementVsCodePlugin({ outdir: '.' }),
     customElementJetBrainsPlugin({ outdir: '.', packageJson: false }),
   ],

@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0] - 2026-08-02
+## [2.0.0-rc01] - 2026-08-03 [PUBLISHED]
 
 The **core adoption** major: `<web-multiselect>` is now built on
 [`@keenmate/web-components-core`](../web-components-core) (`BlissElement`). The
@@ -36,6 +36,16 @@ the custom-element plumbing that wrapped them is replaced by the shared core.
   the production build and never fires for shipped consumers. The pure lint logic
   now lives in core (`lintCssVars` / `extractConsumedCssVars`, SPEC §12.8); the
   element keeps only the dev gate, per-instance de-dup, and the message.
+
+- **IDE autocomplete for the `--ms-*` theming variables.** The 324 component CSS
+  variables from `component-variables.manifest.json` are now emitted as
+  `cssProperties` in the manifest and flow into both editor-integration outputs:
+  `vscode.css-custom-data.json` (previously an empty stub — now shipped in the
+  package) and `web-types.json`. Consumers get name + description completion for
+  every `--ms-*` variable in `.css` files (VS Code via `css.customData`, JetBrains
+  via web-types), matching the tag/attribute completion that already worked. A new
+  CEM analyzer plugin (`cem/css-variables-plugin.mjs`) reads the manifest — the
+  single source of truth — so the variable API isn't hand-duplicated as JSDoc.
 
 ### Changed
 

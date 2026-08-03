@@ -21,7 +21,7 @@ Reads `--base-*` variables from the page if [`@keenmate/theme-designer`](https:/
 - Custom rendering callbacks for options, badges, and group headers.
 - Form integration via standard hidden inputs (FormData-compatible).
 
-## What's New in v2.0.0
+## What's New in v2.0.0-rc01
 
 **The core-adoption major.** `<web-multiselect>` is now built on
 [`@keenmate/web-components-core`](https://www.npmjs.com/package/@keenmate/web-components-core)
@@ -42,6 +42,13 @@ change is under the hood, with three **breaking** API changes to be aware of:
   `el.options = […]`) applies on a microtask; `await el.whenSettled()` before
   reading back rendered state. `setAttributes()` / `batch()` still flush
   synchronously.
+- **`data-options` gains CSV & plain formats.** The `data-options` attribute now
+  takes `data-options-format="json|csv|plain"` (default `json`) — feed a CSV table
+  (first row is a header; columns mapped via `*-member`) or a bare, newline-
+  delimited value list without hand-writing JSON. Field and row delimiters are
+  configurable via `data-options-splitter` / `data-options-row-splitter` (so TSV
+  or a custom separator is expressible in the attribute), and `data-options` is
+  now a fully reactive, shape-validated input — changing any of these re-renders.
 
 See `CHANGELOG.md` for the full list.
 
@@ -52,12 +59,6 @@ See `CHANGELOG.md` for the full list.
 - **Cascade counter — the `[N]` chip counts what you actually picked** — In cascade mode the counter used to show the emitted value count, which balloons under `cascade-select-policy="leaves"` / `"all"` (one branch click can emit five values) — jarring next to a couple of rolled-up badges. It now counts the rolled-up minimal cover — the branches you selected — regardless of emit policy, and gained a hover tooltip listing those items. Under the default `rolled-up` policy nothing changes.
 - **Theming cleanup — dead input size-variant surface removed from the bundle** — The unused `.ms__input--xs/sm/lg/xl` preset classes and their `--ms-input-size-*` variable chain were never wired to anything (no `size` attribute toggles them), so they've been commented out — kept for a possible future preset API but no longer shipped as dead CSS (the compiled stylesheet shrank ~2 kB). Input sizing still works through `--ms-rem` for proportional global scale or the individual `--ms-input-*` variables for targeted overrides.
 - **Fixes — badge hover and live cascade switching** — Badge hover no longer washes the chip to white (the hover background fell through to the white input background; it now deepens the accent tint, dark-mode aware). And switching `checkbox-mode` or `cascade-select-policy` live rebuilds the cascade index and silently re-projects the current selection, so badges, form value, and checkboxes all reflect the new mode instantly.
-
-## What's New in v1.12.0-rc07
-
-- **Selection — `setSelected(values, { notify: true })` announces programmatic changes** — `setSelected()` stays silent by default (restoring saved state, cascade/dependent resets, and server-authoritative corrections must not re-fire `change`, or they trip "the user changed it" handlers and can bounce in a feedback loop), but the new `{ notify: true }` option fires a **single aggregate `change`** — no per-item `select`/`deselect` flood — for when a programmatic change is a deliberate user gesture, e.g. a custom action button that sets the selection and should reach the same listeners a manual pick does. Threaded through both the internal picker and the web component's `setSelected`.
-- **Cascade mode — Select All now honours the value policy** — the built-in `select-all` action added every selectable node's value directly, bypassing the cascade projection, so with `checkbox-mode="cascade"` + `cascade-select-policy="rolled-up"` it emitted every node instead of the rolled-up roots (unlike a click, which rolls up). `selectAll()` is now cascade-aware — it fills the checked-atom set from the visible nodes and projects through the active policy via a shared `commitCascadeAtoms` helper — so Select All emits the same shape a click does. Shown in the new "Action Buttons" section of `examples-tree.html`.
-- **Options no longer text-select on click-drag** — clicking a row, or dragging across the dropdown, used to highlight the labels like selectable text, which reads as broken for a pure selection gesture (most visible on the denser tree rows). Options now set `user-select: none` (with the `-webkit-` prefix) on `.ms__option`. Purely presentational — no API or behaviour change.
 
 > ⚠️ **Security notice:** This component intentionally allows raw HTML in rendering callbacks to give developers full control over content display. If you display user-generated content, you must sanitize it yourself. See [docs/examples.md → HTML Injection (XSS) notice](./docs/examples.md#html-injection-xss-notice) for the complete list of affected callbacks.
 
