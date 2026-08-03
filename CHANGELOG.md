@@ -43,9 +43,10 @@ the custom-element plumbing that wrapped them is replaced by the shared core.
   `vscode.css-custom-data.json` (previously an empty stub — now shipped in the
   package) and `web-types.json`. Consumers get name + description completion for
   every `--ms-*` variable in `.css` files (VS Code via `css.customData`, JetBrains
-  via web-types), matching the tag/attribute completion that already worked. A new
-  CEM analyzer plugin (`cem/css-variables-plugin.mjs`) reads the manifest — the
-  single source of truth — so the variable API isn't hand-duplicated as JSDoc.
+  via web-types), matching the tag/attribute completion that already worked. Core's
+  `cssVariablesFromManifestPlugin()` (from `@keenmate/web-components-core/cem`) reads
+  the manifest — the single source of truth — so the variable API isn't
+  hand-duplicated as JSDoc.
 
 ### Changed
 
