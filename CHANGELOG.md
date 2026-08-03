@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.0.0-rc02] - 2026-08-03
 
+### Fixed
+
+- **Form association in host frameworks (`el.form`).** rc01 hardened the internal
+  `ElementInternals` handle to a true `#private` field, which silently broke any
+  consumer that read the element's associated `<form>` — notably Phoenix
+  LiveView's `phx-change` delegation, which resolves the parent form via
+  `event.target.form` and drops the change when it is `undefined`. Fixed upstream
+  in core (`@keenmate/web-components-core`): `BlissElement` now exposes a public
+  `el.form` getter (backed by a lazily-attached, memoized `ElementInternals`), so
+  `el.form` / `event.target.form` resolve like a native form control. The element
+  no longer attaches internals itself — core owns the single attach.
+
 ### Docs
 
 - **README "Editor IntelliSense" section.** Documents the editor metadata the

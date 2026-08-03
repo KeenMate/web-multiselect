@@ -274,7 +274,6 @@ export class MultiSelectElement<T = any> extends BlissElement<MultiSelectEvents>
   #shadow: ShadowRoot;
   #picker?: WebMultiSelect<T>;
   #container?: HTMLDivElement;
-  #internals?: ElementInternals;
   #customStyles: StyleSlot | null = null;
   // Dev-mode customStylesCallback lint: unknown --ms-* names already warned about.
   #warnedCssVars = new Set<string>();
@@ -289,15 +288,10 @@ export class MultiSelectElement<T = any> extends BlissElement<MultiSelectEvents>
     super();
     this.#shadow = this.attachShadow({ mode: 'open' });
 
-    // attachInternals is only available on form-associated elements and may be
-    // missing (jsdom, sandboxes). Failing closed beats throwing on construction.
-    if (typeof (this as any).attachInternals === 'function') {
-      try {
-        this.#internals = (this as any).attachInternals();
-      } catch {
-        /* ignore */
-      }
-    }
+    // Form association: `static formAssociated = true` makes the element
+    // participate; core's lazy `this.internals` / public `el.form` getter expose
+    // the associated <form> (so e.g. Phoenix LiveView's `target.form` delegation
+    // resolves). No local attachInternals — core owns the single attach.
 
     // §12.8: static shell CSS via one shared, cached CSSStyleSheet (per string),
     // replacing the per-instance inline <style>.
