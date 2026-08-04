@@ -17,7 +17,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   in core (`@keenmate/web-components-core`): `BlissElement` now exposes a public
   `el.form` getter (backed by a lazily-attached, memoized `ElementInternals`), so
   `el.form` / `event.target.form` resolve like a native form control. The element
-  no longer attaches internals itself — core owns the single attach.
+  no longer attaches internals itself — core owns the single attach. Requires
+  `@keenmate/web-components-core` ≥ 1.0.0-rc02 (the `el.form` getter); the
+  dependency is pinned to `1.0.0-rc02`.
 
 ### Docs
 
