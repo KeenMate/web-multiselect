@@ -21,6 +21,21 @@ Reads `--base-*` variables from the page if [`@keenmate/theme-designer`](https:/
 - Custom rendering callbacks for options, badges, and group headers.
 - Form integration via standard hidden inputs (FormData-compatible).
 
+## What's New in v2.0.0-rc02
+
+**Form association restored for host frameworks (`el.form`).** Selecting inside a
+`<web-multiselect>` that lives in a `<form>` again delivers changes to frameworks
+that resolve the parent form via `event.target.form` — most notably Phoenix
+LiveView's `phx-change` delegation, which silently dropped changes in rc01.
+`<web-multiselect>` is a form-associated custom element, so it now exposes a real
+`el.form` / `event.target.form` like a native control. (rc01 had hardened its
+internal `ElementInternals` handle to a true `#private` field, which killed the
+`.form` that host-framework wrappers read.) The fix lives upstream in
+[`@keenmate/web-components-core`](https://www.npmjs.com/package/@keenmate/web-components-core)
+1.0.0-rc02 (the `el.form` getter), which this release pins.
+
+See `CHANGELOG.md` for the full list.
+
 ## What's New in v2.0.0-rc01
 
 **The core-adoption major.** `<web-multiselect>` is now built on
