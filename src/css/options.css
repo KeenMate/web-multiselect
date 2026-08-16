@@ -98,11 +98,22 @@
      not a text-selection one — stop the browser from highlighting the label. */
   user-select: none;
   -webkit-user-select: none;
+  /* Suppress the mobile tap-highlight flash (the light-blue/grey box UA browsers
+     paint over the tapped row on touch). Selection state is our own feedback; the
+     UA overlay just reads as an accidental highlight — most visible on taps that
+     don't change the row, like the info affordance. */
+  -webkit-tap-highlight-color: transparent;
 }
 
-.ms__option:hover {
-  background: var(--ms-option-bg-hover);
-  color: var(--ms-option-color-hover, inherit);
+/* Hover states are gated to real pointing devices. On touch, `:hover` "sticks"
+   after a tap until the next tap elsewhere, so a tapped row (or a tap on its info
+   affordance) would stay highlighted as if selected. `@media (hover: hover)` keeps
+   hover on mouse/trackpad and drops it on touch (phones, the fullscreen overlay). */
+@media (hover: hover) {
+  .ms__option:hover {
+    background: var(--ms-option-bg-hover);
+    color: var(--ms-option-color-hover, inherit);
+  }
 }
 
 .ms__option--focused {
@@ -122,8 +133,10 @@
   background: var(--ms-option-bg-selected);
 }
 
-.ms__option--selected:hover {
-  background: var(--ms-option-bg-selected-hover, var(--ms-option-bg-selected));
+@media (hover: hover) {
+  .ms__option--selected:hover {
+    background: var(--ms-option-bg-selected-hover, var(--ms-option-bg-selected));
+  }
 }
 
 .ms__option--disabled {
@@ -137,9 +150,11 @@
 }
 
 /* Focused + Hover */
-.ms__option--focused:hover {
-  background: var(--ms-option-bg-focused-hover);
-  color: var(--ms-option-color-focused-hover, var(--ms-option-color-focused, var(--ms-option-text-color)));
+@media (hover: hover) {
+  .ms__option--focused:hover {
+    background: var(--ms-option-bg-focused-hover);
+    color: var(--ms-option-color-focused-hover, var(--ms-option-color-focused, var(--ms-option-text-color)));
+  }
 }
 
 /* Matched + Hover */
@@ -346,16 +361,20 @@
 }
 
 /* Title color states (for solid background themes) */
-.ms__option:hover .ms__option-title {
-  color: var(--ms-option-title-color-hover, var(--ms-option-title-color));
+@media (hover: hover) {
+  .ms__option:hover .ms__option-title {
+    color: var(--ms-option-title-color-hover, var(--ms-option-title-color));
+  }
 }
 
 .ms__option--selected .ms__option-title {
   color: var(--ms-option-title-color-selected, var(--ms-option-title-color));
 }
 
-.ms__option--selected:hover .ms__option-title {
-  color: var(--ms-option-title-color-selected-hover, var(--ms-option-title-color-selected, var(--ms-option-title-color)));
+@media (hover: hover) {
+  .ms__option--selected:hover .ms__option-title {
+    color: var(--ms-option-title-color-selected-hover, var(--ms-option-title-color-selected, var(--ms-option-title-color)));
+  }
 }
 
 /* Highlight matched text */
@@ -374,16 +393,20 @@
 }
 
 /* Subtitle color states (for solid background themes) */
-.ms__option:hover .ms__option-subtitle {
-  color: var(--ms-option-subtitle-color-hover, var(--ms-option-subtitle-color));
+@media (hover: hover) {
+  .ms__option:hover .ms__option-subtitle {
+    color: var(--ms-option-subtitle-color-hover, var(--ms-option-subtitle-color));
+  }
 }
 
 .ms__option--selected .ms__option-subtitle {
   color: var(--ms-option-subtitle-color-selected, var(--ms-option-subtitle-color));
 }
 
-.ms__option--selected:hover .ms__option-subtitle {
-  color: var(--ms-option-subtitle-color-selected-hover, var(--ms-option-subtitle-color-selected, var(--ms-option-subtitle-color)));
+@media (hover: hover) {
+  .ms__option--selected:hover .ms__option-subtitle {
+    color: var(--ms-option-subtitle-color-selected-hover, var(--ms-option-subtitle-color-selected, var(--ms-option-subtitle-color)));
+  }
 }
 
 /* ==============================================================================

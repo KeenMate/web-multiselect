@@ -31,8 +31,10 @@ import {
   createStyleSlot,
   extractConsumedCssVars,
   lintCssVars,
+  getEnvironment,
   type InputDef,
   type StyleSlot,
+  type EnvironmentSnapshot,
 } from '@keenmate/web-components-core';
 import { WebMultiSelect } from './multiselect';
 import type {
@@ -42,6 +44,7 @@ import type {
   BadgeContentRenderContext,
 } from './types';
 import { toInitialValues } from './converters';
+import { resolveMobilePresentation, type MobilePresentation } from './mobile-presentation';
 import { parseOptionsData, OPTIONS_FORMATS, type OptionsFormat } from './option-formats';
 import styles from './css/main.css?inline';
 import { dataLogger } from './logger';
@@ -124,6 +127,8 @@ Tree + multiple only.` },
   { configKey: 'valueFormat',             attribute: 'value-format',                converter: toEnum(['json', 'csv', 'array'] as const, { default: 'json' }), on: 'reinit', description: 'Serialization format the control emits its value in.' },
   { configKey: 'badgeTooltipPlacement',   attribute: 'badge-tooltip-placement',     converter: toEnum(PLACEMENTS, { default: 'top' }), on: 'update', description: 'Preferred placement of a badge tooltip relative to its badge (floating-ui placement).' },
   { configKey: 'optionTooltipPlacement',  attribute: 'option-tooltip-placement',    converter: toEnum(PLACEMENTS, { default: 'top-start' }), on: 'update', description: 'Preferred placement of an option tooltip (floating-ui placement).' },
+  { configKey: 'mobilePresentation',      attribute: 'mobile-presentation',         converter: toEnum(['auto', 'floating', 'fullscreen'] as const, { default: 'auto' }), reflect: true, on: 'update',
+    description: 'How the open dropdown is presented on phones. `auto` (default) keeps the floating panel on desktop/tablet and switches to a full-screen overlay on phone-sized touch devices (touch primary + shorter viewport side < 600px, orientation-robust); `floating` forces the anchored panel everywhere; `fullscreen` forces the full-screen overlay on any device (handy for previews/testing). Resolved reactively from the device/viewport environment.' },
 
   // ── Numbers ──────────────────────────────────────────────────────────────
   { configKey: 'badgesThreshold',         attribute: 'badges-threshold',            converter: toInt(),               on: 'update', description: 'Threshold at which badges collapse to a count/compact view.' },
@@ -227,7 +232,7 @@ const EVENTS = [
  * this element directly (CSS-var sugar, debug panel, initial values). Stripped
  * before the merged config is handed to the picker.
  */
-const NON_PICKER_KEYS = new Set(['dropdownWidth', 'selectedPopoverWidth', 'showDebugInfo', 'initialValues', 'optionsSource', 'optionsFormat', 'optionsSplitter', 'optionsRowSplitter']);
+const NON_PICKER_KEYS = new Set(['dropdownWidth', 'selectedPopoverWidth', 'showDebugInfo', 'initialValues', 'optionsSource', 'optionsFormat', 'optionsSplitter', 'optionsRowSplitter', 'mobilePresentation']);
 
 /** CSS-var sugar: configKey → the host CSS custom property it mirrors to. */
 const CSS_VARS: Record<string, string> = {
@@ -339,6 +344,12 @@ export class MultiSelectElement<T = any> extends BlissElement<MultiSelectEvents>
     if (this.#picker && Object.keys(pickerPartial).length > 0) {
       if (!this.#picker.updateOptions(pickerPartial as Partial<MultiSelectConfig<T>>)) this.#rebuildPicker();
     }
+
+    // `mobilePresentation` is element-only (NON_PICKER_KEYS) — the picker never sees
+    // the raw setting. When the author changes the attribute we re-resolve it
+    // against the current environment ourselves (environmentChanged only fires on an
+    // env change, not an attribute change).
+    if ('mobilePresentation' in partial) this.#applyPresentation(getEnvironment());
   }
 
   /** Activate: ensure the picker exists (a DOM move destroyed it in disconnect()). */
@@ -350,6 +361,24 @@ export class MultiSelectElement<T = any> extends BlissElement<MultiSelectEvents>
   protected override disconnect(): void {
     this.#picker?.destroy();
     this.#picker = undefined;
+  }
+
+  /**
+   * Device/viewport/orientation changed (core §12.9). Overriding this opts the
+   * element into the shared environment observable — core subscribes on connect
+   * (firing immediately with the current snapshot) and unsubscribes on disconnect.
+   * We map it to the picker's floating/fullscreen presentation; the immediate fire
+   * lands right after `connect()` builds the picker, so the initial presentation is
+   * set before the dropdown can open.
+   */
+  protected override environmentChanged(env: EnvironmentSnapshot): void {
+    this.#applyPresentation(env);
+  }
+
+  /** Resolve `mobile-presentation` against `env` and relay it to the live picker. */
+  #applyPresentation(env: EnvironmentSnapshot): void {
+    const mode = (this.config.mobilePresentation as MobilePresentation | null) ?? 'auto';
+    this.#picker?.setPresentation(resolveMobilePresentation(mode, env));
   }
 
   // ── picker lifecycle ──────────────────────────────────────────────────────
@@ -377,6 +406,9 @@ export class MultiSelectElement<T = any> extends BlissElement<MultiSelectEvents>
     this.#picker = new WebMultiSelect<T>(this.#container!, cfg as any);
     this.#applyCustomStyles();
     this.#syncDebugPanel();
+    // A fresh picker starts 'floating'; re-assert the resolved presentation so a
+    // rebuild (reinit) doesn't drop a fullscreen setting until the next env change.
+    this.#applyPresentation(getEnvironment());
   }
 
   #ensureContainer(): void {

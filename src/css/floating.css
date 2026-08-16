@@ -54,6 +54,194 @@
   flex-direction: column;
 }
 
+/* ------------------------------------------------------------------------------
+   FULLSCREEN OVERLAY — phone / touch presentation
+   Set by JS (setPresentation('fullscreen'), driven by the element's
+   environmentChanged hook) INSTEAD of anchoring the panel. The panel becomes a
+   fixed, full-viewport sheet with its own search + close header, so the input it
+   would otherwise float beneath is fully covered. `dvh` tracks the mobile URL bar.
+   ------------------------------------------------------------------------------ */
+/* Phone-view scaling. Every size is calc(N × --ms-rem), but a custom property bakes
+   its var(--ms-rem) at its DECLARATION site — the semantic vars are declared at :host
+   (10px), so overriding --ms-rem on the panel alone does NOT re-scale them. So we both
+   (a) set the panel's --ms-rem to --ms-fullscreen-rem, and (b) RE-DECLARE the shared
+   option/checkbox/group vars here in the panel scope, with the same formulas as
+   variables.css, so their var(--ms-rem) now resolves to the enlarged value. Overlay-
+   only --ms-fullscreen-* vars already derive from --ms-fullscreen-rem at :host, and
+   JS-driven row heights (virtual/fixed) are scaled to match in code. */
+.ms__dropdown--fullscreen,
+.ms__selected-popover--fullscreen {
+  --ms-rem: var(--ms-fullscreen-rem);
+  --ms-option-padding: calc(0.8 * var(--ms-rem)) calc(1.2 * var(--ms-rem));
+  --ms-option-gap: calc(0.8 * var(--ms-rem));
+  --ms-option-title-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
+  --ms-option-subtitle-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
+  --ms-option-icon-font-size: calc(var(--base-font-size-base, 1.6) * var(--ms-rem));
+  --ms-checkbox-size: calc(1.6 * var(--ms-rem));
+  --ms-group-label-font-size: calc(var(--base-font-size-xs, 1.2) * var(--ms-rem));
+  --ms-group-label-padding: calc(0.4 * var(--ms-rem)) calc(1.2 * var(--ms-rem));
+  /* Reclaim horizontal space for labels: tighter indent than the floating default
+     (--ms-tree-base-indent 0.75rem / --ms-tree-indent 1.25rem in tree.css). */
+  --ms-tree-base-indent: var(--ms-fullscreen-tree-base-indent);
+  --ms-tree-indent: var(--ms-fullscreen-tree-indent);
+}
+
+.ms__dropdown--fullscreen {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  max-width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
+  border: none;
+  border-radius: 0;
+  background: var(--ms-fullscreen-bg);
+  color: var(--ms-fullscreen-text-color);
+  z-index: var(--ms-z-index-fullscreen);
+}
+
+.ms__dropdown--fullscreen .ms__dropdown-inner {
+  /* The panel is a full-height flex column; the list fills the space under the header. */
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+}
+
+/* Virtual list fills the sheet (its fixed maxHeight is dropped in fullscreen — see
+   renderDropdownVirtual), so it scrolls within the panel instead of at a set height. */
+.ms__dropdown--fullscreen .ms__options--virtual {
+  flex: 1 1 0;
+  min-height: 0;
+  height: auto;
+  max-height: none;
+}
+
+/* Shared fullscreen header bar — ONE treatment for both the dropdown (search
+   field) and the selected-items popover (title). Same padding, height, border, and
+   close button, so the two mobile overlays are visually identical. The popover's
+   header/close reuse their own class names but adopt these rules under
+   `--fullscreen`, and the selectors are listed together so there's one source of
+   truth (no drift between the two headers). */
+.ms__fullscreen-header,
+.ms__selected-popover--fullscreen .ms__selected-popover-header {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  gap: var(--ms-fullscreen-header-gap);
+  min-height: var(--ms-fullscreen-header-min-height);
+  padding: var(--ms-fullscreen-header-padding);
+  background: var(--ms-fullscreen-header-bg);
+  border-bottom: var(--ms-fullscreen-header-border);
+}
+
+/* The leading element (search field or title) fills the bar, pushing the close
+   button to the trailing edge in both overlays. */
+.ms__fullscreen-header > .ms__fullscreen-search,
+.ms__selected-popover--fullscreen .ms__selected-popover-header > span {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+/* Popover title typography in fullscreen (matches a header title, not the small
+   floating-popover label). */
+.ms__selected-popover--fullscreen .ms__selected-popover-header {
+  font-size: var(--ms-fullscreen-title-font-size);
+  font-weight: var(--ms-fullscreen-title-font-weight);
+  color: var(--ms-fullscreen-text-color);
+}
+
+.ms__fullscreen-search {
+  font-family: inherit;
+  font-size: var(--ms-fullscreen-search-font-size);
+  color: inherit;
+  background: transparent;
+  border: var(--ms-fullscreen-search-border);
+  border-radius: var(--ms-fullscreen-search-border-radius);
+  padding: var(--ms-fullscreen-search-padding);
+}
+
+.ms__fullscreen-search:focus {
+  outline: none;
+  border: var(--ms-input-border-focus);
+}
+
+/* Shared close button — identical big, round, mask-icon ✕ in both overlays. */
+.ms__fullscreen-close,
+.ms__selected-popover--fullscreen .ms__selected-popover-close {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ms-fullscreen-close-size);
+  height: var(--ms-fullscreen-close-size);
+  padding: 0;
+  color: var(--ms-fullscreen-close-color);
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.ms__fullscreen-close:hover,
+.ms__selected-popover--fullscreen .ms__selected-popover-close:hover {
+  background: var(--ms-fullscreen-close-bg-hover);
+  color: var(--ms-fullscreen-close-color);
+}
+
+.ms__fullscreen-close::before,
+.ms__selected-popover--fullscreen .ms__selected-popover-close::before {
+  content: "";
+  display: block;
+  width: var(--ms-fullscreen-close-icon-size);
+  height: var(--ms-fullscreen-close-icon-size);
+  background-color: currentColor;
+  -webkit-mask: var(--ms-icon-remove) center / contain no-repeat;
+          mask: var(--ms-icon-remove) center / contain no-repeat;
+}
+
+/* Truncated-label reveal — a circled "i" at the trailing edge of a fullscreen row
+   whose label is clipped. Fullscreen-only markup (the renderer emits it only for the
+   overlay), and CSS keeps it hidden until JS tags the row .ms__option--truncated
+   (measured per render). Tapping it reveals the full label — the touch-friendly
+   substitute for the hover option tooltip, which never fires on touch. */
+.ms__dropdown--fullscreen .ms__option-info {
+  flex: 0 0 auto;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--ms-fullscreen-info-size);
+  height: var(--ms-fullscreen-info-size);
+  margin-inline-start: var(--ms-option-gap);
+  padding: 0;
+  color: var(--ms-fullscreen-info-color);
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.ms__dropdown--fullscreen .ms__option--truncated .ms__option-info {
+  display: inline-flex;
+}
+
+@media (hover: hover) {
+  .ms__dropdown--fullscreen .ms__option-info:hover {
+    background: var(--ms-fullscreen-info-bg-hover);
+  }
+}
+
+.ms__dropdown--fullscreen .ms__option-info::before {
+  content: "";
+  display: block;
+  width: var(--ms-fullscreen-info-icon-size);
+  height: var(--ms-fullscreen-info-icon-size);
+  background-color: currentColor;
+  -webkit-mask: var(--ms-icon-info) center / contain no-repeat;
+          mask: var(--ms-icon-info) center / contain no-repeat;
+}
+
 /* Inner scrolling container — clips scrollbar to rounded corners */
 .ms__dropdown-inner {
   flex: 1;
@@ -150,6 +338,12 @@
   visibility: visible;
 }
 
+/* Truncated-label reveal fired from inside the fullscreen overlay — lift it above
+   the overlay (10001), which the plain option tooltip (10000) would sit behind. */
+.ms__option-tooltip--fullscreen {
+  z-index: var(--ms-z-index-fullscreen-tooltip);
+}
+
 /* ==============================================================================
    SELECTED-ITEMS POPOVER
    ==============================================================================
@@ -179,6 +373,37 @@
   /* In virtual scroll mode, let the body container handle scrolling (matches dropdown pattern) */
   display: block;        /* Change from flex to block (like dropdown) */
   overflow: visible;
+  max-height: none;
+}
+
+/* ------------------------------------------------------------------------------
+   FULLSCREEN OVERLAY — phone / touch presentation (mirrors the dropdown overlay).
+   Set by JS (setPresentation('fullscreen')) instead of anchoring. The popover
+   already renders its own header + close button, so it just becomes a fixed,
+   full-viewport sheet. Declared AFTER --virtual so its `display:flex` wins the
+   large-selection (virtual) case; the virtual body flexes to fill (its inline
+   height is dropped in fullscreen — see renderSelectedPopoverVirtual).
+   ------------------------------------------------------------------------------ */
+.ms__selected-popover--fullscreen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  max-width: 100vw;
+  height: 100dvh;
+  max-height: 100dvh;
+  border: none;
+  border-radius: 0;
+  overflow: hidden;
+  background: var(--ms-fullscreen-bg);
+  color: var(--ms-fullscreen-text-color);
+  z-index: var(--ms-z-index-fullscreen);
+}
+
+.ms__selected-popover--fullscreen .ms__selected-popover-body {
+  flex: 1 1 0;
+  min-height: 0;
   max-height: none;
 }
 

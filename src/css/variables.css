@@ -328,6 +328,63 @@
   --ms-z-index-sticky: 1;
 
   /* ==========================================================================
+     FULLSCREEN OVERLAY (touch / phone presentation)
+     Used when a panel is presented as a full-viewport overlay — the options
+     dropdown (`.ms__dropdown--fullscreen`) AND the selected-items popover
+     (`.ms__selected-popover--fullscreen`). Both share ONE header-bar + close-
+     button treatment so the mobile view is consistent. Driven by the element's
+     environmentChanged hook on phones. Everything defaults to the dropdown's own
+     theming so a fullscreen panel looks like the same component.
+     ========================================================================== */
+  --ms-z-index-fullscreen: 10001; /* above dropdown (9999) + popover/tooltip (10000) */
+  /* The truncated-label reveal is triggered from INSIDE the fullscreen overlay, so it
+     must sit above it (the plain option tooltip at 10000 renders behind the 10001 panel). */
+  --ms-z-index-fullscreen-tooltip: 10002;
+  /* Size of the phone view. Every size in the component is calc(N × --ms-rem), so the
+     fullscreen panels override --ms-rem with this to scale rows, text, checkboxes,
+     padding, header and search up together (~1.2× → comfortable ~44–48px touch rows).
+     A plain length (not calc(1.2 × --ms-rem)) so assigning it to --ms-rem on the panel
+     can't form a cyclic var() reference. Set it larger for chunkier touch targets. */
+  --ms-fullscreen-rem: 12px;
+  /* These overlay-only vars are sized in --ms-fullscreen-rem (NOT --ms-rem): a custom
+     property bakes its var() at its declaration site, so declaring them here against
+     --ms-fullscreen-rem gives the enlarged phone-view sizes wherever they're consumed. */
+  --ms-fullscreen-bg: var(--ms-dropdown-bg);
+  --ms-fullscreen-text-color: var(--ms-dropdown-text-color);
+  --ms-fullscreen-header-bg: var(--ms-dropdown-bg);
+  --ms-fullscreen-header-border: 1px solid var(--ms-dropdown-border-color);
+  --ms-fullscreen-header-gap: calc(0.8 * var(--ms-fullscreen-rem));
+  --ms-fullscreen-header-padding: calc(0.8 * var(--ms-fullscreen-rem)) calc(1.2 * var(--ms-fullscreen-rem));
+  --ms-fullscreen-header-min-height: calc(5.6 * var(--ms-fullscreen-rem)); /* consistent bar height: search vs title */
+  --ms-fullscreen-title-font-size: calc(1.7 * var(--ms-fullscreen-rem));
+  --ms-fullscreen-title-font-weight: var(--base-font-weight-semibold, 600);
+  --ms-fullscreen-search-border: var(--ms-input-border);
+  --ms-fullscreen-search-border-radius: var(--ms-input-border-radius);
+  --ms-fullscreen-search-padding: calc(0.8 * var(--ms-fullscreen-rem)) calc(1.2 * var(--ms-fullscreen-rem));
+  --ms-fullscreen-search-font-size: calc(1.6 * var(--ms-fullscreen-rem));
+  --ms-fullscreen-close-size: calc(3.6 * var(--ms-fullscreen-rem));
+  --ms-fullscreen-close-icon-size: calc(1.6 * var(--ms-fullscreen-rem));
+  --ms-fullscreen-close-color: var(--ms-dropdown-text-color);
+  --ms-fullscreen-close-bg-hover: var(--ms-option-bg-matched, transparent);
+  /* Truncated-label info affordance (fullscreen only). A circled "i" revealed at the
+     trailing edge of a row whose label is clipped, so the full label is one tap away
+     on touch (where hover tooltips never fire). Sized in --ms-fullscreen-rem. */
+  --ms-fullscreen-info-size: calc(2.8 * var(--ms-fullscreen-rem));
+  --ms-fullscreen-info-icon-size: calc(1.8 * var(--ms-fullscreen-rem));
+  --ms-fullscreen-info-color: var(--ms-accent-color);
+  --ms-fullscreen-info-bg-hover: var(--ms-option-bg-matched, transparent);
+  /* SVG "i-in-a-circle" glyph — rendered via mask so it inherits the info color via
+     currentColor. Override with any mask-friendly url() SVG. */
+  --ms-icon-info: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='9' fill='none' stroke='black' stroke-width='2'/><circle cx='12' cy='7.5' r='1.3' fill='black'/><path d='M12 11v6' stroke='black' stroke-width='2' stroke-linecap='round' fill='none'/></svg>");
+  /* Tighter tree indent for the phone overlay so deep nodes leave room for the label.
+     Sized in --ms-fullscreen-rem (like the rest of the overlay) so it scales with the
+     phone view: at the 12px default this is ~8.4px base + ~14.4px/level, vs the
+     floating default's real-rem 0.75rem/1.25rem (tree.css). Raise --ms-fullscreen-rem
+     and the indent grows with the rows. */
+  --ms-fullscreen-tree-base-indent: calc(0.7 * var(--ms-fullscreen-rem));
+  --ms-fullscreen-tree-indent: calc(1.2 * var(--ms-fullscreen-rem));
+
+  /* ==========================================================================
      DROPDOWN ACTIONS
      ========================================================================== */
   --ms-actions-gap: calc(0.4 * var(--ms-rem));

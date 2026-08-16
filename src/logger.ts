@@ -1,9 +1,10 @@
 /**
  * Categorized loggers for @keenmate/web-multiselect — now a thin shim over the
  * core logging module (`@keenmate/web-components-core`, SPEC §12.1). Core owns the
- * `loglevel` dependency and the colour-coded `%c` prefix (built in a
- * `methodFactory`, ordering-safe), so the previously vendored `loglevel` +
- * `loglevel-plugin-prefix` copies under `src/vendor/` are gone.
+ * vendored logging engine and the colour-coded `%c` prefix (ordering-safe); as of
+ * core rc04 `loglevel` is no longer a runtime dependency (it was vendored into
+ * core), so nothing here pulls `loglevel` transitively and the previously vendored
+ * `loglevel` + `loglevel-plugin-prefix` copies under `src/vendor/` are gone.
  *
  * The picker (`multiselect.ts`) imports the four category loggers by name, so
  * this module keeps that surface:
@@ -37,8 +38,8 @@ type Category = (typeof CATEGORIES)[number];
  */
 export const logging = createLoggers('MULTISELECT', CATEGORIES);
 
-// The four category loggers, by their historical names. Each is a `loglevel`
-// Logger, so `dataLogger.debug(...)` etc. work exactly as before.
+// The four category loggers, by their historical names. Each is a core `Logger`
+// (loglevel-compatible surface), so `dataLogger.debug(...)` etc. work as before.
 export const initLogger: Logger = logging.loggers.INIT;
 export const dataLogger: Logger = logging.loggers.DATA;
 export const uiLogger: Logger = logging.loggers.UI;

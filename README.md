@@ -21,6 +21,43 @@ Reads `--base-*` variables from the page if [`@keenmate/theme-designer`](https:/
 - Custom rendering callbacks for options, badges, and group headers.
 - Form integration via standard hidden inputs (FormData-compatible).
 
+## What's New in v2.0.0-rc03
+
+**Full-screen dropdown on phones (`mobile-presentation`).** On a phone, a dropdown
+that floats next to the input fights the on-screen keyboard. `<web-multiselect>`
+now detects phones and, by default (`mobile-presentation="auto"`), presents the
+open dropdown as a **full-screen overlay** with its own search field and close (✕)
+button — while desktop and tablets keep the familiar floating panel, unchanged. A
+"phone" is a touch-primary device whose **shorter** viewport side is `< 600px`
+(the Material `sw600dp` line), so a phone in **landscape** still gets the overlay
+and tablets never do. The **selected-items popover** goes full-screen on phones
+too, with a matching header. The phone view is scaled up ~1.2× for comfortable
+touch targets via the `--ms-fullscreen-rem` knob (default `12px` vs the base
+`--ms-rem: 10px`) — one value grows rows, text, checkboxes, header and search
+together. Override the mode per instance with `mobile-presentation="floating"`
+(anchored panel everywhere) or `"fullscreen"` (force the overlay on any device —
+handy for previews). Theme it with the new `--ms-fullscreen-*` CSS variables.
+
+```html
+<!-- auto (default): full-screen on phones, floating on desktop/tablet -->
+<web-multiselect mobile-presentation="auto"></web-multiselect>
+
+<!-- never go full-screen -->
+<web-multiselect mobile-presentation="floating"></web-multiselect>
+
+<!-- always full-screen (preview the mobile view on desktop) -->
+<web-multiselect mobile-presentation="fullscreen"></web-multiselect>
+```
+
+This is powered by device/viewport/orientation detection in
+[`@keenmate/web-components-core`](https://www.npmjs.com/package/@keenmate/web-components-core)
+1.0.0-rc04 (via `BlissElement`'s `environmentChanged` hook), which this release
+pins. rc04 also **drops `loglevel`** as a transitive runtime dependency. The
+floating dropdown additionally gains a viewport-width safety cap so a wide panel
+can't overflow the screen edge.
+
+See `CHANGELOG.md` for the full list.
+
 ## What's New in v2.0.0-rc02
 
 **Form association restored for host frameworks (`el.form`).** Selecting inside a

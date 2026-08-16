@@ -57,7 +57,24 @@ export class WebMultiSelect<T = any> {
     private isRTL = false;
     private effectiveBadgesPosition: BadgesPosition = 'bottom';
     private justClosedViaClick = false;
+    // Set for one tick when the dropdown is opened by a pointer gesture. A fullscreen
+    // overlay (position:fixed, inset:0) appears over the pointer between mousedown and
+    // the follow-up click, so that click can target a common ancestor above the
+    // portaled panel and be misread as an outside-click. This guard swallows exactly
+    // that one click. See attachEvents() (mousedown) and handleClickOutside().
+    private justOpenedViaClick = false;
     private positioningDriftWarned = false;
+
+    // How the open dropdown is presented. 'floating' anchors it to the input (the
+    // default); 'fullscreen' renders it as a full-viewport overlay with its own
+    // search header + close button — the phone pattern, driven from the element's
+    // environmentChanged() hook via setPresentation(). See open()/enterFullscreen().
+    private presentationMode: 'floating' | 'fullscreen' = 'floating';
+    private fullscreenHeader: HTMLDivElement | null = null;
+    private fullscreenSearchInput: HTMLInputElement | null = null;
+    // The body `overflow` value stashed while a fullscreen overlay locks page scroll
+    // (null when not locked, so we only restore what we actually overrode).
+    private bodyOverflowBeforeFullscreen: string | null = null;
 
     // Floating UI cleanup functions
     private dropdownCleanup: (() => void) | null = null;
@@ -66,6 +83,10 @@ export class WebMultiSelect<T = any> {
 
     // All hover tooltips (badge text, badge-remove buttons, action buttons), keyed by id.
     private tooltips = new Map<string, TooltipHandle>();
+
+    // The info button whose full-label reveal is currently shown (fullscreen only),
+    // so a second tap on the same button toggles it off. See toggleLabelReveal().
+    private labelRevealTrigger: HTMLElement | null = null;
 
     // Dismiss option tooltips the instant the list scrolls. Without this, a shown
     // tooltip's floating-ui autoUpdate keeps chasing its anchor row as it scrolls
@@ -758,7 +779,7 @@ export class WebMultiSelect<T = any> {
         // the virtual list uses — otherwise the height visibly jumps as the result
         // count crosses the threshold (e.g. filtering from many matches to few).
         if (this.options.isVirtualScrollEnabled) {
-            const optionHeight = this.options.optionHeight ?? 50;
+            const optionHeight = this.scaledOptionHeight();
             html += `<div class="ms__options ms__options--fixed-height" style="--ms-option-height: ${optionHeight}px;">`;
         } else {
             html += '<div class="ms__options">';
@@ -819,6 +840,8 @@ export class WebMultiSelect<T = any> {
         this.attachActionButtonTooltips();
         // Attach tooltips to dropdown options
         this.attachOptionTooltips();
+        // Flag clipped labels so their fullscreen info affordance appears.
+        this.markTruncatedOptions();
     }
 
     /**
@@ -837,17 +860,21 @@ export class WebMultiSelect<T = any> {
             const actionsAtBottom = this.options.actionsPosition === 'bottom';
             if (!actionsAtBottom) html += actionsHTML;
 
-            // Create options container for virtual scroll
-            // Add inline styles to ensure proper height constraint and scrolling
-            const maxHeight = this.options.maxHeight || '20rem';
-            const optionHeight = this.options.optionHeight ?? 50;
-            html += `<div class="ms__options ms__options--virtual" style="height: ${maxHeight}; max-height: ${maxHeight}; overflow-y: auto; position: relative; --ms-option-height: ${optionHeight}px;"></div>`;
+            // Create options container for virtual scroll (sizing applied below).
+            html += `<div class="ms__options ms__options--virtual" style="overflow-y: auto; position: relative;"></div>`;
             if (actionsAtBottom) html += actionsHTML;
             this.dropdownInner.innerHTML = html;
 
             // Get options container
             this.optionsContainer = this.dropdownInner.querySelector('.ms__options') as HTMLDivElement;
         }
+
+        // Apply sizing on EVERY render, not just first creation — the container is built
+        // once (guarded by !virtualScroll) but the presentation can change afterwards
+        // (floating ⇄ fullscreen). Floating: a fixed maxHeight scroll box. Fullscreen: the
+        // panel is a flex column, so flex-fill it and drop the fixed height. Also refresh
+        // --ms-option-height so scaled rows match the JS itemHeight.
+        this.applyVirtualOptionsSizing(this.optionsContainer);
 
         if (this.filteredOptions.length === 0) {
             // Destroy virtual scroll when showing empty message to prevent stale state
@@ -859,8 +886,9 @@ export class WebMultiSelect<T = any> {
             return;
         }
 
-        // Initialize or update virtual scroll
-        const itemHeight = this.options.optionHeight ?? 50;
+        // Initialize or update virtual scroll (row height matches the scaled inline
+        // --ms-option-height above so the scroll math and the CSS agree).
+        const itemHeight = this.scaledOptionHeight();
         const bufferSize = this.options.virtualScrollBuffer ?? 10;
 
         // Defer initialization until container has dimensions
@@ -882,9 +910,13 @@ export class WebMultiSelect<T = any> {
                     onVisibleRangeChange: () => {
                         // Re-attach tooltips to options recycled into view by virtual scrolling.
                         this.attachOptionTooltips();
+                        // Re-flag clipped labels on the freshly-rendered rows.
+                        this.markTruncatedOptions();
                     }
                 });
             } else {
+                // Reused instance: pick up the (possibly rescaled) fullscreen row height.
+                this.virtualScroll.setItemHeight(itemHeight);
                 this.virtualScroll.setItems(this.filteredOptions);
             }
 
@@ -1038,10 +1070,24 @@ export class WebMultiSelect<T = any> {
             html += '</div>';
         }
 
+        html += this.renderOptionInfoButton();
         html += '</div>';
         html += '</div>';
 
         return html;
+    }
+
+    /**
+     * Trailing info affordance for an option row, emitted only for the fullscreen
+     * overlay. CSS keeps it hidden until `markTruncatedOptions()` tags the row
+     * `.ms__option--truncated`, so it appears only when the label is actually clipped.
+     * Tapping it reveals the full label — the touch substitute for the hover option
+     * tooltip, which never fires on touch (the very devices that get fullscreen).
+     * `tabindex="-1"` keeps it out of the tab order; the search input owns keyboarding.
+     */
+    private renderOptionInfoButton(): string {
+        if (this.presentationMode !== 'fullscreen') return '';
+        return `<button type="button" class="ms__option-info" tabindex="-1" aria-label="Show full label"></button>`;
     }
 
     /**
@@ -1133,6 +1179,7 @@ export class WebMultiSelect<T = any> {
             html += '</div>';
         }
 
+        html += this.renderOptionInfoButton();
         html += '</div>';
         html += '</div>';
 
@@ -1339,8 +1386,14 @@ export class WebMultiSelect<T = any> {
                     this.justClosedViaClick = false;
                 }, 0);
             } else {
-                // Open if closed (don't rely on focus event as input might already be focused)
+                // Open if closed (don't rely on focus event as input might already be focused).
+                // Guard the click that follows this mousedown from the fullscreen self-close
+                // (see justOpenedViaClick); cleared next tick, after that click is dispatched.
+                this.justOpenedViaClick = true;
                 this.open();
+                setTimeout(() => {
+                    this.justOpenedViaClick = false;
+                }, 0);
             }
         });
 
@@ -1749,6 +1802,16 @@ export class WebMultiSelect<T = any> {
             return;
         }
 
+        // Info affordance (fullscreen, clipped labels): reveal the full label instead
+        // of toggling selection. Must come before the option branch — the button lives
+        // inside .ms__option, so closest('.ms__option') would otherwise catch its tap.
+        const infoBtn = (e.target as HTMLElement).closest('.ms__option-info') as HTMLElement | null;
+        if (infoBtn) {
+            e.preventDefault();
+            this.toggleLabelReveal(infoBtn);
+            return;
+        }
+
         const option = (e.target as HTMLElement).closest('.ms__option') as HTMLElement;
         if (option && !option.classList.contains('ms__option--disabled')) {
             e.preventDefault();
@@ -1852,6 +1915,10 @@ export class WebMultiSelect<T = any> {
         }
 
         if (!this.isOpen) return;
+
+        // Swallow the click that came from the opening gesture — a fullscreen overlay
+        // that just appeared over the pointer makes it look like an outside-click.
+        if (this.justOpenedViaClick) return;
 
         // Check if any element in the event path is inside our elements
         // Filter to only Nodes since composedPath() can include Window and other objects
@@ -2190,13 +2257,26 @@ export class WebMultiSelect<T = any> {
             uiLogger.debug(`[${this.instanceId}] Showing ${this.allOptions.length} initial options on open`);
         }
 
+        // Establish the fullscreen layout BEFORE rendering so the virtual scroller
+        // measures the final, full-height container on its first pass (the header is a
+        // sibling of dropdown-inner, so building it first doesn't disturb the render).
+        if (this.presentationMode === 'fullscreen') {
+            // Full-viewport overlay: no anchoring, its own header carries search + close.
+            this.enterFullscreen();
+        }
+
         this.renderDropdown();
-        this.positionDropdown();
+
+        if (this.presentationMode !== 'fullscreen') {
+            this.positionDropdown();
+        }
 
         // Dismiss option tooltips immediately on scroll (see field comment).
         this.dropdown.addEventListener('scroll', this.onDropdownScroll, true);
 
-        if (this.hint) {
+        // The hint mirrors the floating dropdown's placement; it has no role in the
+        // fullscreen overlay (the header replaces it).
+        if (this.hint && this.presentationMode === 'floating') {
             this.hint.classList.add('ms__hint--visible');
             this.positionHint();
         }
@@ -2241,6 +2321,10 @@ export class WebMultiSelect<T = any> {
             this.hintCleanup = null;
         }
 
+        // Tear down the fullscreen overlay chrome + restore page scroll (no-op when
+        // the panel was floating).
+        this.exitFullscreen();
+
         // Reset placement tracking
         this.dropdownPlacement = null;
 
@@ -2281,6 +2365,13 @@ export class WebMultiSelect<T = any> {
             // fixed elements viewport-anchored, so `onDrift` catches the inverse edge case and
             // warns, pointing at the likely culprit.
             fixedContainingBlock: true,
+            // Viewport-safety cap (core rc03): core's size() middleware sets the panel's
+            // inline max-width to the space available on the resolved side (so long content
+            // wraps instead of overflowing the viewport edge). We COMPOSE it with the
+            // author-chosen fixed `dropdownMaxWidth` in onPlaced (not beforeCompute): this
+            // middleware runs during positioning and would otherwise clobber a fixed cap set
+            // earlier. onPlaced runs after it, so it gets the final say.
+            maxWidth: { padding: 8 },
             onDrift: (report) => this.warnDrift(report),
             beforeCompute: () => {
                 // Panel widths are CSS-variable driven (themeable at app level, overridable per
@@ -2294,11 +2385,20 @@ export class WebMultiSelect<T = any> {
                 // natural content width and strands the panel.
                 (this.options.hostElement ?? this.element).style.setProperty('--ms-input-current-width', `${this.input.offsetWidth}px`);
                 if (this.options.dropdownMinWidth) panel.style.minWidth = this.options.dropdownMinWidth;
-                if (opts.applyMaxWidth && this.options.dropdownMaxWidth) panel.style.maxWidth = this.options.dropdownMaxWidth;
             },
             onPlaced: (resolved) => {
                 // Record the placement once (the hint mirrors it); after freeze it never changes.
                 if (!opts.getPlacement()) opts.setPlacement(resolved);
+                // Compose the author cap with core's viewport cap. Core's size() apply just set
+                // panel.style.maxWidth to the available viewport width (a px string); clamp it to
+                // min(authorCap, available) so BOTH bounds hold. CSS min() handles mixed units
+                // (the author cap may be rem/%/px). Runs every frame after apply, so it's stable.
+                if (opts.applyMaxWidth && this.options.dropdownMaxWidth) {
+                    const available = panel.style.maxWidth; // px, set by core's maxWidth middleware
+                    panel.style.maxWidth = available
+                        ? `min(${this.options.dropdownMaxWidth}, ${available})`
+                        : this.options.dropdownMaxWidth;
+                }
                 opts.afterPosition?.();
             }
         });
@@ -2329,6 +2429,8 @@ export class WebMultiSelect<T = any> {
     }
 
     private positionDropdown(): void {
+        // The fullscreen overlay is CSS-positioned (fixed, inset:0) — never anchored.
+        if (this.presentationMode === 'fullscreen') return;
         this.dropdownCleanup = this.anchorFloatingPanel(this.dropdown, {
             getPlacement: () => this.dropdownPlacement,
             setPlacement: (p) => {
@@ -2339,6 +2441,216 @@ export class WebMultiSelect<T = any> {
             applyMaxWidth: true,
             afterPosition: () => { if (this.hint && this.isOpen) this.positionHint(); }
         });
+    }
+
+    /**
+     * Switch how the open panels are presented. 'floating' anchors them to the input
+     * (the default); 'fullscreen' renders them as full-viewport overlays (the phone
+     * pattern) — the dropdown with its own search header + close, the selected-items
+     * popover with its existing header + close. Driven by the element's
+     * `environmentChanged` hook (auto → fullscreen on phones). A no-op when unchanged;
+     * when a panel is already open it re-applies live so an orientation flip / viewport
+     * resize can swap presentation without a reopen.
+     */
+    public setPresentation(mode: 'floating' | 'fullscreen'): void {
+        if (mode === this.presentationMode) return;
+        this.presentationMode = mode;
+
+        // Re-apply live to whichever panel is currently open (they're mutually exclusive).
+        if (this.isOpen) {
+            if (mode === 'fullscreen') {
+                // Drop the floating anchor + hint, stand up the overlay chrome. Re-render
+                // so the list rebuilds at fullscreen sizing (e.g. virtual rows switch from
+                // a fixed maxHeight to flex-fill) and measures the full-height container.
+                if (this.dropdownCleanup) { this.dropdownCleanup(); this.dropdownCleanup = null; }
+                if (this.hintCleanup) { this.hintCleanup(); this.hintCleanup = null; }
+                if (this.hint) this.hint.classList.remove('ms__hint--visible');
+                this.dropdownPlacement = null;
+                this.enterFullscreen();
+                this.renderDropdown();
+            } else {
+                // Drop the overlay chrome, re-render at floating sizing, re-anchor.
+                this.exitFullscreen();
+                this.renderDropdown();
+                this.positionDropdown();
+                if (this.hint) { this.hint.classList.add('ms__hint--visible'); this.positionHint(); }
+            }
+        } else if (this.showSelectedPopover) {
+            if (mode === 'fullscreen') {
+                if (this.selectedPopoverCleanup) { this.selectedPopoverCleanup(); this.selectedPopoverCleanup = null; }
+                this.selectedPopoverPlacement = null;
+                this.clearFloatingInlineGeometry(this.selectedPopover);
+                this.selectedPopover.classList.add('ms__selected-popover--fullscreen');
+                this.lockBodyScroll();
+            } else {
+                this.selectedPopover.classList.remove('ms__selected-popover--fullscreen');
+                this.unlockBodyScroll();
+                this.positionSelectedPopover();
+            }
+        }
+    }
+
+    /**
+     * Lock page scroll behind a fullscreen overlay, stashing the prior `overflow` so
+     * it can be restored. Idempotent: the dropdown and the selected-items popover are
+     * mutually exclusive (opening one closes the other), so a single stash is enough,
+     * and a redundant call is a no-op rather than clobbering the saved value.
+     */
+    private lockBodyScroll(): void {
+        if (this.bodyOverflowBeforeFullscreen === null) {
+            this.bodyOverflowBeforeFullscreen = document.body.style.overflow;
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    /** Restore page scroll (no-op if it wasn't locked). */
+    private unlockBodyScroll(): void {
+        if (this.bodyOverflowBeforeFullscreen !== null) {
+            document.body.style.overflow = this.bodyOverflowBeforeFullscreen;
+            this.bodyOverflowBeforeFullscreen = null;
+        }
+    }
+
+    /**
+     * The fullscreen size multiplier = `--ms-fullscreen-rem ÷ --ms-rem` (both read off
+     * the host). CSS scales itself — every size is `calc(N × --ms-rem)` and the panel
+     * overrides `--ms-rem` — so this exists only for the JS-driven pixel heights that
+     * CSS can't reach: the virtual/fixed option rows and the popover's virtual badges.
+     * Returns 1 when floating (or when computed styles aren't readable, e.g. jsdom).
+     */
+    private fullscreenScale(): number {
+        if (this.presentationMode !== 'fullscreen') return 1;
+        if (typeof getComputedStyle !== 'function') return 1;
+        const host = this.options.hostElement ?? this.element;
+        const cs = getComputedStyle(host);
+        const rem = parseFloat(cs.getPropertyValue('--ms-rem')) || 10;
+        const fsRem = parseFloat(cs.getPropertyValue('--ms-fullscreen-rem')) || (rem * 1.2);
+        return fsRem / rem;
+    }
+
+    /** Virtual/fixed row height (px), scaled up in the fullscreen phone view. */
+    private scaledOptionHeight(): number {
+        return Math.round((this.options.optionHeight ?? 50) * this.fullscreenScale());
+    }
+
+    /**
+     * Size the virtual options scroll container for the current presentation. Applied on
+     * every render (the container itself is built once), so a floating⇄fullscreen switch
+     * re-sizes it: floating = a fixed maxHeight scroll box; fullscreen = flex-fill the
+     * panel's flex column (no fixed height). Also refreshes --ms-option-height to the
+     * scaled row height so the CSS row height matches the virtual scroller's itemHeight.
+     */
+    private applyVirtualOptionsSizing(container: HTMLElement): void {
+        container.style.setProperty('--ms-option-height', `${this.scaledOptionHeight()}px`);
+        if (this.presentationMode === 'fullscreen') {
+            container.style.flex = '1 1 0';
+            container.style.minHeight = '0';
+            container.style.height = '';
+            container.style.maxHeight = '';
+        } else {
+            const maxHeight = this.options.maxHeight || '20rem';
+            container.style.flex = '';
+            container.style.minHeight = '';
+            container.style.height = maxHeight;
+            container.style.maxHeight = maxHeight;
+        }
+    }
+
+    /** Virtual popover badge height (px), scaled up in the fullscreen phone view. */
+    private scaledBadgeHeight(): number {
+        return Math.round((this.options.badgeHeight ?? 36) * this.fullscreenScale());
+    }
+
+    /**
+     * Clear the inline geometry that floating-ui's `anchor` writes on a panel
+     * (position/left/top plus our composed max-width/min-width). Inline styles beat
+     * the stylesheet, so a panel left over from a floating cycle would otherwise pin
+     * itself where it last anchored and ignore the fullscreen CSS (position: fixed;
+     * inset: 0; width: 100vw). Must run when switching a panel floating → fullscreen.
+     */
+    private clearFloatingInlineGeometry(panel: HTMLElement): void {
+        panel.style.position = '';
+        panel.style.left = '';
+        panel.style.top = '';
+        panel.style.right = '';
+        panel.style.bottom = '';
+        panel.style.transform = '';
+        panel.style.maxWidth = '';
+        panel.style.minWidth = '';
+        panel.style.width = '';
+    }
+
+    /** Stand up the fullscreen dropdown overlay: modifier class, header, scroll lock, focus. */
+    private enterFullscreen(): void {
+        this.clearFloatingInlineGeometry(this.dropdown);
+        this.dropdown.classList.add('ms__dropdown--fullscreen');
+        this.buildFullscreenHeader();
+        this.lockBodyScroll();
+
+        // Focus the header search so typing filters immediately (matches native selects).
+        if (this.fullscreenSearchInput) {
+            this.fullscreenSearchInput.value = this.searchTerm;
+            this.fullscreenSearchInput.focus();
+        }
+    }
+
+    /** Tear down the fullscreen dropdown chrome and restore page scroll (no-op if floating). */
+    private exitFullscreen(): void {
+        this.dropdown.classList.remove('ms__dropdown--fullscreen');
+        if (this.fullscreenHeader) {
+            this.fullscreenHeader.remove();
+            this.fullscreenHeader = null;
+            this.fullscreenSearchInput = null;
+        }
+        this.unlockBodyScroll();
+    }
+
+    /**
+     * Build the fullscreen overlay header: a search field (proxying to the same
+     * `handleSearch`/`handleKeydown` path as the main input, since the overlay covers
+     * it) plus a close button. Inserted before the scrolling list so it pins to the
+     * top of the fixed panel. `renderDropdown()` only rewrites `dropdownInner`, so the
+     * header survives re-renders.
+     */
+    private buildFullscreenHeader(): void {
+        if (this.fullscreenHeader) return;
+
+        const header = document.createElement('div');
+        header.className = 'ms__fullscreen-header';
+
+        if (this.options.isSearchEnabled && this.options.searchInputMode !== 'hidden') {
+            const search = document.createElement('input');
+            search.type = 'text';
+            search.className = 'ms__fullscreen-search';
+            search.placeholder = this.getPlaceholderText();
+            search.autocomplete = 'off';
+            if (this.options.searchInputMode === 'readonly') search.readOnly = true;
+
+            // Proxy to the same search path as the main input, keeping the two in sync.
+            search.addEventListener('input', (e) => {
+                const value = (e.target as HTMLInputElement).value;
+                this.input.value = value;
+                this.handleSearch(value);
+            });
+            // Arrow/Enter/Escape navigation lives on the main input's keydown; the header
+            // search has focus in the overlay, so delegate to the same handler.
+            search.addEventListener('keydown', (e) => this.handleKeydown(e));
+
+            header.appendChild(search);
+            this.fullscreenSearchInput = search;
+        }
+
+        const close = document.createElement('button');
+        close.type = 'button';
+        close.className = 'ms__fullscreen-close';
+        close.setAttribute('aria-label', 'Close');
+        // The ✕ glyph is drawn via CSS (::before mask icon), shared with the popover
+        // close so both overlays have the same close button.
+        close.addEventListener('click', () => this.close());
+        header.appendChild(close);
+
+        this.dropdown.insertBefore(header, this.dropdownInner);
+        this.fullscreenHeader = header;
     }
 
     private positionHint(): void {
@@ -2430,7 +2742,14 @@ export class WebMultiSelect<T = any> {
             this.selectedPopover.classList.add('ms__selected-popover--virtual');
         }
 
-        this.positionSelectedPopover();
+        if (this.presentationMode === 'fullscreen') {
+            // Full-viewport overlay: no anchoring. The popover already renders its own
+            // header + close button, so it just needs the modifier class + scroll lock.
+            this.selectedPopover.classList.add('ms__selected-popover--fullscreen');
+            this.lockBodyScroll();
+        } else {
+            this.positionSelectedPopover();
+        }
     }
 
     private hideSelectedPopover(): void {
@@ -2438,6 +2757,8 @@ export class WebMultiSelect<T = any> {
         this.showSelectedPopover = false;
         this.selectedPopover.classList.remove('ms__selected-popover--visible');
         this.selectedPopover.classList.remove('ms__selected-popover--virtual');
+        this.selectedPopover.classList.remove('ms__selected-popover--fullscreen');
+        this.unlockBodyScroll();
         this.selectedPopoverPlacement = null;
 
         // Cleanup virtual scroll
@@ -2490,13 +2811,19 @@ export class WebMultiSelect<T = any> {
     private renderSelectedPopoverVirtual(selectedOptions: T[], count: number): void {
         // Only create HTML structure if virtual scroll doesn't exist yet
         if (!this.selectedPopoverVirtualScroll) {
-            const badgeHeight = this.options.badgeHeight ?? 36;
+            const badgeHeight = this.scaledBadgeHeight();
+            // Floating: fixed 18rem scroll area. Fullscreen: flex-fill the sheet instead
+            // (the panel is a bounded flex column, so the virtual scroller still measures a
+            // real clientHeight after layout).
+            const bodySizing = this.presentationMode === 'fullscreen'
+                ? 'flex: 1 1 0; min-height: 0;'
+                : 'height: 18rem;';
             const html = `
                 <div class="ms__selected-popover-header">
                     <span>Selected Items (${count})</span>
                     <button type="button" class="ms__selected-popover-close" aria-label="Close"></button>
                 </div>
-                <div class="ms__selected-popover-body ms__selected-popover-body--virtual" style="height: 18rem; overflow-y: auto; position: relative; --ms-badge-height-virtual: ${badgeHeight}px;"></div>
+                <div class="ms__selected-popover-body ms__selected-popover-body--virtual" style="${bodySizing} overflow-y: auto; position: relative; --ms-badge-height-virtual: ${badgeHeight}px;"></div>
             `;
             this.selectedPopover.innerHTML = html;
             this.selectedPopoverContainer = this.selectedPopover.querySelector('.ms__selected-popover-body') as HTMLDivElement;
@@ -2511,9 +2838,9 @@ export class WebMultiSelect<T = any> {
         if (!this.selectedPopoverContainer) return;
 
         // Initialize or update virtual scroll (same pattern as dropdown)
-        // Add gap to itemHeight (4px default gap between badges)
-        const badgeHeight = this.options.badgeHeight ?? 36;
-        const gap = 4; // 0.25rem default gap
+        // Add gap to itemHeight (4px default gap between badges), scaled to match.
+        const badgeHeight = this.scaledBadgeHeight();
+        const gap = Math.round(4 * this.fullscreenScale()); // 0.25rem default gap
         const itemHeight = badgeHeight + gap;
         const bufferSize = this.options.virtualScrollBuffer ?? 10;
 
@@ -2609,6 +2936,8 @@ export class WebMultiSelect<T = any> {
     }
 
     private positionSelectedPopover(): void {
+        // The fullscreen overlay is CSS-positioned (fixed, inset:0) — never anchored.
+        if (this.presentationMode === 'fullscreen') return;
         this.selectedPopoverCleanup = this.anchorFloatingPanel(this.selectedPopover, {
             getPlacement: () => this.selectedPopoverPlacement,
             setPlacement: (p) => {
@@ -3025,6 +3354,67 @@ export class WebMultiSelect<T = any> {
     }
 
     /**
+     * Tag each currently-rendered fullscreen option row whose title is horizontally
+     * clipped with `.ms__option--truncated`, so CSS reveals its info affordance.
+     * Runs per virtual-scroll render (rows recycle) and on the non-virtual render.
+     * Horizontal (ellipsis) overflow only — the truncation mode this pairs with;
+     * a wrapping title isn't "cut", it grows vertically. No-op unless fullscreen.
+     */
+    private markTruncatedOptions(): void {
+        if (this.presentationMode !== 'fullscreen') return;
+        const rows = this.dropdown.querySelectorAll('.ms__option');
+        rows.forEach((el) => {
+            const row = el as HTMLElement;
+            const title = row.querySelector('.ms__option-title') as HTMLElement | null;
+            const truncated = !!title && title.scrollWidth > title.clientWidth + 1;
+            row.classList.toggle('ms__option--truncated', truncated);
+        });
+    }
+
+    /**
+     * Reveal (or dismiss) the full label of a clipped fullscreen row when its info
+     * affordance is tapped — hover tooltips don't fire on touch. Anchored to the
+     * tapped button and keyed `option-reveal` so it rides the existing option-tooltip
+     * lifecycle: `hideOptionTooltips()` (dropdown scroll) hides it and
+     * `destroyAllOptionTooltips()` (re-render / search / close) tears it down. Tapping
+     * the same button again while it's showing toggles it off.
+     */
+    private toggleLabelReveal(infoBtn: HTMLElement): void {
+        const existing = this.tooltips.get('option-reveal');
+        if (existing && this.labelRevealTrigger === infoBtn && existing.isVisible) {
+            existing.hide();
+            this.labelRevealTrigger = null;
+            return;
+        }
+
+        const row = infoBtn.closest('.ms__option') as HTMLElement | null;
+        if (!row) return;
+        const index = parseInt(row.dataset.index ?? '-1', 10);
+        if (index < 0) return;
+        const option = this.isTreeMode()
+            ? (this.treeNodes[index]?.data as T | undefined)
+            : this.filteredOptions[index];
+        if (!option) return;
+
+        const content = this.buildOptionTooltipContent(option);
+        if (!content) return;
+
+        this.labelRevealTrigger = infoBtn;
+        this.spawnTooltip({
+            id: 'option-reveal',
+            trigger: infoBtn,
+            content,
+            // Anchor to the button's trailing/top edge so the bubble clears the row.
+            placement: 'top-end',
+            offsetDistance: this.options.optionTooltipOffset ?? this.options.badgeTooltipOffset ?? 8,
+            // The --fullscreen modifier lifts it above the overlay (z-index).
+            cssClass: 'ms__option-tooltip ms__option-tooltip--fullscreen',
+            visibleClass: 'ms__option-tooltip--visible'
+        });
+        this.tooltips.get('option-reveal')?.show();
+    }
+
+    /**
      * Hide (don't destroy) every currently-shown option tooltip immediately,
      * ignoring the hide delay. Wired to dropdown scroll so a tooltip can't trail
      * its recycling/scrolling anchor row. Handles stay in the map; a fresh hover
@@ -3116,6 +3506,10 @@ export class WebMultiSelect<T = any> {
         if (this.dropdownCleanup) this.dropdownCleanup();
         if (this.hintCleanup) this.hintCleanup();
         if (this.selectedPopoverCleanup) this.selectedPopoverCleanup();
+
+        // Restore page scroll if we're torn down while a fullscreen overlay is open
+        // (e.g. a DOM move destroys the picker mid-open).
+        this.exitFullscreen();
 
         // Clean up document-level event listeners
         if (this.documentClickHandler) {

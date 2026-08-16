@@ -179,11 +179,6 @@ export class VirtualScroll<T> {
         this.visibleStart = start;
         this.visibleEnd = end;
 
-        // Call optional range change callback
-        if (this.onVisibleRangeChange) {
-            this.onVisibleRangeChange(start, end);
-        }
-
         // Build HTML for visible items
         let html = '';
         for (let i = start; i < end; i++) {
@@ -199,6 +194,14 @@ export class VirtualScroll<T> {
 
         // Update viewport
         this.viewport.innerHTML = html;
+
+        // Fire the range-change callback AFTER the new rows are in the DOM, so
+        // consumers can read/measure them (e.g. attach per-row tooltips, flag
+        // clipped labels). Firing it before innerHTML would hand them the previous
+        // frame's rows — or nothing on the first render.
+        if (this.onVisibleRangeChange) {
+            this.onVisibleRangeChange(start, end);
+        }
     }
 
     /**

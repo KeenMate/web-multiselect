@@ -5,6 +5,101 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0-rc03] - 2026-08-14
+
+### Added
+
+- **Mobile presentation — full-screen overlay on phones.** A new
+  `mobile-presentation` attribute (`auto` | `floating` | `fullscreen`, default
+  `auto`) controls how the open dropdown is presented on phones. In `auto` the
+  dropdown keeps its floating panel on desktop and tablets but becomes a
+  **full-screen overlay** — with its own search field + close (✕) button and
+  page-scroll lock — on phones, where a floating panel anchored to an input
+  thrashes the soft keyboard. A "phone" is a touch-primary device whose **shorter**
+  viewport side is `< 600px` (the Material `sw600dp` boundary), so a **landscape
+  phone** still gets the overlay while tablets never do. `floating` forces the
+  anchored panel everywhere; `fullscreen` forces the overlay on any device (handy
+  for previewing the mobile view on desktop). Driven reactively from core's
+  device/viewport/orientation detection (`@keenmate/web-components-core` §12.9) via
+  `BlissElement`'s new `environmentChanged` hook, so an orientation flip or resize
+  re-resolves the presentation live. The **selected-items popover** (the "show
+  selected" overlay) goes full-screen on phones too, sharing one header + close
+  treatment with the dropdown so the two overlays look identical. The phone view is
+  scaled up ~1.2× for comfortable touch targets (~44–48px rows) via a single
+  `--ms-fullscreen-rem` knob (default `12px`) that overrides `--ms-rem` on the
+  overlays — so rows, text, checkboxes, padding, header and search all grow together;
+  raise it for chunkier targets. New `--ms-fullscreen-*` CSS variables theme the
+  overlay and its header. Imperative
+  `picker.setPresentation('floating' | 'fullscreen')` is available on the core class
+  for advanced use.
+- **Dropdown viewport-width safety (`anchor({ maxWidth })`).** The floating
+  dropdown now also caps its width to the space available on its side of the
+  viewport (core rc03), so a resized or wide-content panel can't overflow the
+  viewport edge — complementing the existing author-set `dropdown-max-width`.
+- **Tighter tree indent in the fullscreen overlay.** Deep tree nodes ate the
+  horizontal room the enlarged phone labels need, so the fullscreen overlay now
+  uses a smaller per-level indent (`--ms-fullscreen-tree-base-indent`, default
+  `calc(0.7 × --ms-fullscreen-rem)` ≈ 8.4px; `--ms-fullscreen-tree-indent`, default
+  `calc(1.2 × --ms-fullscreen-rem)` ≈ 14.4px/level) instead of the floating default
+  (`0.75rem` / `1.25rem`). Sized in `--ms-fullscreen-rem` like the rest of the
+  overlay, so it scales with the phone view. Floating presentation is unchanged;
+  override either variable to taste.
+- **Tap-to-reveal for clipped labels in fullscreen.** When an option's label is
+  truncated in the phone overlay, a circled-"ⓘ" info affordance appears at the row's
+  trailing edge; tapping it reveals the full label. This is the touch-friendly
+  counterpart to the hover option tooltip, which never fires on touch — the very
+  devices that get the fullscreen overlay. The icon shows **only** on rows whose
+  title is actually clipped (measured per render, horizontal/ellipsis overflow), so
+  short labels stay chrome-free. New `--ms-fullscreen-info-*` variables (size, icon
+  size, color, hover) and a `--ms-icon-info` glyph theme it; the reveal reuses the
+  existing option-tooltip styling and dismisses on scroll / re-render / close.
+
+### Fixed
+
+- **Fullscreen virtual list only filled half the sheet.** The virtual options
+  scroll container is built once (its `VirtualScroll` persists across open/close),
+  so a container first created in floating mode kept its fixed `height`/`max-height`
+  (e.g. `400px`) even after switching to fullscreen — leaving the list capped at
+  ~400px with empty space below. Sizing is now re-applied on **every** render
+  (`applyVirtualOptionsSizing`): fullscreen drops the fixed height and flex-fills the
+  panel's column (`flex: 1 1 0; min-height: 0`); floating restores the fixed
+  `max-height` scroll box. The scaled row height (`--ms-option-height` +
+  `VirtualScroll.setItemHeight`) is refreshed the same way, so a reused scroller
+  picks up the ~1.2× fullscreen rows instead of staying at the floating height.
+- **Resizing back under 600px re-scaled but didn't re-enter fullscreen.** Dragging
+  the viewport floating → fullscreen (e.g. 800px → 565px) applied the fullscreen
+  scaling but left the panel anchored where it last floated. floating-ui writes
+  `position`/`left`/`top`/`max-width` as **inline** styles, which outrank the
+  `.ms__dropdown--fullscreen` stylesheet rule (`position: fixed; inset: 0; width:
+  100vw`); only the CSS-custom-property scaling switched over. Entering fullscreen
+  now clears that inline geometry first (dropdown and selected-items popover), so a
+  live resize across the phone boundary snaps fully into — and out of — the overlay.
+- **Truncated-label info affordance appeared one frame late (or never).** The virtual
+  scroller fired `onVisibleRangeChange` **before** writing the new rows into the DOM,
+  so the per-render passes that read those rows (clipped-label detection, per-row
+  hover tooltips) measured the *previous* frame — and nothing at all on the first
+  render, so the ⓘ never showed. The callback now fires **after** `viewport.innerHTML`
+  is set. Also fixes a latent one-frame staleness in the hover option tooltips.
+- **Label-reveal tooltip rendered behind the fullscreen overlay.** The reveal is
+  triggered from inside the overlay (z-index `10001`) but the option tooltip sits at
+  `10000`, so it was occluded. A `.ms__option-tooltip--fullscreen` modifier
+  (`--ms-z-index-fullscreen-tooltip`, `10002`) lifts it above the overlay.
+- **Sticky hover / tap-highlight left rows looking selected on touch.** On touch,
+  `:hover` persists after a tap until the next tap elsewhere, so a tapped row — or a
+  tap on its ⓘ — stayed highlighted as if selected; the browser's tap-highlight added
+  a light-blue flash on top. Option hover rules are now gated behind
+  `@media (hover: hover)` (mouse/trackpad only, never touch), and
+  `-webkit-tap-highlight-color` is cleared on rows. Selection state is now the only
+  row feedback on touch; desktop hover is unchanged.
+
+### Changed
+
+- **Pinned `@keenmate/web-components-core` to `1.0.0-rc04`** (from `1.0.0-rc02`).
+  rc04 adds the environment-detection module + `environmentChanged` hook that power
+  touch presentation, and **vendors `loglevel` out of core** — the component no
+  longer pulls `loglevel` as a transitive runtime dependency. rc03 added the
+  `anchor({ maxWidth })` option adopted above. No API changes to the logging shim.
+
 ## [2.0.0-rc02] - 2026-08-03
 
 ### Fixed
