@@ -42,6 +42,7 @@ import type {
   MultiSelectEventDetail,
   OptionContentRenderContext,
   BadgeContentRenderContext,
+  MessageOptions,
 } from './types';
 import { toInitialValues } from './converters';
 import { resolveMobilePresentation, type MobilePresentation } from './mobile-presentation';
@@ -207,8 +208,8 @@ Tree + multiple only.` },
 
   // ── Callbacks: before-hooks (behavior-shaping) ───────────────────────────
   { configKey: 'beforeSearchCallback',    converter: cb(), on: 'update', type: '(searchTerm: string) => string | null', description: 'Runs before a search; return a rewritten term or null to veto.' },
-  { configKey: 'beforeSelectCallback',    converter: cb(), on: 'update', type: '(option: unknown, selectedOptions: unknown[]) => boolean | void', description: 'Runs before selecting; return false to veto.' },
-  { configKey: 'beforeDeselectCallback',  converter: cb(), on: 'update', type: '(option: unknown, selectedOptions: unknown[]) => boolean | void', description: 'Runs before deselecting; return false to veto.' },
+  { configKey: 'beforeSelectCallback',    converter: cb(), on: 'update', type: '(option: unknown, selectedOptions: unknown[]) => boolean | string | void', description: 'Runs before selecting; return false to veto, or a string to veto and show it as a message.' },
+  { configKey: 'beforeDeselectCallback',  converter: cb(), on: 'update', type: '(option: unknown, selectedOptions: unknown[]) => boolean | string | void', description: 'Runs before deselecting; return false to veto, or a string to veto and show it as a message.' },
   { configKey: 'addNewCallback',          converter: cb(), on: 'update', type: '(value: string) => unknown | Promise<unknown>', description: 'Create a new option from the typed text.' },
 ];
 
@@ -723,6 +724,23 @@ export class MultiSelectElement<T = any> extends BlissElement<MultiSelectEvents>
   getValue(): string | number | (string | number)[] | null {
     this.flush();
     return this.#picker ? this.#picker.getValue() : null;
+  }
+
+  /**
+   * Surface a transient message ("toast") on top of the component — visible even in the
+   * fullscreen overlay, where page-level UI is hidden behind the sheet. Content is text or
+   * an element; `opts.variant` sets the tone and `opts.duration` the auto-dismiss (0 =
+   * sticky). Also reached automatically when a `beforeSelect`/`beforeDeselect` callback
+   * returns a reason string.
+   */
+  showMessage(content: string | HTMLElement, opts?: MessageOptions): void {
+    this.flush();
+    this.#picker?.showMessage(content, opts);
+  }
+
+  /** Dismiss the transient message shown by {@link showMessage}, if any. */
+  hideMessage(): void {
+    this.#picker?.hideMessage();
   }
 
   destroy(): void {

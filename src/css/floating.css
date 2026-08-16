@@ -86,6 +86,34 @@
   --ms-tree-indent: var(--ms-fullscreen-tree-indent);
 }
 
+/* Bigger, dropdown-like selected-item rows in the phone overlay. The badge sizing
+   vars are declared at :host against the base --ms-rem (baked at 10px), so without
+   this they'd keep base-size text/padding inside the enlarged sheet and read as
+   cramped. Re-declaring them here — where --ms-rem is --ms-fullscreen-rem — scales
+   the pill height, text, padding and remove button up with the rest of the overlay.
+   The row height is also mirrored in JS (scaledBadgeHeight → --ms-badge-height-virtual)
+   for the virtual list, so both paths agree. */
+.ms__selected-popover--fullscreen {
+  --ms-badge-gap: calc(0.8 * var(--ms-rem));
+  --ms-badge-height: calc(4.2 * var(--ms-rem));
+  --ms-badge-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
+  --ms-badge-text-padding: 0 calc(1.2 * var(--ms-rem));
+  --ms-badge-remove-width: calc(3.6 * var(--ms-rem));
+  --ms-badge-remove-icon-size: calc(1.2 * var(--ms-rem));
+  --ms-badge-remove-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
+}
+
+/* Action buttons (Select All / Clear All / custom) scale up in the overlay too — their
+   sizing vars are baked at :host against the base --ms-rem, so re-declare them here
+   (where --ms-rem is --ms-fullscreen-rem) for a comfortable touch target. Dropdown-only:
+   the selected-items popover has no actions row. */
+.ms__dropdown--fullscreen {
+  --ms-actions-gap: calc(0.4 * var(--ms-rem));
+  --ms-actions-padding: calc(0.8 * var(--ms-rem));
+  --ms-action-btn-padding: calc(0.6 * var(--ms-rem)) calc(1.2 * var(--ms-rem));
+  --ms-action-btn-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
+}
+
 .ms__dropdown--fullscreen {
   position: fixed;
   inset: 0;
@@ -109,13 +137,18 @@
   max-height: none;
 }
 
-/* Virtual list fills the sheet (its fixed maxHeight is dropped in fullscreen — see
-   renderDropdownVirtual), so it scrolls within the panel instead of at a set height. */
-.ms__dropdown--fullscreen .ms__options--virtual {
+/* The options list fills the sheet between the header and any actions row, scrolling
+   within the panel instead of at a fixed height — for BOTH the virtual list (its
+   inline maxHeight is dropped in fullscreen, see renderDropdownVirtual) and the plain
+   non-virtual list (small selections). Without flex-fill, a short non-virtual list
+   sits content-height at the top and a bottom actions row floats mid-sheet with empty
+   space beneath it. */
+.ms__dropdown--fullscreen .ms__options {
   flex: 1 1 0;
   min-height: 0;
   height: auto;
   max-height: none;
+  overflow-y: auto;
 }
 
 /* Shared fullscreen header bar — ONE treatment for both the dropdown (search
@@ -345,6 +378,56 @@
 }
 
 /* ==============================================================================
+   TRANSIENT MESSAGE / TOAST (showMessage)
+   ==============================================================================
+   Rendered above the panel so a veto reason (or any consumer feedback) is visible
+   in BOTH presentations: anchored under the control when floating (position set by
+   floating-ui), pinned to the bottom-centre of the viewport — above the sheet — when
+   fullscreen. One shows at a time; tap to dismiss. */
+.ms__message {
+  position: fixed;
+  z-index: var(--ms-message-z-index);
+  box-sizing: border-box;
+  max-width: var(--ms-message-max-width);
+  padding: var(--ms-message-padding);
+  font-family: inherit;
+  font-size: var(--ms-message-font-size);
+  font-weight: var(--ms-message-font-weight);
+  line-height: var(--ms-line-height-normal);
+  color: var(--ms-message-color);
+  background: var(--ms-message-bg);
+  border: var(--ms-message-border);
+  border-radius: var(--ms-message-border-radius);
+  box-shadow: var(--ms-message-shadow);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity var(--ms-transition-normal) ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.ms__message--visible {
+  opacity: 1;
+}
+
+.ms__message--info    { background: var(--ms-message-info-bg);    color: var(--ms-message-info-color); }
+.ms__message--warning { background: var(--ms-message-warning-bg); color: var(--ms-message-warning-color); }
+.ms__message--error   { background: var(--ms-message-error-bg);   color: var(--ms-message-error-color); }
+.ms__message--success { background: var(--ms-message-success-bg); color: var(--ms-message-success-color); }
+
+/* Fullscreen: bottom-centre of the viewport, above the overlay. Its sizing vars are
+   --ms-rem-based (baked at :host), so rescale the key ones here against
+   --ms-fullscreen-rem to match the enlarged phone view. */
+.ms__message--fullscreen {
+  left: 50%;
+  right: auto;
+  bottom: var(--ms-message-fullscreen-offset);
+  transform: translateX(-50%);
+  max-width: min(var(--ms-message-max-width), calc(100vw - 4 * var(--ms-fullscreen-rem)));
+  padding: calc(1.0 * var(--ms-fullscreen-rem)) calc(1.4 * var(--ms-fullscreen-rem));
+  font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-fullscreen-rem));
+}
+
+/* ==============================================================================
    SELECTED-ITEMS POPOVER
    ==============================================================================
    Opens from the count-display / compact / "+X more" interactions to show
@@ -486,6 +569,10 @@
   width: 100%;
   min-height: fit-content; /* Allow badges to expand based on content */
   line-height: var(--ms-line-height-relaxed); /* Override line-height: 1 to allow multi-line content */
+  /* The body is a flex column; without this, badges shrink (flex-shrink defaults to 1)
+     toward their min-content height once the list overflows — so rows visibly get
+     shorter as you select more. Pin the height and let the body scroll instead. */
+  flex-shrink: 0;
 }
 
 .ms__selected-popover-body .ms__badge-text {

@@ -53,6 +53,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   short labels stay chrome-free. New `--ms-fullscreen-info-*` variables (size, icon
   size, color, hover) and a `--ms-icon-info` glyph theme it; the reveal reuses the
   existing option-tooltip styling and dismisses on scroll / re-render / close.
+- **`showMessage()` — surface a message on top of the component.** A transient toast
+  (`picker.showMessage(content, opts)` / `element.showMessage(...)`, with
+  `hideMessage()`) rendered above the panel in both presentations — anchored under the
+  control when floating, pinned over the sheet when fullscreen. It exists because the
+  fullscreen overlay covers the whole page, so page-level feedback is otherwise hidden
+  behind it. `content` is a string or an `HTMLElement`; `opts` is
+  `{ variant?: 'info' | 'warning' | 'error' | 'success', duration?: number }`
+  (`0` = sticky until tapped/replaced/closed; default `3000`). Tap to dismiss; one
+  shows at a time. **`beforeSelectCallback` / `beforeDeselectCallback` may now return a
+  string** — `return false` still vetoes silently (unchanged), `return 'reason'` vetoes
+  *and* shows the reason as a warning toast. New `--ms-message-*` variables (surface,
+  per-variant `bg`/`color`, padding, radius, font, shadow, max-width, fullscreen offset,
+  z-index) theme it.
+- **Bigger, dropdown-like selected rows in the fullscreen popover.** The selected-item
+  badges kept base-size text/padding inside the enlarged sheet (their `--ms-badge-*`
+  vars are baked against the base `--ms-rem`), so they read as cramped. In the
+  fullscreen popover those vars are now re-declared against `--ms-fullscreen-rem` and
+  the row height is taller, so a selected item is a comfortable touch target.
+- **Action buttons scale in the fullscreen overlay.** The Select-All / Clear-All /
+  custom action row's sizing vars were likewise baked at the base size; they're now
+  rebased against `--ms-fullscreen-rem` in the overlay (bigger font + padding), so the
+  buttons match the enlarged phone view.
 
 ### Fixed
 
@@ -87,10 +109,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Sticky hover / tap-highlight left rows looking selected on touch.** On touch,
   `:hover` persists after a tap until the next tap elsewhere, so a tapped row — or a
   tap on its ⓘ — stayed highlighted as if selected; the browser's tap-highlight added
-  a light-blue flash on top. Option hover rules are now gated behind
+  a light-blue flash on top. Option and action-button hover rules are now gated behind
   `@media (hover: hover)` (mouse/trackpad only, never touch), and
-  `-webkit-tap-highlight-color` is cleared on rows. Selection state is now the only
-  row feedback on touch; desktop hover is unchanged.
+  `-webkit-tap-highlight-color` is cleared on rows and buttons. Selection state is now
+  the only row feedback on touch; desktop hover is unchanged.
+- **Label reveal flashed and vanished (~200ms).** The full-label reveal used the hover
+  `createTooltip`, whose synthetic `mouseleave` (from the tap itself, under touch
+  emulation) scheduled a hide right after it showed. It's now a manually-controlled
+  `createPopover` — no hover listeners — that stays until explicitly dismissed (second
+  tap on the ⓘ, another tap in the sheet, scroll, re-render, or close).
+- **Selected-popover rows shrank as you selected more.** The popover body is a flex
+  column and the badges had the default `flex-shrink: 1` with `min-height: fit-content`,
+  so once the list overflowed the sheet the rows compressed toward one line instead of
+  staying fixed and scrolling. Badges are now `flex-shrink: 0`, so each keeps its height
+  and the body scrolls.
+- **Short non-virtual list left a gap above bottom actions in fullscreen.** Only the
+  *virtual* options container was flex-filled in the overlay, so a small (non-virtual)
+  list sat content-height at the top and a bottom actions row floated mid-sheet with
+  empty space beneath. The flex-fill rule now covers all `.ms__options` (virtual,
+  non-virtual, fixed-height), so the list fills between the header and the actions row
+  and scrolls internally.
 
 ### Changed
 

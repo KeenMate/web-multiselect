@@ -158,7 +158,51 @@ el.setSelected(['lead']);    // pre-select (bypasses the veto)</code></pre>
         </div>
 
         <!-- ============================================================ -->
-        <!-- 4. The distinction                                           -->
+        <!-- 4. showMessage — surface feedback over the component         -->
+        <!-- ============================================================ -->
+        <div class="card">
+            <h2>4 · <code>showMessage()</code> — surface a message over the component</h2>
+            <p>
+                A transient toast the component renders <strong>on top of itself</strong>. Its reason for
+                being: in the <strong>fullscreen overlay</strong> (phones) the sheet covers the whole page,
+                so your own toasts / inline messages are hidden behind it. This shows above the panel in
+                both presentations — anchored under the control when floating, pinned over the overlay when
+                fullscreen. It's also what a <code>before*Callback</code> uses when it returns a reason
+                string (demo 3). Content can be text <em>or</em> an element; variants are
+                <code>info</code> / <code>warning</code> / <code>error</code> / <code>success</code>.
+            </p>
+            <div class="form-group">
+                <label>Pick something (or just fire a message)</label>
+                <web-multiselect id="message-select" value-member="value" display-value-member="label"
+                    search-placeholder="Filter…"></web-multiselect>
+                <small class="form-text">Turn on “fullscreen preview”, open the dropdown, then fire a message — it appears over the sheet.</small>
+            </div>
+            <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin:0.75rem 0;">
+                <button type="button" data-msg="info">info</button>
+                <button type="button" data-msg="warning">warning</button>
+                <button type="button" data-msg="error">error</button>
+                <button type="button" data-msg="success">success</button>
+                <button type="button" id="msg-html">custom HTML</button>
+                <button type="button" id="msg-sticky">sticky (tap to close)</button>
+                <button type="button" id="msg-fs">toggle fullscreen preview</button>
+            </div>
+
+            <details style="margin-top: 1rem;">
+                <summary>Show code</summary>
+<pre><code>// text + variant + auto-dismiss (ms; 0 = sticky until tapped/replaced)
+el.showMessage('Saved!', { variant: 'success', duration: 2000 });
+
+// rich content
+const box = document.createElement('span');
+box.innerHTML = '&lt;strong&gt;Heads up&lt;/strong&gt; — 3 items hidden';
+el.showMessage(box, { variant: 'warning', duration: 0 });
+
+el.hideMessage();               // dismiss programmatically</code></pre>
+            </details>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 5. The distinction                                           -->
         <!-- ============================================================ -->
         <div class="card">
             <h2>Callback vs event — the one rule</h2>
@@ -249,11 +293,38 @@ el.setSelected(['lead']);    // pre-select (bypasses the veto)</code></pre>
             requiredSelect.beforeDeselectCallback = (option) => {
                 if (option.value === 'lead') {
                     requiredLog('tag-block', '[blocked] beforeDeselect', 'Team Lead is required — cannot be removed');
-                    return false;
+                    // Returning a string vetoes AND shows an in-component message — visible
+                    // even in the fullscreen overlay, where this page log would be hidden.
+                    return 'Team Lead is required — cannot be removed';
                 }
             };
             requiredSelect.onDeselect = (e) => requiredLog('tag-ok', '[removed] onDeselect', e.detail.option.label);
             requiredSelect.setSelected(['lead']); // pre-select; bypasses the veto
+
+            // --- 4. showMessage --------------------------------------
+            const msgSelect = document.getElementById('message-select');
+            msgSelect.options = [
+                { value: 'a', label: 'Alpha' }, { value: 'b', label: 'Bravo' },
+                { value: 'c', label: 'Charlie' }, { value: 'd', label: 'Delta' }
+            ];
+            document.querySelectorAll('[data-msg]').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    const variant = btn.dataset.msg;
+                    msgSelect.showMessage(`This is a ${variant} message`, { variant });
+                });
+            });
+            document.getElementById('msg-html').addEventListener('click', () => {
+                const span = document.createElement('span');
+                span.innerHTML = '<strong>Custom</strong> HTML content ✨';
+                msgSelect.showMessage(span, { variant: 'info', duration: 4000 });
+            });
+            document.getElementById('msg-sticky').addEventListener('click', () => {
+                msgSelect.showMessage('Sticky — tap me to dismiss', { variant: 'warning', duration: 0 });
+            });
+            document.getElementById('msg-fs').addEventListener('click', () => {
+                const isFs = msgSelect.getAttribute('mobile-presentation') === 'fullscreen';
+                msgSelect.setAttribute('mobile-presentation', isFs ? 'floating' : 'fullscreen');
+            });
         });
     </script>
 

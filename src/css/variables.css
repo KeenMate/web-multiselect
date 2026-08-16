@@ -646,6 +646,35 @@
   --ms-option-tooltip-z-index: var(--ms-tooltip-z-index);
 
   /* ==========================================================================
+     TRANSIENT MESSAGE / TOAST (showMessage)
+     Surfaced on top of the component so a veto reason (or any consumer feedback)
+     is visible even in the fullscreen overlay, where page UI is covered. Sizing is
+     --ms-rem-based (a fullscreen override rescales it below at :host); per-variant
+     colours default to sensible tones and are theme-overridable via --base-*.
+     ========================================================================== */
+  --ms-message-bg: var(--ms-message-info-bg);
+  --ms-message-color: var(--ms-message-info-color);
+  --ms-message-border: 1px solid transparent;
+  --ms-message-border-radius: var(--ms-border-radius-lg);
+  --ms-message-padding: calc(1.0 * var(--ms-rem)) calc(1.4 * var(--ms-rem));
+  --ms-message-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
+  --ms-message-font-weight: var(--base-font-weight-medium, 500);
+  --ms-message-max-width: calc(40 * var(--ms-rem));
+  --ms-message-shadow: 0 4px 16px rgb(0 0 0 / 0.18);
+  /* Gap from the bottom edge of the viewport in the fullscreen overlay. */
+  --ms-message-fullscreen-offset: calc(2.4 * var(--ms-fullscreen-rem));
+  --ms-message-z-index: var(--ms-z-index-fullscreen-tooltip);
+  /* Variants (bg + text). Info reuses the tooltip surface; the rest are status tones. */
+  --ms-message-info-bg: var(--ms-tooltip-bg);
+  --ms-message-info-color: var(--ms-tooltip-text-color);
+  --ms-message-warning-bg: var(--base-warning-bg, #f59e0b);
+  --ms-message-warning-color: var(--base-warning-color, #1a1a1a);
+  --ms-message-error-bg: var(--base-danger-bg, #ef4444);
+  --ms-message-error-color: var(--base-danger-color, #ffffff);
+  --ms-message-success-bg: var(--base-success-bg, #10b981);
+  --ms-message-success-color: var(--base-success-color, #ffffff);
+
+  /* ==========================================================================
      SELECTED POPOVER
      ========================================================================== */
   --ms-z-index-popover: 10000;

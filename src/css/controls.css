@@ -216,11 +216,16 @@
   color: var(--ms-action-button-color);
   cursor: pointer;
   transition: all var(--ms-transition-fast) var(--ms-easing-snappy);
+  -webkit-tap-highlight-color: transparent; /* No mobile tap flash (see .ms__option) */
 }
 
-.ms__action-btn:hover {
-  background: var(--ms-action-button-bg-hover);
-  border-color: var(--ms-action-button-border-color-hover);
+/* Hover gated to real pointing devices — on touch `:hover` sticks after a tap and
+   would leave the button looking pressed (see the option rows in options.css). */
+@media (hover: hover) {
+  .ms__action-btn:hover {
+    background: var(--ms-action-button-bg-hover);
+    border-color: var(--ms-action-button-border-color-hover);
+  }
 }
 
 .ms__action-btn:active {

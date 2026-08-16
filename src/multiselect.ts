@@ -8,8 +8,8 @@
 // the fixed-position containing-block heuristic and the drift measurement; this file
 // keeps only the multiselect-branded warning copy (see warnDrift). No direct
 // `@floating-ui/dom` dependency: core owns the one pinned version.
-import { anchor, createTooltip, type Placement, type TooltipHandle, type DriftReport } from '@keenmate/web-components-core/positioning';
-import type { MultiSelectConfig, BadgesPosition, SearchInputMode, SearchMode, OptionContentRenderContext, BadgeContentRenderContext } from './types';
+import { anchor, createTooltip, createPopover, type Placement, type TooltipHandle, type PopoverHandle, type DriftReport } from '@keenmate/web-components-core/positioning';
+import type { MultiSelectConfig, BadgesPosition, SearchInputMode, SearchMode, OptionContentRenderContext, BadgeContentRenderContext, MessageOptions } from './types';
 import { initLogger, dataLogger, uiLogger, interactionLogger } from './logger';
 import { VirtualScroll } from './virtual-scroll';
 import { createLTree, type LTree } from './tree/ltree';
@@ -84,9 +84,21 @@ export class WebMultiSelect<T = any> {
     // All hover tooltips (badge text, badge-remove buttons, action buttons), keyed by id.
     private tooltips = new Map<string, TooltipHandle>();
 
-    // The info button whose full-label reveal is currently shown (fullscreen only),
-    // so a second tap on the same button toggles it off. See toggleLabelReveal().
+    // Full-label reveal shown when a clipped row's info button is tapped (fullscreen
+    // only). A manually-controlled popover — NOT a hover tooltip — so it stays put
+    // until explicitly dismissed (a hover tooltip's synthetic mouseleave on touch
+    // would flash it away). `labelRevealTrigger` tracks the button so a second tap
+    // toggles it off. See toggleLabelReveal() / hideLabelReveal().
     private labelRevealTrigger: HTMLElement | null = null;
+    private labelRevealPanel: HTMLDivElement | null = null;
+    private labelRevealPopover: PopoverHandle | null = null;
+
+    // Transient message ("toast") surface — see showMessage(). Rendered above the panel
+    // so a veto reason (or any consumer feedback) is visible even in the fullscreen
+    // overlay, where page-level UI is hidden behind the sheet.
+    private messageEl: HTMLDivElement | null = null;
+    private messageCleanup: (() => void) | null = null;
+    private messageTimer: ReturnType<typeof setTimeout> | null = null;
 
     // Dismiss option tooltips the instant the list scrolls. Without this, a shown
     // tooltip's floating-ui autoUpdate keeps chasing its anchor row as it scrolls
@@ -94,7 +106,7 @@ export class WebMultiSelect<T = any> {
     // tooltip visibly slides to the viewport edge before the next render clears it.
     // Capturing so it catches scroll from the inner options container (scroll
     // doesn't bubble). Same function ref → addEventListener dedupes across opens.
-    private readonly onDropdownScroll = (): void => this.hideOptionTooltips();
+    private readonly onDropdownScroll = (): void => { this.hideOptionTooltips(); this.hideLabelReveal(); };
 
     // Virtual scroll instance
     private virtualScroll: VirtualScroll<T> | null = null;
@@ -735,6 +747,9 @@ export class WebMultiSelect<T = any> {
     private renderDropdown(): void {
         // Clean up any existing action button tooltips before re-rendering
         this.destroyAllActionButtonTooltips();
+        // A re-render rebuilds the rows, detaching any info button the full-label
+        // reveal is anchored to — dismiss it so it can't trail a stale anchor.
+        this.hideLabelReveal();
 
         // Cascade tree rows derive their tristate from the checked-atom set — keep
         // it in sync with the (policy-projected) selection before rendering.
@@ -1782,6 +1797,20 @@ export class WebMultiSelect<T = any> {
 
         e.stopPropagation();
 
+        // Info affordance (fullscreen, clipped labels): reveal the full label instead
+        // of toggling selection. Handled first — the button lives inside .ms__option, so
+        // closest('.ms__option') would otherwise catch its tap; and its own toggle logic
+        // must run before the blanket dismiss below.
+        const infoBtn = (e.target as HTMLElement).closest('.ms__option-info') as HTMLElement | null;
+        if (infoBtn) {
+            e.preventDefault();
+            this.toggleLabelReveal(infoBtn);
+            return;
+        }
+
+        // Any other tap inside the panel dismisses an open full-label reveal.
+        this.hideLabelReveal();
+
         const actionBtn = (e.target as HTMLElement).closest('[data-action]') as HTMLElement;
         if (actionBtn) {
             e.preventDefault();
@@ -1799,16 +1828,6 @@ export class WebMultiSelect<T = any> {
                     button.onClick(this);
                 }
             }
-            return;
-        }
-
-        // Info affordance (fullscreen, clipped labels): reveal the full label instead
-        // of toggling selection. Must come before the option branch — the button lives
-        // inside .ms__option, so closest('.ms__option') would otherwise catch its tap.
-        const infoBtn = (e.target as HTMLElement).closest('.ms__option-info') as HTMLElement | null;
-        if (infoBtn) {
-            e.preventDefault();
-            this.toggleLabelReveal(infoBtn);
             return;
         }
 
@@ -2074,8 +2093,9 @@ export class WebMultiSelect<T = any> {
      * Returns true if the option was selected, false if the veto blocked it.
      */
     private interactiveSelect(option: T): boolean {
-        if (this.options.beforeSelectCallback &&
-            this.options.beforeSelectCallback(option, this.getSelected()) === false) {
+        const veto = this.options.beforeSelectCallback?.(option, this.getSelected());
+        if (veto === false || typeof veto === 'string') {
+            if (typeof veto === 'string') this.showMessage(veto, { variant: 'warning' });
             interactionLogger.debug(`[${this.instanceId}] Selection blocked by beforeSelectCallback`);
             return false;
         }
@@ -2099,8 +2119,9 @@ export class WebMultiSelect<T = any> {
      * Returns true if the option was deselected, false if the veto blocked it.
      */
     private interactiveDeselect(option: T): boolean {
-        if (this.options.beforeDeselectCallback &&
-            this.options.beforeDeselectCallback(option, this.getSelected()) === false) {
+        const veto = this.options.beforeDeselectCallback?.(option, this.getSelected());
+        if (veto === false || typeof veto === 'string') {
+            if (typeof veto === 'string') this.showMessage(veto, { variant: 'warning' });
             interactionLogger.debug(`[${this.instanceId}] Deselection blocked by beforeDeselectCallback`);
             return false;
         }
@@ -2309,6 +2330,8 @@ export class WebMultiSelect<T = any> {
         // Tear down option tooltips so they don't linger while the dropdown is hidden.
         this.dropdown.removeEventListener('scroll', this.onDropdownScroll, true);
         this.destroyAllOptionTooltips();
+        this.hideLabelReveal();
+        this.hideMessage();
 
         this.renderBadges();
 
@@ -2556,9 +2579,17 @@ export class WebMultiSelect<T = any> {
         }
     }
 
-    /** Virtual popover badge height (px), scaled up in the fullscreen phone view. */
+    /**
+     * Virtual popover badge row height (px). In the fullscreen phone view the rows are
+     * scaled up AND given extra height so a selected item is a comfortable, dropdown-like
+     * touch target (the default 36px pill is short for touch). Mirrors the CSS
+     * `--ms-badge-height` override for the fullscreen popover (floating.css) so the
+     * virtual list's fixed height agrees with the non-virtual pills.
+     */
     private scaledBadgeHeight(): number {
-        return Math.round((this.options.badgeHeight ?? 36) * this.fullscreenScale());
+        const base = this.options.badgeHeight ?? 36;
+        if (this.presentationMode !== 'fullscreen') return base;
+        return Math.round(base * this.fullscreenScale() * 1.2);
     }
 
     /**
@@ -3373,19 +3404,21 @@ export class WebMultiSelect<T = any> {
 
     /**
      * Reveal (or dismiss) the full label of a clipped fullscreen row when its info
-     * affordance is tapped — hover tooltips don't fire on touch. Anchored to the
-     * tapped button and keyed `option-reveal` so it rides the existing option-tooltip
-     * lifecycle: `hideOptionTooltips()` (dropdown scroll) hides it and
-     * `destroyAllOptionTooltips()` (re-render / search / close) tears it down. Tapping
-     * the same button again while it's showing toggles it off.
+     * affordance is tapped — hover tooltips don't fire on touch, and a hover tooltip's
+     * synthetic mouseleave (from the tap itself, under devtools touch emulation) would
+     * flash it away. So this is a manually-controlled `createPopover` panel, mounted in
+     * the shadow root for component styling, that stays until explicitly dismissed:
+     * a second tap on the same button, a list scroll, a re-render, an outside tap, or
+     * closing the panel (see hideLabelReveal + its call sites). Tapping the same button
+     * while it's shown toggles it off.
      */
     private toggleLabelReveal(infoBtn: HTMLElement): void {
-        const existing = this.tooltips.get('option-reveal');
-        if (existing && this.labelRevealTrigger === infoBtn && existing.isVisible) {
-            existing.hide();
-            this.labelRevealTrigger = null;
+        // Second tap on the same button closes it.
+        if (this.labelRevealPopover && this.labelRevealTrigger === infoBtn) {
+            this.hideLabelReveal();
             return;
         }
+        this.hideLabelReveal(); // drop any reveal anchored to a different button
 
         const row = infoBtn.closest('.ms__option') as HTMLElement | null;
         if (!row) return;
@@ -3399,19 +3432,105 @@ export class WebMultiSelect<T = any> {
         const content = this.buildOptionTooltipContent(option);
         if (!content) return;
 
+        // Build the reveal panel. Reuse the option-tooltip look; --fullscreen lifts it
+        // above the overlay (z-index) and --visible makes it opaque (no hover transition
+        // to wait on). String content may carry a "\n" subtitle → textContent honours it
+        // under the tooltip's `white-space: pre-wrap`.
+        const panel = document.createElement('div');
+        panel.className = 'ms__option-tooltip ms__option-tooltip--fullscreen ms__option-tooltip--visible';
+        if (typeof content === 'string') panel.textContent = content;
+        else panel.appendChild(content);
+
+        const rootNode = this.element.getRootNode();
+        const shadowContainer = rootNode instanceof ShadowRoot ? rootNode : null;
+        const container = (this.options.container ?? shadowContainer ?? document.body) as HTMLElement;
+
         this.labelRevealTrigger = infoBtn;
-        this.spawnTooltip({
-            id: 'option-reveal',
-            trigger: infoBtn,
-            content,
+        this.labelRevealPanel = panel;
+        this.labelRevealPopover = createPopover({
+            reference: infoBtn,
+            panel,
+            container,
             // Anchor to the button's trailing/top edge so the bubble clears the row.
             placement: 'top-end',
-            offsetDistance: this.options.optionTooltipOffset ?? this.options.badgeTooltipOffset ?? 8,
-            // The --fullscreen modifier lifts it above the overlay (z-index).
-            cssClass: 'ms__option-tooltip ms__option-tooltip--fullscreen',
-            visibleClass: 'ms__option-tooltip--visible'
+            offset: this.options.optionTooltipOffset ?? this.options.badgeTooltipOffset ?? 8,
+            shift: 8,
+            strategy: 'fixed'
         });
-        this.tooltips.get('option-reveal')?.show();
+        this.labelRevealPopover.open();
+    }
+
+    /** Dismiss the full-label reveal popover, if shown. Idempotent. */
+    private hideLabelReveal(): void {
+        if (this.labelRevealPopover) {
+            this.labelRevealPopover.destroy();
+            this.labelRevealPopover = null;
+        }
+        if (this.labelRevealPanel) {
+            this.labelRevealPanel.remove();
+            this.labelRevealPanel = null;
+        }
+        this.labelRevealTrigger = null;
+    }
+
+    /**
+     * Show a transient message ("toast") on top of the component. Its reason for existing:
+     * in the fullscreen overlay the sheet covers the whole page, so a consumer can't surface
+     * feedback (a blocked veto, a hint) where the user can see it. This renders above the
+     * panel in BOTH presentations — anchored under the control when floating, pinned to the
+     * bottom of the viewport (over the overlay) when fullscreen.
+     *
+     * Content is a string (plain text) or an HTMLElement (rich markup). `opts.variant`
+     * (info | warning | error | success) picks the tone; `opts.duration` sets auto-dismiss
+     * (0 = sticky). Tapping the message dismisses it. Only one shows at a time — a new call
+     * replaces the previous. Also reached automatically when a veto callback returns a string.
+     */
+    public showMessage(content: string | HTMLElement, opts?: MessageOptions): void {
+        this.hideMessage();
+
+        const variant = opts?.variant ?? 'info';
+        const duration = opts?.duration ?? 3000;
+        const urgent = variant === 'error' || variant === 'warning';
+
+        const el = document.createElement('div');
+        el.className = `ms__message ms__message--${variant}`;
+        // Announce to assistive tech; urgent tones interrupt, others are polite.
+        el.setAttribute('role', urgent ? 'alert' : 'status');
+        el.setAttribute('aria-live', urgent ? 'assertive' : 'polite');
+        if (typeof content === 'string') el.textContent = content;
+        else el.appendChild(content);
+        el.addEventListener('click', () => this.hideMessage());
+
+        const rootNode = this.element.getRootNode();
+        const shadowContainer = rootNode instanceof ShadowRoot ? rootNode : null;
+        const container = (this.options.container ?? shadowContainer ?? document.body) as HTMLElement;
+        container.appendChild(el);
+        this.messageEl = el;
+
+        if (this.presentationMode === 'fullscreen') {
+            // Positioned by CSS (fixed, bottom-centre of the viewport, above the overlay).
+            el.classList.add('ms__message--fullscreen');
+        } else {
+            // Anchor beneath the control so it reads as belonging to this component.
+            const handle = anchor(el, this.input, {
+                strategy: 'fixed', placement: 'bottom', offset: 8, shift: 8
+            });
+            this.messageCleanup = () => handle.destroy();
+        }
+
+        // Next frame → opacity transition runs (element is in the DOM + positioned).
+        requestAnimationFrame(() => el.classList.add('ms__message--visible'));
+
+        if (duration > 0) {
+            this.messageTimer = setTimeout(() => this.hideMessage(), duration);
+        }
+    }
+
+    /** Dismiss the transient message, if shown. Idempotent. */
+    public hideMessage(): void {
+        if (this.messageTimer !== null) { clearTimeout(this.messageTimer); this.messageTimer = null; }
+        if (this.messageCleanup) { this.messageCleanup(); this.messageCleanup = null; }
+        if (this.messageEl) { this.messageEl.remove(); this.messageEl = null; }
     }
 
     /**
@@ -3496,6 +3615,8 @@ export class WebMultiSelect<T = any> {
 
     public destroy(): void {
         this.destroyAllTooltips();
+        this.hideLabelReveal();
+        this.hideMessage();
 
         if (this.searchDebounceTimer) {
             clearTimeout(this.searchDebounceTimer);

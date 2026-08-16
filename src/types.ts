@@ -39,6 +39,24 @@ export type BadgesDisplayMode = 'badges' | 'count' | 'compact' | 'partial' | 'no
 export type SearchMode = 'filter' | 'navigate';
 
 /**
+ * Visual tone of a transient message shown via `showMessage()` (or a veto callback's
+ * returned reason string). Each maps to a `.ms__message--{variant}` theming hook.
+ */
+export type MessageVariant = 'info' | 'warning' | 'error' | 'success';
+
+/**
+ * Options for `showMessage()` — the transient toast the component can surface on top of
+ * itself. It exists mainly so a veto (or any consumer feedback) is visible in the
+ * fullscreen overlay, where page-level UI is covered by the sheet.
+ */
+export interface MessageOptions {
+    /** Visual tone. Default `'info'`. */
+    variant?: MessageVariant;
+    /** Auto-dismiss after this many ms. `0` keeps it until replaced, tapped, or the panel closes. Default `3000`. */
+    duration?: number;
+}
+
+/**
  * Layout mode for action buttons container
  * - 'nowrap': Buttons stay in single row (default)
  * - 'wrap': Buttons wrap to multiple rows when needed
@@ -467,20 +485,23 @@ export interface MultiSelectConfig<T = any> {
     /**
      * Interceptor: runs before an option is selected via user interaction.
      * Receives the option about to be added and the current selection (before the change).
-     * Return `false` to block the selection; return `true`/`undefined` to allow.
-     * Silent — a blocked action fires no event. Bypassed by programmatic `setSelected`
-     * and the Select-All action button.
+     * Return `false` to block the selection; return `true`/`undefined` to allow. Return a
+     * **string** to block AND surface it as a message (see `showMessage`) — the touch-safe
+     * way to explain a veto in the fullscreen overlay, where page-level UI is hidden behind
+     * it. Silent otherwise — a blocked action fires no event. Bypassed by programmatic
+     * `setSelected` and the Select-All action button.
      */
-    beforeSelectCallback?: ((option: T, selectedOptions: T[]) => boolean | void) | null;
+    beforeSelectCallback?: ((option: T, selectedOptions: T[]) => boolean | string | void) | null;
     /**
      * Interceptor: runs before an option is deselected via user interaction — the dropdown
      * option toggle, a badge's remove (×) button, the selected-items popover's remove button,
      * and the "remove hidden" badge (checked per item). Receives the option about to be
      * removed and the current selection (before the change). Return `false` to block the
-     * deselection; return `true`/`undefined` to allow. Silent — a blocked action fires no
-     * event. Bypassed by programmatic `setSelected` and the Clear-All action button.
+     * deselection; return `true`/`undefined` to allow. Return a **string** to block AND
+     * surface it as a message (see `showMessage`). Silent otherwise — a blocked action fires
+     * no event. Bypassed by programmatic `setSelected` and the Clear-All action button.
      */
-    beforeDeselectCallback?: ((option: T, selectedOptions: T[]) => boolean | void) | null;
+    beforeDeselectCallback?: ((option: T, selectedOptions: T[]) => boolean | string | void) | null;
     /**
      * Async function to load data: `(searchTerm, signal) => Promise<options[]>`.
      * The optional second argument is an `AbortSignal` that fires when a newer search
