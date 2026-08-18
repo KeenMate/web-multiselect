@@ -5,6 +5,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **`fullscreen-autofocus` attribute** (default `false`). Controls whether the
+  phone fullscreen overlay auto-focuses its search field on open — which pops the
+  soft keyboard immediately. The new default opens the sheet with the **list
+  visible and the keyboard closed**, so long lists browse cleanly and the bottom
+  action row stays on screen; the keyboard appears only when the user taps the
+  search. Set `fullscreen-autofocus="true"` to type-to-filter right away (the prior
+  behavior). No effect in the floating presentation.
+
+### Fixed
+
+- **Soft keyboard / focus handling on fullscreen open.** Tapping the control gave
+  the underlying `<input>` native focus, which both popped the keyboard when it
+  should stay down AND, with `fullscreen-autofocus="true"`, stole focus back from the
+  sheet's own search (caret ended up in the hidden input — keyboard up but the visible
+  search unfocused). The opening tap no longer focuses the underlying input in
+  fullscreen: keyboard-off leaves nothing focused (keyboard stays down), and autofocus
+  focuses the sheet search cleanly (caret in the visible field).
+- **Fullscreen sheet ignored the soft-keyboard reflow.** The overlay was pinned
+  with `inset: 0` (top *and* bottom), so a fixed box ignored the `height`
+  `observeKeyboardInset()` wrote — the keyboard covered the lower list and the
+  bottom action buttons. The sheet is now pinned by `top`/`left` + `height`, so it
+  shrinks above the keyboard as intended, and the action row is pinned
+  (`flex: 0 0 auto`) so it stays reachable above the keys while only the list scrolls.
+- **Last item cut off in the non-virtual fullscreen list.** Two nested scrollers
+  (the inner container *and* the options list) could trap the final row partially
+  visible and unreachable. The options list is now the sole scroller in the sheet,
+  with bottom breathing room so the last row always clears the edge. (Virtual lists
+  were unaffected.)
+- **List jumped to the top when selecting an item.** A selection re-render rebuilt
+  the list via `innerHTML`, resetting scroll. The scroll offset is now preserved
+  across a selection toggle (search/filter re-renders still reset to the top, as
+  intended).
+- **Full-label reveal flashed at 0,0 on first tap.** The fullscreen truncated-label
+  reveal (`ⓘ`) was made visible before floating-ui positioned it, so it painted one
+  frame at the origin. It now positions first and fades in at the anchor.
+
 ## [2.0.0-rc03] - 2026-08-14
 
 ### Added
@@ -32,6 +72,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   overlay and its header. Imperative
   `picker.setPresentation('floating' | 'fullscreen')` is available on the core class
   for advanced use.
+- **Soft-keyboard fit in the fullscreen overlay.** When the on-screen keyboard
+  opens over the fullscreen dropdown, the sheet now shrinks to sit **above** it
+  instead of letting the keyboard cover the lower options. The overlay tracks
+  `window.visualViewport` (its keyboard-adjusted height + scroll offset) and pins
+  the panel to it, so the search header stays put and the options list reflows into
+  the visible space, scrolling within it; when the keyboard dismisses, the sheet
+  expands back to fill the viewport. No-op on browsers without `visualViewport`
+  (the keyboard simply overlays the list, as before). Coalesced to one layout write
+  per frame and torn down with the overlay.
 - **Dropdown viewport-width safety (`anchor({ maxWidth })`).** The floating
   dropdown now also caps its width to the space available on its side of the
   viewport (core rc03), so a resized or wide-content panel can't overflow the
@@ -55,13 +104,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   existing option-tooltip styling and dismisses on scroll / re-render / close.
 - **`showMessage()` — surface a message on top of the component.** A transient toast
   (`picker.showMessage(content, opts)` / `element.showMessage(...)`, with
-  `hideMessage()`) rendered above the panel in both presentations — anchored under the
-  control when floating, pinned over the sheet when fullscreen. It exists because the
+  `hideMessage()`) rendered above the panel. Placement follows what's actually on screen:
+  pinned over the sheet **only while a fullscreen overlay is open**, otherwise anchored
+  beneath the control — so a message fired while the panel is closed reads as belonging
+  to the component instead of a detached bottom toast (note: on phones `presentationMode`
+  is `fullscreen` even when closed, hence the open-state check). It exists because the
   fullscreen overlay covers the whole page, so page-level feedback is otherwise hidden
   behind it. `content` is a string or an `HTMLElement`; `opts` is
-  `{ variant?: 'info' | 'warning' | 'error' | 'success', duration?: number }`
-  (`0` = sticky until tapped/replaced/closed; default `3000`). Tap to dismiss; one
-  shows at a time. **`beforeSelectCallback` / `beforeDeselectCallback` may now return a
+  `{ variant?: 'info' | 'warning' | 'error' | 'success', duration?: number, placement?: Placement }`
+  (`duration: 0` = sticky until tapped/replaced/closed, default `3000`; `placement` sets
+  where it anchors to the control in the floating case, default `'bottom'`, ignored when
+  a fullscreen overlay is open). Tap to dismiss; one
+  shows at a time; and it's cleared on any panel state change (open/close dropdown or
+  popover) so a control-anchored toast can't linger over a sheet that opens after it.
+  **`beforeSelectCallback` / `beforeDeselectCallback` may now return a
   string** — `return false` still vetoes silently (unchanged), `return 'reason'` vetoes
   *and* shows the reason as a warning toast. New `--ms-message-*` variables (surface,
   per-variant `bg`/`color`, padding, radius, font, shadow, max-width, fullscreen offset,

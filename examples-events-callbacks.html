@@ -175,9 +175,13 @@ el.setSelected(['lead']);    // pre-select (bypasses the veto)</code></pre>
                 <label>Pick something (or just fire a message)</label>
                 <web-multiselect id="message-select" value-member="value" display-value-member="label"
                     search-placeholder="Filter…"></web-multiselect>
-                <small class="form-text">Turn on “fullscreen preview”, open the dropdown, then fire a message — it appears over the sheet.</small>
+                <small class="form-text">
+                    The ⚠ / ⛔ / ✅ options fire a message from <code>beforeSelectCallback</code> — the same
+                    toasts the buttons below fire imperatively. Turn on “fullscreen preview”, open the
+                    dropdown, then select one — the message appears over the sheet.
+                </small>
             </div>
-            <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin:0.75rem 0;">
+            <div style="display:flex; flex-wrap:wrap; gap:0.5rem; margin:0.75rem 0; align-items:center;">
                 <button type="button" data-msg="info">info</button>
                 <button type="button" data-msg="warning">warning</button>
                 <button type="button" data-msg="error">error</button>
@@ -185,19 +189,92 @@ el.setSelected(['lead']);    // pre-select (bypasses the veto)</code></pre>
                 <button type="button" id="msg-html">custom HTML</button>
                 <button type="button" id="msg-sticky">sticky (tap to close)</button>
                 <button type="button" id="msg-fs">toggle fullscreen preview</button>
+                <label style="margin-left:0.5rem;">placement (floating):
+                    <select id="msg-placement">
+                        <option value="bottom">bottom</option>
+                        <option value="top">top</option>
+                        <option value="bottom-start">bottom-start</option>
+                        <option value="bottom-end">bottom-end</option>
+                        <option value="right">right</option>
+                        <option value="left">left</option>
+                    </select>
+                </label>
             </div>
 
             <details style="margin-top: 1rem;">
                 <summary>Show code</summary>
-<pre><code>// text + variant + auto-dismiss (ms; 0 = sticky until tapped/replaced)
+<pre><code>// imperative — text + variant + auto-dismiss (ms; 0 = sticky until tapped/replaced)
 el.showMessage('Saved!', { variant: 'success', duration: 2000 });
+
+// placement (floating case): a floating-ui Placement, default 'bottom'
+el.showMessage('Over here', { placement: 'top-start' });
 
 // rich content
 const box = document.createElement('span');
 box.innerHTML = '&lt;strong&gt;Heads up&lt;/strong&gt; — 3 items hidden';
 el.showMessage(box, { variant: 'warning', duration: 0 });
 
-el.hideMessage();               // dismiss programmatically</code></pre>
+el.hideMessage();               // dismiss programmatically
+
+// from a veto interceptor — same toasts, driven by the selection
+el.beforeSelectCallback = (option) =&gt; {
+  if (option.value === 'warn') return 'Heads up — this one is discouraged'; // veto + warning (shortcut)
+  if (option.value === 'err')  { el.showMessage('Not allowed', { variant: 'error' }); return false; } // veto + error
+  if (option.value === 'ok')   { el.showMessage('Nice choice!', { variant: 'success' }); }            // allow + success
+};</code></pre>
+            </details>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 4b. fullscreen-autofocus                                     -->
+        <!-- ============================================================ -->
+        <div class="demo-section">
+            <h2>4b · <code>fullscreen-autofocus</code> — soft keyboard on phones</h2>
+            <p>
+                On phones the dropdown opens as a <strong>fullscreen overlay</strong>. By
+                <strong>default the keyboard stays closed</strong> — the sheet opens showing the list,
+                so you can browse long lists and reach the bottom action buttons without the keyboard
+                covering half the screen. The keyboard appears only when you tap the search field. Set
+                <code>fullscreen-autofocus="true"</code> to focus the search on open instead
+                (type-to-filter immediately, like a native picker).
+            </p>
+            <p>
+                The two pickers below use <code>mobile-presentation="auto"</code> (the default): a normal
+                floating dropdown here on desktop, a fullscreen sheet on a phone — where the keyboard
+                difference actually shows. To see the overlay on desktop, tick
+                <em>Preview as fullscreen</em> (it just flips <code>mobile-presentation</code>); close it
+                with the ✕ in the sheet header.
+            </p>
+            <label style="display:inline-flex; align-items:center; gap:0.4rem; margin-bottom:0.75rem;">
+                <input type="checkbox" id="kb-fs-preview"> Preview as fullscreen (desktop)
+            </label>
+            <div style="display:flex; flex-wrap:wrap; gap:1.5rem;">
+                <div class="form-group" style="flex:1; min-width:220px;">
+                    <label>Default — keyboard off (tap search to type)</label>
+                    <web-multiselect id="kb-off-select" multiple="true" value-member="value"
+                        display-value-member="label"
+                        search-placeholder="Tap here to search…"></web-multiselect>
+                    <small class="form-text">On a phone: the list shows, search is <em>not</em> focused.</small>
+                </div>
+                <div class="form-group" style="flex:1; min-width:220px;">
+                    <label>Opt-in — <code>fullscreen-autofocus="true"</code></label>
+                    <web-multiselect id="kb-on-select" multiple="true" value-member="value"
+                        display-value-member="label"
+                        fullscreen-autofocus="true" search-placeholder="Search…"></web-multiselect>
+                    <small class="form-text">On a phone: search is focused, keyboard pops on open.</small>
+                </div>
+            </div>
+
+            <details style="margin-top: 1rem;">
+                <summary>Show code</summary>
+<pre><code>&lt;!-- default: keyboard stays closed until the user taps the search field --&gt;
+&lt;web-multiselect&gt;&lt;/web-multiselect&gt;
+
+&lt;!-- opt in to auto-focus + soft keyboard on open --&gt;
+&lt;web-multiselect fullscreen-autofocus="true"&gt;&lt;/web-multiselect&gt;
+
+// or via property
+el.fullscreenAutofocus = true;</code></pre>
             </details>
         </div>
 
@@ -305,25 +382,57 @@ el.hideMessage();               // dismiss programmatically</code></pre>
             const msgSelect = document.getElementById('message-select');
             msgSelect.options = [
                 { value: 'a', label: 'Alpha' }, { value: 'b', label: 'Bravo' },
-                { value: 'c', label: 'Charlie' }, { value: 'd', label: 'Delta' }
+                { value: 'c', label: 'Charlie' }, { value: 'd', label: 'Delta' },
+                { value: 'warn', label: '⚠ Warn on select' },
+                { value: 'err', label: '⛔ Error on select' },
+                { value: 'ok', label: '✅ Success on select' }
             ];
+            // Drive the same toasts from the selection itself: return a string to veto +
+            // show a warning (the built-in shortcut), or call showMessage() for another
+            // variant. 'ok' allows the selection AND shows a success message.
+            msgSelect.beforeSelectCallback = (option) => {
+                if (option.value === 'warn') return 'Heads up — this one is discouraged';
+                if (option.value === 'err') { msgSelect.showMessage('Not allowed', { variant: 'error' }); return false; }
+                if (option.value === 'ok') { msgSelect.showMessage('Nice choice!', { variant: 'success' }); }
+            };
+            const msgPlacement = document.getElementById('msg-placement');
             document.querySelectorAll('[data-msg]').forEach((btn) => {
                 btn.addEventListener('click', () => {
                     const variant = btn.dataset.msg;
-                    msgSelect.showMessage(`This is a ${variant} message`, { variant });
+                    msgSelect.showMessage(`This is a ${variant} message`, { variant, placement: msgPlacement.value });
                 });
             });
             document.getElementById('msg-html').addEventListener('click', () => {
                 const span = document.createElement('span');
                 span.innerHTML = '<strong>Custom</strong> HTML content ✨';
-                msgSelect.showMessage(span, { variant: 'info', duration: 4000 });
+                msgSelect.showMessage(span, { variant: 'info', duration: 4000, placement: msgPlacement.value });
             });
             document.getElementById('msg-sticky').addEventListener('click', () => {
-                msgSelect.showMessage('Sticky — tap me to dismiss', { variant: 'warning', duration: 0 });
+                msgSelect.showMessage('Sticky — tap me to dismiss', { variant: 'warning', duration: 0, placement: msgPlacement.value });
             });
             document.getElementById('msg-fs').addEventListener('click', () => {
                 const isFs = msgSelect.getAttribute('mobile-presentation') === 'fullscreen';
                 msgSelect.setAttribute('mobile-presentation', isFs ? 'floating' : 'fullscreen');
+            });
+
+            // --- 4b. fullscreen-autofocus (keyboard on/off) ----------
+            const kbOptions = [
+                { value: 'a', label: 'Analytics' }, { value: 'b', label: 'Billing' },
+                { value: 'c', label: 'Compute' }, { value: 'd', label: 'Database' },
+                { value: 'e', label: 'Email' }, { value: 'f', label: 'Functions' },
+                { value: 'g', label: 'Gateway' }, { value: 'h', label: 'Hosting' },
+                { value: 'i', label: 'Identity' }, { value: 'j', label: 'Jobs' }
+            ];
+            const kbOff = document.getElementById('kb-off-select');
+            const kbOn = document.getElementById('kb-on-select');
+            kbOff.options = kbOptions;
+            kbOn.options = kbOptions;
+            // "Preview as fullscreen" just forces mobile-presentation on both so the overlay
+            // is visible on desktop; unticking returns them to auto (floating here).
+            document.getElementById('kb-fs-preview').addEventListener('change', (e) => {
+                const mode = e.target.checked ? 'fullscreen' : 'auto';
+                kbOff.setAttribute('mobile-presentation', mode);
+                kbOn.setAttribute('mobile-presentation', mode);
             });
         });
     </script>

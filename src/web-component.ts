@@ -32,9 +32,11 @@ import {
   extractConsumedCssVars,
   lintCssVars,
   getEnvironment,
+  resolveMobilePresentation,
   type InputDef,
   type StyleSlot,
   type EnvironmentSnapshot,
+  type MobilePresentation,
 } from '@keenmate/web-components-core';
 import { WebMultiSelect } from './multiselect';
 import type {
@@ -45,7 +47,6 @@ import type {
   MessageOptions,
 } from './types';
 import { toInitialValues } from './converters';
-import { resolveMobilePresentation, type MobilePresentation } from './mobile-presentation';
 import { parseOptionsData, OPTIONS_FORMATS, type OptionsFormat } from './option-formats';
 import styles from './css/main.css?inline';
 import { dataLogger } from './logger';
@@ -130,6 +131,8 @@ Tree + multiple only.` },
   { configKey: 'optionTooltipPlacement',  attribute: 'option-tooltip-placement',    converter: toEnum(PLACEMENTS, { default: 'top-start' }), on: 'update', description: 'Preferred placement of an option tooltip (floating-ui placement).' },
   { configKey: 'mobilePresentation',      attribute: 'mobile-presentation',         converter: toEnum(['auto', 'floating', 'fullscreen'] as const, { default: 'auto' }), reflect: true, on: 'update',
     description: 'How the open dropdown is presented on phones. `auto` (default) keeps the floating panel on desktop/tablet and switches to a full-screen overlay on phone-sized touch devices (touch primary + shorter viewport side < 600px, orientation-robust); `floating` forces the anchored panel everywhere; `fullscreen` forces the full-screen overlay on any device (handy for previews/testing). Resolved reactively from the device/viewport environment.' },
+  { configKey: 'fullscreenAutofocus',     attribute: 'fullscreen-autofocus',        converter: toBool('default-false'), on: 'update',
+    description: 'In the phone fullscreen overlay, auto-focus the search field on open (pops the soft keyboard immediately). Default `false`: the sheet opens with the list visible and the keyboard closed, appearing only when the user taps the search. Set `true` to type-to-filter right away. No effect in the floating presentation.' },
 
   // ── Numbers ──────────────────────────────────────────────────────────────
   { configKey: 'badgesThreshold',         attribute: 'badges-threshold',            converter: toInt(),               on: 'update', description: 'Threshold at which badges collapse to a count/compact view.' },

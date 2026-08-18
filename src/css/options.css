@@ -98,11 +98,8 @@
      not a text-selection one — stop the browser from highlighting the label. */
   user-select: none;
   -webkit-user-select: none;
-  /* Suppress the mobile tap-highlight flash (the light-blue/grey box UA browsers
-     paint over the tapped row on touch). Selection state is our own feedback; the
-     UA overlay just reads as an accidental highlight — most visible on taps that
-     don't change the row, like the info affordance. */
-  -webkit-tap-highlight-color: transparent;
+  /* Tap-highlight flash is suppressed once for the whole component on :host (base.css) —
+     an inherited property, so it reaches this row without a per-element declaration. */
 }
 
 /* Hover states are gated to real pointing devices. On touch, `:hover` "sticks"

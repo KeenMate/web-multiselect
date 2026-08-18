@@ -54,6 +54,13 @@ export interface MessageOptions {
     variant?: MessageVariant;
     /** Auto-dismiss after this many ms. `0` keeps it until replaced, tapped, or the panel closes. Default `3000`. */
     duration?: number;
+    /**
+     * Where the message anchors relative to the control in the **floating/anchored** case
+     * (a floating-ui `Placement`, e.g. `'top'`, `'bottom-start'`, `'right'`). Default
+     * `'bottom'`. Ignored when a fullscreen overlay is open — there the message is pinned
+     * to the bottom-centre of the viewport.
+     */
+    placement?: Placement;
 }
 
 /**
@@ -326,6 +333,13 @@ export interface MultiSelectConfig<T = any> {
     isActionsSticky?: boolean;
     /** Close dropdown after selecting an option (internal: isCloseOnSelect) */
     isCloseOnSelect?: boolean;
+    /**
+     * In the phone fullscreen overlay, auto-focus the search field when it opens — which
+     * pops the soft keyboard immediately. Default `false`: the sheet opens showing the list
+     * (keyboard closed), and the keyboard appears only when the user taps the search. Set
+     * `true` to type-to-filter right away (matches native pickers). No effect in the floating
+     * presentation. (internal: fullscreenAutofocus) */
+    fullscreenAutofocus?: boolean;
     /** Lock dropdown placement after first open (internal: isPlacementLocked) */
     isPlacementLocked?: boolean;
     /** Allow adding new options not in the list (internal: isAddNewAllowed) */

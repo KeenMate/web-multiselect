@@ -9,6 +9,9 @@
 // keeps only the multiselect-branded warning copy (see warnDrift). No direct
 // `@floating-ui/dom` dependency: core owns the one pinned version.
 import { anchor, createTooltip, createPopover, type Placement, type TooltipHandle, type PopoverHandle, type DriftReport } from '@keenmate/web-components-core/positioning';
+// Fullscreen-overlay primitives (SPEC §12.9) — shared with any component that swaps a
+// floating panel for a full-viewport sheet on phones (daterangepicker's fullscreen calendar).
+import { lockBodyScroll, observeKeyboardInset } from '@keenmate/web-components-core';
 import type { MultiSelectConfig, BadgesPosition, SearchInputMode, SearchMode, OptionContentRenderContext, BadgeContentRenderContext, MessageOptions } from './types';
 import { initLogger, dataLogger, uiLogger, interactionLogger } from './logger';
 import { VirtualScroll } from './virtual-scroll';
@@ -72,9 +75,12 @@ export class WebMultiSelect<T = any> {
     private presentationMode: 'floating' | 'fullscreen' = 'floating';
     private fullscreenHeader: HTMLDivElement | null = null;
     private fullscreenSearchInput: HTMLInputElement | null = null;
-    // The body `overflow` value stashed while a fullscreen overlay locks page scroll
-    // (null when not locked, so we only restore what we actually overrode).
-    private bodyOverflowBeforeFullscreen: string | null = null;
+    // Releases this instance's page-scroll lock (null when not locked). The core
+    // helper is ref-counted; we hold at most one lock per instance. See lockBodyScroll().
+    private bodyScrollUnlock: (() => void) | null = null;
+    // Detaches the visualViewport listener that shrinks the fullscreen sheet to sit
+    // above the soft keyboard (null when not attached). See observeKeyboardInset().
+    private keyboardInsetCleanup: (() => void) | null = null;
 
     // Floating UI cleanup functions
     private dropdownCleanup: (() => void) | null = null;
@@ -744,7 +750,7 @@ export class WebMultiSelect<T = any> {
         });
     }
 
-    private renderDropdown(): void {
+    private renderDropdown(opts?: { preserveScroll?: boolean }): void {
         // Clean up any existing action button tooltips before re-rendering
         this.destroyAllActionButtonTooltips();
         // A re-render rebuilds the rows, detaching any info button the full-label
@@ -849,7 +855,28 @@ export class WebMultiSelect<T = any> {
 
         html += '</div>';
         if (actionsAtBottom) html += actionsHTML;
+
+        // A plain selection re-render (commit()) rebuilds the whole list via innerHTML,
+        // which resets scroll to the top. Capture the current offset and restore it after
+        // so selecting an item leaves the list where the user was. NOT done on filter/open
+        // renders (default) — there the list content changed and scroll SHOULD reset (a
+        // filtered result set starts at the top). The scroller is .ms__options in the
+        // fullscreen sheet and .ms__dropdown-inner in the floating panel; capture both and
+        // restore both (a write to the non-scrolling one clamps to 0, harmlessly).
+        let prevInnerScroll = 0;
+        let prevOptionsScroll = 0;
+        if (opts?.preserveScroll) {
+            prevInnerScroll = this.dropdownInner.scrollTop;
+            prevOptionsScroll = (this.dropdownInner.querySelector('.ms__options') as HTMLElement | null)?.scrollTop ?? 0;
+        }
+
         this.dropdownInner.innerHTML = html;
+
+        if (opts?.preserveScroll) {
+            this.dropdownInner.scrollTop = prevInnerScroll;
+            const newOptions = this.dropdownInner.querySelector('.ms__options') as HTMLElement | null;
+            if (newOptions) newOptions.scrollTop = prevOptionsScroll;
+        }
 
         // Attach tooltips to action buttons after rendering
         this.attachActionButtonTooltips();
@@ -1401,6 +1428,16 @@ export class WebMultiSelect<T = any> {
                     this.justClosedViaClick = false;
                 }, 0);
             } else {
+                // Opening into the fullscreen overlay: never let the opening tap focus the
+                // underlying <input> (it's covered by the sheet). Keyboard-off default → no
+                // field takes focus, so the soft keyboard stays down. Autofocus → enterFullscreen
+                // focuses the sheet's OWN search; without this preventDefault the input's native
+                // focus lands AFTER that and steals it back (caret in the hidden input, keyboard
+                // up but the visible search unfocused). preventDefault blocks only focus/selection,
+                // not the click that follows.
+                if (this.presentationMode === 'fullscreen') {
+                    e.preventDefault();
+                }
                 // Open if closed (don't rely on focus event as input might already be focused).
                 // Guard the click that follows this mousedown from the fullscreen self-close
                 // (see justOpenedViaClick); cleared next tick, after that click is dispatched.
@@ -2233,7 +2270,9 @@ export class WebMultiSelect<T = any> {
      * `onChange` fires once if anything actually changed.
      */
     private commit(delta: { added?: T[]; removed?: T[] }): void {
-        this.renderDropdown();
+        // Preserve the list scroll position: a selection toggle shouldn't jump the user
+        // back to the top of the list (the innerHTML rebuild would otherwise reset it).
+        this.renderDropdown({ preserveScroll: true });
         this.renderBadges();
         this.updateHiddenInput();
 
@@ -2254,6 +2293,12 @@ export class WebMultiSelect<T = any> {
     private open(): void {
         uiLogger.debug(`[${this.instanceId}] open() called`, { isOpen: this.isOpen });
         if (this.isOpen) return;
+
+        // A message reflects the state at the moment it was shown. Opening changes that
+        // state (and, on a phone, moves from a control-anchored toast to a fullscreen
+        // overlay), so drop any lingering message rather than have it float — at its now
+        // stale anchor and above-overlay z-index — over the sheet.
+        this.hideMessage();
 
         this.isOpen = true;
         this.element.classList.add('ms--open');
@@ -2514,23 +2559,35 @@ export class WebMultiSelect<T = any> {
     }
 
     /**
-     * Lock page scroll behind a fullscreen overlay, stashing the prior `overflow` so
-     * it can be restored. Idempotent: the dropdown and the selected-items popover are
-     * mutually exclusive (opening one closes the other), so a single stash is enough,
-     * and a redundant call is a no-op rather than clobbering the saved value.
+     * Lock page scroll behind a fullscreen overlay via the core ref-counted helper.
+     * Idempotent per instance: the dropdown and the selected-items popover are mutually
+     * exclusive (opening one closes the other), so we hold at most one lock at a time,
+     * and a redundant call is a no-op rather than acquiring a second.
      */
     private lockBodyScroll(): void {
-        if (this.bodyOverflowBeforeFullscreen === null) {
-            this.bodyOverflowBeforeFullscreen = document.body.style.overflow;
-            document.body.style.overflow = 'hidden';
-        }
+        if (!this.bodyScrollUnlock) this.bodyScrollUnlock = lockBodyScroll();
     }
 
     /** Restore page scroll (no-op if it wasn't locked). */
     private unlockBodyScroll(): void {
-        if (this.bodyOverflowBeforeFullscreen !== null) {
-            document.body.style.overflow = this.bodyOverflowBeforeFullscreen;
-            this.bodyOverflowBeforeFullscreen = null;
+        if (this.bodyScrollUnlock) { this.bodyScrollUnlock(); this.bodyScrollUnlock = null; }
+    }
+
+    /**
+     * While the fullscreen dropdown is open, keep it sitting above the soft keyboard.
+     * Delegates to core's `observeKeyboardInset` (which tracks `window.visualViewport`
+     * and pins the panel's height/top so its flex column reflows above the keyboard);
+     * we just hold the returned cleanup. No-op where `visualViewport` is unavailable.
+     */
+    private observeKeyboardInset(): void {
+        this.keyboardInsetCleanup = observeKeyboardInset(this.dropdown);
+    }
+
+    /** Detach keyboard-inset tracking and restore the panel's CSS-driven geometry. */
+    private unobserveKeyboardInset(): void {
+        if (this.keyboardInsetCleanup) {
+            this.keyboardInsetCleanup();
+            this.keyboardInsetCleanup = null;
         }
     }
 
@@ -2617,16 +2674,28 @@ export class WebMultiSelect<T = any> {
         this.dropdown.classList.add('ms__dropdown--fullscreen');
         this.buildFullscreenHeader();
         this.lockBodyScroll();
+        // Track the soft keyboard so the sheet shrinks to sit above it (see method doc).
+        this.observeKeyboardInset();
 
-        // Focus the header search so typing filters immediately (matches native selects).
-        if (this.fullscreenSearchInput) {
-            this.fullscreenSearchInput.value = this.searchTerm;
-            this.fullscreenSearchInput.focus();
+        // Seed the header search with the current term. Auto-focus (which pops the soft
+        // keyboard) is OPT-IN via fullscreenAutofocus — default is to open with the list
+        // visible and the keyboard closed, so long lists browse cleanly and the bottom
+        // action row stays on screen. When enabled, focus to type-to-filter immediately.
+        if (this.fullscreenSearchInput) this.fullscreenSearchInput.value = this.searchTerm;
+        if (this.options.fullscreenAutofocus) {
+            this.fullscreenSearchInput?.focus();
+        } else {
+            // Keyboard-off default: drop any focus the underlying input grabbed from the
+            // opening tap (or a programmatic/focus-driven open) so the soft keyboard doesn't
+            // linger over the sheet. The mousedown handler prevents the tap-focus up front;
+            // this covers the other open paths.
+            this.input.blur();
         }
     }
 
     /** Tear down the fullscreen dropdown chrome and restore page scroll (no-op if floating). */
     private exitFullscreen(): void {
+        this.unobserveKeyboardInset();
         this.dropdown.classList.remove('ms__dropdown--fullscreen');
         if (this.fullscreenHeader) {
             this.fullscreenHeader.remove();
@@ -2763,6 +2832,10 @@ export class WebMultiSelect<T = any> {
             this.close();
         }
 
+        // Drop any lingering message — opening the popover changes the on-screen state
+        // (see open()); a stale control-anchored toast would otherwise float over it.
+        this.hideMessage();
+
         this.showSelectedPopover = true;
         this.renderSelectedPopover();
         this.selectedPopover.classList.add('ms__selected-popover--visible');
@@ -2790,6 +2863,7 @@ export class WebMultiSelect<T = any> {
         this.selectedPopover.classList.remove('ms__selected-popover--virtual');
         this.selectedPopover.classList.remove('ms__selected-popover--fullscreen');
         this.unlockBodyScroll();
+        this.hideMessage();
         this.selectedPopoverPlacement = null;
 
         // Cleanup virtual scroll
@@ -3433,11 +3507,13 @@ export class WebMultiSelect<T = any> {
         if (!content) return;
 
         // Build the reveal panel. Reuse the option-tooltip look; --fullscreen lifts it
-        // above the overlay (z-index) and --visible makes it opaque (no hover transition
-        // to wait on). String content may carry a "\n" subtitle → textContent honours it
-        // under the tooltip's `white-space: pre-wrap`.
+        // above the overlay (z-index). It is created WITHOUT --visible (opacity 0) and
+        // revealed one frame after open() positions it — otherwise floating-ui's first
+        // (async) placement lets the opaque panel paint one frame at the 0,0 origin.
+        // String content may carry a "\n" subtitle → textContent honours it under the
+        // tooltip's `white-space: pre-wrap`.
         const panel = document.createElement('div');
-        panel.className = 'ms__option-tooltip ms__option-tooltip--fullscreen ms__option-tooltip--visible';
+        panel.className = 'ms__option-tooltip ms__option-tooltip--fullscreen';
         if (typeof content === 'string') panel.textContent = content;
         else panel.appendChild(content);
 
@@ -3458,6 +3534,8 @@ export class WebMultiSelect<T = any> {
             strategy: 'fixed'
         });
         this.labelRevealPopover.open();
+        // Now positioned — reveal on the next frame so it fades in at the anchor, never 0,0.
+        requestAnimationFrame(() => panel.classList.add('ms__option-tooltip--visible'));
     }
 
     /** Dismiss the full-label reveal popover, if shown. Idempotent. */
@@ -3507,13 +3585,25 @@ export class WebMultiSelect<T = any> {
         container.appendChild(el);
         this.messageEl = el;
 
-        if (this.presentationMode === 'fullscreen') {
+        // Use the fullscreen (bottom-of-viewport) placement ONLY when a fullscreen overlay
+        // is actually on screen. `presentationMode` is 'fullscreen' on phones even while the
+        // panel is closed — so without the open check, a message fired with nothing open
+        // would pin a detached toast to the bottom of the page. When closed (or floating),
+        // anchor beneath the control so it reads as belonging to this component.
+        const overlayOpen = this.presentationMode === 'fullscreen' && (this.isOpen || this.showSelectedPopover);
+        if (overlayOpen) {
             // Positioned by CSS (fixed, bottom-centre of the viewport, above the overlay).
             el.classList.add('ms__message--fullscreen');
         } else {
-            // Anchor beneath the control so it reads as belonging to this component.
             const handle = anchor(el, this.input, {
-                strategy: 'fixed', placement: 'bottom', offset: 8, shift: 8
+                strategy: 'fixed',
+                placement: opts?.placement ?? 'bottom',
+                offset: 8,
+                shift: 8,
+                // Flip once to a side that fits, then pin. Without freezing, a placement
+                // with no stable fit (e.g. 'left' in a narrow viewport) makes flip +
+                // autoUpdate oscillate between sides every frame.
+                lockPlacement: 'freeze'
             });
             this.messageCleanup = () => handle.destroy();
         }

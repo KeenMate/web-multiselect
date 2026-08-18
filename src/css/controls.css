@@ -216,7 +216,7 @@
   color: var(--ms-action-button-color);
   cursor: pointer;
   transition: all var(--ms-transition-fast) var(--ms-easing-snappy);
-  -webkit-tap-highlight-color: transparent; /* No mobile tap flash (see .ms__option) */
+  /* Tap-highlight flash is suppressed once for the whole component on :host (base.css). */
 }
 
 /* Hover gated to real pointing devices — on touch `:hover` sticks after a tap and
