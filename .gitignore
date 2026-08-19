@@ -52,3 +52,6 @@ web-types.json
 vscode.html-custom-data.json
 # Emitted empty (theming vars live in component-variables.manifest.json); not shipped.
 vscode.css-custom-data.json
+
+# Per-developer Make config (container runner, ports)
+.makefile.env
