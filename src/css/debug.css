@@ -52,6 +52,6 @@
 
 .ms__debug-info .ms__debug-stats span::before {
   content: '•';
-  margin-right: calc(0.4 * var(--ms-rem));
+  margin-inline-end: calc(0.4 * var(--ms-rem));
   color: var(--ms-debug-bullet-color);
 }

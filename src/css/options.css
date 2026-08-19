@@ -123,7 +123,7 @@
 .ms__option--matched {
   background: var(--ms-option-bg-matched);
   color: var(--ms-option-color-matched, inherit);
-  border-left: var(--ms-option-border-matched);
+  border-inline-start: var(--ms-option-border-matched); /* leading-edge accent bar; flips in RTL */
 }
 
 .ms__option--selected {
@@ -170,7 +170,7 @@
 /* Selected + Matched */
 .ms__option--selected.ms__option--matched {
   background: var(--ms-option-bg-selected-matched);
-  border-left: var(--ms-option-border-matched);
+  border-inline-start: var(--ms-option-border-matched); /* leading-edge accent bar; flips in RTL */
 }
 
 /* Disabled + Selected */
@@ -207,9 +207,9 @@
   flex-shrink: 0;
   position: relative;
   margin-top: var(--ms-checkbox-margin-top);
-  margin-right: var(--ms-checkbox-margin-right);
+  margin-inline-end: var(--ms-checkbox-margin-right);
   margin-bottom: var(--ms-checkbox-margin-bottom);
-  margin-left: var(--ms-checkbox-margin-left);
+  margin-inline-start: var(--ms-checkbox-margin-left);
   width: var(--ms-checkbox-size);
   height: var(--ms-checkbox-size);
   transform: scale(var(--ms-checkbox-scale));

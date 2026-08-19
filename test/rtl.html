@@ -13,8 +13,9 @@
     <p>Targeted by <code>e2e/rtl.spec.ts</code>.</p>
 
     <div class="fixture">
-        <div class="fixture-label">dir="rtl" attribute on the element</div>
-        <web-multiselect id="rtl-explicit" dir="rtl" value-member="value" display-value-member="label"></web-multiselect>
+        <div class="fixture-label">dir="rtl" attribute on the element (multi + search)</div>
+        <web-multiselect id="rtl-explicit" dir="rtl" multiple="true" enable-search="true"
+            value-member="value" display-value-member="label"></web-multiselect>
     </div>
 
     <div class="fixture">
@@ -25,8 +26,16 @@
     </div>
 
     <div class="fixture">
-        <div class="fixture-label">LTR control</div>
-        <web-multiselect id="ltr-control" value-member="value" display-value-member="label"></web-multiselect>
+        <div class="fixture-label">LTR control (multi + search)</div>
+        <web-multiselect id="ltr-control" multiple="true" enable-search="true"
+            value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">dir="rtl" + forced fullscreen overlay</div>
+        <web-multiselect id="rtl-fs" dir="rtl" multiple="true" enable-search="true"
+            mobile-presentation="fullscreen"
+            value-member="value" display-value-member="label"></web-multiselect>
     </div>
 
     <script type="module">
@@ -34,13 +43,16 @@
 
         const items = [
             { value: 'apple',  label: 'Apple' },
-            { value: 'banana', label: 'Banana' }
+            { value: 'banana', label: 'Banana' },
+            { value: 'cherry', label: 'Cherry' }
         ];
 
         customElements.whenDefined('web-multiselect').then(() => {
-            for (const id of ['rtl-explicit', 'rtl-ancestor', 'ltr-control']) {
+            for (const id of ['rtl-explicit', 'rtl-ancestor', 'ltr-control', 'rtl-fs']) {
                 document.getElementById(id).options = items;
             }
+            // Pre-select one so a badge renders (for badge-side assertions).
+            document.getElementById('rtl-explicit').setSelected(['apple']);
         });
     </script>
 </body>

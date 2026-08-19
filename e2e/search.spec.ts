@@ -67,6 +67,84 @@ test.describe('navigate mode', () => {
     });
 });
 
+test.describe('navigate mode — fullscreen match navigator', () => {
+    // The fullscreen overlay covers the main input; its own header search + the
+    // match navigator (count + prev/next) take over. Touch has no Ctrl+Arrow, so
+    // these buttons are the on-screen way to step through matches.
+    const fsSearch = (p: Locator) => p.locator('.ms__fullscreen-search');
+    const nav = (p: Locator) => p.locator('.ms__fullscreen-nav');
+    const navCount = (p: Locator) => p.locator('.ms__fullscreen-nav-count');
+
+    async function openFullscreen(p: Locator): Promise<void> {
+        await input(p).click();
+        await expect(p.locator('.ms__dropdown--fullscreen')).toBeVisible();
+    }
+
+    test('navigator is hidden until a search term is entered', async ({ page }) => {
+        const p = picker(page, 'navigate-fs');
+        await openFullscreen(p);
+        await expect(nav(p)).toBeHidden();
+    });
+
+    test('shows "1 of N" once a term matches, all options stay visible', async ({ page }) => {
+        const p = picker(page, 'navigate-fs');
+        await openFullscreen(p);
+
+        // "e" matches Apple, Cherry, Date, Elderberry (4 of 5).
+        await fsSearch(p).fill('e');
+        await expect(nav(p)).toBeVisible();
+        await expect(navCount(p)).toHaveText('1 of 4');
+        await expect(visibleOptions(p)).toHaveCount(5);
+    });
+
+    test('next/prev buttons step focus through matches and update the count', async ({ page }) => {
+        const p = picker(page, 'navigate-fs');
+        await openFullscreen(p);
+
+        await fsSearch(p).fill('e');
+        await expect(navCount(p)).toHaveText('1 of 4');
+
+        await p.locator('.ms__fullscreen-nav-btn--next').click();
+        await expect(navCount(p)).toHaveText('2 of 4');
+
+        await p.locator('.ms__fullscreen-nav-btn--prev').click();
+        await expect(navCount(p)).toHaveText('1 of 4');
+    });
+
+    test('no matches disables the step buttons', async ({ page }) => {
+        const p = picker(page, 'navigate-fs');
+        await openFullscreen(p);
+
+        await fsSearch(p).fill('zzzz');
+        await expect(nav(p)).toBeVisible();
+        await expect(p.locator('.ms__fullscreen-nav-btn--next')).toBeDisabled();
+        await expect(p.locator('.ms__fullscreen-nav-btn--prev')).toBeDisabled();
+    });
+
+    // Regression: selecting an option in the fullscreen sheet used to call
+    // this.input.focus() (to keep desktop arrow-key nav working). That input is the
+    // control field hidden behind the overlay — focusing it popped the soft keyboard
+    // on every tap and made the keyboard-inset observer shrink the sheet ("blink").
+    // In fullscreen the select must NOT move focus to the underlying input.
+    test('selecting an option does not focus the underlying control input', async ({ page }) => {
+        const p = picker(page, 'navigate-fs');
+        await openFullscreen(p);
+
+        // Keyboard-off default: no field is focused right after open.
+        const focusedAfterOpen = await p.evaluate((host: any) =>
+            host.shadowRoot?.activeElement?.className ?? null);
+        expect(focusedAfterOpen ?? '').not.toContain('ms__input');
+
+        await p.locator('.ms__option').first().click();
+        await expect(p.locator('.ms__option--selected')).toHaveCount(1); // the select happened
+
+        // The tap must not have focused the hidden control input.
+        const focusedAfterSelect = await p.evaluate((host: any) =>
+            host.shadowRoot?.activeElement?.className ?? null);
+        expect(focusedAfterSelect ?? '').not.toContain('ms__input');
+    });
+});
+
 test.describe('search-input-mode', () => {
     test('readonly prevents typing', async ({ page }) => {
         const p = picker(page, 'readonly');

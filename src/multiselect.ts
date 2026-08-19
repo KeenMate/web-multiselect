@@ -75,6 +75,14 @@ export class WebMultiSelect<T = any> {
     private presentationMode: 'floating' | 'fullscreen' = 'floating';
     private fullscreenHeader: HTMLDivElement | null = null;
     private fullscreenSearchInput: HTMLInputElement | null = null;
+    // Navigate-mode match navigator shown under the fullscreen search box: a result
+    // count ("3 of 12") plus prev/next buttons that step through matches. Touch has no
+    // Ctrl+Arrow shortcut, so these buttons are the on-screen substitute. Only built in
+    // searchMode 'navigate' (filter mode narrows the list, so it needs no jump UI).
+    private fullscreenNav: HTMLDivElement | null = null;
+    private fullscreenNavCount: HTMLElement | null = null;
+    private fullscreenNavPrev: HTMLButtonElement | null = null;
+    private fullscreenNavNext: HTMLButtonElement | null = null;
     // Releases this instance's page-scroll lock (null when not locked). The core
     // helper is ref-counted; we hold at most one lock per instance. See lockBodyScroll().
     private bodyScrollUnlock: (() => void) | null = null;
@@ -704,9 +712,18 @@ export class WebMultiSelect<T = any> {
         wrapper.appendChild(this.badgesContainer);
         this.element.appendChild(wrapper);
 
+        // The dropdown, hint, and popover are appended to the CONTAINER (the shadow
+        // root / body), not under the .ms--rtl element — so they can't inherit RTL
+        // from that class, and the component's logical properties need `direction`
+        // to resolve. Direction does inherit from the host's `dir="rtl"`, but set
+        // `dir` explicitly on each panel too so RTL is deterministic regardless of
+        // how it was detected (host attr vs. ancestor) or where the panel is portaled.
+        const panelDir = this.isRTL ? 'rtl' : null;
+
         // Create dropdown (attached to container)
         this.dropdown = document.createElement('div');
         this.dropdown.className = 'ms__dropdown';
+        if (panelDir) this.dropdown.dir = panelDir;
         // Inner wrapper handles scrolling, outer clips to border-radius
         this.dropdownInner = document.createElement('div');
         this.dropdownInner.className = 'ms__dropdown-inner';
@@ -717,6 +734,7 @@ export class WebMultiSelect<T = any> {
         if (this.options.searchHint) {
             this.hint = document.createElement('div');
             this.hint.className = 'ms__hint';
+            if (panelDir) this.hint.dir = panelDir;
             this.hint.textContent = this.options.searchHint;
             container.appendChild(this.hint);
         }
@@ -724,6 +742,7 @@ export class WebMultiSelect<T = any> {
         // Create selected popover (attached to container)
         this.selectedPopover = document.createElement('div');
         this.selectedPopover.className = 'ms__selected-popover';
+        if (panelDir) this.selectedPopover.dir = panelDir;
         container.appendChild(this.selectedPopover);
 
         this.renderDropdown();
@@ -1483,6 +1502,20 @@ export class WebMultiSelect<T = any> {
         };
         document.addEventListener('keydown', this.documentKeydownHandler);
 
+        // In the fullscreen overlay, a tap on an option must not move focus. Each row
+        // holds a focusable checkbox and the sheet's search is a text input; letting the
+        // tap shift focus either blurs the search (dropping the soft keyboard mid-search)
+        // or, combined with the underlying control input, pops the keyboard when it should
+        // stay down. preventDefault on mousedown blocks the focus/selection the tap would
+        // cause while leaving the click (which drives selection) intact. Floating keeps its
+        // native focus behavior (checkbox → input refocus in handleDropdownClick). The
+        // guard is scoped to option rows so header controls (search, close) still focus.
+        this.dropdown.addEventListener('mousedown', (e) => {
+            if (this.presentationMode !== 'fullscreen') return;
+            const onOption = (e.target as HTMLElement).closest('.ms__option');
+            if (onOption) e.preventDefault();
+        });
+
         this.dropdown.addEventListener('click', (e) => this.handleDropdownClick(e));
 
         // Prevent page scroll when scrolling dropdown at boundaries
@@ -1661,6 +1694,7 @@ export class WebMultiSelect<T = any> {
             if (this.options.searchMode === 'navigate' && this.focusedIndex >= 0) {
                 this.scrollToFocused();
             }
+            this.updateFullscreenNav();
         }
     }
 
@@ -1888,7 +1922,15 @@ export class WebMultiSelect<T = any> {
                 // clicking pulls focus off the search input — and the keydown
                 // listener is bound to the input. Put focus back so the user
                 // can keep navigating with the keyboard.
-                if (this.isOpen) {
+                //
+                // FLOATING only. In the fullscreen overlay `this.input` is the
+                // control input hidden BEHIND the sheet; focusing it pops the soft
+                // keyboard on every tap (and the keyboard-inset observer then
+                // shrinks the sheet — the visible "blink"/shrink on select). The
+                // dropdown's fullscreen mousedown guard already keeps focus where it
+                // was (on the sheet search if the keyboard was up, nowhere if it was
+                // down), so no refocus is needed — and none that would raise the keyboard.
+                if (this.isOpen && this.presentationMode !== 'fullscreen') {
                     this.input.focus();
                 }
             }
@@ -2019,6 +2061,7 @@ export class WebMultiSelect<T = any> {
         this.focusedIndex = next;
         this.renderDropdown();
         this.scrollToFocused();
+        this.updateFullscreenNav();
     }
 
     /**
@@ -2701,6 +2744,10 @@ export class WebMultiSelect<T = any> {
             this.fullscreenHeader.remove();
             this.fullscreenHeader = null;
             this.fullscreenSearchInput = null;
+            this.fullscreenNav = null;
+            this.fullscreenNavCount = null;
+            this.fullscreenNavPrev = null;
+            this.fullscreenNavNext = null;
         }
         this.unlockBodyScroll();
     }
@@ -2749,8 +2796,79 @@ export class WebMultiSelect<T = any> {
         close.addEventListener('click', () => this.close());
         header.appendChild(close);
 
+        // Navigate mode keeps the whole list visible and jumps focus between matches.
+        // Desktop uses Ctrl+Arrow for that; touch has no such shortcut, so append a
+        // match navigator (count + prev/next) that wraps onto its own row under the
+        // search box (header is flex-wrap; the nav takes 100% basis). Filter mode
+        // shrinks the list to matches, so it needs no jump UI.
+        if (this.options.isSearchEnabled && (this.options.searchMode || 'filter') === 'navigate') {
+            const nav = document.createElement('div');
+            nav.className = 'ms__fullscreen-nav';
+
+            const count = document.createElement('span');
+            count.className = 'ms__fullscreen-nav-count';
+            nav.appendChild(count);
+
+            const controls = document.createElement('div');
+            controls.className = 'ms__fullscreen-nav-controls';
+
+            const prev = document.createElement('button');
+            prev.type = 'button';
+            prev.className = 'ms__fullscreen-nav-btn ms__fullscreen-nav-btn--prev';
+            prev.setAttribute('aria-label', 'Previous match');
+            prev.addEventListener('click', () => this.focusPreviousMatch());
+
+            const next = document.createElement('button');
+            next.type = 'button';
+            next.className = 'ms__fullscreen-nav-btn ms__fullscreen-nav-btn--next';
+            next.setAttribute('aria-label', 'Next match');
+            next.addEventListener('click', () => this.focusNextMatch());
+
+            controls.appendChild(prev);
+            controls.appendChild(next);
+            nav.appendChild(controls);
+            header.appendChild(nav);
+
+            this.fullscreenNav = nav;
+            this.fullscreenNavCount = count;
+            this.fullscreenNavPrev = prev;
+            this.fullscreenNavNext = next;
+        }
+
         this.dropdown.insertBefore(header, this.dropdownInner);
         this.fullscreenHeader = header;
+        this.updateFullscreenNav();
+    }
+
+    /**
+     * Sync the fullscreen match navigator (navigate mode only) with the current search
+     * state: hide it until there's a term, then show "N of M" while a match is focused
+     * (or "M matches" / "No matches"), and disable the prev/next buttons when there's
+     * nothing to step through. No-op when the navigator isn't built (floating panel,
+     * filter mode, or search disabled).
+     */
+    private updateFullscreenNav(): void {
+        if (!this.fullscreenNav) return;
+
+        const total = this.matchingIndices.size;
+        const hasTerm = !!this.searchTerm;
+        this.fullscreenNav.style.display = hasTerm ? '' : 'none';
+
+        if (this.fullscreenNavCount) {
+            if (total === 0) {
+                this.fullscreenNavCount.textContent = this.options.emptyMessage || 'No matches';
+            } else {
+                const matched = Array.from(this.matchingIndices).sort((a, b) => a - b);
+                const pos = matched.indexOf(this.focusedIndex);
+                this.fullscreenNavCount.textContent = pos >= 0
+                    ? `${pos + 1} of ${total}`
+                    : `${total} match${total === 1 ? '' : 'es'}`;
+            }
+        }
+
+        const disabled = total === 0;
+        if (this.fullscreenNavPrev) this.fullscreenNavPrev.disabled = disabled;
+        if (this.fullscreenNavNext) this.fullscreenNavNext.disabled = disabled;
     }
 
     private positionHint(): void {

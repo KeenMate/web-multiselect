@@ -59,7 +59,12 @@ Tier 3 (component-specific features):
 - `count-display.css` - `.ms__count-display`, `.ms__counter-wrapper`, `.ms__count-text`, `.ms__count-clear`
 - `debug.css` - `.ms__debug-info`, `.ms__debug-stats` (dev-only)
 - `options.css` - Options list, groups, checkbox, content, per-state styling
-- `rtl.css` - RTL language support
+- `rtl.css` - RTL language support. Mirroring is done with **CSS logical
+  properties** in the feature files (driven by an inherited `direction: rtl` — the
+  host carries `dir="rtl"`, and the dropdown/hint/popover also get an explicit `dir`
+  since they're appended to the shadow root, not under `.ms--rtl`). Prefer logical
+  properties over adding `.ms--rtl` overrides; `rtl.css` holds only the
+  `badges-position` / count-display placement, a physical-side choice mirrored in JS.
 
 ### Naming Conventions
 
@@ -141,6 +146,16 @@ This enables integration with theme-designer's `--base-*` variables:
 2. Reference the new variable from the actual rule in the relevant feature file — e.g.
    `.ms__myComponent { border: 1px solid var(--ms-myComponent-border-color); }`
 3. Always wire a declared variable into at least one rule. A declaration with no `var()` reader is dead theming surface.
+
+### Writing directional CSS (RTL)
+
+Use **CSS logical properties** for any horizontal/inline direction so it mirrors in
+RTL for free — `margin-inline-start/end`, `padding-inline-*`, `inset-inline-start/end`
+(not `left`/`right`), `border-inline-start/end`, logical border-radius
+(`border-start-start-radius`, …), and `text-align: start/end`. Reserve physical
+`left`/`right` for direction-agnostic cases (e.g. `left: 50%` centering). Don't add
+`.ms--rtl` override rules — the panel isn't under that element, so they won't match;
+`direction` inheritance + logical properties handle it. See `rtl.css`.
 
 ### Consistency with web-daterangepicker
 

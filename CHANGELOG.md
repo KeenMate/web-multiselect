@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Fullscreen match navigator for `search-mode="navigate"`.** In navigate mode the
+  list stays whole and typing jumps focus between matches; desktop steps through them
+  with `Ctrl`+`ArrowUp`/`ArrowDown`, but touch has no such shortcut. The phone
+  fullscreen overlay now shows a navigator under the search box — an `N of M` result
+  count plus prev/next buttons that walk the matches (disabled when nothing matches,
+  hidden until a term is entered). Themeable via `--ms-fullscreen-nav-*` variables and
+  the `--ms-icon-chevron` glyph. No effect in filter mode (the list already narrows) or
+  the floating presentation.
 - **`fullscreen-autofocus` attribute** (default `false`). Controls whether the
   phone fullscreen overlay auto-focuses its search field on open — which pops the
   soft keyboard immediately. The new default opens the sheet with the **list
@@ -17,8 +25,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   search. Set `fullscreen-autofocus="true"` to type-to-filter right away (the prior
   behavior). No effect in the floating presentation.
 
+### Changed
+
+- **RTL rebuilt on CSS logical properties.** The component now mirrors for
+  right-to-left via logical properties (`margin-inline-*`, `inset-inline-*`,
+  `border-*-start/end`, `text-align: start/end`, logical border-radius) driven by an
+  inherited `direction`, instead of a large set of `.ms--rtl` physical-property
+  overrides. This fixes RTL where it silently didn't work before: the dropdown, hint,
+  and selected-popover are appended to the shadow root (not under the `.ms--rtl`
+  element), so the old `.ms--rtl .ms__dropdown …` overrides never matched — the panel,
+  its options/checkboxes/matched-accent, **and the new fullscreen overlay chrome**
+  (header, close, match navigator, tree indent) were effectively LTR-only. The panels
+  now also carry an explicit `dir` so mirroring is deterministic however RTL was
+  detected. `rtl.css` shrank to just the `badges-position` / count-display placement
+  (a deliberate physical-side choice mirrored in JS). New e2e assertions check the
+  rendered geometry (toggle side, checkbox side, badge order, fullscreen close side),
+  not just that the class is applied.
+
 ### Fixed
 
+- **Soft keyboard popped on every option tap in the fullscreen sheet.** Selecting an
+  option called `this.input.focus()` to keep desktop arrow-key navigation working — but
+  in the fullscreen overlay that input is the control field hidden *behind* the sheet, so
+  focusing it raised the soft keyboard on each tap, and the keyboard-inset observer then
+  shrank the sheet (the visible "blink" / shrink-on-select, and the browser chrome
+  flicker). The refocus is now floating-only. A fullscreen `mousedown` guard on option
+  rows also stops a tap from moving focus at all, so a keyboard-off browse stays
+  keyboard-off and an in-progress search keeps its keyboard. No change on desktop.
 - **Soft keyboard / focus handling on fullscreen open.** Tapping the control gave
   the underlying `<input>` native focus, which both popped the keyboard when it
   should stay down AND, with `fullscreen-autofocus="true"`, stole focus back from the
@@ -44,6 +77,31 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Full-label reveal flashed at 0,0 on first tap.** The fullscreen truncated-label
   reveal (`ⓘ`) was made visible before floating-ui positioned it, so it painted one
   frame at the origin. It now positions first and fades in at the anchor.
+
+### Docs
+
+- **New "Mobile & Fullscreen" examples page** (`examples-mobile.html`, linked from the
+  index). The phone-only demos now live in one place: `mobile-presentation` (floating vs
+  fullscreen), the soft-keyboard policy (`fullscreen-autofocus`), and the navigate-mode
+  match navigator — each with a "Preview as fullscreen" toggle so the overlay is
+  inspectable on desktop. Moved out of the Events page (which keeps `showMessage`, with a
+  cross-link) and upgraded to the shared `.card` styling.
+- **FlexSearch examples made resilient** (`examples-search-index.html`). The two demos
+  are now wired independently, each in its own `try/catch`, with the search helper loaded
+  via a catchable dynamic import and a visible on-page error note on failure — so one
+  broken demo (a module that won't resolve, a blocked/404 data fetch) can no longer abort
+  the whole script and silently blank both pickers.
+- **Example-page CSS consolidated into `examples-shared.css`.** The demo pages had drifted
+  into many overlapping/duplicated inline `<style>` rules; these are now shared primitives,
+  with page `<style>` blocks holding only genuinely page-specific styling. Deduplicated
+  `.demo-area` / `.demo-label` / `.badge` / dark `.output`, and factored reusable patterns:
+  `.card-grid` (auto-fit grid tuned by `--grid-min` / `--grid-gap`), `.log-panel`
+  (+`--dark`, for the monospace console boxes, height via `--log-max-height`), `.demo-card`
+  (surface via `--demo-card-bg` / `--demo-card-border`, standardized inner typography),
+  `.reference-table` (with an `is-highlight` row), `.subsection`, `.toggle-label` (sharing a
+  base with `.controls label`), and `.muted` / `.mt-1` utilities. Removed ~90 lines of
+  duplicated CSS and dozens of inline `style="…"` attributes (e.g. a ~30-cell hand-styled
+  table in the theming page). No effect on the published component — examples only.
 
 ## [2.0.0-rc03] - 2026-08-14
 

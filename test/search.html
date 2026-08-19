@@ -23,6 +23,11 @@
     </div>
 
     <div class="fixture">
+        <div class="fixture-label">navigate + forced fullscreen — match navigator (count + prev/next)</div>
+        <web-multiselect id="navigate-fs" search-mode="navigate" mobile-presentation="fullscreen" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
         <div class="fixture-label">search-input-mode="readonly"</div>
         <web-multiselect id="readonly" search-input-mode="readonly" value-member="value" display-value-member="label"></web-multiselect>
     </div>
@@ -80,7 +85,7 @@
 
         customElements.whenDefined('web-multiselect').then(() => {
             for (const id of [
-                'filter', 'navigate', 'readonly', 'hidden-input', 'no-search',
+                'filter', 'navigate', 'navigate-fs', 'readonly', 'hidden-input', 'no-search',
                 'empty-msg', 'min-len', 'keep-options', 'clear-on-close', 'before-search'
             ]) {
                 document.getElementById(id).options = fruits;

@@ -122,7 +122,7 @@
      `bottom` would silently defeat it — the list and bottom actions would stay behind the
      keyboard. With only top/left pinned, height governs and the keyboard reflow works. */
   top: 0;
-  left: 0;
+  inset-inline-start: 0;
   width: 100vw;
   max-width: 100vw;
   height: 100dvh;
@@ -183,11 +183,76 @@
   flex: 0 0 auto;
   display: flex;
   align-items: center;
+  /* Wrap lets the navigate-mode match navigator (flex-basis 100%) drop onto its own
+     row under the search box while search + close stay on the first row. */
+  flex-wrap: wrap;
   gap: var(--ms-fullscreen-header-gap);
   min-height: var(--ms-fullscreen-header-min-height);
   padding: var(--ms-fullscreen-header-padding);
   background: var(--ms-fullscreen-header-bg);
   border-bottom: var(--ms-fullscreen-header-border);
+}
+
+/* Match navigator (navigate searchMode only): result count on the lead edge, round
+   prev/next buttons on the trailing edge, forced onto its own full-width row. Hidden
+   inline (display:none) by JS until there's a search term. */
+.ms__fullscreen-nav {
+  flex: 0 0 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ms-fullscreen-nav-gap);
+  padding-top: var(--ms-fullscreen-nav-padding-top);
+}
+
+.ms__fullscreen-nav-count {
+  font-size: var(--ms-fullscreen-nav-count-font-size);
+  color: var(--ms-fullscreen-nav-count-color);
+}
+
+.ms__fullscreen-nav-controls {
+  display: flex;
+  align-items: center;
+  gap: var(--ms-fullscreen-nav-gap);
+}
+
+.ms__fullscreen-nav-btn {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ms-fullscreen-nav-btn-size);
+  height: var(--ms-fullscreen-nav-btn-size);
+  padding: 0;
+  color: var(--ms-fullscreen-nav-btn-color);
+  background: var(--ms-fullscreen-nav-btn-bg);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.ms__fullscreen-nav-btn:hover:not(:disabled) {
+  background: var(--ms-fullscreen-nav-btn-bg-hover);
+}
+
+.ms__fullscreen-nav-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.ms__fullscreen-nav-btn::before {
+  content: "";
+  display: block;
+  width: var(--ms-fullscreen-nav-btn-icon-size);
+  height: var(--ms-fullscreen-nav-btn-icon-size);
+  background-color: currentColor;
+  -webkit-mask: var(--ms-icon-chevron) center / contain no-repeat;
+          mask: var(--ms-icon-chevron) center / contain no-repeat;
+}
+
+/* Chevron points up by default; the "next" (down) button flips it vertically. */
+.ms__fullscreen-nav-btn--next::before {
+  transform: scaleY(-1);
 }
 
 /* The leading element (search field or title) fills the bar, pushing the close

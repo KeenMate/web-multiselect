@@ -1,77 +1,36 @@
 /* ==============================================================================
    RTL (Right-to-Left) SUPPORT
    ==============================================================================
-   Styles for RTL languages (Arabic, Hebrew, etc.)
-   Applied when .ms--rtl class is present
+   The component is authored with CSS *logical properties* (margin-inline-*,
+   inset-inline-*, border-*-start/end, text-align: start/end, …) throughout, so
+   almost all RTL mirroring happens automatically once `direction: rtl` is in
+   effect. Direction reaches every part of the component by inheritance: the host
+   carries `dir="rtl"` (set from the `dir` attribute / an RTL ancestor, see
+   multiselect.ts), and that inherits into the Shadow DOM — including the dropdown,
+   hint, and selected-popover, which are appended to the shadow root rather than
+   under the `.ms--rtl` container. That containment is exactly why the old
+   `.ms--rtl .ms__dropdown …` override rules could never match; logical properties
+   sidestep it entirely. Prefer logical properties in the feature files over adding
+   rules here.
+
+   What remains here is the ONE thing logical properties don't express: the
+   `badges-position` / count-display **placement**, which is a deliberate physical
+   side choice ("left" / "right") that the component mirrors at the CLASS level in
+   JS (effectiveBadgesPosition swaps left↔right under RTL). These rules re-home the
+   inline margin for the mirrored class so the group hugs the input on the correct
+   side.
 */
 
 /* ==============================================================================
-   INPUT & TOGGLE ICON
-   ==============================================================================
-*/
-
-.ms--rtl .ms__input-wrapper {
-  direction: rtl;
-}
-
-.ms--rtl .ms__input {
-  text-align: right;
-  padding-left: var(--ms-input-padding-right);
-  padding-right: var(--ms-input-padding-h);
-}
-
-/* Move toggle icon to left side */
-.ms--rtl .ms__toggle {
-  left: var(--ms-toggle-right) !important;
-  right: auto !important;
-}
-
-/* Move count badge to left side */
-.ms--rtl .ms__counter {
-  left: var(--ms-counter-offset) !important;
-  right: auto !important;
-}
-
-/* ==============================================================================
-   DROPDOWN OPTIONS
-   ==============================================================================
-*/
-
-.ms--rtl .ms__dropdown {
-  direction: rtl;
-  text-align: right;
-}
-
-/* Checkbox on right side */
-.ms--rtl .ms__option {
-  flex-direction: row-reverse;
-}
-
-.ms--rtl .ms__checkbox {
-  margin-left: var(--ms-spacing-sm);
-  margin-right: 0;
-}
-
-.ms--rtl .ms__option-content {
-  text-align: right;
-}
-
-.ms--rtl .ms__option-icon {
-  margin-left: var(--ms-spacing-xs);
-  margin-right: 0;
-}
-
-/* ==============================================================================
-   BADGES LAYOUT
-   ==============================================================================
-*/
+   BADGES PLACEMENT (physical side, mirrored in JS)
+   ============================================================================== */
 
 .ms--rtl .ms__badges {
   direction: rtl;
 }
 
-/* RTL: Fix margins for inline badge positions */
-/* In RTL, visual left/right are swapped, so margins need to be on opposite sides */
+/* In RTL, visual left/right are swapped, so the inline margin moves to the
+   opposite side from the LTR rule. */
 .ms--rtl .ms__badges--right {
   margin-left: 0;
   margin-right: var(--ms-badges-margin-right);
@@ -82,35 +41,14 @@
   margin-left: var(--ms-badges-margin-left);
 }
 
-/* Badges flow right-to-left */
-.ms--rtl .ms__badge {
-  flex-direction: row-reverse;
-}
-
-/* Remove button on left side of badge (RTL) */
-.ms--rtl .ms__badge-remove {
-  border-radius: var(--ms-badge-border-radius) 0 0 var(--ms-badge-border-radius);
-  border-left: var(--ms-badge-remove-border);
-  border-right: none;
-}
-
-/* Badge text rounded on right (RTL) */
-.ms--rtl .ms__badge-text {
-  border-radius: 0 var(--ms-badge-border-radius) var(--ms-badge-border-radius) 0;
-  border-right: var(--ms-badge-text-border);
-  border-left: none;
-}
-
 /* ==============================================================================
-   COUNT DISPLAY
-   ==============================================================================
-*/
+   COUNT-DISPLAY PLACEMENT (physical side, mirrored in JS)
+   ============================================================================== */
 
 .ms--rtl .ms__count-display {
   direction: rtl;
 }
 
-/* RTL: Fix margins for inline count-display positions */
 .ms--rtl .ms__count-display--right {
   margin-left: 0;
   margin-right: var(--ms-count-display-margin-right);
@@ -119,55 +57,4 @@
 .ms--rtl .ms__count-display--left {
   margin-right: 0;
   margin-left: var(--ms-count-display-margin-left);
-}
-
-.ms--rtl .ms__counter-wrapper {
-  flex-direction: row-reverse;
-}
-
-/* ==============================================================================
-   SELECTED POPOVER
-   ==============================================================================
-*/
-
-.ms--rtl .ms__selected-popover {
-  direction: rtl;
-  text-align: right;
-}
-
-/* ==============================================================================
-   ACTIONS
-   ==============================================================================
-*/
-
-.ms--rtl .ms__actions {
-  direction: rtl;
-}
-
-/* ==============================================================================
-   GROUPS
-   ==============================================================================
-*/
-
-.ms--rtl .ms__group-label {
-  text-align: right;
-}
-
-/* ==============================================================================
-   EMPTY STATE
-   ==============================================================================
-*/
-
-.ms--rtl .ms__empty {
-  text-align: right;
-}
-
-/* ==============================================================================
-   HINT
-   ==============================================================================
-*/
-
-.ms--rtl .ms__hint {
-  direction: rtl;
-  text-align: right;
 }

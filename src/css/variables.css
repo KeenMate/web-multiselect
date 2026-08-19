@@ -373,6 +373,21 @@
   --ms-fullscreen-info-icon-size: calc(1.8 * var(--ms-fullscreen-rem));
   --ms-fullscreen-info-color: var(--ms-accent-color);
   --ms-fullscreen-info-bg-hover: var(--ms-option-bg-matched, transparent);
+  /* Navigate-mode match navigator under the fullscreen search box: a muted result
+     count plus round prev/next buttons that step through matches (the touch stand-in
+     for desktop's Ctrl+Arrow). Sized in --ms-fullscreen-rem like the rest of the overlay. */
+  --ms-fullscreen-nav-gap: calc(0.6 * var(--ms-fullscreen-rem));
+  --ms-fullscreen-nav-padding-top: calc(0.6 * var(--ms-fullscreen-rem));
+  --ms-fullscreen-nav-count-font-size: calc(1.3 * var(--ms-fullscreen-rem));
+  --ms-fullscreen-nav-count-color: var(--ms-text-muted-color, var(--ms-dropdown-text-color));
+  --ms-fullscreen-nav-btn-size: calc(3.2 * var(--ms-fullscreen-rem));
+  --ms-fullscreen-nav-btn-icon-size: calc(1.6 * var(--ms-fullscreen-rem));
+  --ms-fullscreen-nav-btn-color: var(--ms-dropdown-text-color);
+  --ms-fullscreen-nav-btn-bg: var(--ms-option-bg-matched, transparent);
+  --ms-fullscreen-nav-btn-bg-hover: var(--ms-accent-color-light, var(--ms-option-bg-matched, transparent));
+  /* SVG chevron glyph — rendered via mask so it inherits the button color via currentColor.
+     Points up; the "next" button flips it with scaleY(-1). Override with any mask-friendly SVG. */
+  --ms-icon-chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M5 15l7-7 7 7' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>");
   /* SVG "i-in-a-circle" glyph — rendered via mask so it inherits the info color via
      currentColor. Override with any mask-friendly url() SVG. */
   --ms-icon-info: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><circle cx='12' cy='12' r='9' fill='none' stroke='black' stroke-width='2'/><circle cx='12' cy='7.5' r='1.3' fill='black'/><path d='M12 11v6' stroke='black' stroke-width='2' stroke-linecap='round' fill='none'/></svg>");

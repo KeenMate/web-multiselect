@@ -21,9 +21,9 @@
 /* No checkboxes modifier (for simple select mode) */
 .ms--no-checkboxes .ms__option {
   gap: 0; /* Remove gap since there's no checkbox */
-  padding-left: var(--ms-option-padding-h); /* Adjust padding */
+  padding-inline-start: var(--ms-option-padding-h); /* Adjust leading padding; flips in RTL */
 }
 
 .ms--no-checkboxes .ms__option-content {
-  padding-left: 0; /* No extra padding needed */
+  padding-inline-start: 0; /* No extra padding needed */
 }

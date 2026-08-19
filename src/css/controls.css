@@ -23,7 +23,7 @@
   font-family: inherit; /* Form elements don't inherit font by default */
   height: var(--ms-input-height);
   padding: var(--ms-input-padding);
-  padding-right: var(--ms-input-padding-right); /* Space for dropdown icon */
+  padding-inline-end: var(--ms-input-padding-right); /* Space for dropdown icon (trailing side; flips in RTL) */
   font-size: var(--ms-input-font-size);
   border: var(--ms-input-border);
   border-radius: var(--ms-input-border-radius);
@@ -99,7 +99,7 @@
 
 .ms__toggle {
   position: absolute;
-  right: var(--ms-toggle-right);
+  inset-inline-end: var(--ms-toggle-right); /* trailing edge; flips to the left in RTL */
   top: 50%;
   transform: var(--ms-transform-center-y);
   pointer-events: none;
@@ -118,7 +118,7 @@
 
 .ms__counter {
   position: absolute;
-  right: var(--ms-counter-offset); /* Space for toggle icon */
+  inset-inline-end: var(--ms-counter-offset); /* trailing edge (past the toggle icon); flips in RTL */
   top: 50%;
   transform: var(--ms-transform-center-y);
   padding: var(--ms-counter-padding);
