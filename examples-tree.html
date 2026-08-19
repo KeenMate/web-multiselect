@@ -10,26 +10,6 @@
 
     <!-- Page-specific styles -->
     <style>
-        .demo-area {
-            background: #f7fafc;
-            padding: 1.5rem;
-            border-radius: 8px;
-            margin: 1rem 0;
-        }
-
-        .demo-label {
-            display: block;
-            font-size: 0.85rem;
-            color: #4a5568;
-            margin-bottom: 0.5rem;
-        }
-
-        .demo-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 1.5rem;
-        }
-
         /* Section 10 only: dim a .controls group when its inputs are disabled. */
         .controls[data-disabled="true"] { opacity: 0.45; }
     </style>
@@ -82,7 +62,7 @@ el.pathMember = 'path';   // &lt;web-multiselect path-member="path"&gt;</pre></d
                 mode, and checkboxes all behave exactly as they do for a flat list.
             </p>
 
-            <div class="demo-grid">
+            <div class="card-grid" style="--grid-min: 240px; --grid-gap: 1.5rem;">
                 <div>
                     <label class="demo-label">Single-select (<code>multiple="false"</code>):</label>
                     <web-multiselect id="tree-single" multiple="false"></web-multiselect>
@@ -181,7 +161,7 @@ el.getIsSelectableCallback = (node) =&gt; !node.hasChildren;
                 theming hooks.
             </p>
 
-            <div class="demo-grid">
+            <div class="card-grid" style="--grid-min: 240px; --grid-gap: 1.5rem;">
                 <div>
                     <label class="demo-label">Wide indent (<code>--ms-tree-indent: 2rem</code>):</label>
                     <web-multiselect id="tree-wide" multiple="true" style="--ms-tree-indent: 2rem;"></web-multiselect>
@@ -212,7 +192,7 @@ el.getIsSelectableCallback = (node) =&gt; !node.hasChildren;
                 flat lists too — they're option-level, not tree-only.
             </p>
 
-            <div class="demo-grid">
+            <div class="card-grid" style="--grid-min: 240px; --grid-gap: 1.5rem;">
                 <div>
                     <label class="demo-label">Truncated (ellipsis) + tooltip:</label>
                     <web-multiselect id="tree-truncate" multiple="true" enable-option-tooltips="true"

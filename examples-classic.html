@@ -7,11 +7,6 @@
 
     <!-- Shared example styles -->
     <link rel="stylesheet" href="examples-shared.css">
-
-    <!-- Page-specific styles -->
-    <style>
-        /* No page-specific styles needed - using all shared styles */
-    </style>
 </head>
 <body>
     <div class="container">
@@ -220,7 +215,7 @@
             <h2>Display Modes</h2>
             <p>Different ways to display selected items</p>
 
-            <h3 style="margin-top: 1.5rem; margin-bottom: 1rem; font-size: 1.2rem; color: #667eea;">Basic Display Modes</h3>
+            <h3 class="subsection">Basic Display Modes</h3>
             <div class="grid">
                 <div class="form-group">
                     <label>Badges Mode (Default)</label>
@@ -291,7 +286,7 @@
                 </div>
             </div>
 
-            <h3 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1.2rem; color: #667eea;">Display Mode + Counter Combinations</h3>
+            <h3 class="subsection">Display Mode + Counter Combinations</h3>
             <div class="grid">
                 <div class="form-group">
                     <label>Badges + Counter</label>
@@ -336,7 +331,7 @@
                 </div>
             </div>
 
-            <h3 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1.2rem; color: #667eea;">Threshold Auto-Switching</h3>
+            <h3 class="subsection">Threshold Auto-Switching</h3>
             <div class="grid">
                 <div class="form-group">
                     <label>Badges → Count at 3</label>
@@ -369,7 +364,7 @@
                 </div>
             </div>
 
-            <h3 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1.2rem; color: #667eea;">Internationalization (i18n)</h3>
+            <h3 class="subsection">Internationalization (i18n)</h3>
             <div class="grid">
                 <div class="form-group">
                     <label>English Pluralization</label>
@@ -533,7 +528,7 @@
                 </div>
             </div>
 
-            <h3 style="margin-top: 2rem; margin-bottom: 1rem; font-size: 1.2rem; color: #667eea;">Inline Vertical Alignment</h3>
+            <h3 class="subsection">Inline Vertical Alignment</h3>
             <p>Control vertical alignment for left/right badge positions with <code>--ms-inline-align</code></p>
             <div class="grid">
                 <div class="form-group">
@@ -825,8 +820,8 @@
                 </web-multiselect>
                 <small class="form-text">Open browser console to see events</small>
             </div>
-            <div id="event-log" style="background: #f9f9f9; padding: 1rem; border-radius: 4px; margin-top: 1rem; font-family: monospace; font-size: 0.875rem; max-height: 200px; overflow-y: auto;">
-                <div style="color: #666;">Event log will appear here...</div>
+            <div id="event-log" class="log-panel">
+                <div class="muted">Event log will appear here...</div>
             </div>
             <small class="form-text" style="margin-top: 0.75rem; display: block;">
                 Looking for the <code>on*</code> property handlers and the

@@ -106,32 +106,10 @@
     }
 
 
-    /* Demo Cards */
-    .demos {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-      gap: 2rem;
-    }
-
+    /* Shadow variant of the shared `.demo-card` (no border). */
     .demo-card {
-      background: white;
-      border-radius: 0.5rem;
-      padding: 1.5rem;
+      --demo-card-border: none;
       box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
-    }
-
-    .demo-card h3 {
-      margin: 0 0 1rem 0;
-      color: #111827;
-      font-size: 1rem;
-      border: none;
-      padding: 0;
-    }
-
-    .demo-card p {
-      color: #6b7280;
-      font-size: 0.875rem;
-      margin: 0 0 1rem 0;
     }
 
     /* Multiselect wrapper for better layout */
@@ -141,19 +119,15 @@
       gap: 1rem;
     }
 
-    /* Current values display */
+    /* Current values dump — box from shared `.log-panel--dark`; kept green +
+       preformatted for the terminal-style values readout. */
     .current-values {
-      background: #1f2937;
+      --log-max-height: 300px;
       color: #a5d6a7;
-      border-radius: 0.5rem;
-      padding: 1rem;
       margin-top: 2rem;
-      font-family: 'Courier New', Consolas, Monaco, monospace;
       font-size: 0.75rem;
       line-height: 1.6;
       white-space: pre-wrap;
-      max-height: 300px;
-      overflow-y: auto;
     }
 
     .current-values-header {
@@ -275,7 +249,7 @@
     </div>
 
     <!-- Demo Cards -->
-    <div class="demos">
+    <div class="grid-2">
       <!-- Single Select -->
       <div class="demo-card">
         <h3>Single Select</h3>
@@ -324,7 +298,7 @@
     </div>
 
     <!-- Current Values Display -->
-    <div class="current-values">
+    <div class="log-panel log-panel--dark current-values">
       <div class="current-values-header">/* Current --base-* CSS Variables */</div>
       <div id="currentValues">:root {
   /* No overrides set - using component defaults */

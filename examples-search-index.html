@@ -6,10 +6,6 @@
     <title>External Search (FlexSearch) - MultiSelect</title>
 
     <link rel="stylesheet" href="examples-shared.css">
-    <style>
-        .demo-area { background: #f7fafc; padding: 1.5rem; border-radius: 8px; margin: 1rem 0; }
-        .demo-label { display: block; font-size: 0.85rem; color: #4a5568; margin-bottom: 0.5rem; }
-    </style>
 </head>
 <body>
     <div class="container">
@@ -84,46 +80,93 @@ el.searchCallback = (term) =&gt; ix.search(term, 50);   // externalize the whole
 
     <script type="module" src="/src/index.ts"></script>
     <script type="module">
-        import { FlexIndexer } from './examples-flex-indexer.js';
+        // Each demo is wired INDEPENDENTLY and defensively. Previously this module
+        // used a static `import` of the FlexSearch helper plus a top-level
+        // `await fetch(...)` for the ISCO data — so a single failure (a module that
+        // won't resolve on a given browser, a fetch that 404s / is blocked) aborted
+        // the WHOLE script, leaving both pickers empty with no clue why. Now: the
+        // helper is imported dynamically once, each demo runs in its own try/catch,
+        // and any failure is surfaced in that demo's area instead of silently
+        // blanking the page. One broken demo can't take the other down.
 
-        // --- Demo A: flat cities with accents ---
-        const cities = [
-            'Zürich', 'São Paulo', 'Kraków', 'München', 'Málaga', 'Düsseldorf', 'Reykjavík',
-            'Bogotá', 'Medellín', 'Łódź', 'Gdańsk', 'Tromsø', 'Skopje', 'Chișinău', 'Timișoara',
-            'Košice', 'Plzeň', 'Brno', 'Genève', 'Montréal', 'Québec', 'Đà Nẵng', 'Hạ Long',
-            'Nürnberg', 'Örebro', 'Aarhus', 'Bratislava', 'Ljubljana', 'Zagreb', 'Poznań'
-        ].map((name, i) => ({ value: String(i), label: name }));
+        // Show a red error note inside a demo's .demo-area (so failures are visible
+        // on the device, not just in a console the user may not have open).
+        const fail = (sectionEl, err) => {
+            console.error(err);
+            const area = sectionEl?.querySelector('.demo-area');
+            if (!area) return;
+            const note = document.createElement('p');
+            note.style.cssText = 'color:#c0392b; font-size:0.85rem; margin:0.5rem 0 0;';
+            note.textContent = `⚠ Demo failed to load: ${err?.message ?? err}`;
+            area.appendChild(note);
+        };
 
-        // --- Demo B: full ISCO-08 tree ---
-        const isco = await (await fetch('./examples-data/isco08.json')).json();
+        const ready = customElements.whenDefined('web-multiselect');
 
-        customElements.whenDefined('web-multiselect').then(() => {
-            // Flat + accents — one full-tokenize text field.
-            const cityIx = new FlexIndexer((c) => c.label);
-            cityIx.build(cities);
-            const citiesEl = document.querySelector('#cities');
-            citiesEl.valueMember = 'value';
-            citiesEl.displayValueMember = 'label';
-            citiesEl.options = cities;
-            citiesEl.searchCallback = (term) => cityIx.search(term, 20);
+        // FlexSearch helper — dynamic import so a resolution/parse failure is catchable
+        // and reportable rather than a hard module-load abort.
+        let FlexIndexer;
+        try {
+            ({ FlexIndexer } = await import('./examples-flex-indexer.js'));
+        } catch (err) {
+            document.querySelectorAll('.example-section').forEach((s) => {
+                if (s.querySelector('.demo-area')) fail(s, err);
+            });
+            throw err;
+        }
 
-            // ISCO tree — exact/prefix on the ISCO code (ranked first, so "2211" and
-            // "72" resolve to their own nodes), plus fuzzy text over title + code +
-            // breadcrumb (so "welder", "health", "2211 non" all work too).
-            const iscoIx = new FlexIndexer([
-                { getText: (o) => o.value, exact: true, numeric: true, boost: 2 },
-                { getText: (o) => `${o.label} ${o.value} ${o.fullTitle}`, boost: 1 }
-            ]);
-            iscoIx.build(isco);
-            const iscoEl = document.querySelector('#isco-flex');
-            iscoEl.valueMember = 'value';
-            iscoEl.displayValueMember = 'label';
-            iscoEl.pathMember = 'path';
-            iscoEl.isSelectableMember = 'selectable';
-            iscoEl.options = isco;
-            // Return matches from the index; the component adds ancestors + renders the tree.
-            iscoEl.searchCallback = (term) => iscoIx.search(term, 80);
-        });
+        // --- Demo A: flat cities with accents ---------------------------------
+        (async () => {
+            const section = document.querySelector('#cities')?.closest('.example-section');
+            try {
+                const cities = [
+                    'Zürich', 'São Paulo', 'Kraków', 'München', 'Málaga', 'Düsseldorf', 'Reykjavík',
+                    'Bogotá', 'Medellín', 'Łódź', 'Gdańsk', 'Tromsø', 'Skopje', 'Chișinău', 'Timișoara',
+                    'Košice', 'Plzeň', 'Brno', 'Genève', 'Montréal', 'Québec', 'Đà Nẵng', 'Hạ Long',
+                    'Nürnberg', 'Örebro', 'Aarhus', 'Bratislava', 'Ljubljana', 'Zagreb', 'Poznań'
+                ].map((name, i) => ({ value: String(i), label: name }));
+
+                await ready;
+                const cityIx = new FlexIndexer((c) => c.label); // one full-tokenize text field
+                cityIx.build(cities);
+                const citiesEl = document.querySelector('#cities');
+                citiesEl.valueMember = 'value';
+                citiesEl.displayValueMember = 'label';
+                citiesEl.options = cities;
+                citiesEl.searchCallback = (term) => cityIx.search(term, 20);
+            } catch (err) {
+                fail(section, err);
+            }
+        })();
+
+        // --- Demo B: full ISCO-08 tree ----------------------------------------
+        (async () => {
+            const section = document.querySelector('#isco-flex')?.closest('.example-section');
+            try {
+                const res = await fetch('./examples-data/isco08.json');
+                if (!res.ok) throw new Error(`isco08.json → HTTP ${res.status}`);
+                const isco = await res.json();
+
+                await ready;
+                // Exact/prefix on the ISCO code (ranked first, so "2211" and "72" resolve
+                // to their own nodes), plus fuzzy text over title + code + breadcrumb.
+                const iscoIx = new FlexIndexer([
+                    { getText: (o) => o.value, exact: true, numeric: true, boost: 2 },
+                    { getText: (o) => `${o.label} ${o.value} ${o.fullTitle}`, boost: 1 }
+                ]);
+                iscoIx.build(isco);
+                const iscoEl = document.querySelector('#isco-flex');
+                iscoEl.valueMember = 'value';
+                iscoEl.displayValueMember = 'label';
+                iscoEl.pathMember = 'path';
+                iscoEl.isSelectableMember = 'selectable';
+                iscoEl.options = isco;
+                // Return matches from the index; the component adds ancestors + renders the tree.
+                iscoEl.searchCallback = (term) => iscoIx.search(term, 80);
+            } catch (err) {
+                fail(section, err);
+            }
+        })();
     </script>
 </body>
 </html>

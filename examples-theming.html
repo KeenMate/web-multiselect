@@ -10,16 +10,9 @@
 
     <!-- Page-specific styles -->
     <style>
-        /* Override container width for theming page */
-        .container {
-            max-width: 1400px;
-        }
-
-        /* Theme grid layout */
+        /* Grid comes from shared `.card-grid`; wider min for side-by-side themes. */
         .theme-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-            gap: 2rem;
+            --grid-min: 500px;
             margin-bottom: 2rem;
         }
 
@@ -383,45 +376,45 @@
             <p>Control input field dimensions with the <code>input-size</code> attribute. Five sizes available: xs, sm, md (default), lg, xl.</p>
 
             <!-- Size Reference Table -->
-            <table style="margin-bottom: 1.5rem; border-collapse: collapse; font-size: 0.875rem;">
+            <table class="reference-table">
                 <thead>
-                    <tr style="background: #f3f4f6;">
-                        <th style="padding: 0.5rem 1rem; text-align: left; border: 1px solid #e5e7eb;">Size</th>
-                        <th style="padding: 0.5rem 1rem; text-align: left; border: 1px solid #e5e7eb;">Height</th>
-                        <th style="padding: 0.5rem 1rem; text-align: left; border: 1px solid #e5e7eb;">Font</th>
-                        <th style="padding: 0.5rem 1rem; text-align: left; border: 1px solid #e5e7eb;">Calc Formula</th>
+                    <tr>
+                        <th>Size</th>
+                        <th>Height</th>
+                        <th>Font</th>
+                        <th>Calc Formula</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td style="padding: 0.5rem 1rem; border: 1px solid #e5e7eb;"><code>xs</code></td>
-                        <td style="padding: 0.5rem 1rem; border: 1px solid #e5e7eb;">31px</td>
-                        <td style="padding: 0.5rem 1rem; border: 1px solid #e5e7eb;">12px</td>
-                        <td style="padding: 0.5rem 1rem; border: 1px solid #e5e7eb;"><code>calc(3.1 * var(--ms-rem))</code></td>
+                        <td><code>xs</code></td>
+                        <td>31px</td>
+                        <td>12px</td>
+                        <td><code>calc(3.1 * var(--ms-rem))</code></td>
                     </tr>
                     <tr>
-                        <td style="padding: 0.5rem 1rem; border: 1px solid #e5e7eb;"><code>sm</code></td>
-                        <td style="padding: 0.5rem 1rem; border: 1px solid #e5e7eb;">33px</td>
-                        <td style="padding: 0.5rem 1rem; border: 1px solid #e5e7eb;">13px</td>
-                        <td style="padding: 0.5rem 1rem; border: 1px solid #e5e7eb;"><code>calc(3.3 * var(--ms-rem))</code></td>
+                        <td><code>sm</code></td>
+                        <td>33px</td>
+                        <td>13px</td>
+                        <td><code>calc(3.3 * var(--ms-rem))</code></td>
                     </tr>
-                    <tr style="background: #eff6ff;">
-                        <td style="padding: 0.5rem 1rem; border: 1px solid #e5e7eb;"><code>md</code> (default)</td>
-                        <td style="padding: 0.5rem 1rem; border: 1px solid #e5e7eb;"><strong>35px</strong></td>
-                        <td style="padding: 0.5rem 1rem; border: 1px solid #e5e7eb;">14px</td>
-                        <td style="padding: 0.5rem 1rem; border: 1px solid #e5e7eb;"><code>calc(3.5 * var(--ms-rem))</code></td>
-                    </tr>
-                    <tr>
-                        <td style="padding: 0.5rem 1rem; border: 1px solid #e5e7eb;"><code>lg</code></td>
-                        <td style="padding: 0.5rem 1rem; border: 1px solid #e5e7eb;">38px</td>
-                        <td style="padding: 0.5rem 1rem; border: 1px solid #e5e7eb;">16px</td>
-                        <td style="padding: 0.5rem 1rem; border: 1px solid #e5e7eb;"><code>calc(3.8 * var(--ms-rem))</code></td>
+                    <tr class="is-highlight">
+                        <td><code>md</code> (default)</td>
+                        <td><strong>35px</strong></td>
+                        <td>14px</td>
+                        <td><code>calc(3.5 * var(--ms-rem))</code></td>
                     </tr>
                     <tr>
-                        <td style="padding: 0.5rem 1rem; border: 1px solid #e5e7eb;"><code>xl</code></td>
-                        <td style="padding: 0.5rem 1rem; border: 1px solid #e5e7eb;">41px</td>
-                        <td style="padding: 0.5rem 1rem; border: 1px solid #e5e7eb;">18px</td>
-                        <td style="padding: 0.5rem 1rem; border: 1px solid #e5e7eb;"><code>calc(4.1 * var(--ms-rem))</code></td>
+                        <td><code>lg</code></td>
+                        <td>38px</td>
+                        <td>16px</td>
+                        <td><code>calc(3.8 * var(--ms-rem))</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>xl</code></td>
+                        <td>41px</td>
+                        <td>18px</td>
+                        <td><code>calc(4.1 * var(--ms-rem))</code></td>
                     </tr>
                 </tbody>
             </table>
@@ -485,7 +478,7 @@
 
         <h2 style="margin-bottom: 1.5rem;">🎨 Theme Examples</h2>
 
-        <div class="theme-grid">
+        <div class="card-grid theme-grid">
             <!-- Dark Mode Theme -->
             <div class="theme-card dark-theme">
                 <h2>🌙 Dark Mode</h2>

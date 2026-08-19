@@ -9,17 +9,7 @@
     <link rel="stylesheet" href="examples-shared.css">
 
     <style>
-        .log {
-            background: #f9f9f9;
-            padding: 1rem;
-            border-radius: 4px;
-            margin-top: 1rem;
-            font-family: monospace;
-            font-size: 0.8125rem;
-            max-height: 200px;
-            overflow-y: auto;
-        }
-        .log .muted { color: #666; }
+        /* Box comes from shared `.log-panel`; page keeps its entry-tag colors. */
         .tag-prop  { color: #9b1d8e; font-weight: 600; }
         .tag-event { color: #0066cc; font-weight: 600; }
         .tag-block { color: #c0392b; font-weight: 600; }
@@ -64,9 +54,9 @@
                     <span class="tag-event">[event]</span> = <code>addEventListener</code>
                 </small>
             </div>
-            <div id="events-log" class="log"><div class="muted">Pick an option — [prop] and [event] entries log here…</div></div>
+            <div id="events-log" class="log-panel"><div class="muted">Pick an option — [prop] and [event] entries log here…</div></div>
 
-            <details style="margin-top: 1rem;">
+            <details class="mt-1">
                 <summary>Show code</summary>
 <pre><code>// Property handlers (the on* form) — real listeners, so each receives
 // the SAME CustomEvent addEventListener would get (v2 change).
@@ -103,9 +93,9 @@ el.addEventListener('change', (e) =&gt; {
                 </web-multiselect>
                 <small class="form-text">Try selecting Full-time, then Part-time.</small>
             </div>
-            <div id="exclusive-log" class="log"><div class="muted">Selections and blocks log here…</div></div>
+            <div id="exclusive-log" class="log-panel"><div class="muted">Selections and blocks log here…</div></div>
 
-            <details style="margin-top: 1rem;">
+            <details class="mt-1">
                 <summary>Show code</summary>
 <pre><code>const EXCLUSIVE = ['full', 'part'];
 
@@ -143,9 +133,9 @@ el.beforeSelectCallback = (option, selected) =&gt; {
                 </web-multiselect>
                 <small class="form-text">Team Lead can't be removed; the others can.</small>
             </div>
-            <div id="required-log" class="log"><div class="muted">Try removing Team Lead, then a developer…</div></div>
+            <div id="required-log" class="log-panel"><div class="muted">Try removing Team Lead, then a developer…</div></div>
 
-            <details style="margin-top: 1rem;">
+            <details class="mt-1">
                 <summary>Show code</summary>
 <pre><code>el.beforeDeselectCallback = (option) =&gt; {
   if (option.value === 'lead') {
@@ -170,6 +160,7 @@ el.setSelected(['lead']);    // pre-select (bypasses the veto)</code></pre>
                 fullscreen. It's also what a <code>before*Callback</code> uses when it returns a reason
                 string (demo 3). Content can be text <em>or</em> an element; variants are
                 <code>info</code> / <code>warning</code> / <code>error</code> / <code>success</code>.
+                (For the fullscreen overlay itself, see the <a href="examples-mobile.html">Mobile &amp; Fullscreen</a> page.)
             </p>
             <div class="form-group">
                 <label>Pick something (or just fire a message)</label>
@@ -201,7 +192,7 @@ el.setSelected(['lead']);    // pre-select (bypasses the veto)</code></pre>
                 </label>
             </div>
 
-            <details style="margin-top: 1rem;">
+            <details class="mt-1">
                 <summary>Show code</summary>
 <pre><code>// imperative — text + variant + auto-dismiss (ms; 0 = sticky until tapped/replaced)
 el.showMessage('Saved!', { variant: 'success', duration: 2000 });
@@ -222,59 +213,6 @@ el.beforeSelectCallback = (option) =&gt; {
   if (option.value === 'err')  { el.showMessage('Not allowed', { variant: 'error' }); return false; } // veto + error
   if (option.value === 'ok')   { el.showMessage('Nice choice!', { variant: 'success' }); }            // allow + success
 };</code></pre>
-            </details>
-        </div>
-
-        <!-- ============================================================ -->
-        <!-- 4b. fullscreen-autofocus                                     -->
-        <!-- ============================================================ -->
-        <div class="demo-section">
-            <h2>4b · <code>fullscreen-autofocus</code> — soft keyboard on phones</h2>
-            <p>
-                On phones the dropdown opens as a <strong>fullscreen overlay</strong>. By
-                <strong>default the keyboard stays closed</strong> — the sheet opens showing the list,
-                so you can browse long lists and reach the bottom action buttons without the keyboard
-                covering half the screen. The keyboard appears only when you tap the search field. Set
-                <code>fullscreen-autofocus="true"</code> to focus the search on open instead
-                (type-to-filter immediately, like a native picker).
-            </p>
-            <p>
-                The two pickers below use <code>mobile-presentation="auto"</code> (the default): a normal
-                floating dropdown here on desktop, a fullscreen sheet on a phone — where the keyboard
-                difference actually shows. To see the overlay on desktop, tick
-                <em>Preview as fullscreen</em> (it just flips <code>mobile-presentation</code>); close it
-                with the ✕ in the sheet header.
-            </p>
-            <label style="display:inline-flex; align-items:center; gap:0.4rem; margin-bottom:0.75rem;">
-                <input type="checkbox" id="kb-fs-preview"> Preview as fullscreen (desktop)
-            </label>
-            <div style="display:flex; flex-wrap:wrap; gap:1.5rem;">
-                <div class="form-group" style="flex:1; min-width:220px;">
-                    <label>Default — keyboard off (tap search to type)</label>
-                    <web-multiselect id="kb-off-select" multiple="true" value-member="value"
-                        display-value-member="label"
-                        search-placeholder="Tap here to search…"></web-multiselect>
-                    <small class="form-text">On a phone: the list shows, search is <em>not</em> focused.</small>
-                </div>
-                <div class="form-group" style="flex:1; min-width:220px;">
-                    <label>Opt-in — <code>fullscreen-autofocus="true"</code></label>
-                    <web-multiselect id="kb-on-select" multiple="true" value-member="value"
-                        display-value-member="label"
-                        fullscreen-autofocus="true" search-placeholder="Search…"></web-multiselect>
-                    <small class="form-text">On a phone: search is focused, keyboard pops on open.</small>
-                </div>
-            </div>
-
-            <details style="margin-top: 1rem;">
-                <summary>Show code</summary>
-<pre><code>&lt;!-- default: keyboard stays closed until the user taps the search field --&gt;
-&lt;web-multiselect&gt;&lt;/web-multiselect&gt;
-
-&lt;!-- opt in to auto-focus + soft keyboard on open --&gt;
-&lt;web-multiselect fullscreen-autofocus="true"&gt;&lt;/web-multiselect&gt;
-
-// or via property
-el.fullscreenAutofocus = true;</code></pre>
             </details>
         </div>
 
@@ -413,26 +351,6 @@ el.fullscreenAutofocus = true;</code></pre>
             document.getElementById('msg-fs').addEventListener('click', () => {
                 const isFs = msgSelect.getAttribute('mobile-presentation') === 'fullscreen';
                 msgSelect.setAttribute('mobile-presentation', isFs ? 'floating' : 'fullscreen');
-            });
-
-            // --- 4b. fullscreen-autofocus (keyboard on/off) ----------
-            const kbOptions = [
-                { value: 'a', label: 'Analytics' }, { value: 'b', label: 'Billing' },
-                { value: 'c', label: 'Compute' }, { value: 'd', label: 'Database' },
-                { value: 'e', label: 'Email' }, { value: 'f', label: 'Functions' },
-                { value: 'g', label: 'Gateway' }, { value: 'h', label: 'Hosting' },
-                { value: 'i', label: 'Identity' }, { value: 'j', label: 'Jobs' }
-            ];
-            const kbOff = document.getElementById('kb-off-select');
-            const kbOn = document.getElementById('kb-on-select');
-            kbOff.options = kbOptions;
-            kbOn.options = kbOptions;
-            // "Preview as fullscreen" just forces mobile-presentation on both so the overlay
-            // is visible on desktop; unticking returns them to auto (floating here).
-            document.getElementById('kb-fs-preview').addEventListener('change', (e) => {
-                const mode = e.target.checked ? 'fullscreen' : 'auto';
-                kbOff.setAttribute('mobile-presentation', mode);
-                kbOn.setAttribute('mobile-presentation', mode);
             });
         });
     </script>

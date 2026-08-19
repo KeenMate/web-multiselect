@@ -10,11 +10,11 @@
 
     <!-- Page-specific styles -->
     <style>
-        /* Performance stats styling */
+        /* Grid comes from shared `.card-grid`; this just tunes the columns and
+           adds the panel chrome. */
         .stats {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
+            --grid-min: 200px;
+            --grid-gap: 1rem;
             margin-top: 1.5rem;
             padding: 1rem;
             background: #f8f9fa;
@@ -51,7 +51,7 @@
             <h2>🚀 Large Dataset Performance</h2>
             <p>This demo tests the component with 15,000 randomly generated options to evaluate performance under heavy load.</p>
 
-            <div class="stats">
+            <div class="card-grid stats">
                 <div class="stat">
                     <div class="stat-value" id="total-options">15,000</div>
                     <div class="stat-label">Total Options</div>
@@ -127,7 +127,7 @@
             <h2>🎨 Rich Rendering with Virtual Scroll</h2>
             <p>Testing custom rendering callbacks with 150 items to trigger virtual scrolling in the selected items popover (threshold: 100).</p>
 
-            <div class="form-group" style="margin-top: 1rem;">
+            <div class="form-group mt-1">
                 <label for="rich-virtual">Select Products (150 items)</label>
                 <web-multiselect
                     id="rich-virtual"

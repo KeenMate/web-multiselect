@@ -11,18 +11,12 @@
     <style>
         .controls button { margin: 0.25rem; }
 
-        /* Live registry inspector */
+        /* Live registry inspector — box from shared `.log-panel--dark`; this
+           is just the two-column dt/dd grid on top of it. */
         .registry {
             display: grid;
             grid-template-columns: max-content 1fr;
             gap: 0.4rem 1rem;
-            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-            font-size: 0.85rem;
-            background: #0f172a;
-            color: #e2e8f0;
-            padding: 1rem 1.25rem;
-            border-radius: 8px;
-            overflow-x: auto;
         }
         .registry dt { color: #7dd3fc; white-space: nowrap; }
         .registry dd { margin: 0; color: #e2e8f0; word-break: break-word; }
@@ -82,7 +76,7 @@
 
             <div class="output">
                 <div class="output-label">window.components['web-multiselect']</div>
-                <dl class="registry" id="registry-view"></dl>
+                <dl class="log-panel log-panel--dark registry" id="registry-view"></dl>
             </div>
 
             <div class="controls">
@@ -114,7 +108,7 @@
                 <button onclick="onlyCategory('INTERACTION')">Only INTERACTION</button>
             </div>
 
-            <div class="grid grid-2" style="margin-top: 1rem;">
+            <div class="grid grid-2 mt-1">
                 <div class="form-group">
                     <label>Fruits (basic)</label>
                     <web-multiselect id="fruits" search-placeholder="Search fruits..." is-multiple-enabled="true"></web-multiselect>

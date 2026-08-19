@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MultiSelect — Mobile & Fullscreen</title>
+
+    <!-- Shared example styles -->
+    <link rel="stylesheet" href="examples-shared.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="index.html" class="back-link">← Back to Examples</a>
+            <h1>📱 Mobile &amp; Fullscreen</h1>
+            <p class="subtitle">
+                On phones the dropdown opens as a <strong>fullscreen overlay</strong> instead of a
+                floating panel — a touch-friendly sheet with its own search header, big rows, and a
+                close button. These demos cover the phone-only behaviors: how the presentation is
+                chosen, the soft-keyboard policy, and the touch stand-in for keyboard match-stepping.
+            </p>
+        </header>
+
+        <!-- ============================================================ -->
+        <!-- 1. mobile-presentation — how the overlay is chosen           -->
+        <!-- ============================================================ -->
+        <div class="card">
+            <h2>1 · <code>mobile-presentation</code> — floating vs fullscreen</h2>
+            <p>
+                The <code>mobile-presentation</code> attribute decides how the open dropdown is
+                presented:
+            </p>
+            <ul>
+                <li><code>auto</code> <em>(default)</em> — a floating panel on desktop, a fullscreen
+                    sheet on phones (detected from the environment: touch-primary + a short viewport
+                    side under the tablet boundary).</li>
+                <li><code>floating</code> — always anchor to the input, even on a phone.</li>
+                <li><code>fullscreen</code> — always present the sheet, even on desktop (handy for
+                    previewing the mobile UI, which is what the toggles on this page do).</li>
+            </ul>
+            <p>
+                Because it's usually a phone-only look, every demo below defaults to
+                <code>auto</code> and offers a <em>Preview as fullscreen</em> toggle so you can see the
+                overlay right here on desktop. Close the sheet with the ✕ in its header.
+            </p>
+            <label class="toggle-label">
+                <input type="checkbox" id="intro-fs-preview"> Preview as fullscreen (desktop)
+            </label>
+            <div class="form-group" style="max-width:320px;">
+                <label>Open me</label>
+                <web-multiselect id="intro-select" multiple="true" value-member="value"
+                    display-value-member="label" group-member="group"
+                    search-placeholder="Filter…"></web-multiselect>
+                <small class="form-text">~50 grouped options — on a phone this opens fullscreen automatically.</small>
+            </div>
+
+            <details class="mt-1">
+                <summary>Show code</summary>
+<pre><code>&lt;!-- auto (default): floating on desktop, fullscreen on phones --&gt;
+&lt;web-multiselect&gt;&lt;/web-multiselect&gt;
+
+&lt;!-- force one presentation everywhere --&gt;
+&lt;web-multiselect mobile-presentation="floating"&gt;&lt;/web-multiselect&gt;
+&lt;web-multiselect mobile-presentation="fullscreen"&gt;&lt;/web-multiselect&gt;</code></pre>
+            </details>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 2. fullscreen-autofocus — soft keyboard on phones           -->
+        <!-- ============================================================ -->
+        <div class="card">
+            <h2>2 · <code>fullscreen-autofocus</code> — soft keyboard on phones</h2>
+            <p>
+                By <strong>default the keyboard stays closed</strong> when the fullscreen sheet opens —
+                it shows the list first, so you can browse long lists and reach the bottom action
+                buttons without the keyboard covering half the screen. The keyboard appears only when
+                you tap the search field. Set <code>fullscreen-autofocus="true"</code> to focus the
+                search on open instead (type-to-filter immediately, like a native picker).
+            </p>
+            <p>
+                Both pickers use <code>mobile-presentation="auto"</code>: a normal floating dropdown
+                here on desktop, a fullscreen sheet on a phone — where the keyboard difference actually
+                shows. Tick <em>Preview as fullscreen</em> to see the overlay on desktop.
+            </p>
+            <label class="toggle-label">
+                <input type="checkbox" id="kb-fs-preview"> Preview as fullscreen (desktop)
+            </label>
+            <div style="display:flex; flex-wrap:wrap; gap:1.5rem;">
+                <div class="form-group" style="flex:1; min-width:220px;">
+                    <label>Default — keyboard off (tap search to type)</label>
+                    <web-multiselect id="kb-off-select" multiple="true" value-member="value"
+                        display-value-member="label"
+                        search-placeholder="Tap here to search…"></web-multiselect>
+                    <small class="form-text">On a phone: the list shows, search is <em>not</em> focused.</small>
+                </div>
+                <div class="form-group" style="flex:1; min-width:220px;">
+                    <label>Opt-in — <code>fullscreen-autofocus="true"</code></label>
+                    <web-multiselect id="kb-on-select" multiple="true" value-member="value"
+                        display-value-member="label"
+                        fullscreen-autofocus="true" search-placeholder="Search…"></web-multiselect>
+                    <small class="form-text">On a phone: search is focused, keyboard pops on open.</small>
+                </div>
+            </div>
+
+            <details class="mt-1">
+                <summary>Show code</summary>
+<pre><code>&lt;!-- default: keyboard stays closed until the user taps the search field --&gt;
+&lt;web-multiselect&gt;&lt;/web-multiselect&gt;
+
+&lt;!-- opt in to auto-focus + soft keyboard on open --&gt;
+&lt;web-multiselect fullscreen-autofocus="true"&gt;&lt;/web-multiselect&gt;
+
+// or via property
+el.fullscreenAutofocus = true;</code></pre>
+            </details>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 3. fullscreen navigate-mode match navigator                 -->
+        <!-- ============================================================ -->
+        <div class="card">
+            <h2>3 · fullscreen <code>search-mode="navigate"</code> — match navigator</h2>
+            <p>
+                In <code>search-mode="navigate"</code> the list stays whole and typing <em>jumps focus</em>
+                to matches instead of hiding non-matches. On desktop you step through them with
+                <kbd>Ctrl</kbd>+<kbd>↑</kbd>/<kbd>↓</kbd> — but touch has no such shortcut. So in the
+                <strong>fullscreen overlay</strong> a <strong>match navigator</strong> appears under the search
+                box: a <code>N of M</code> result count plus <strong>prev/next</strong> buttons that walk the
+                matches. It shows up only once you type, and the buttons disable when nothing matches.
+            </p>
+            <p>
+                The picker below uses <code>mobile-presentation="auto"</code>, so on desktop it's a normal
+                floating dropdown. Tick <em>Preview as fullscreen</em> to force the overlay here, then type
+                (e.g. <code>e</code>) to see the navigator.
+            </p>
+            <label class="toggle-label">
+                <input type="checkbox" id="nav-fs-preview"> Preview as fullscreen (desktop)
+            </label>
+            <div class="form-group" style="max-width:320px;">
+                <label><code>search-mode="navigate"</code></label>
+                <web-multiselect id="nav-fs-select" multiple="true" search-mode="navigate"
+                    value-member="value" display-value-member="label" group-member="group"
+                    search-placeholder="Type to jump to matches…"></web-multiselect>
+                <small class="form-text">Fullscreen: type, then use the ↑/↓ next to the count to jump.</small>
+            </div>
+
+            <details class="mt-1">
+                <summary>Show code</summary>
+<pre><code>&lt;!-- navigate mode: matches are highlighted, focus jumps between them --&gt;
+&lt;web-multiselect search-mode="navigate"&gt;&lt;/web-multiselect&gt;
+
+&lt;!-- On phones (fullscreen overlay) a count + prev/next navigator
+     appears under the search box automatically. Desktop uses
+     Ctrl+ArrowUp / Ctrl+ArrowDown for the same jumps. --&gt;</code></pre>
+            </details>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 4. RTL — the whole component mirrors, overlay included       -->
+        <!-- ============================================================ -->
+        <div class="card">
+            <h2>4 · RTL — right-to-left, overlay included</h2>
+            <p>
+                Give the element (or any ancestor) <code>dir="rtl"</code> and the whole component
+                mirrors: the toggle icon and in-input counter move to the left, checkboxes sit on the
+                right of each row, the matched-item accent bar flips sides, badges reverse, and — the
+                part that used to be left-behind — the <strong>fullscreen overlay</strong> mirrors too
+                (search + close swap sides, and the navigate-mode match navigator flips count vs.
+                prev/next). It's all driven by CSS logical properties off the inherited direction, so
+                there's nothing to configure beyond <code>dir</code>.
+            </p>
+            <p>
+                Tick <em>Preview as fullscreen</em> and open the picker to see the overlay mirror too —
+                including the navigate-mode match navigator (this one uses <code>search-mode="navigate"</code>).
+            </p>
+            <label class="toggle-label">
+                <input type="checkbox" id="rtl-fs-preview"> Preview as fullscreen (desktop)
+            </label>
+            <div class="form-group" style="max-width:320px;">
+                <label>الأقسام — Departments</label>
+                <web-multiselect id="rtl-select" dir="rtl" multiple="true" search-mode="navigate"
+                    value-member="value" display-value-member="label" group-member="group"
+                    search-placeholder="ابحث… (search)"></web-multiselect>
+                <small class="form-text">Checkbox on the right, toggle on the left, navigator mirrored.</small>
+            </div>
+
+            <details class="mt-1">
+                <summary>Show code</summary>
+<pre><code>&lt;!-- on the element… --&gt;
+&lt;web-multiselect dir="rtl"&gt;&lt;/web-multiselect&gt;
+
+&lt;!-- …or inherited from any ancestor --&gt;
+&lt;div dir="rtl"&gt;
+  &lt;web-multiselect&gt;&lt;/web-multiselect&gt;
+&lt;/div&gt;</code></pre>
+            </details>
+        </div>
+    </div>
+
+    <script type="module">
+        document.addEventListener('DOMContentLoaded', () => {
+            // Build a flat [{ value, label, group }] list from a category → items map.
+            // Larger, grouped data makes the fullscreen sheet worth testing: it scrolls,
+            // has sticky-ish group headers, and exercises the last-item / keyboard reflow.
+            const toOptions = (catalog) =>
+                Object.entries(catalog).flatMap(([group, labels], gi) =>
+                    labels.map((label, i) => ({ value: `${gi}-${i}`, label, group })));
+
+            // ~50 cloud-service options across 8 groups (shared by the demos below).
+            const options = toOptions({
+                'Compute': ['Virtual Machines', 'Kubernetes', 'Serverless Functions', 'Container Registry', 'Batch', 'Auto Scaling', 'Load Balancer'],
+                'Storage': ['Object Storage', 'Block Storage', 'File Storage', 'Cold Archive', 'Backup Vault', 'CDN'],
+                'Networking': ['Virtual Network', 'DNS', 'VPN Gateway', 'Firewall', 'NAT Gateway', 'Private Link', 'Traffic Manager'],
+                'Databases': ['SQL Database', 'NoSQL Store', 'In-Memory Cache', 'Data Warehouse', 'Graph Database', 'Time Series DB', 'Search Engine'],
+                'Security': ['Identity & Access', 'Secrets Manager', 'Key Vault', 'Certificate Manager', 'Web App Firewall', 'DDoS Protection', 'Audit Logs'],
+                'Analytics': ['Data Lake', 'Stream Processing', 'BI Dashboards', 'ETL Pipelines', 'Event Bus', 'Metrics'],
+                'Developer Tools': ['CI/CD Pipelines', 'Source Repos', 'Artifact Registry', 'API Gateway', 'Feature Flags', 'Monitoring'],
+                'Messaging': ['Message Queue', 'Pub/Sub', 'Transactional Email', 'SMS', 'Push Notifications']
+            });
+
+            // A "Preview as fullscreen" checkbox just flips mobile-presentation between
+            // 'fullscreen' (forced overlay on desktop) and 'auto' (floating here) on the
+            // given pickers — so the phone UI is inspectable without a phone.
+            const wirePreview = (checkboxId, ...els) => {
+                document.getElementById(checkboxId).addEventListener('change', (e) => {
+                    const mode = e.target.checked ? 'fullscreen' : 'auto';
+                    els.forEach((el) => el.setAttribute('mobile-presentation', mode));
+                });
+            };
+
+            // --- 1. mobile-presentation intro ------------------------
+            const intro = document.getElementById('intro-select');
+            intro.options = options;
+            wirePreview('intro-fs-preview', intro);
+
+            // --- 2. fullscreen-autofocus (keyboard on/off) -----------
+            const kbOff = document.getElementById('kb-off-select');
+            const kbOn = document.getElementById('kb-on-select');
+            kbOff.options = options;
+            kbOn.options = options;
+            wirePreview('kb-fs-preview', kbOff, kbOn);
+
+            // --- 3. fullscreen navigate-mode match navigator ---------
+            const navFs = document.getElementById('nav-fs-select');
+            navFs.options = options;
+            wirePreview('nav-fs-preview', navFs);
+
+            // --- 4. RTL ---------------------------------------------
+            const rtlSelect = document.getElementById('rtl-select');
+            // ~50 grouped Arabic options so the mirroring (and grouped headers) are
+            // visually meaningful in both the floating panel and the fullscreen sheet.
+            rtlSelect.options = toOptions({
+                'الحوسبة': ['الأجهزة الافتراضية', 'كوبرنيتس', 'الدوال بدون خادم', 'سجل الحاويات', 'المعالجة الدفعية', 'التوسع التلقائي', 'موازن التحميل'],
+                'التخزين': ['تخزين الكائنات', 'تخزين الكتل', 'تخزين الملفات', 'الأرشيف', 'النسخ الاحتياطي', 'شبكة التوصيل'],
+                'الشبكات': ['الشبكة الافتراضية', 'نظام أسماء النطاقات', 'بوابة VPN', 'جدار الحماية', 'بوابة NAT', 'الرابط الخاص', 'مدير الحركة'],
+                'قواعد البيانات': ['قاعدة SQL', 'مخزن NoSQL', 'ذاكرة التخزين المؤقت', 'مستودع البيانات', 'قاعدة الرسوم', 'قاعدة السلاسل الزمنية', 'محرك البحث'],
+                'الأمان': ['الهوية والوصول', 'مدير الأسرار', 'خزنة المفاتيح', 'مدير الشهادات', 'جدار حماية الويب', 'الحماية من الحرمان', 'سجلات التدقيق'],
+                'التحليلات': ['بحيرة البيانات', 'معالجة التدفق', 'لوحات المعلومات', 'خطوط ETL', 'ناقل الأحداث', 'المقاييس'],
+                'أدوات المطورين': ['خطوط CI/CD', 'مستودعات الكود', 'سجل القطع', 'بوابة API', 'أعلام الميزات', 'المراقبة'],
+                'المراسلة': ['قائمة الرسائل', 'النشر والاشتراك', 'البريد الإلكتروني', 'الرسائل القصيرة', 'الإشعارات']
+            });
+            wirePreview('rtl-fs-preview', rtlSelect);
+        });
+    </script>
+
+    <!-- Development mode: Load from src -->
+    <script type="module" src="/src/index.ts"></script>
+</body>
+</html>

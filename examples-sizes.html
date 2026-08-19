@@ -15,38 +15,6 @@
 
     <!-- Page-specific styles -->
     <style>
-        /* REM scaling demos */
-        .rem-demo {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .rem-demo-card {
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 1.5rem;
-        }
-
-        .rem-demo-card h4 {
-            margin: 0 0 0.5rem 0;
-            font-size: 0.875rem;
-            color: #374151;
-        }
-
-        .rem-demo-card p {
-            margin: 0 0 1rem 0;
-            font-size: 0.75rem;
-            color: #6b7280;
-        }
-
-        .rem-demo-card code {
-            background: #f3f4f6;
-            padding: 0.125rem 0.375rem;
-            border-radius: 3px;
-            font-size: 0.7rem;
-        }
-
         /* Size examples using --ms-rem */
         #rem-compact { --ms-rem: 8px; }
         #rem-default { --ms-rem: 10px; }
@@ -92,38 +60,6 @@
             font-size: 0.65rem;
         }
 
-        /* Font demos */
-        .font-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-        }
-
-        .font-card {
-            border: 1px solid #e5e7eb;
-            border-radius: 8px;
-            padding: 1.5rem;
-        }
-
-        .font-card h4 {
-            margin: 0 0 0.25rem 0;
-            font-size: 1rem;
-            color: #374151;
-        }
-
-        .font-card p {
-            margin: 0 0 1rem 0;
-            font-size: 0.75rem;
-            color: #6b7280;
-        }
-
-        .font-card code {
-            background: #f3f4f6;
-            padding: 0.125rem 0.375rem;
-            border-radius: 3px;
-            font-size: 0.7rem;
-        }
-
         /* Font family overrides via --base-font-family */
         #font-system { --base-font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
         #font-inter { --base-font-family: "Inter", sans-serif; }
@@ -132,60 +68,10 @@
         #font-lexend { --base-font-family: "Lexend", sans-serif; }
         #font-mono { --base-font-family: "Fira Code", monospace; }
 
-        /* Reference table */
-        .reference-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 0.875rem;
-            margin-bottom: 2rem;
-        }
-
-        .reference-table th,
-        .reference-table td {
-            padding: 0.75rem 1rem;
-            text-align: left;
-            border: 1px solid #e5e7eb;
-        }
-
-        .reference-table th {
-            background: #f3f4f6;
-            font-weight: 600;
-        }
-
-        .reference-table tr:hover {
-            background: #f9fafb;
-        }
-
-        .reference-table code {
-            background: #e5e7eb;
-            padding: 0.125rem 0.375rem;
-            border-radius: 3px;
-            font-size: 0.75rem;
-        }
-
-        /* Comparison grid */
-        .comparison-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1.5rem;
-        }
-
+        /* Gray-fill variant of the shared `.demo-card`. */
         .comparison-card {
-            background: #f9fafb;
-            border-radius: 8px;
-            padding: 1.5rem;
-        }
-
-        .comparison-card h3 {
-            margin: 0 0 0.5rem 0;
-            font-size: 0.875rem;
-            color: #374151;
-        }
-
-        .comparison-card p {
-            margin: 0 0 1rem 0;
-            font-size: 0.75rem;
-            color: #6b7280;
+            --demo-card-bg: #f9fafb;
+            --demo-card-border: none;
         }
     </style>
 </head>
@@ -212,8 +98,8 @@
   web-multiselect.large { --ms-rem: 15px; }
 &lt;/style&gt;</pre></div>
 
-            <div class="rem-demo">
-                <div class="rem-demo-card">
+            <div class="card-grid" style="--grid-min: 280px; --grid-gap: 1.5rem;">
+                <div class="demo-card">
                     <h4>Compact (--ms-rem: 8px)</h4>
                     <p>80% of default size - great for dense UIs</p>
                     <web-multiselect
@@ -223,7 +109,7 @@
                     </web-multiselect>
                 </div>
 
-                <div class="rem-demo-card">
+                <div class="demo-card">
                     <h4>Default (--ms-rem: 10px)</h4>
                     <p>Standard sizing - balanced for most uses</p>
                     <web-multiselect
@@ -233,7 +119,7 @@
                     </web-multiselect>
                 </div>
 
-                <div class="rem-demo-card">
+                <div class="demo-card">
                     <h4>Large (--ms-rem: 12px)</h4>
                     <p>120% of default - better touch targets</p>
                     <web-multiselect
@@ -243,7 +129,7 @@
                     </web-multiselect>
                 </div>
 
-                <div class="rem-demo-card">
+                <div class="demo-card">
                     <h4>Extra Large (--ms-rem: 15px)</h4>
                     <p>150% of default - accessibility focused</p>
                     <web-multiselect
@@ -268,8 +154,8 @@
   }
 &lt;/style&gt;</pre></div>
 
-            <div class="comparison-grid">
-                <div class="comparison-card">
+            <div class="card-grid" style="--grid-min: 250px; --grid-gap: 1.5rem;">
+                <div class="demo-card comparison-card">
                     <h3>Custom Variables Override</h3>
                     <p>Larger font, more padding</p>
                     <web-multiselect
@@ -279,7 +165,7 @@
                     </web-multiselect>
                 </div>
 
-                <div class="comparison-card">
+                <div class="demo-card comparison-card">
                     <h3>Default for Comparison</h3>
                     <p>Standard defaults</p>
                     <web-multiselect
@@ -354,8 +240,8 @@
             <h2>Scaled with Multiple Selection</h2>
             <p>All component parts (badges, options, checkboxes) scale together.</p>
 
-            <div class="comparison-grid">
-                <div class="comparison-card">
+            <div class="card-grid" style="--grid-min: 250px; --grid-gap: 1.5rem;">
+                <div class="demo-card comparison-card">
                     <h3>Compact with Badges</h3>
                     <p><code>--ms-rem: 8px</code></p>
                     <web-multiselect
@@ -367,7 +253,7 @@
                     </web-multiselect>
                 </div>
 
-                <div class="comparison-card">
+                <div class="demo-card comparison-card">
                     <h3>Default with Badges</h3>
                     <p><code>--ms-rem: 10px</code></p>
                     <web-multiselect
@@ -378,7 +264,7 @@
                     </web-multiselect>
                 </div>
 
-                <div class="comparison-card">
+                <div class="demo-card comparison-card">
                     <h3>Large with Badges</h3>
                     <p><code>--ms-rem: 12px</code></p>
                     <web-multiselect
@@ -390,7 +276,7 @@
                     </web-multiselect>
                 </div>
 
-                <div class="comparison-card">
+                <div class="demo-card comparison-card">
                     <h3>XL with Count Display</h3>
                     <p><code>--ms-rem: 15px</code></p>
                     <web-multiselect
@@ -409,8 +295,8 @@
             <h2>Font Families</h2>
             <p>Set <code>--base-font-family</code> on the element to change the font. Works with any CSS font stack.</p>
 
-            <div class="font-grid">
-                <div class="font-card">
+            <div class="card-grid" style="--grid-gap: 1.5rem;">
+                <div class="demo-card">
                     <h4>System UI (Default)</h4>
                     <p><code>--base-font-family: system-ui, ...</code></p>
                     <web-multiselect
@@ -420,7 +306,7 @@
                     </web-multiselect>
                 </div>
 
-                <div class="font-card">
+                <div class="demo-card">
                     <h4>Inter</h4>
                     <p><code>--base-font-family: "Inter", sans-serif</code></p>
                     <web-multiselect
@@ -430,7 +316,7 @@
                     </web-multiselect>
                 </div>
 
-                <div class="font-card">
+                <div class="demo-card">
                     <h4>Montserrat</h4>
                     <p><code>--base-font-family: "Montserrat", sans-serif</code></p>
                     <web-multiselect
@@ -440,7 +326,7 @@
                     </web-multiselect>
                 </div>
 
-                <div class="font-card">
+                <div class="demo-card">
                     <h4>Quicksand</h4>
                     <p><code>--base-font-family: "Quicksand", sans-serif</code></p>
                     <web-multiselect
@@ -450,7 +336,7 @@
                     </web-multiselect>
                 </div>
 
-                <div class="font-card">
+                <div class="demo-card">
                     <h4>Lexend</h4>
                     <p><code>--base-font-family: "Lexend", sans-serif</code></p>
                     <web-multiselect
@@ -460,7 +346,7 @@
                     </web-multiselect>
                 </div>
 
-                <div class="font-card">
+                <div class="demo-card">
                     <h4>Fira Code (Monospace)</h4>
                     <p><code>--base-font-family: "Fira Code", monospace</code></p>
                     <web-multiselect
