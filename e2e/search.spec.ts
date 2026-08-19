@@ -121,6 +121,70 @@ test.describe('navigate mode — fullscreen match navigator', () => {
         await expect(p.locator('.ms__fullscreen-nav-btn--prev')).toBeDisabled();
     });
 
+    // Regression: a below-the-fold match must be scrolled to the CENTRE of the sheet's
+    // list, not bottom-aligned (block:'nearest'). On a phone the bottom edge sits behind
+    // the soft keyboard, so a bottom-aligned match "scrolls" but lands hidden. We can't
+    // raise a real keyboard here, but we can assert the match lands centred (~0.5 down
+    // the scroller) rather than jammed at the bottom (~0.9+), which is the fix.
+    test('a deep match is centred in the fullscreen list, not bottom-aligned', async ({ page }) => {
+        const p = picker(page, 'navigate-fs-big');
+        await openFullscreen(p);
+
+        await fsSearch(p).fill('Item 25'); // unique match well below the first screenful
+        await expect(p.locator('.ms__option--focused')).toContainText('Item 25');
+
+        const frac = await p.evaluate(() => {
+            const root = (document.querySelector('#navigate-fs-big') as any).shadowRoot;
+            const scroller = root.querySelector('.ms__options') as HTMLElement;
+            const focused = root.querySelector('.ms__option--focused') as HTMLElement;
+            const s = scroller.getBoundingClientRect();
+            const f = focused.getBoundingClientRect();
+            // Vertical position of the focused row's centre within the scroller (0=top, 1=bottom).
+            return ((f.top + f.height / 2) - s.top) / s.height;
+        });
+        expect(frac).toBeGreaterThan(0.25);
+        expect(frac).toBeLessThan(0.75); // centred, NOT bottom-aligned (would be ~0.9+)
+    });
+
+    // The phone Back gesture/button should close the sheet, not navigate the page away.
+    // Opening the fullscreen sheet pushes a history entry; a back navigation pops it and
+    // closes the overlay instead of leaving the page.
+    test('Back gesture closes the fullscreen sheet instead of navigating away', async ({ page }) => {
+        const p = picker(page, 'navigate-fs');
+        const url = page.url();
+        const lenBefore = await page.evaluate(() => history.length);
+
+        await openFullscreen(p);
+        // A history entry was pushed for the open overlay.
+        expect(await page.evaluate(() => history.length)).toBe(lenBefore + 1);
+
+        // Same-document back navigation (what the Back gesture triggers).
+        await page.evaluate(() => history.back());
+
+        await expect(p.locator('.ms__dropdown--fullscreen')).toBeHidden();
+        await expect(p.locator('.ms__dropdown--visible')).toHaveCount(0);
+        expect(page.url()).toBe(url); // still on the page, no navigation away
+    });
+
+    // A programmatic close (✕) consumes the pushed entry, so it doesn't leave a history
+    // trap. The overlay entry carries a marker in history.state; while open it's the
+    // current entry, and after ✕ the current entry is no longer the overlay's (we moved
+    // back off it via history.back()).
+    const onOverlayEntry = (page: Page) =>
+        page.evaluate(() => !!(history.state && (history.state as any).msOverlay));
+
+    test('closing via the ✕ button consumes the pushed history entry', async ({ page }) => {
+        const p = picker(page, 'navigate-fs');
+
+        await openFullscreen(p);
+        expect(await onOverlayEntry(page)).toBe(true); // sitting on the pushed entry
+
+        await p.locator('.ms__fullscreen-close').click();
+        await expect(p.locator('.ms__dropdown--fullscreen')).toBeHidden();
+
+        await expect.poll(() => onOverlayEntry(page)).toBe(false); // moved back off it
+    });
+
     // Regression: selecting an option in the fullscreen sheet used to call
     // this.input.focus() (to keep desktop arrow-key nav working). That input is the
     // control field hidden behind the overlay — focusing it popped the soft keyboard

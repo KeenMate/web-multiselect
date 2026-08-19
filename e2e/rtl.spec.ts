@@ -81,3 +81,27 @@ test('fullscreen overlay mirrors: close button on the left of the search in RTL'
     expect(await centreX(fs.locator('.ms__fullscreen-close')))
         .toBeLessThan(await centreX(fs.locator('.ms__fullscreen-search')));
 });
+
+// Runtime direction switch: the element observes `dir` and re-mirrors the live
+// picker (app-wide RTL/LTR toggle), including the panels appended to the shadow root.
+test('changing dir at runtime re-mirrors the component (and reverts)', async ({ page }) => {
+    const el = picker(page, 'ltr-control'); // built LTR
+    const hasRtlClass = () => el.evaluate((n: any) => !!n.shadowRoot?.querySelector('.ms--rtl'));
+    const dropdownDir = () => el.locator('.ms__dropdown').evaluate((e) => getComputedStyle(e).direction);
+
+    // Baseline: toggle trailing (right), no rtl class.
+    expect(await centreX(el.locator('.ms__toggle'))).toBeGreaterThan(await centreX(el.locator('.ms__input')));
+    expect(await hasRtlClass()).toBe(false);
+
+    // Flip to RTL.
+    await el.evaluate((n) => n.setAttribute('dir', 'rtl'));
+    expect(await centreX(el.locator('.ms__toggle'))).toBeLessThan(await centreX(el.locator('.ms__input')));
+    expect(await hasRtlClass()).toBe(true);
+    expect(await dropdownDir()).toBe('rtl');
+
+    // Flip back to LTR — must fully revert (panels included).
+    await el.evaluate((n) => n.setAttribute('dir', 'ltr'));
+    expect(await centreX(el.locator('.ms__toggle'))).toBeGreaterThan(await centreX(el.locator('.ms__input')));
+    expect(await hasRtlClass()).toBe(false);
+    expect(await dropdownDir()).toBe('ltr');
+});

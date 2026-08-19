@@ -51,10 +51,30 @@ handy for previews). Theme it with the new `--ms-fullscreen-*` CSS variables.
 
 This is powered by device/viewport/orientation detection in
 [`@keenmate/web-components-core`](https://www.npmjs.com/package/@keenmate/web-components-core)
-1.0.0-rc04 (via `BlissElement`'s `environmentChanged` hook), which this release
-pins. rc04 also **drops `loglevel`** as a transitive runtime dependency. The
-floating dropdown additionally gains a viewport-width safety cap so a wide panel
-can't overflow the screen edge.
+(via `BlissElement`'s `environmentChanged` hook), which this release pins at
+**1.0.0-rc06** — rc04 also **dropped `loglevel`** as a transitive runtime
+dependency. The floating dropdown additionally gains a viewport-width safety cap so
+a wide panel can't overflow the screen edge.
+
+**Right-to-left, done properly — including runtime switching.** Give the element (or
+any ancestor) `dir="rtl"` and the whole component mirrors: the toggle and in-input
+counter move to the left, checkboxes sit on the right of each row, badges reverse,
+and the full-screen overlay mirrors too (search/close swap sides, the match
+navigator flips). RTL is now built on CSS **logical properties** driven by the
+inherited direction, which fixes cases that silently never worked before — the
+dropdown, hint, and selected-popover live in the shadow root, so the old `.ms--rtl`
+override rules never reached them. And flipping `dir` at runtime — an app-wide
+language switch — re-mirrors the live picker without a rebuild (via core rc06's new
+`directionChanged` hook).
+
+**Friendlier phone browsing.** The full-screen sheet opens with the **keyboard
+closed** by default, so you can scan long lists and reach the bottom action buttons
+before typing (opt into immediate type-to-filter with `fullscreen-autofocus="true"`).
+The phone **Back gesture** now closes the sheet instead of navigating the page away.
+In `search-mode="navigate"`, an on-screen **match navigator** (an `N of M` count plus
+prev/next buttons) stands in for the desktop `Ctrl`+`Arrow` match-stepping that touch
+can't do — and the focused match now stays visible above the keyboard instead of
+scrolling behind it. Tapping an option no longer pops the keyboard mid-browse.
 
 See `CHANGELOG.md` for the full list.
 
@@ -72,47 +92,6 @@ internal `ElementInternals` handle to a true `#private` field, which killed the
 1.0.0-rc02 (the `el.form` getter), which this release pins.
 
 See `CHANGELOG.md` for the full list.
-
-## What's New in v2.0.0-rc01
-
-**The core-adoption major.** `<web-multiselect>` is now built on
-[`@keenmate/web-components-core`](https://www.npmjs.com/package/@keenmate/web-components-core)
-(`BlissElement`) — shared, tested custom-element plumbing (attribute parsing,
-reactivity, reflection, event handling, logging, registration, positioning). The
-dropdown, tree, virtual scroll, theming, and every attribute behave the same; the
-change is under the hood, with three **breaking** API changes to be aware of:
-
-- **`onSelect` / `onDeselect` / `onChange` are event-handler properties now.** They
-  receive the `CustomEvent` (like `el.onclick`), so read `e.detail.option` /
-  `e.detail.selectedOptions` / `e.detail.selectedValues` instead of a bare
-  argument — equivalent to `addEventListener('select', …)`. The bubbling
-  `select` / `deselect` / `change` events are unchanged.
-- **`setAttributes()` takes typed property values by camelCase key.**
-  `el.setAttributes({ searchPlaceholder: 'Search…', isCounterShown: true })`. To
-  batch attribute **strings**, use `el.batch(() => { el.setAttribute('search-placeholder', 'Search…'); … })`.
-- **Property writes are async (coalesced).** Setting a property (e.g.
-  `el.options = […]`) applies on a microtask; `await el.whenSettled()` before
-  reading back rendered state. `setAttributes()` / `batch()` still flush
-  synchronously.
-- **`data-options` gains CSV & plain formats.** The `data-options` attribute now
-  takes `data-options-format="json|csv|plain"` (default `json`) — feed a CSV table
-  (first row is a header; columns mapped via `*-member`) or a bare, newline-
-  delimited value list without hand-writing JSON. Field and row delimiters are
-  configurable via `data-options-splitter` / `data-options-row-splitter` (so TSV
-  or a custom separator is expressible in the attribute), and `data-options` is
-  now a fully reactive, shape-validated input — changing any of these re-renders.
-
-See `CHANGELOG.md` for the full list.
-
-## What's New in v1.12.0-rc08
-
-- **Panel sizing — dropdown and popover are independently sizable via CSS variables** — The options dropdown and selected-items popover no longer inherit the input's width. `--ms-dropdown-width` (defaults to the live input width) and `--ms-selected-popover-width` (intrinsic 32rem) drive them, alongside the existing max-height variables. Set them at app level (`web-multiselect { --ms-dropdown-width: 60rem }`) or override a single instance with the new `dropdown-width` / `selected-popover-width` attributes, which write those variables inline on the element. This also fixes a latent bug where `--ms-selected-popover-width` was dead (an internal width-sync always overrode it), so the popover now honours its 32rem default. See section 14 of `examples-tree.html`.
-- **Tree rendering — the option render callback receives full tree context** — `renderOptionContentCallback(item, ctx)` gains `isTreeNode`, `isBranch`, `isLeaf`, `childCount`, `level`, `depth`, `path`, `isSelectable`, and the cascade `isIndeterminate` tristate. Rendering a child-count badge on branches or branch/leaf-specific markup is now a one-liner, without re-deriving the hierarchy yourself. All fields are optional (flat options report `isTreeNode: false`), so existing callbacks are untouched. Demoed as the new "Custom Node Rendering" section.
-- **Cascade counter — the `[N]` chip counts what you actually picked** — In cascade mode the counter used to show the emitted value count, which balloons under `cascade-select-policy="leaves"` / `"all"` (one branch click can emit five values) — jarring next to a couple of rolled-up badges. It now counts the rolled-up minimal cover — the branches you selected — regardless of emit policy, and gained a hover tooltip listing those items. Under the default `rolled-up` policy nothing changes.
-- **Theming cleanup — dead input size-variant surface removed from the bundle** — The unused `.ms__input--xs/sm/lg/xl` preset classes and their `--ms-input-size-*` variable chain were never wired to anything (no `size` attribute toggles them), so they've been commented out — kept for a possible future preset API but no longer shipped as dead CSS (the compiled stylesheet shrank ~2 kB). Input sizing still works through `--ms-rem` for proportional global scale or the individual `--ms-input-*` variables for targeted overrides.
-- **Fixes — badge hover and live cascade switching** — Badge hover no longer washes the chip to white (the hover background fell through to the white input background; it now deepens the accent tint, dark-mode aware). And switching `checkbox-mode` or `cascade-select-policy` live rebuilds the cascade index and silently re-projects the current selection, so badges, form value, and checkboxes all reflect the new mode instantly.
-
-> ⚠️ **Security notice:** This component intentionally allows raw HTML in rendering callbacks to give developers full control over content display. If you display user-generated content, you must sanitize it yourself. See [docs/examples.md → HTML Injection (XSS) notice](./docs/examples.md#html-injection-xss-notice) for the complete list of affected callbacks.
 
 ## Demos & docs
 

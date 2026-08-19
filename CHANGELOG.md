@@ -5,10 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.0.0-rc03] - 2026-08-19 [PUBLISHED]
 
 ### Added
 
+- **Runtime `dir` switching.** An app-wide RTL/LTR toggle now re-mirrors the live
+  picker — including the dropdown/hint/popover that sit in the shadow root — without a
+  rebuild. Most layout already followed the inherited `direction` (logical properties);
+  a re-run of RTL detection fixes the parts pinned at build time (the `.ms--rtl`
+  placement class and the panels' explicit `dir`). Built on core's new
+  `directionChanged()` hook (core observes the global `dir` attribute); the component
+  overrides it to call the picker's `refreshDirection()`. Requires
+  `@keenmate/web-components-core` with the direction hook.
 - **Fullscreen match navigator for `search-mode="navigate"`.** In navigate mode the
   list stays whole and typing jumps focus between matches; desktop steps through them
   with `Ctrl`+`ArrowUp`/`ArrowDown`, but touch has no such shortcut. The phone
@@ -24,89 +32,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   action row stays on screen; the keyboard appears only when the user taps the
   search. Set `fullscreen-autofocus="true"` to type-to-filter right away (the prior
   behavior). No effect in the floating presentation.
-
-### Changed
-
-- **RTL rebuilt on CSS logical properties.** The component now mirrors for
-  right-to-left via logical properties (`margin-inline-*`, `inset-inline-*`,
-  `border-*-start/end`, `text-align: start/end`, logical border-radius) driven by an
-  inherited `direction`, instead of a large set of `.ms--rtl` physical-property
-  overrides. This fixes RTL where it silently didn't work before: the dropdown, hint,
-  and selected-popover are appended to the shadow root (not under the `.ms--rtl`
-  element), so the old `.ms--rtl .ms__dropdown …` overrides never matched — the panel,
-  its options/checkboxes/matched-accent, **and the new fullscreen overlay chrome**
-  (header, close, match navigator, tree indent) were effectively LTR-only. The panels
-  now also carry an explicit `dir` so mirroring is deterministic however RTL was
-  detected. `rtl.css` shrank to just the `badges-position` / count-display placement
-  (a deliberate physical-side choice mirrored in JS). New e2e assertions check the
-  rendered geometry (toggle side, checkbox side, badge order, fullscreen close side),
-  not just that the class is applied.
-
-### Fixed
-
-- **Soft keyboard popped on every option tap in the fullscreen sheet.** Selecting an
-  option called `this.input.focus()` to keep desktop arrow-key navigation working — but
-  in the fullscreen overlay that input is the control field hidden *behind* the sheet, so
-  focusing it raised the soft keyboard on each tap, and the keyboard-inset observer then
-  shrank the sheet (the visible "blink" / shrink-on-select, and the browser chrome
-  flicker). The refocus is now floating-only. A fullscreen `mousedown` guard on option
-  rows also stops a tap from moving focus at all, so a keyboard-off browse stays
-  keyboard-off and an in-progress search keeps its keyboard. No change on desktop.
-- **Soft keyboard / focus handling on fullscreen open.** Tapping the control gave
-  the underlying `<input>` native focus, which both popped the keyboard when it
-  should stay down AND, with `fullscreen-autofocus="true"`, stole focus back from the
-  sheet's own search (caret ended up in the hidden input — keyboard up but the visible
-  search unfocused). The opening tap no longer focuses the underlying input in
-  fullscreen: keyboard-off leaves nothing focused (keyboard stays down), and autofocus
-  focuses the sheet search cleanly (caret in the visible field).
-- **Fullscreen sheet ignored the soft-keyboard reflow.** The overlay was pinned
-  with `inset: 0` (top *and* bottom), so a fixed box ignored the `height`
-  `observeKeyboardInset()` wrote — the keyboard covered the lower list and the
-  bottom action buttons. The sheet is now pinned by `top`/`left` + `height`, so it
-  shrinks above the keyboard as intended, and the action row is pinned
-  (`flex: 0 0 auto`) so it stays reachable above the keys while only the list scrolls.
-- **Last item cut off in the non-virtual fullscreen list.** Two nested scrollers
-  (the inner container *and* the options list) could trap the final row partially
-  visible and unreachable. The options list is now the sole scroller in the sheet,
-  with bottom breathing room so the last row always clears the edge. (Virtual lists
-  were unaffected.)
-- **List jumped to the top when selecting an item.** A selection re-render rebuilt
-  the list via `innerHTML`, resetting scroll. The scroll offset is now preserved
-  across a selection toggle (search/filter re-renders still reset to the top, as
-  intended).
-- **Full-label reveal flashed at 0,0 on first tap.** The fullscreen truncated-label
-  reveal (`ⓘ`) was made visible before floating-ui positioned it, so it painted one
-  frame at the origin. It now positions first and fades in at the anchor.
-
-### Docs
-
-- **New "Mobile & Fullscreen" examples page** (`examples-mobile.html`, linked from the
-  index). The phone-only demos now live in one place: `mobile-presentation` (floating vs
-  fullscreen), the soft-keyboard policy (`fullscreen-autofocus`), and the navigate-mode
-  match navigator — each with a "Preview as fullscreen" toggle so the overlay is
-  inspectable on desktop. Moved out of the Events page (which keeps `showMessage`, with a
-  cross-link) and upgraded to the shared `.card` styling.
-- **FlexSearch examples made resilient** (`examples-search-index.html`). The two demos
-  are now wired independently, each in its own `try/catch`, with the search helper loaded
-  via a catchable dynamic import and a visible on-page error note on failure — so one
-  broken demo (a module that won't resolve, a blocked/404 data fetch) can no longer abort
-  the whole script and silently blank both pickers.
-- **Example-page CSS consolidated into `examples-shared.css`.** The demo pages had drifted
-  into many overlapping/duplicated inline `<style>` rules; these are now shared primitives,
-  with page `<style>` blocks holding only genuinely page-specific styling. Deduplicated
-  `.demo-area` / `.demo-label` / `.badge` / dark `.output`, and factored reusable patterns:
-  `.card-grid` (auto-fit grid tuned by `--grid-min` / `--grid-gap`), `.log-panel`
-  (+`--dark`, for the monospace console boxes, height via `--log-max-height`), `.demo-card`
-  (surface via `--demo-card-bg` / `--demo-card-border`, standardized inner typography),
-  `.reference-table` (with an `is-highlight` row), `.subsection`, `.toggle-label` (sharing a
-  base with `.controls label`), and `.muted` / `.mt-1` utilities. Removed ~90 lines of
-  duplicated CSS and dozens of inline `style="…"` attributes (e.g. a ~30-cell hand-styled
-  table in the theming page). No effect on the published component — examples only.
-
-## [2.0.0-rc03] - 2026-08-14
-
-### Added
-
 - **Mobile presentation — full-screen overlay on phones.** A new
   `mobile-presentation` attribute (`auto` | `floating` | `fullscreen`, default
   `auto`) controls how the open dropdown is presented on phones. In `auto` the
@@ -190,8 +115,81 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   rebased against `--ms-fullscreen-rem` in the overlay (bigger font + padding), so the
   buttons match the enlarged phone view.
 
+### Changed
+
+- **RTL rebuilt on CSS logical properties.** The component now mirrors for
+  right-to-left via logical properties (`margin-inline-*`, `inset-inline-*`,
+  `border-*-start/end`, `text-align: start/end`, logical border-radius) driven by an
+  inherited `direction`, instead of a large set of `.ms--rtl` physical-property
+  overrides. This fixes RTL where it silently didn't work before: the dropdown, hint,
+  and selected-popover are appended to the shadow root (not under the `.ms--rtl`
+  element), so the old `.ms--rtl .ms__dropdown …` overrides never matched — the panel,
+  its options/checkboxes/matched-accent, **and the new fullscreen overlay chrome**
+  (header, close, match navigator, tree indent) were effectively LTR-only. The panels
+  now also carry an explicit `dir` so mirroring is deterministic however RTL was
+  detected. `rtl.css` shrank to just the `badges-position` / count-display placement
+  (a deliberate physical-side choice mirrored in JS). New e2e assertions check the
+  rendered geometry (toggle side, checkbox side, badge order, fullscreen close side),
+  not just that the class is applied.
+- **Pinned `@keenmate/web-components-core` to `1.0.0-rc06`** (from `1.0.0-rc02`).
+  The intervening releases add everything this version builds on: rc04 the
+  environment-detection module + `environmentChanged` hook that power touch
+  presentation (and **vendors `loglevel` out of core**, so the component no longer
+  pulls it transitively); rc05 the overlay/fullscreen primitives
+  (`resolveMobilePresentation`, `lockBodyScroll`, `observeKeyboardInset`); and rc06
+  the `directionChanged()` hook + `isRTL` getter behind runtime `dir` switching. rc03
+  contributed the `anchor({ maxWidth })` option adopted above. No API changes to the
+  logging shim.
+
 ### Fixed
 
+- **Back gesture / button now closes the fullscreen sheet instead of leaving the page.**
+  Opening the phone overlay pushes a same-URL history entry and listens for `popstate`, so
+  the natural "swipe back to dismiss" pops that entry and closes the sheet rather than
+  navigating the page back. A programmatic close (✕, selection, Escape) consumes the entry
+  (`history.back()`), leaving the history stack as it was found; teardown detaches the
+  listener without navigating. Floating/desktop is unaffected.
+- **Navigate-mode match scrolled behind the soft keyboard in the fullscreen sheet.**
+  Typing in `search-mode="navigate"` jumps focus to the match, and the scroll-into-view
+  used `block: 'nearest'`, which bottom-aligns a below-the-fold match to the scroller's
+  bottom edge — where the soft keyboard sits, so the list "jumped" on every keystroke but
+  the match landed hidden. In the fullscreen sheet it now centres the match in the visible
+  area (comfortably above the keys) and scrolls instantly (a smooth animation started on
+  one keystroke was torn down by the next re-render, never settling). Floating/desktop
+  keeps the minimal `nearest` + smooth behavior.
+- **Soft keyboard popped on every option tap in the fullscreen sheet.** Selecting an
+  option called `this.input.focus()` to keep desktop arrow-key navigation working — but
+  in the fullscreen overlay that input is the control field hidden *behind* the sheet, so
+  focusing it raised the soft keyboard on each tap, and the keyboard-inset observer then
+  shrank the sheet (the visible "blink" / shrink-on-select, and the browser chrome
+  flicker). The refocus is now floating-only. A fullscreen `mousedown` guard on option
+  rows also stops a tap from moving focus at all, so a keyboard-off browse stays
+  keyboard-off and an in-progress search keeps its keyboard. No change on desktop.
+- **Soft keyboard / focus handling on fullscreen open.** Tapping the control gave
+  the underlying `<input>` native focus, which both popped the keyboard when it
+  should stay down AND, with `fullscreen-autofocus="true"`, stole focus back from the
+  sheet's own search (caret ended up in the hidden input — keyboard up but the visible
+  search unfocused). The opening tap no longer focuses the underlying input in
+  fullscreen: keyboard-off leaves nothing focused (keyboard stays down), and autofocus
+  focuses the sheet search cleanly (caret in the visible field).
+- **Fullscreen sheet ignored the soft-keyboard reflow.** The overlay was pinned
+  with `inset: 0` (top *and* bottom), so a fixed box ignored the `height`
+  `observeKeyboardInset()` wrote — the keyboard covered the lower list and the
+  bottom action buttons. The sheet is now pinned by `top`/`left` + `height`, so it
+  shrinks above the keyboard as intended, and the action row is pinned
+  (`flex: 0 0 auto`) so it stays reachable above the keys while only the list scrolls.
+- **Last item cut off in the non-virtual fullscreen list.** Two nested scrollers
+  (the inner container *and* the options list) could trap the final row partially
+  visible and unreachable. The options list is now the sole scroller in the sheet,
+  with bottom breathing room so the last row always clears the edge. (Virtual lists
+  were unaffected.)
+- **List jumped to the top when selecting an item.** A selection re-render rebuilt
+  the list via `innerHTML`, resetting scroll. The scroll offset is now preserved
+  across a selection toggle (search/filter re-renders still reset to the top, as
+  intended).
+- **Full-label reveal flashed at 0,0 on first tap.** The fullscreen truncated-label
+  reveal (`ⓘ`) was made visible before floating-ui positioned it, so it painted one
+  frame at the origin. It now positions first and fades in at the anchor.
 - **Fullscreen virtual list only filled half the sheet.** The virtual options
   scroll container is built once (its `VirtualScroll` persists across open/close),
   so a container first created in floating mode kept its fixed `height`/`max-height`
@@ -244,13 +242,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   non-virtual, fixed-height), so the list fills between the header and the actions row
   and scrolls internally.
 
-### Changed
+### Docs
 
-- **Pinned `@keenmate/web-components-core` to `1.0.0-rc04`** (from `1.0.0-rc02`).
-  rc04 adds the environment-detection module + `environmentChanged` hook that power
-  touch presentation, and **vendors `loglevel` out of core** — the component no
-  longer pulls `loglevel` as a transitive runtime dependency. rc03 added the
-  `anchor({ maxWidth })` option adopted above. No API changes to the logging shim.
+- **New "Mobile & Fullscreen" examples page** (`examples-mobile.html`, linked from the
+  index). The phone-only demos now live in one place: `mobile-presentation` (floating vs
+  fullscreen), the soft-keyboard policy (`fullscreen-autofocus`), and the navigate-mode
+  match navigator — each with a "Preview as fullscreen" toggle so the overlay is
+  inspectable on desktop. Moved out of the Events page (which keeps `showMessage`, with a
+  cross-link) and upgraded to the shared `.card` styling.
+- **FlexSearch examples made resilient** (`examples-search-index.html`). The two demos
+  are now wired independently, each in its own `try/catch`, with the search helper loaded
+  via a catchable dynamic import and a visible on-page error note on failure — so one
+  broken demo (a module that won't resolve, a blocked/404 data fetch) can no longer abort
+  the whole script and silently blank both pickers.
+- **Example-page CSS consolidated into `examples-shared.css`.** The demo pages had drifted
+  into many overlapping/duplicated inline `<style>` rules; these are now shared primitives,
+  with page `<style>` blocks holding only genuinely page-specific styling. Deduplicated
+  `.demo-area` / `.demo-label` / `.badge` / dark `.output`, and factored reusable patterns:
+  `.card-grid` (auto-fit grid tuned by `--grid-min` / `--grid-gap`), `.log-panel`
+  (+`--dark`, for the monospace console boxes, height via `--log-max-height`), `.demo-card`
+  (surface via `--demo-card-bg` / `--demo-card-border`, standardized inner typography),
+  `.reference-table` (with an `is-highlight` row), `.subsection`, `.toggle-label` (sharing a
+  base with `.controls label`), and `.muted` / `.mt-1` utilities. Removed ~90 lines of
+  duplicated CSS and dozens of inline `style="…"` attributes (e.g. a ~30-cell hand-styled
+  table in the theming page). No effect on the published component — examples only.
 
 ## [2.0.0-rc02] - 2026-08-03
 

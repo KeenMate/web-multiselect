@@ -324,6 +324,14 @@ export class MultiSelectElement<T = any> extends BlissElement<MultiSelectEvents>
 
   // ── core lifecycle hooks ──────────────────────────────────────────────────
 
+  /** Runtime writing-direction switch (core observes `dir`): re-mirror the live
+   *  picker. Layout mostly follows the inherited `direction` (logical properties);
+   *  refreshDirection() fixes the parts pinned at build time (the `.ms--rtl` class
+   *  and the panels' explicit `dir`). The initial direction is read by the build. */
+  protected override directionChanged(_isRTL: boolean): void {
+    this.#picker?.refreshDirection();
+  }
+
   /** Structural change (or first connect): mirror CSS vars, then (re)build the picker. */
   protected override reinit(): void {
     this.#mirrorAllCssVars();

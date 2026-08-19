@@ -28,6 +28,11 @@
     </div>
 
     <div class="fixture">
+        <div class="fixture-label">navigate + fullscreen, many options — focus-into-view centering</div>
+        <web-multiselect id="navigate-fs-big" search-mode="navigate" mobile-presentation="fullscreen" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
         <div class="fixture-label">search-input-mode="readonly"</div>
         <web-multiselect id="readonly" search-input-mode="readonly" value-member="value" display-value-member="label"></web-multiselect>
     </div>
@@ -113,6 +118,14 @@
             // beforeSearchCallback strips spaces.
             const before = document.getElementById('before-search');
             before.beforeSearchCallback = (term) => term.replace(/\s+/g, '');
+
+            // Many-option navigate/fullscreen picker for the focus-into-view test:
+            // zero-padded labels so "Item 25" is a unique substring deep in the list.
+            const big = document.getElementById('navigate-fs-big');
+            big.options = Array.from({ length: 40 }, (_, i) => ({
+                value: String(i),
+                label: `Item ${String(i).padStart(2, '0')}`
+            }));
         });
     </script>
 </body>

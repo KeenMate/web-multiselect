@@ -89,6 +89,11 @@ export class WebMultiSelect<T = any> {
     // Detaches the visualViewport listener that shrinks the fullscreen sheet to sit
     // above the soft keyboard (null when not attached). See observeKeyboardInset().
     private keyboardInsetCleanup: (() => void) | null = null;
+    // True while a history entry is pushed for the open fullscreen sheet, so the phone
+    // Back gesture/button pops it (closing the sheet) instead of navigating the page.
+    // See pushOverlayHistory()/popOverlayHistory()/onOverlayPopstate().
+    private overlayHistoryActive = false;
+    private readonly onOverlayPopstate = (): void => this.handleOverlayPopstate();
 
     // Floating UI cleanup functions
     private dropdownCleanup: (() => void) | null = null;
@@ -619,12 +624,13 @@ export class WebMultiSelect<T = any> {
         this.filteredOptions = nodes.map(node => node.data as T);
     }
 
-    private buildHTML(): void {
-        // Get container for dropdown/hint/popover (Shadow DOM or body)
-        const container = this.options.container || document.body;
-
-        // Detect RTL mode from dir attribute on host element (for shadow DOM) or element itself
-        // In shadow DOM, we need to check the host element (<multi-select>), not the shadow root contents
+    /**
+     * (Re)compute `isRTL` from the host's `dir` (or an RTL ancestor) and derive the
+     * direction-mirrored badges position. Pure state — callers apply the DOM effects
+     * (class toggle, panel `dir`, badge re-render). In Shadow DOM the `dir` lives on
+     * the host element, not the shadow content, so we resolve the host first.
+     */
+    private detectRTL(): void {
         const rootNode = this.element.getRootNode();
         const hostElement = rootNode instanceof ShadowRoot
             ? (rootNode as ShadowRoot).host as HTMLElement
@@ -636,22 +642,56 @@ export class WebMultiSelect<T = any> {
 
         initLogger.debug(`[${this.instanceId}] RTL Debug:`, {
             isShadowRoot: rootNode instanceof ShadowRoot,
-            hostElement,
             elementDir: hostElement.getAttribute('dir'),
             hasElementDir,
             hasAncestorDir,
             isRTL: this.isRTL
         });
 
-        // Mirror badgesPosition in RTL mode (logical positioning)
+        // Mirror badgesPosition (left<->right) in RTL — a logical placement choice.
         this.effectiveBadgesPosition = this.options.badgesPosition || 'bottom';
         if (this.isRTL) {
-            if (this.effectiveBadgesPosition === 'left') {
-                this.effectiveBadgesPosition = 'right';
-            } else if (this.effectiveBadgesPosition === 'right') {
-                this.effectiveBadgesPosition = 'left';
-            }
+            if (this.effectiveBadgesPosition === 'left') this.effectiveBadgesPosition = 'right';
+            else if (this.effectiveBadgesPosition === 'right') this.effectiveBadgesPosition = 'left';
         }
+    }
+
+    /**
+     * Re-read `dir` and re-apply RTL mirroring live. The web-component calls this when
+     * its `dir` attribute changes at runtime (e.g. an app-wide language/direction
+     * switch). Most layout follows the inherited CSS `direction` automatically (the
+     * component is authored with logical properties); this fixes the parts pinned at
+     * build time — the `.ms--rtl` class (badges/count-display placement) and the
+     * explicit `dir` on the shadow-root-appended panels (which don't sit under the
+     * `.ms--rtl` element, so they'd otherwise keep a stale build-time direction).
+     */
+    public refreshDirection(): void {
+        if (!this.element) return;
+        const before = this.isRTL;
+        this.detectRTL();
+
+        this.element.classList.toggle('ms--rtl', this.isRTL);
+
+        // Set `dir` explicitly on the panels: 'rtl' to mirror, 'ltr' to OVERRIDE a
+        // stale build-time 'rtl' when switching back (they're outside .ms--rtl and
+        // wouldn't otherwise re-inherit deterministically).
+        const dir = this.isRTL ? 'rtl' : 'ltr';
+        if (this.dropdown) this.dropdown.dir = dir;
+        if (this.hint) this.hint.dir = dir;
+        if (this.selectedPopover) this.selectedPopover.dir = dir;
+
+        // Badge/count placement is class-level (mirrored position class), so re-render.
+        if (before !== this.isRTL) this.renderBadges();
+    }
+
+    private buildHTML(): void {
+        // Get container for dropdown/hint/popover (Shadow DOM or body)
+        const container = this.options.container || document.body;
+
+        // Detect RTL from the host's `dir` (or an RTL ancestor) and derive the
+        // direction-mirrored badges position. Extracted so a runtime `dir` change
+        // can re-run it (see refreshDirection()).
+        this.detectRTL();
 
         // Add classes to the element
         this.element.classList.add('ms');
@@ -2110,12 +2150,24 @@ export class WebMultiSelect<T = any> {
         if (this.virtualScroll && this.focusedIndex >= 0) {
             // Use virtual scroll's scrollToIndex for smooth scrolling
             this.virtualScroll.scrollToIndex(this.focusedIndex);
+            return;
+        }
+        // Standard mode: use scrollIntoView
+        const focusedElement = this.dropdown.querySelector('.ms__option--focused');
+        if (!focusedElement) return;
+
+        // In the fullscreen sheet the soft keyboard covers the lower part of the
+        // viewport while the user types (navigate mode jumps focus per keystroke).
+        // `block:'nearest'` bottom-aligns a below-the-fold match to the scroller's
+        // bottom edge — which can sit BEHIND the keyboard, so the match "scrolls"
+        // but lands hidden. Centre it in the visible area instead (comfortably above
+        // the keys), and scroll INSTANTLY: a smooth animation kicked off on one
+        // keystroke is torn down by the next re-render, so it never settles (the
+        // "list jumps on every letter" without ever revealing the match).
+        if (this.presentationMode === 'fullscreen') {
+            focusedElement.scrollIntoView({ block: 'center', behavior: 'auto' });
         } else {
-            // Standard mode: use scrollIntoView
-            const focusedElement = this.dropdown.querySelector('.ms__option--focused');
-            if (focusedElement) {
-                focusedElement.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
-            }
+            focusedElement.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
         }
     }
 
@@ -2717,6 +2769,8 @@ export class WebMultiSelect<T = any> {
         this.dropdown.classList.add('ms__dropdown--fullscreen');
         this.buildFullscreenHeader();
         this.lockBodyScroll();
+        // Trap the phone Back gesture/button so it closes the sheet instead of navigating.
+        this.pushOverlayHistory();
         // Track the soft keyboard so the sheet shrinks to sit above it (see method doc).
         this.observeKeyboardInset();
 
@@ -2739,6 +2793,9 @@ export class WebMultiSelect<T = any> {
     /** Tear down the fullscreen dropdown chrome and restore page scroll (no-op if floating). */
     private exitFullscreen(): void {
         this.unobserveKeyboardInset();
+        // Consume the history entry we pushed on open (no-op if the Back gesture already
+        // popped it — see handleOverlayPopstate).
+        this.popOverlayHistory();
         this.dropdown.classList.remove('ms__dropdown--fullscreen');
         if (this.fullscreenHeader) {
             this.fullscreenHeader.remove();
@@ -2750,6 +2807,41 @@ export class WebMultiSelect<T = any> {
             this.fullscreenNavNext = null;
         }
         this.unlockBodyScroll();
+    }
+
+    /**
+     * Back-gesture handling for the fullscreen sheet. On open we push a history entry
+     * (same URL) and listen for `popstate`; the phone Back gesture/button then pops that
+     * entry — which we treat as "close the sheet" — instead of navigating away from the
+     * page. A programmatic close (✕, selection, Escape) consumes the entry via
+     * `history.back()` so the stack is left as it was found.
+     */
+    private pushOverlayHistory(): void {
+        if (this.overlayHistoryActive) return;
+        if (typeof history === 'undefined' || typeof window === 'undefined') return;
+        this.overlayHistoryActive = true;
+        history.pushState({ msOverlay: this.instanceId }, '');
+        window.addEventListener('popstate', this.onOverlayPopstate);
+    }
+
+    /** Back gesture/button fired: our pushed entry is already gone, so just close the
+     *  sheet — WITHOUT popping history again (popOverlayHistory becomes a no-op). */
+    private handleOverlayPopstate(): void {
+        if (!this.overlayHistoryActive) return;
+        this.overlayHistoryActive = false;
+        window.removeEventListener('popstate', this.onOverlayPopstate);
+        if (this.isOpen) this.close();
+    }
+
+    /** Programmatic close: remove the listener and pop the entry we pushed (so the
+     *  history stack returns to its pre-open state). No-op if a Back gesture already
+     *  consumed it (overlayHistoryActive is false by then). */
+    private popOverlayHistory(): void {
+        if (!this.overlayHistoryActive) return;
+        this.overlayHistoryActive = false;
+        window.removeEventListener('popstate', this.onOverlayPopstate);
+        // The listener is already detached, so the popstate this triggers is ignored.
+        history.back();
     }
 
     /**
@@ -3835,6 +3927,14 @@ export class WebMultiSelect<T = any> {
         if (this.dropdownCleanup) this.dropdownCleanup();
         if (this.hintCleanup) this.hintCleanup();
         if (this.selectedPopoverCleanup) this.selectedPopoverCleanup();
+
+        // Detach Back-gesture handling WITHOUT popping history — a teardown (e.g. a DOM
+        // move) must not trigger navigation. Any entry we pushed is harmless (same URL).
+        // Done before exitFullscreen() so its popOverlayHistory() no-ops.
+        if (this.overlayHistoryActive) {
+            this.overlayHistoryActive = false;
+            if (typeof window !== 'undefined') window.removeEventListener('popstate', this.onOverlayPopstate);
+        }
 
         // Restore page scroll if we're torn down while a fullscreen overlay is open
         // (e.g. a DOM move destroys the picker mid-open).
