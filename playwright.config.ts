@@ -36,10 +36,24 @@ export default defineConfig({
     projects: [
         {
             name: 'chromium',
+            // The desktop project owns every spec except the touch-only presentation
+            // one — a desktop context reports a fine pointer + hover, so the phone
+            // (fullscreen) branch never engages there.
+            testIgnore: '**/presentation.spec.ts',
             use: {
                 ...devices['Desktop Chrome'],
                 viewport: { width: 1440, height: 1024 }
             }
+        },
+        {
+            // Touch-primary phone context: Pixel 7 emulation gives a coarse pointer
+            // and no hover (isMobile + hasTouch), so `mobile-presentation="auto"`
+            // resolves to fullscreen and rotation (viewport swap) is testable.
+            // Chromium-only — `isMobile` is unsupported on Firefox/WebKit in Playwright,
+            // and this suite runs on chromium anyway.
+            name: 'mobile',
+            testMatch: '**/presentation.spec.ts',
+            use: { ...devices['Pixel 7'] }
         }
     ],
 

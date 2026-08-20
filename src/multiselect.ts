@@ -75,6 +75,9 @@ export class WebMultiSelect<T = any> {
     private presentationMode: 'floating' | 'fullscreen' = 'floating';
     private fullscreenHeader: HTMLDivElement | null = null;
     private fullscreenSearchInput: HTMLInputElement | null = null;
+    // Inline ✕ inside the fullscreen search box that clears the term. Shown only while
+    // there's text; touch has no keyboard Escape, so this is the way to reset a search.
+    private fullscreenSearchClear: HTMLButtonElement | null = null;
     // Navigate-mode match navigator shown under the fullscreen search box: a result
     // count ("3 of 12") plus prev/next buttons that step through matches. Touch has no
     // Ctrl+Arrow shortcut, so these buttons are the on-screen substitute. Only built in
@@ -1556,6 +1559,16 @@ export class WebMultiSelect<T = any> {
             if (onOption) e.preventDefault();
         });
 
+        // Scroll-to-dismiss: a real drag on the options list means "let me browse" —
+        // blur the sheet search so the soft keyboard tucks away and the full list shows.
+        // touchmove is a genuine user gesture (programmatic scrollIntoView from typing /
+        // match-stepping never fires it), so auto-scroll-to-match won't wrongly dismiss
+        // the keyboard mid-type. Fullscreen only; passive so it never blocks the scroll.
+        this.dropdown.addEventListener('touchmove', (e) => {
+            if (this.presentationMode !== 'fullscreen') return;
+            if ((e.target as HTMLElement).closest('.ms__options')) this.fullscreenSearchInput?.blur();
+        }, { passive: true });
+
         this.dropdown.addEventListener('click', (e) => this.handleDropdownClick(e));
 
         // Prevent page scroll when scrolling dropdown at boundaries
@@ -1864,6 +1877,11 @@ export class WebMultiSelect<T = any> {
                     // Allow adding a new option if enabled and there's input text
                     this.handleAddNew(this.input.value.trim());
                 }
+                // On the fullscreen sheet the on-screen Enter/Search key doubles as
+                // "done typing" — drop focus off the header search so the soft keyboard
+                // tucks away (the native "search → dismiss" gesture). Floating keeps its
+                // input focused for continued keyboard use.
+                if (this.presentationMode === 'fullscreen') this.fullscreenSearchInput?.blur();
                 break;
             case 'Escape':
                 e.preventDefault();
@@ -1972,6 +1990,12 @@ export class WebMultiSelect<T = any> {
                 // down), so no refocus is needed — and none that would raise the keyboard.
                 if (this.isOpen && this.presentationMode !== 'fullscreen') {
                     this.input.focus();
+                } else if (this.presentationMode === 'fullscreen') {
+                    // Tapping a result signals "done typing" — blur the sheet search so
+                    // the soft keyboard tucks away and the full list is visible. The
+                    // mousedown guard kept focus on the search (it never moved to the
+                    // option), so this blur is what actually dismisses the keyboard.
+                    this.fullscreenSearchInput?.blur();
                 }
             }
         }
@@ -2779,6 +2803,7 @@ export class WebMultiSelect<T = any> {
         // visible and the keyboard closed, so long lists browse cleanly and the bottom
         // action row stays on screen. When enabled, focus to type-to-filter immediately.
         if (this.fullscreenSearchInput) this.fullscreenSearchInput.value = this.searchTerm;
+        this.updateFullscreenSearchClear();
         if (this.options.fullscreenAutofocus) {
             this.fullscreenSearchInput?.focus();
         } else {
@@ -2801,6 +2826,7 @@ export class WebMultiSelect<T = any> {
             this.fullscreenHeader.remove();
             this.fullscreenHeader = null;
             this.fullscreenSearchInput = null;
+            this.fullscreenSearchClear = null;
             this.fullscreenNav = null;
             this.fullscreenNavCount = null;
             this.fullscreenNavPrev = null;
@@ -2858,6 +2884,11 @@ export class WebMultiSelect<T = any> {
         header.className = 'ms__fullscreen-header';
 
         if (this.options.isSearchEnabled && this.options.searchInputMode !== 'hidden') {
+            // The input and its inline clear (✕) share a positioned wrapper so the
+            // button can sit at the trailing edge of the field (inset-inline-end).
+            const searchWrapper = document.createElement('div');
+            searchWrapper.className = 'ms__fullscreen-search-wrapper';
+
             const search = document.createElement('input');
             search.type = 'text';
             search.className = 'ms__fullscreen-search';
@@ -2870,13 +2901,31 @@ export class WebMultiSelect<T = any> {
                 const value = (e.target as HTMLInputElement).value;
                 this.input.value = value;
                 this.handleSearch(value);
+                this.updateFullscreenSearchClear();
             });
             // Arrow/Enter/Escape navigation lives on the main input's keydown; the header
             // search has focus in the overlay, so delegate to the same handler.
             search.addEventListener('keydown', (e) => this.handleKeydown(e));
 
-            header.appendChild(search);
+            searchWrapper.appendChild(search);
             this.fullscreenSearchInput = search;
+
+            // Clear-search button — readonly search can't be typed into, so it can't be
+            // cleared either; only build it for an editable field.
+            if (this.options.searchInputMode !== 'readonly') {
+                const clear = document.createElement('button');
+                clear.type = 'button';
+                clear.className = 'ms__fullscreen-search-clear';
+                clear.setAttribute('aria-label', 'Clear search');
+                // Use mousedown+preventDefault so the tap doesn't blur/steal focus from
+                // the search field, then run the clear on click and restore focus.
+                clear.addEventListener('mousedown', (e) => e.preventDefault());
+                clear.addEventListener('click', () => this.clearFullscreenSearch());
+                searchWrapper.appendChild(clear);
+                this.fullscreenSearchClear = clear;
+            }
+
+            header.appendChild(searchWrapper);
         }
 
         const close = document.createElement('button');
@@ -2930,6 +2979,7 @@ export class WebMultiSelect<T = any> {
         this.dropdown.insertBefore(header, this.dropdownInner);
         this.fullscreenHeader = header;
         this.updateFullscreenNav();
+        this.updateFullscreenSearchClear();
     }
 
     /**
@@ -2961,6 +3011,29 @@ export class WebMultiSelect<T = any> {
         const disabled = total === 0;
         if (this.fullscreenNavPrev) this.fullscreenNavPrev.disabled = disabled;
         if (this.fullscreenNavNext) this.fullscreenNavNext.disabled = disabled;
+    }
+
+    /**
+     * Show the fullscreen search's inline clear (✕) only while the field has text.
+     * No-op when the button isn't built (floating panel, readonly/hidden search).
+     */
+    private updateFullscreenSearchClear(): void {
+        if (!this.fullscreenSearchClear) return;
+        const hasText = !!(this.fullscreenSearchInput && this.fullscreenSearchInput.value);
+        this.fullscreenSearchClear.style.display = hasText ? '' : 'none';
+    }
+
+    /**
+     * Clear the fullscreen search term via the same path a keystroke takes, then
+     * refocus the field so the user can keep typing. Touch has no keyboard Escape,
+     * so this button is the on-screen way to reset a search.
+     */
+    private clearFullscreenSearch(): void {
+        if (this.fullscreenSearchInput) this.fullscreenSearchInput.value = '';
+        this.input.value = '';
+        this.handleSearch('');
+        this.updateFullscreenSearchClear();
+        this.fullscreenSearchInput?.focus();
     }
 
     private positionHint(): void {

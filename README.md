@@ -21,6 +21,34 @@ Reads `--base-*` variables from the page if [`@keenmate/theme-designer`](https:/
 - Custom rendering callbacks for options, badges, and group headers.
 - Form integration via standard hidden inputs (FormData-compatible).
 
+## What's New in v2.0.0-rc04
+
+**Phone search — one-tap clear and a keyboard that gets out of the way** — The
+full-screen search sheet gained the two things it was missing on touch. A clear button
+now sits at the trailing edge of the search field (a distinct Lucide `search-x` glyph,
+so it doesn't read as a second close ✕) to wipe the term in one tap and restore the full
+list. And the soft keyboard, which used to stay pinned open once you focused the field,
+now tucks away on the three natural "done typing" gestures — scrolling the list, tapping
+an option, or pressing Enter/Search — while never dismissing itself mid-type from a
+programmatic scroll-to-match.
+
+**A close button you can make your own** — The full-screen close ✕ is now a themeable
+chip: the new `--ms-fullscreen-close-bg`, `--ms-fullscreen-close-border`, and
+`--ms-fullscreen-close-border-radius` variables turn the bare glyph into a bordered
+button (à la a command-palette close) while the defaults keep it a plain round ✕. Its
+tap target was also fixed — the previously-dead padding around the button in the sheet's
+top-trailing corner (the natural place to reach) now dismisses the sheet, without ever
+stealing taps from the first option row or the search field.
+
+**Right presentation on every device, via core rc07** — This release pins
+`@keenmate/web-components-core` at `1.0.0-rc07` and adopts its reworked
+`resolvePresentation` / `classifyDevice` API. Behavior is unchanged — full-screen on
+phones, floating on tablet and desktop — with one refinement from the new capability
+gate: a narrowed desktop window (fine pointer, hover) now stays `desktop` and keeps its
+floating dropdown at any width, instead of ever flipping to the full-screen sheet.
+
+See `CHANGELOG.md` for the full list.
+
 ## What's New in v2.0.0-rc03
 
 **Full-screen dropdown on phones (`mobile-presentation`).** On a phone, a dropdown
@@ -75,21 +103,6 @@ In `search-mode="navigate"`, an on-screen **match navigator** (an `N of M` count
 prev/next buttons) stands in for the desktop `Ctrl`+`Arrow` match-stepping that touch
 can't do — and the focused match now stays visible above the keyboard instead of
 scrolling behind it. Tapping an option no longer pops the keyboard mid-browse.
-
-See `CHANGELOG.md` for the full list.
-
-## What's New in v2.0.0-rc02
-
-**Form association restored for host frameworks (`el.form`).** Selecting inside a
-`<web-multiselect>` that lives in a `<form>` again delivers changes to frameworks
-that resolve the parent form via `event.target.form` — most notably Phoenix
-LiveView's `phx-change` delegation, which silently dropped changes in rc01.
-`<web-multiselect>` is a form-associated custom element, so it now exposes a real
-`el.form` / `event.target.form` like a native control. (rc01 had hardened its
-internal `ElementInternals` handle to a true `#private` field, which killed the
-`.form` that host-framework wrappers read.) The fix lives upstream in
-[`@keenmate/web-components-core`](https://www.npmjs.com/package/@keenmate/web-components-core)
-1.0.0-rc02 (the `el.form` getter), which this release pins.
 
 See `CHANGELOG.md` for the full list.
 

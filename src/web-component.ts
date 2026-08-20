@@ -32,7 +32,7 @@ import {
   extractConsumedCssVars,
   lintCssVars,
   getEnvironment,
-  resolveMobilePresentation,
+  resolvePresentation,
   type InputDef,
   type StyleSlot,
   type EnvironmentSnapshot,
@@ -390,7 +390,16 @@ export class MultiSelectElement<T = any> extends BlissElement<MultiSelectEvents>
   /** Resolve `mobile-presentation` against `env` and relay it to the live picker. */
   #applyPresentation(env: EnvironmentSnapshot): void {
     const mode = (this.config.mobilePresentation as MobilePresentation | null) ?? 'auto';
-    this.#picker?.setPresentation(resolveMobilePresentation(mode, env));
+    // Class-only policy (core §12.9): `resolvePresentation` classifies the device
+    // (`classifyDevice`) and applies the default map — fullscreen on a phone, floating
+    // on tablet/desktop, which is exactly what this picker renders. The capability gate
+    // means a *narrowed desktop window* stays `desktop` → floating, never a sheet.
+    // `mode` is constrained to auto|floating|fullscreen by the attribute converter and we
+    // pass no overrides, so the `modal` tier can't occur; degrade it to fullscreen
+    // defensively (multiselect has no modal presentation) rather than let it reach the
+    // picker.
+    const resolved = resolvePresentation(mode, env);
+    this.#picker?.setPresentation(resolved === 'modal' ? 'fullscreen' : resolved);
   }
 
   // ── picker lifecycle ──────────────────────────────────────────────────────

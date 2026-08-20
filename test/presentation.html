@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Test — mobile presentation & rotation</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        web-multiselect { display: block; max-width: 320px; }
+    </style>
+</head>
+<body>
+    <h1>mobile presentation &amp; rotation</h1>
+    <p>Targeted by <code>e2e/presentation.spec.ts</code> (runs under the touch <code>mobile</code> project).</p>
+
+    <div class="fixture">
+        <div class="fixture-label">auto — fullscreen on phones, reacts to rotation/resize</div>
+        <web-multiselect id="auto" mobile-presentation="auto" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">floating — anchored panel on every device</div>
+        <web-multiselect id="floating" mobile-presentation="floating" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">fullscreen — overlay forced on every device</div>
+        <web-multiselect id="fullscreen" mobile-presentation="fullscreen" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+
+        const fruits = [
+            { value: 'apple',      label: 'Apple' },
+            { value: 'banana',     label: 'Banana' },
+            { value: 'cherry',     label: 'Cherry' },
+            { value: 'date',       label: 'Date' },
+            { value: 'elderberry', label: 'Elderberry' }
+        ];
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            for (const id of ['auto', 'floating', 'fullscreen']) {
+                document.getElementById(id).options = fruits;
+            }
+        });
+    </script>
+</body>
+</html>

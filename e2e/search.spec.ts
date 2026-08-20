@@ -209,6 +209,179 @@ test.describe('navigate mode — fullscreen match navigator', () => {
     });
 });
 
+test.describe('fullscreen search — inline clear (✕)', () => {
+    // The fullscreen sheet opens with the keyboard closed; touch has no Escape to
+    // reset a search, so the header search carries an inline ✕ that clears the term.
+    const fsSearch = (p: Locator) => p.locator('.ms__fullscreen-search');
+    const clear = (p: Locator) => p.locator('.ms__fullscreen-search-clear');
+
+    async function openFullscreen(p: Locator): Promise<void> {
+        await input(p).click();
+        await expect(p.locator('.ms__dropdown--fullscreen')).toBeVisible();
+    }
+
+    test('clear button is hidden until a term is entered', async ({ page }) => {
+        const p = picker(page, 'navigate-fs');
+        await openFullscreen(p);
+        await expect(clear(p)).toBeHidden();
+
+        await fsSearch(p).fill('ch');
+        await expect(clear(p)).toBeVisible();
+    });
+
+    test('clicking clear empties the field and resets the results', async ({ page }) => {
+        const p = picker(page, 'filter-fs');
+        await openFullscreen(p);
+
+        // Filter mode narrows the list; "ch" leaves only Cherry.
+        await fsSearch(p).fill('ch');
+        await expect(visibleOptions(p)).toHaveCount(1);
+        await expect(clear(p)).toBeVisible();
+
+        await clear(p).click();
+
+        await expect(fsSearch(p)).toHaveValue('');
+        await expect(visibleOptions(p)).toHaveCount(5); // full list restored
+        await expect(clear(p)).toBeHidden();             // hides itself again
+    });
+
+    test('clear keeps focus on the search field so typing can continue', async ({ page }) => {
+        const p = picker(page, 'filter-fs');
+        await openFullscreen(p);
+
+        await fsSearch(p).fill('ch');
+        await clear(p).click();
+
+        const focused = await p.evaluate((host: any) =>
+            host.shadowRoot?.activeElement?.className ?? null);
+        expect(focused ?? '').toContain('ms__fullscreen-search');
+    });
+});
+
+test.describe('fullscreen search — keyboard dismissal', () => {
+    // The soft keyboard is tied 1:1 to focus on the header search input; there's no
+    // real keyboard in headless chromium, so we assert its proxy — after each
+    // "done typing" gesture the search input must no longer be the shadow root's
+    // activeElement (a blur is what tucks the keyboard away on a device).
+    const fsSearch = (p: Locator) => p.locator('.ms__fullscreen-search');
+
+    async function openFullscreenFocused(p: Locator): Promise<void> {
+        await input(p).click();
+        await expect(p.locator('.ms__dropdown--fullscreen')).toBeVisible();
+        await fsSearch(p).fill('e'); // matches several fruits; also focuses the field
+    }
+
+    const searchIsFocused = (p: Locator) =>
+        p.evaluate((host: any) =>
+            (host.shadowRoot?.activeElement?.className ?? '').includes('ms__fullscreen-search'));
+
+    test('tapping an option blurs the search (dismisses the keyboard)', async ({ page }) => {
+        const p = picker(page, 'filter-fs');
+        await openFullscreenFocused(p);
+        expect(await searchIsFocused(p)).toBe(true);
+
+        await visibleOptions(p).first().click();
+        await expect(p.locator('.ms__option--selected')).toHaveCount(1); // select still happens
+        await expect.poll(() => searchIsFocused(p)).toBe(false);
+    });
+
+    test('the Enter/Search key blurs the search', async ({ page }) => {
+        const p = picker(page, 'filter-fs');
+        await openFullscreenFocused(p);
+        expect(await searchIsFocused(p)).toBe(true);
+
+        await fsSearch(p).press('Enter');
+        await expect.poll(() => searchIsFocused(p)).toBe(false);
+    });
+
+    test('scrolling the options list blurs the search', async ({ page }) => {
+        const p = picker(page, 'filter-fs');
+        await openFullscreenFocused(p);
+        expect(await searchIsFocused(p)).toBe(true);
+
+        // A genuine drag on the list fires touchmove; dispatch one on the scroller.
+        await p.evaluate((host: any) => {
+            const list = host.shadowRoot.querySelector('.ms__options');
+            list.dispatchEvent(new Event('touchmove', { bubbles: true }));
+        });
+        await expect.poll(() => searchIsFocused(p)).toBe(false);
+    });
+});
+
+test.describe('fullscreen close — corner hit target', () => {
+    // The close ✕ tap target is enlarged and anchored into the sheet's top-trailing
+    // corner, so the previously-dead padding around a centered button is now clickable
+    // (the corner is the easiest place to tap). We click a point a few px from the
+    // header's physical top-right corner — outside where the old centered 43.2px button
+    // sat — and expect the sheet to close.
+    async function openFullscreen(p: Locator): Promise<void> {
+        await input(p).click();
+        await expect(p.locator('.ms__dropdown--fullscreen')).toBeVisible();
+    }
+
+    test('clicking the top-right corner closes the sheet', async ({ page }) => {
+        const p = picker(page, 'filter-fs');
+        await openFullscreen(p);
+
+        const header = await p.locator('.ms__fullscreen-header').boundingBox();
+        if (!header) throw new Error('no header box');
+        // A few px inside the header's top-right corner — the old dead zone.
+        await page.mouse.click(header.x + header.width - 6, header.y + 6);
+
+        await expect(p.locator('.ms__dropdown--fullscreen')).toBeHidden();
+    });
+
+    test('the close hit target covers the top-trailing corner without stealing other taps', async ({ page }) => {
+        const p = picker(page, 'filter-fs');
+        await openFullscreen(p);
+
+        // Hit-test the top-right and right-middle of the header — the former dead padding —
+        // and assert they resolve to the close button (its ::after hit-area extension).
+        // The extension is bounded below/leading so it must NOT cover the search field or
+        // the first option row.
+        const hits = await p.evaluate((host: any) => {
+            const root = host.shadowRoot;
+            const h = root.querySelector('.ms__fullscreen-header').getBoundingClientRect();
+            const close = root.querySelector('.ms__fullscreen-close');
+            const isClose = (x: number, y: number) => {
+                const el = root.elementFromPoint(x, y);
+                return el === close || (el && close.contains(el));
+            };
+            const cls = (x: number, y: number) =>
+                (root.elementFromPoint(x, y) as HTMLElement)?.className ?? '';
+            return {
+                topRight: isClose(h.right - 3, h.top + 3),
+                rightMid: isClose(h.right - 3, (h.top + h.bottom) / 2),
+                input: cls(h.left + 40, (h.top + h.bottom) / 2).includes('ms__fullscreen-search'),
+                firstOption: cls(h.left + 40, h.bottom + 20).includes('ms__option'),
+            };
+        });
+        expect(hits.topRight).toBe(true);
+        expect(hits.rightMid).toBe(true);
+        expect(hits.input).toBe(true);       // search field not covered
+        expect(hits.firstOption).toBe(true); // first option row not covered
+    });
+
+    test('close chip accepts a themed border via CSS variables', async ({ page }) => {
+        const p = picker(page, 'filter-fs');
+        // Turn the ✕ into a bordered "button" through the public vars.
+        await p.evaluate((host: HTMLElement) => {
+            host.style.setProperty('--ms-fullscreen-close-border', '2px solid rgb(10, 20, 30)');
+            host.style.setProperty('--ms-fullscreen-close-border-radius', '8px');
+        });
+        await openFullscreen(p);
+
+        const style = await p.evaluate((host: any) => {
+            const cs = getComputedStyle(host.shadowRoot.querySelector('.ms__fullscreen-close'));
+            return { width: cs.borderTopWidth, color: cs.borderTopColor, radius: cs.borderTopLeftRadius, box: cs.boxSizing };
+        });
+        expect(style.width).toBe('2px');
+        expect(style.color).toBe('rgb(10, 20, 30)');
+        expect(style.radius).toBe('8px');
+        expect(style.box).toBe('border-box'); // the border doesn't grow the chip
+    });
+});
+
 test.describe('search-input-mode', () => {
     test('readonly prevents typing', async ({ page }) => {
         const p = picker(page, 'readonly');

@@ -354,7 +354,11 @@
   --ms-fullscreen-header-bg: var(--ms-dropdown-bg);
   --ms-fullscreen-header-border: 1px solid var(--ms-dropdown-border-color);
   --ms-fullscreen-header-gap: calc(0.8 * var(--ms-fullscreen-rem));
-  --ms-fullscreen-header-padding: calc(0.8 * var(--ms-fullscreen-rem)) calc(1.2 * var(--ms-fullscreen-rem));
+  /* Split into v/h so the close button can reclaim this exact padding with negative
+     margins to reach the sheet's physical corner (see .ms__fullscreen-close). */
+  --ms-fullscreen-header-padding-v: calc(0.8 * var(--ms-fullscreen-rem));
+  --ms-fullscreen-header-padding-h: calc(1.2 * var(--ms-fullscreen-rem));
+  --ms-fullscreen-header-padding: var(--ms-fullscreen-header-padding-v) var(--ms-fullscreen-header-padding-h);
   --ms-fullscreen-header-min-height: calc(5.6 * var(--ms-fullscreen-rem)); /* consistent bar height: search vs title */
   --ms-fullscreen-title-font-size: calc(1.7 * var(--ms-fullscreen-rem));
   --ms-fullscreen-title-font-weight: var(--base-font-weight-semibold, 600);
@@ -362,10 +366,36 @@
   --ms-fullscreen-search-border-radius: var(--ms-input-border-radius);
   --ms-fullscreen-search-padding: calc(0.8 * var(--ms-fullscreen-rem)) calc(1.2 * var(--ms-fullscreen-rem));
   --ms-fullscreen-search-font-size: calc(1.6 * var(--ms-fullscreen-rem));
+  /* Inline clear (✕) inside the fullscreen search field: a small round mask-icon
+     button pinned to the trailing edge, shown only while there's a term. The gutter
+     reserves trailing padding on the input so typed text never runs under it. */
+  --ms-fullscreen-search-clear-size: calc(2.8 * var(--ms-fullscreen-rem));
+  --ms-fullscreen-search-clear-icon-size: calc(1.4 * var(--ms-fullscreen-rem));
+  --ms-fullscreen-search-clear-inset: calc(0.4 * var(--ms-fullscreen-rem));
+  --ms-fullscreen-search-clear-gutter: calc(3.4 * var(--ms-fullscreen-rem));
+  --ms-fullscreen-search-clear-color: var(--ms-text-muted-color, var(--ms-dropdown-text-color));
+  --ms-fullscreen-search-clear-bg-hover: var(--ms-option-bg-matched, transparent);
   --ms-fullscreen-close-size: calc(3.6 * var(--ms-fullscreen-rem));
   --ms-fullscreen-close-icon-size: calc(1.6 * var(--ms-fullscreen-rem));
   --ms-fullscreen-close-color: var(--ms-dropdown-text-color);
+  /* Visible close chip. Defaults to a borderless, transparent, round hit-glyph (so it
+     reads as a bare ✕), but these turn it into a bordered "button" like a command-
+     palette close — e.g. --ms-fullscreen-close-border: 1px solid var(--ms-border-color);
+     --ms-fullscreen-close-border-radius: calc(0.8 * var(--ms-fullscreen-rem));
+     --ms-fullscreen-close-bg: var(--ms-input-bg);. The tap target stays larger than the
+     chip (see the ::after in floating.css), so bordering it doesn't shrink what's
+     clickable. */
+  --ms-fullscreen-close-bg: transparent;
+  --ms-fullscreen-close-border: none;
+  --ms-fullscreen-close-border-radius: 50%;
   --ms-fullscreen-close-bg-hover: var(--ms-option-bg-matched, transparent);
+  /* Corner tap target. The visible chip stays --close-size (so it never inflates the
+     header height), but a transparent ::after extends the *hit* area into the sheet's
+     top-trailing corner — the dead header padding around a centered button was the "tap
+     here → nothing happens" zone, and the corner is the easiest place to hit.
+     --edge-nudge is a negative inline-end margin that slides the whole button (and its
+     glyph) that much closer to the physical edge. */
+  --ms-fullscreen-close-edge-nudge: calc(0.8 * var(--ms-fullscreen-rem));
   /* Truncated-label info affordance (fullscreen only). A circled "i" revealed at the
      trailing edge of a row whose label is clipped, so the full label is one tap away
      on touch (where hover tooltips never fire). Sized in --ms-fullscreen-rem. */
@@ -588,6 +618,12 @@
   /* SVG X glyph — rendered via mask so it inherits --ms-badge-remove-color via currentColor.
      Override this var to use a different shape; the value must be a CSS url() pointing to a mask-friendly SVG. */
   --ms-icon-remove: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 6L18 18M18 6L6 18' stroke='black' stroke-width='2.5' stroke-linecap='round' fill='none'/></svg>");
+  /* SVG "clear search" glyph (Lucide `search-x`: a magnifier with an x) used by the
+     fullscreen search field's clear button. Deliberately NOT the bare X of
+     --ms-icon-remove so it doesn't read as a second close button beside the overlay
+     ✕. Rendered via mask, so it inherits its color via currentColor; override with any
+     mask-friendly SVG url(). */
+  --ms-icon-search-clear: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m13.5 8.5-5 5'/><path d='m8.5 8.5 5 5'/><circle cx='11' cy='11' r='8'/><path d='m21 21-4.3-4.3'/></svg>");
 
   /* Badge Counter Indicator (layout-only properties, colors come from semantic section) */
   --ms-badge-counter-bg: transparent;

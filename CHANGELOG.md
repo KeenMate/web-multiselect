@@ -5,6 +5,78 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0-rc04] - 2026-08-20 [PUBLISHED]
+
+### Added
+
+- **Clear-search button in the fullscreen search box.** The phone fullscreen
+  overlay's search field now carries an inline clear affordance at its trailing edge
+  that empties the term in one tap, shown only while the field has text. On touch
+  there's no keyboard Escape to reset a search, so this is the on-screen way to start
+  over; clearing restores the full list and returns focus to the field so typing can
+  continue. Its glyph is a **Lucide `search-x`** (a magnifier with an ✕), chosen so it
+  doesn't read as a second close button next to the overlay's ✕ — themeable via the
+  new `--ms-icon-search-clear` icon variable. Editable search only (a `readonly` field
+  has nothing to clear). Sizing/placement via the `--ms-fullscreen-search-clear-*`
+  variables. No effect in the floating presentation (which keeps its existing input
+  affordances).
+- **Soft-keyboard dismissal in the fullscreen search.** Once the header search was
+  focused the on-screen keyboard used to stay up with no way to close it (the
+  select-focus guard that stops the keyboard *popping* on tap also stopped it ever
+  *leaving* the field). It now blurs the search — tucking the keyboard away — on the
+  three "done typing" gestures: **scrolling** the options list (a real drag; a
+  programmatic scroll-to-match never triggers it, so typing isn't interrupted),
+  **tapping an option**, and pressing the **Enter/Search** key. Fullscreen only; the
+  floating panel keeps its input focused for continued keyboard use.
+
+- **Themeable fullscreen close (✕) button — border / background / radius.** The close
+  glyph is now a fixed-size *chip* that new CSS variables can turn into a bordered
+  button (like a command-palette close): `--ms-fullscreen-close-bg`,
+  `--ms-fullscreen-close-border`, and `--ms-fullscreen-close-border-radius` (defaults —
+  `transparent` / `none` / `50%` — keep the current bare round ✕). The chip is
+  `box-sizing: border-box`, so a border doesn't grow it, and the enlarged corner tap
+  target (below) stays larger than the chip regardless of styling. Applies to the
+  selected-items popover close too (shared button).
+
+### Fixed
+
+- **Fullscreen close (✕) top-trailing corner is now tappable.** The overlay's close
+  button was a small box centered in the header with padding around it, so taps in the
+  surrounding top-trailing corner — the natural place to reach for a close — landed on
+  dead space and did nothing. A transparent `::after` now extends the button's tap
+  target up past the button and out to the sheet's trailing edge (reclaiming the header
+  padding) so the corner dismisses the sheet; the extension is bounded below and toward
+  the leading edge so it never covers the first option row or the search field. A small
+  negative margin also slides the glyph closer to the edge. The visible chip stays
+  `--ms-fullscreen-close-size`, so the header height doesn't grow. Tunable via
+  `--ms-fullscreen-close-edge-nudge`. Applies to the selected-items popover's close too
+  (shared button).
+
+### Changed
+
+- **Pin `@keenmate/web-components-core` at `1.0.0-rc07`** and migrate the mobile
+  presentation resolver to its reworked, "universal" API. The element now calls
+  `resolvePresentation(mode, env)` (backed by the shared `classifyDevice(env)`)
+  instead of the now-deprecated `resolveMobilePresentation`. The behavior for this
+  picker is unchanged from rc03 — fullscreen on a phone, floating on tablet/desktop
+  (the default class→presentation map) — with one refinement: classification is now
+  **capability-gated**, so a *narrowed desktop window* (fine pointer, hover) stays
+  `desktop` → floating at any width and can no longer flip to the fullscreen sheet.
+  The `modal` presentation tier that rc07 adds is not used here (multiselect renders
+  only floating/fullscreen); a resolved `modal` degrades to fullscreen defensively.
+
+### Internal
+
+- **e2e coverage for device rotation and mobile presentation.** A new touch
+  `mobile` Playwright project (Pixel 7 emulation → coarse pointer, no hover) drives
+  `e2e/presentation.spec.ts`: opening as a fullscreen overlay on a phone, staying
+  fullscreen across a portrait↔landscape rotation (viewport swap — the shorter side
+  stays below the `sw600dp` line), live-swapping fullscreen↔floating when resized
+  past the tablet boundary, and forced modes ignoring rotation. A companion
+  `e2e/presentation-desktop.spec.ts` runs on the desktop project to pin the rc07
+  capability gate (a shrunk non-touch window stays floating). Fixture:
+  `test/presentation.html`.
+
 ## [2.0.0-rc03] - 2026-08-19 [PUBLISHED]
 
 ### Added

@@ -255,12 +255,18 @@
   transform: scaleY(-1);
 }
 
-/* The leading element (search field or title) fills the bar, pushing the close
-   button to the trailing edge in both overlays. */
-.ms__fullscreen-header > .ms__fullscreen-search,
+/* The leading element (search field's wrapper or the title) fills the bar, pushing
+   the close button to the trailing edge in both overlays. */
+.ms__fullscreen-header > .ms__fullscreen-search-wrapper,
 .ms__selected-popover--fullscreen .ms__selected-popover-header > span {
   flex: 1 1 auto;
   min-width: 0;
+}
+
+/* Positioned context for the inline clear (✕); the input fills it fully. */
+.ms__fullscreen-search-wrapper {
+  position: relative;
+  display: flex;
 }
 
 /* Popover title typography in fullscreen (matches a header title, not the small
@@ -272,6 +278,8 @@
 }
 
 .ms__fullscreen-search {
+  flex: 1 1 auto;
+  min-width: 0;
   font-family: inherit;
   font-size: var(--ms-fullscreen-search-font-size);
   color: inherit;
@@ -279,6 +287,8 @@
   border: var(--ms-fullscreen-search-border);
   border-radius: var(--ms-fullscreen-search-border-radius);
   padding: var(--ms-fullscreen-search-padding);
+  /* Reserve trailing room so typed text never slides under the clear (✕). */
+  padding-inline-end: var(--ms-fullscreen-search-clear-gutter);
 }
 
 .ms__fullscreen-search:focus {
@@ -286,21 +296,82 @@
   border: var(--ms-input-border-focus);
 }
 
-/* Shared close button — identical big, round, mask-icon ✕ in both overlays. */
+/* Inline clear pinned to the trailing edge of the search field. Small, round,
+   mask-icon glyph — a distinct Lucide search-x (see --ms-icon-search-clear), NOT the
+   overlay's bare ✕. JS toggles display so it appears only while the field has text. */
+.ms__fullscreen-search-clear {
+  position: absolute;
+  inset-inline-end: var(--ms-fullscreen-search-clear-inset);
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ms-fullscreen-search-clear-size);
+  height: var(--ms-fullscreen-search-clear-size);
+  padding: 0;
+  color: var(--ms-fullscreen-search-clear-color);
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.ms__fullscreen-search-clear:hover {
+  background: var(--ms-fullscreen-search-clear-bg-hover);
+}
+
+.ms__fullscreen-search-clear::before {
+  content: "";
+  display: block;
+  width: var(--ms-fullscreen-search-clear-icon-size);
+  height: var(--ms-fullscreen-search-clear-icon-size);
+  background-color: currentColor;
+  /* Lucide search-x (magnifier + x), not the bare ✕ — see --ms-icon-search-clear. */
+  -webkit-mask: var(--ms-icon-search-clear) center / contain no-repeat;
+          mask: var(--ms-icon-search-clear) center / contain no-repeat;
+}
+
+/* Shared close button — a fixed-size chip in both overlays: mask-icon ✕ centered in a
+   --close-size box that's round and borderless by default, but fully themeable into a
+   bordered "button" (see the --ms-fullscreen-close-bg / -border / -border-radius vars,
+   e.g. a light border + small radius like a command-palette close). The visible box is
+   a contained square so a border reads as a button, NOT a full-height strip; a separate
+   transparent ::after (below) keeps the tap target large and corner-reaching. A small
+   negative inline-end margin slides the button (and glyph) closer to the edge. */
 .ms__fullscreen-close,
 .ms__selected-popover--fullscreen .ms__selected-popover-close {
   flex: 0 0 auto;
+  position: relative;                 /* anchor for the ::after hit-area extension */
+  box-sizing: border-box;             /* a border must not grow the --close-size box */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: var(--ms-fullscreen-close-size);
   height: var(--ms-fullscreen-close-size);
+  margin-inline-end: calc(-1 * var(--ms-fullscreen-close-edge-nudge));  /* slide toward the edge */
   padding: 0;
   color: var(--ms-fullscreen-close-color);
-  background: transparent;
-  border: none;
-  border-radius: 50%;
+  background: var(--ms-fullscreen-close-bg);
+  border: var(--ms-fullscreen-close-border);
+  border-radius: var(--ms-fullscreen-close-border-radius);
   cursor: pointer;
+}
+
+/* Invisible hit-area extension — grows the tap target well beyond the visible chip so
+   the whole top-trailing corner (the easiest place to tap, and the old dead padding
+   around a centered button) dismisses the sheet, without changing the chip's look. It
+   overshoots UP past the button (harmless — that's off the top of the sheet) and past
+   the trailing edge (clipped), and reaches a bounded amount below and into the leading
+   gap (kept short so it never covers the first option row or the search field). */
+.ms__fullscreen-close::after,
+.ms__selected-popover--fullscreen .ms__selected-popover-close::after {
+  content: "";
+  position: absolute;
+  inset-block-start: calc(-1 * var(--ms-fullscreen-close-size));
+  inset-block-end: calc(-1 * var(--ms-fullscreen-header-padding-v));
+  inset-inline-end: calc(-1 * var(--ms-fullscreen-header-padding-h));
+  inset-inline-start: calc(-1 * var(--ms-fullscreen-header-gap));
 }
 
 .ms__fullscreen-close:hover,
