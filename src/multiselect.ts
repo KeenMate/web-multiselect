@@ -89,6 +89,9 @@ export class WebMultiSelect<T = any> {
     // Releases this instance's page-scroll lock (null when not locked). The core
     // helper is ref-counted; we hold at most one lock per instance. See lockBodyScroll().
     private bodyScrollUnlock: (() => void) | null = null;
+    // Saved inline `overflow-x` of <html> while a fullscreen sheet clamps the host
+    // document's horizontal overflow (null when not clamped). See clampDocumentOverflowX().
+    private overflowXClamp: { html: string } | null = null;
     // Detaches the visualViewport listener that shrinks the fullscreen sheet to sit
     // above the soft keyboard (null when not attached). See observeKeyboardInset().
     private keyboardInsetCleanup: (() => void) | null = null;
@@ -625,6 +628,40 @@ export class WebMultiSelect<T = any> {
         const nodes = all.filter(node => required.has(node.path));
         this.treeNodes = nodes;
         this.filteredOptions = nodes.map(node => node.data as T);
+    }
+
+    /**
+     * Tree + `search-mode="navigate"`: keep the ENTIRE tree visible (the tree is always
+     * fully expanded, so `flatNodes` is the whole thing) and record which visible rows
+     * match the term in `matchingIndices` — the flat-list navigate behavior, but over
+     * `treeNodes`. Filter mode collapses the hierarchy to matches + ancestors; navigate
+     * mode instead leaves the structure intact so the user can jump between matches
+     * (Ctrl+Arrow on desktop, the fullscreen navigator on touch). Returns the index of
+     * the first match, or -1 (no term / no matches), so the caller can set focus.
+     */
+    private rebuildTreeVisibleForNavigate(): number {
+        this.matchingIndices.clear();
+        if (!this.tree) {
+            this.treeNodes = [];
+            this.filteredOptions = [];
+            return -1;
+        }
+        const all = this.tree.flatNodes;
+        this.treeNodes = all;
+        this.filteredOptions = all.map(node => node.data as T);
+
+        const term = (this.searchTerm || '').trim().toLowerCase();
+        if (!term) return -1;
+
+        let firstMatchIndex = -1;
+        all.forEach((node, index) => {
+            const searchValue = this.getItemSearchValue(node.data as T).toLowerCase();
+            if (searchValue.includes(term)) {
+                this.matchingIndices.add(index);
+                if (firstMatchIndex === -1) firstMatchIndex = index;
+            }
+        });
+        return firstMatchIndex;
     }
 
     /**
@@ -1219,6 +1256,9 @@ export class WebMultiSelect<T = any> {
         const isSelected = cascade ? cascadeState === 'checked' : this.selectedValues.has(String(value));
         const isIndeterminate = cascadeState === 'indeterminate';
         const isFocused = index === this.focusedIndex;
+        // Navigate mode keeps the whole tree visible and highlights matches in place
+        // (matchingIndices is empty in filter mode, so this is false there).
+        const isMatched = this.matchingIndices.has(index);
         const selectable = node.isSelectable !== false;
         const level = node.level ?? 1;
         const depth = Math.max(0, level - 1);
@@ -1228,6 +1268,7 @@ export class WebMultiSelect<T = any> {
         if (isSelected) classes.push('ms__option--selected');
         if (isIndeterminate) classes.push('ms__option--indeterminate');
         if (isFocused) classes.push('ms__option--focused');
+        if (isMatched) classes.push('ms__option--matched');
         if (disabled) classes.push('ms__option--disabled');
         // Non-selectable nodes look normal (NOT greyed like disabled) but carry a
         // hook class and drop their checkbox so they read as structure, not choices.
@@ -1255,7 +1296,7 @@ export class WebMultiSelect<T = any> {
                 index,
                 isSelected,
                 isFocused,
-                isMatched: false,
+                isMatched,
                 isDisabled: disabled,
                 // Tree metadata — lets the callback branch on depth / branch-vs-leaf /
                 // tristate without re-deriving any of it from the raw data item.
@@ -1688,7 +1729,21 @@ export class WebMultiSelect<T = any> {
         } else {
             // LOCAL SEARCH PATH
             if (this.isTreeMode()) {
-                // Tree mode filters the hierarchy (matches + their ancestors)
+                if ((this.options.searchMode || 'filter') === 'navigate') {
+                    // NAVIGATE MODE: keep the whole tree visible and jump between matches
+                    // (parity with the flat-list navigate branch below).
+                    const firstMatchIndex = this.rebuildTreeVisibleForNavigate();
+                    if (!this.searchTerm.trim()) {
+                        this.focusedIndex = this.filteredOptions.length > 0 ? 0 : -1;
+                    } else if (firstMatchIndex >= 0) {
+                        this.focusedIndex = firstMatchIndex;
+                    } // else: term with no matches — keep previous focus (flat-navigate parity)
+                    this.renderDropdown();
+                    if (this.focusedIndex >= 0) this.scrollToFocused();
+                    this.updateFullscreenNav();
+                    return;
+                }
+                // FILTER MODE (default): narrow the hierarchy to matches + their ancestors
                 // rather than the flat option list, keeping indentation coherent.
                 this.rebuildTreeVisible();
                 this.matchingIndices.clear();
@@ -2693,6 +2748,37 @@ export class WebMultiSelect<T = any> {
     }
 
     /**
+     * Clip the host document's horizontal overflow while a fullscreen sheet is open.
+     *
+     * A page that overflows horizontally (e.g. an unbreakable-wide token in a heading)
+     * makes the mobile browser SHRINK-TO-FIT: it zooms the page out so the overflow fits,
+     * which desyncs the visual viewport from the layout viewport. Our fullscreen sheet is
+     * `position: fixed` — anchored to the LAYOUT viewport — so under that zoom it no longer
+     * lands flush against the physical screen edges, and the top slips under the system bar
+     * (looks like "the bar covers the sheet"). This is NOT a safe-area problem; safe-area
+     * insets are 0 in that state. Clamping `overflow-x: hidden` on <html>/<body> removes the
+     * overflow, so the browser drops the zoom and the sheet sits flush. Complements
+     * lockBodyScroll() (vertical axis); the saved inline value is restored on close.
+     *
+     * Only <html> is touched (not <body>): clipping the root's horizontal overflow is
+     * enough to collapse the scrollWidth and cancel the shrink-to-fit, and it avoids
+     * conflicting with core's lockBodyScroll(), which owns <body>'s `overflow`. Idempotent.
+     */
+    private clampDocumentOverflowX(): void {
+        if (this.overflowXClamp || typeof document === 'undefined') return;
+        const html = document.documentElement;
+        this.overflowXClamp = { html: html.style.overflowX };
+        html.style.overflowX = 'hidden';
+    }
+
+    /** Restore the <html> `overflow-x` clamped by clampDocumentOverflowX() (no-op if unset). */
+    private releaseDocumentOverflowX(): void {
+        if (!this.overflowXClamp || typeof document === 'undefined') return;
+        document.documentElement.style.overflowX = this.overflowXClamp.html;
+        this.overflowXClamp = null;
+    }
+
+    /**
      * While the fullscreen dropdown is open, keep it sitting above the soft keyboard.
      * Delegates to core's `observeKeyboardInset` (which tracks `window.visualViewport`
      * and pins the panel's height/top so its flex column reflows above the keyboard);
@@ -2793,6 +2879,9 @@ export class WebMultiSelect<T = any> {
         this.dropdown.classList.add('ms__dropdown--fullscreen');
         this.buildFullscreenHeader();
         this.lockBodyScroll();
+        // Drop any host-page horizontal overflow so the browser's shrink-to-fit zoom can't
+        // desync the fixed sheet from the screen (top slipping under the system bar).
+        this.clampDocumentOverflowX();
         // Trap the phone Back gesture/button so it closes the sheet instead of navigating.
         this.pushOverlayHistory();
         // Track the soft keyboard so the sheet shrinks to sit above it (see method doc).
@@ -2833,6 +2922,7 @@ export class WebMultiSelect<T = any> {
             this.fullscreenNavNext = null;
         }
         this.unlockBodyScroll();
+        this.releaseDocumentOverflowX();
     }
 
     /**
@@ -2856,7 +2946,10 @@ export class WebMultiSelect<T = any> {
         if (!this.overlayHistoryActive) return;
         this.overlayHistoryActive = false;
         window.removeEventListener('popstate', this.onOverlayPopstate);
+        // Close whichever fullscreen sheet pushed the entry — the options dropdown or the
+        // selected-items popover (mutually exclusive; showPopover() closes the dropdown first).
         if (this.isOpen) this.close();
+        else if (this.showSelectedPopover) this.hideSelectedPopover();
     }
 
     /** Programmatic close: remove the listener and pop the entry we pushed (so the
@@ -3132,8 +3225,12 @@ export class WebMultiSelect<T = any> {
         if (this.presentationMode === 'fullscreen') {
             // Full-viewport overlay: no anchoring. The popover already renders its own
             // header + close button, so it just needs the modifier class + scroll lock.
+            // Push a history entry too, so the phone Back gesture closes the sheet instead
+            // of navigating the page away (same guard the options dropdown uses).
             this.selectedPopover.classList.add('ms__selected-popover--fullscreen');
             this.lockBodyScroll();
+            this.clampDocumentOverflowX();
+            this.pushOverlayHistory();
         } else {
             this.positionSelectedPopover();
         }
@@ -3146,6 +3243,10 @@ export class WebMultiSelect<T = any> {
         this.selectedPopover.classList.remove('ms__selected-popover--virtual');
         this.selectedPopover.classList.remove('ms__selected-popover--fullscreen');
         this.unlockBodyScroll();
+        this.releaseDocumentOverflowX();
+        // Consume the history entry we pushed on fullscreen open (no-op if a Back gesture
+        // already popped it, or if we were never fullscreen).
+        this.popOverlayHistory();
         this.hideMessage();
         this.selectedPopoverPlacement = null;
 

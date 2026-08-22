@@ -21,37 +21,19 @@ Reads `--base-*` variables from the page if [`@keenmate/theme-designer`](https:/
 - Custom rendering callbacks for options, badges, and group headers.
 - Form integration via standard hidden inputs (FormData-compatible).
 
+## What's New in v2.0.0-rc06
+
+- **Tree search — `search-mode="navigate"` now works on trees** — Navigate mode (keep the whole list on screen and jump focus between matches instead of filtering it down) was silently ignored on tree data: the tree search path always collapsed the hierarchy to matches + ancestors and cleared the match set *before* the navigate branch could run, so `search-mode="navigate"` on a `path-member` tree did nothing. It now honors the mode — the always-expanded tree stays fully visible, matching rows get the highlight, focus jumps to the first match, and the match set powers `Ctrl`+`ArrowUp`/`ArrowDown` on desktop plus the fullscreen `N of M` match navigator (count + prev/next) on touch, which now shows for trees too. Filter mode (the default) is unchanged.
+
+- **Fullscreen overlay — no longer slips under the system bar on pages with horizontal overflow** — A host page that overflows sideways (e.g. an unbreakable-wide token in a heading) makes the mobile browser shrink-to-fit — it zooms the page out so the overflow fits, splitting the visual viewport from the layout viewport. Because the fullscreen dropdown and selected-items popover are `position: fixed` (anchored to the layout viewport), that zoom left them inset from the physical screen and their top edge slid under the status/nav bar — easily misread as a safe-area issue, but `env(safe-area-inset-*)` is `0` in that state. Opening a fullscreen sheet now clamps `overflow-x: hidden` on `<html>` (restored on close), which removes the overflow so the browser drops the zoom and the sheet sits flush — regardless of the host page. No-op when the page doesn't overflow, and touches only `<html>` so it doesn't fight core's body scroll-lock.
+
+- **Fullscreen selected-items popover — Back gesture closes it instead of leaving the page** — The options dropdown already traps the Android Back gesture so it dismisses the fullscreen sheet rather than navigating away, but the selected-items popover — which also goes fullscreen on phones — skipped that guard, so a Back gesture fell through to a real `history(-1)` and left the page (losing the selection view and any unsaved state). The popover now pushes and consumes the same history entry as the dropdown, and the shared handler closes whichever overlay is open. Floating popovers are unaffected.
+
+- **Search results — the current match no longer nudges the row sideways** — The leading accent bar on the current match was a real `border-inline-start` that existed only in the matched state, so the checkbox and label jumped ~3px inward the instant a row became the match — content visibly "walked" as you stepped between results. The bar is now an out-of-flow `::before` overlay pinned to the leading edge, so it paints the same accent without touching the row's box model. Still themeable via `--ms-option-border-matched` and RTL-mirrored.
+
 ## What's New in v2.0.0-rc05
 
 - **Full-screen overlays — content no longer clipped under landscape system bars** — Rotating a phone to landscape with the full-screen dropdown (or the selected-items popover) open used to push the search field and option rows *under* the Android navigation bar and camera cutout — the field looked "too wide for the screen" and each row's leading edge was hidden. Cause: the sheets are `width: 100vw` (the full physical width) with no safe-area handling. They now set `box-sizing: border-box` and inset their content box by `env(safe-area-inset-{top,right,bottom,left})` on all four edges — the background stays edge-to-edge (full-bleed, no corner gaps) while the header · list · actions column is pulled into the visible region, and the fullscreen toast lifts above the bottom safe area. `env()` resolves to `0` unless the host page opts into edge-to-edge, so this is a no-op on non-cutout / letterboxed pages — a fix where needed, never a regression. Consumer note: for the insets to engage the host page must set `<meta name="viewport" content="… viewport-fit=cover">` (the mobile examples/tests now do).
-
-## What's New in v2.0.0-rc04
-
-**Phone search — one-tap clear and a keyboard that gets out of the way** — The
-full-screen search sheet gained the two things it was missing on touch. A clear button
-now sits at the trailing edge of the search field (a distinct Lucide `search-x` glyph,
-so it doesn't read as a second close ✕) to wipe the term in one tap and restore the full
-list. And the soft keyboard, which used to stay pinned open once you focused the field,
-now tucks away on the three natural "done typing" gestures — scrolling the list, tapping
-an option, or pressing Enter/Search — while never dismissing itself mid-type from a
-programmatic scroll-to-match.
-
-**A close button you can make your own** — The full-screen close ✕ is now a themeable
-chip: the new `--ms-fullscreen-close-bg`, `--ms-fullscreen-close-border`, and
-`--ms-fullscreen-close-border-radius` variables turn the bare glyph into a bordered
-button (à la a command-palette close) while the defaults keep it a plain round ✕. Its
-tap target was also fixed — the previously-dead padding around the button in the sheet's
-top-trailing corner (the natural place to reach) now dismisses the sheet, without ever
-stealing taps from the first option row or the search field.
-
-**Right presentation on every device, via core rc07** — This release pins
-`@keenmate/web-components-core` at `1.0.0-rc07` and adopts its reworked
-`resolvePresentation` / `classifyDevice` API. Behavior is unchanged — full-screen on
-phones, floating on tablet and desktop — with one refinement from the new capability
-gate: a narrowed desktop window (fine pointer, hover) now stays `desktop` and keeps its
-floating dropdown at any width, instead of ever flipping to the full-screen sheet.
-
-See `CHANGELOG.md` for the full list.
 
 ## Demos & docs
 

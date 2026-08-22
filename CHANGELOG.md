@@ -5,6 +5,64 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0-rc06] - 2026-08-22 [PUBLISHED]
+
+### Added
+
+- **`search-mode="navigate"` now works on trees.** Navigate mode (keep the whole list
+  visible, jump focus between matches rather than filtering the list down) previously had
+  no effect on tree data: the tree search path short-circuited — calling `rebuildTreeVisible()`
+  (which collapses the hierarchy to matches + ancestors, i.e. filter behavior) and clearing
+  `matchingIndices` — **before** ever reaching the filter/navigate switch, so any `search-mode`
+  set on a tree was silently ignored and always filtered. Tree search now honors the mode:
+  in navigate mode the always-expanded tree stays fully visible, matching rows get the
+  `.ms__option--matched` highlight (and the render-context `isMatched` flag, previously
+  hard-coded `false` for tree nodes), focus jumps to the first match, and the match set drives
+  the same navigation affordances as flat lists — `Ctrl`+`ArrowUp`/`ArrowDown` on desktop and
+  the fullscreen `N of M` match navigator (count + prev/next) on touch, which now appears for
+  trees too. Filter mode (the default) is unchanged. Local search only — async `searchCallback`
+  results remain filter-style for both flat and tree data, as before.
+
+### Fixed
+
+- **Fullscreen sheet slipped under the system bar on host pages with horizontal overflow.**
+  A page that overflows horizontally (e.g. an unbreakable-wide token in a heading) makes the
+  mobile browser **shrink-to-fit** — it zooms the page out so the overflow fits, which desyncs
+  the visual viewport from the layout viewport (measured ~0.956 scale for 21px of overflow).
+  The fullscreen dropdown / selected-items popover are `position: fixed` (anchored to the
+  *layout* viewport), so under that zoom they no longer sit flush against the physical screen
+  and the top edge slid under the status/nav bar — read as "the bar covers the sheet." This was
+  misdiagnosed as a safe-area problem, but `env(safe-area-inset-*)` is `0` in that state (the
+  rc05 landscape fix, correctly, did nothing here). Opening a fullscreen sheet now clamps
+  `overflow-x: hidden` on `<html>` (restored on close), which collapses the page's horizontal
+  overflow so the browser drops the shrink-to-fit zoom and the sheet sits flush — independent of
+  what the host page does. Only `<html>` is touched, so it doesn't conflict with core's
+  `lockBodyScroll()` (which owns `<body>`). No-op on pages that don't overflow.
+
+- **Matched option's leading accent bar shifted the checkbox/label ~3px inward.** In
+  `search-mode="navigate"` (and anywhere a row gets `.ms__option--matched`), the current
+  match's leading-edge accent bar was a real `border-inline-start` on the row. Because the
+  border only existed in the matched state, the checkbox and label *jumped ~3px* (the bar
+  width) toward the inline end the moment a row became the current match — visible as
+  content "walking" sideways while stepping between search results. The bar is now painted
+  as an out-of-flow `::before` overlay (absolutely positioned at the leading edge) instead
+  of a row border, so it never participates in the row's box model and content stays put.
+  It still uses the same `--ms-option-border-matched` shorthand and flips in RTL via the
+  logical `inset-inline-start` / `border-inline-start`. Covers selected+matched too.
+
+- **Fullscreen selected-items popover had no Back-gesture guard — it navigated the page
+  away.** The options dropdown, when opened as a phone fullscreen sheet, pushes a history
+  entry so the Android Back gesture/button *closes the sheet* instead of leaving the page.
+  The **selected-items popover** also goes fullscreen on phones but skipped that guard
+  entirely: opening it pushed nothing, so a Back gesture fell straight through to a real
+  `history(-1)` and navigated away from the page (losing the selection UI and any unsaved
+  state). `showPopover()` now calls `pushOverlayHistory()` in its fullscreen branch (and
+  `hideSelectedPopover()` consumes the entry via `popOverlayHistory()`), and the shared
+  `popstate` handler now closes whichever overlay is open — the dropdown (`isOpen`) or the
+  popover (`showSelectedPopover`). Floating (non-fullscreen) popovers are unaffected (no
+  entry pushed). Covered by new e2e specs in `e2e/search.spec.ts` (fixture picker
+  `popover-fs`).
+
 ## [2.0.0-rc05] - 2026-08-22 [PUBLISHED]
 
 ### Fixed

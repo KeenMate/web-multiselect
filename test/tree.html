@@ -86,6 +86,18 @@
             path-member="path" checkbox-mode="cascade"></web-multiselect>
     </div>
 
+    <div class="fixture">
+        <div class="fixture-label">tree + search-mode="navigate" (keep whole tree, jump between matches)</div>
+        <web-multiselect id="tree-navigate" multiple value-member="value" display-value-member="label"
+            path-member="path" search-mode="navigate"></web-multiselect>
+    </div>
+
+    <div class="fixture">
+        <div class="fixture-label">tree + navigate + forced fullscreen — match navigator (count + prev/next)</div>
+        <web-multiselect id="tree-navigate-fs" multiple value-member="value" display-value-member="label"
+            path-member="path" search-mode="navigate" mobile-presentation="fullscreen"></web-multiselect>
+    </div>
+
     <script type="module">
         import '/src/index.ts';
 
@@ -167,6 +179,10 @@
                 return span;
             };
             renderCtx.options = items;
+
+            // Navigate mode over a tree: whole tree stays visible, matches are jumped between.
+            document.getElementById('tree-navigate').options = items;
+            document.getElementById('tree-navigate-fs').options = items;
         });
     </script>
 </body>

@@ -498,16 +498,16 @@
       multiBadges.valueMember = 'value';
       multiBadges.displayValueMember = 'label';
       multiBadges.subtitleMember = 'subtitle';
-      multiBadges.value = ['react', 'vue'];
       multiBadges.customStylesCallback = customStylesCallback;
+      multiBadges.setSelected(['react', 'vue']);
 
       // Multi select with count
       const multiCount = document.getElementById('multiCount');
       multiCount.options = languages;
       multiCount.valueMember = 'value';
       multiCount.displayValueMember = 'label';
-      multiCount.value = ['typescript', 'javascript', 'rust'];
       multiCount.customStylesCallback = customStylesCallback;
+      multiCount.setSelected(['typescript', 'javascript', 'rust']);
 
       // Grouped
       const groupedEl = document.getElementById('grouped');
@@ -515,8 +515,8 @@
       groupedEl.valueMember = 'value';
       groupedEl.displayValueMember = 'label';
       groupedEl.groupMember = 'group';
-      groupedEl.value = ['react', 'nodejs'];
       groupedEl.customStylesCallback = customStylesCallback;
+      groupedEl.setSelected(['react', 'nodejs']);
     }
 
     // Initialize on DOM ready

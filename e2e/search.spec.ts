@@ -65,6 +65,33 @@ test.describe('navigate mode', () => {
         await input(p).fill('ch');
         await expect(p.locator('.ms__option--matched')).toHaveCount(1);
     });
+
+    // Regression: the current match's leading accent bar used to be a real
+    // `border-inline-start` on the row, which — with the option's box model — shoved the
+    // checkbox/label ~3px inward the moment a row became matched, so content "jumped" as
+    // focus stepped between matches. The bar is now an out-of-flow ::before overlay, so a
+    // row becoming matched must NOT move its checkbox horizontally.
+    test('a row becoming matched does not shift its checkbox (no border reflow)', async ({ page }) => {
+        const p = picker(page, 'navigate');
+        await openDropdown(p);
+
+        // "Cherry" is the sole match for "ch"; grab its row before it's matched.
+        const cherry = p.locator('.ms__option', { hasText: 'Cherry' });
+        const checkbox = cherry.locator('.ms__checkbox');
+        const leftBefore = await checkbox.evaluate(el => el.getBoundingClientRect().left);
+        await expect(cherry).not.toHaveClass(/ms__option--matched/);
+
+        await input(p).fill('ch');
+        await expect(cherry).toHaveClass(/ms__option--matched/);
+
+        const leftAfter = await checkbox.evaluate(el => el.getBoundingClientRect().left);
+        expect(Math.abs(leftAfter - leftBefore)).toBeLessThan(0.5); // no horizontal jump
+
+        // ...but the accent bar is still drawn — as the ::before overlay, not a row border.
+        const barWidth = await cherry.evaluate(el =>
+            getComputedStyle(el, '::before').borderInlineStartWidth);
+        expect(parseFloat(barWidth)).toBeGreaterThan(0);
+    });
 });
 
 test.describe('navigate mode — fullscreen match navigator', () => {
@@ -206,6 +233,73 @@ test.describe('navigate mode — fullscreen match navigator', () => {
         const focusedAfterSelect = await p.evaluate((host: any) =>
             host.shadowRoot?.activeElement?.className ?? null);
         expect(focusedAfterSelect ?? '').not.toContain('ms__input');
+    });
+});
+
+test.describe('fullscreen selected-items popover — Back-gesture guard', () => {
+    // The selected-items popover goes fullscreen on phones too. Like the options sheet it
+    // must push a history entry on open, so the phone Back gesture CLOSES the popover
+    // instead of navigating the page away. Regression: it used to skip the guard entirely,
+    // so a Back gesture fired a real history(-1) and left the page.
+    const popover = (p: Locator) => p.locator('.ms__selected-popover--fullscreen');
+
+    async function openPopoverFullscreen(p: Locator): Promise<void> {
+        // count mode renders a counter badge carrying data-action="show-selected".
+        await p.locator('[data-action="show-selected"]').first().click();
+        await expect(popover(p)).toBeVisible();
+    }
+
+    test('Back gesture closes the popover instead of navigating away', async ({ page }) => {
+        const p = picker(page, 'popover-fs');
+        const url = page.url();
+        const lenBefore = await page.evaluate(() => history.length);
+
+        await openPopoverFullscreen(p);
+        // A history entry was pushed for the open overlay.
+        expect(await page.evaluate(() => history.length)).toBe(lenBefore + 1);
+
+        // Same-document back navigation (what the Back gesture triggers).
+        await page.evaluate(() => history.back());
+
+        await expect(p.locator('.ms__selected-popover--visible')).toHaveCount(0);
+        expect(page.url()).toBe(url); // still on the page, no navigation away
+    });
+
+    test('closing via the ✕ button consumes the pushed history entry', async ({ page }) => {
+        const p = picker(page, 'popover-fs');
+        const onOverlayEntry = () =>
+            page.evaluate(() => !!(history.state && (history.state as any).msOverlay));
+
+        await openPopoverFullscreen(p);
+        expect(await onOverlayEntry()).toBe(true); // sitting on the pushed entry
+
+        await p.locator('.ms__selected-popover-close').click();
+        await expect(p.locator('.ms__selected-popover--visible')).toHaveCount(0);
+
+        await expect.poll(() => onOverlayEntry()).toBe(false); // moved back off it
+    });
+});
+
+test.describe('fullscreen — host-page overflow clamp', () => {
+    // A host page that overflows horizontally makes the mobile browser shrink-to-fit
+    // (zoom out), which desyncs the `position: fixed` sheet from the physical screen so
+    // its top slips under the system bar. Opening a fullscreen sheet clamps <html>'s
+    // overflow-x to remove that zoom; closing restores the prior inline value.
+    const htmlOverflowX = (page: Page) =>
+        page.evaluate(() => document.documentElement.style.overflowX);
+
+    test('clamps <html> overflow-x while open, restores it on close', async ({ page }) => {
+        const p = picker(page, 'navigate-fs');
+
+        const before = await htmlOverflowX(page); // whatever the page had (here: unset)
+
+        await input(p).click();
+        await expect(p.locator('.ms__dropdown--fullscreen')).toBeVisible();
+        expect(await htmlOverflowX(page)).toBe('hidden');
+
+        await p.locator('.ms__fullscreen-close').click();
+        await expect(p.locator('.ms__dropdown--fullscreen')).toBeHidden();
+        expect(await htmlOverflowX(page)).toBe(before); // restored, not left clamped
     });
 });
 

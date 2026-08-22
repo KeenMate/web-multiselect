@@ -139,6 +139,7 @@ el.fullscreenAutofocus = true;</code></pre>
             <div class="form-group" style="max-width:320px;">
                 <label><code>search-mode="navigate"</code></label>
                 <web-multiselect id="nav-fs-select" multiple="true" search-mode="navigate"
+                    badges-display-mode="partial" badges-max-visible="2"
                     value-member="value" display-value-member="label" group-member="group"
                     search-placeholder="Type to jump to matches…"></web-multiselect>
                 <small class="form-text">Fullscreen: type, then use the ↑/↓ next to the count to jump.</small>
@@ -243,6 +244,8 @@ el.fullscreenAutofocus = true;</code></pre>
             // --- 3. fullscreen navigate-mode match navigator ---------
             const navFs = document.getElementById('nav-fs-select');
             navFs.options = options;
+            // Preselect 4 so partial mode shows 2 badges + a "+2 more" counter badge.
+            navFs.setSelected(['0-0', '0-1', '1-0', '2-0']);
             wirePreview('nav-fs-preview', navFs);
 
             // --- 4. RTL ---------------------------------------------

@@ -38,6 +38,11 @@
     </div>
 
     <div class="fixture">
+        <div class="fixture-label">count mode + forced fullscreen — selected-items popover (Back-gesture guard)</div>
+        <web-multiselect id="popover-fs" badges-display-mode="count" mobile-presentation="fullscreen" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture">
         <div class="fixture-label">search-input-mode="readonly"</div>
         <web-multiselect id="readonly" search-input-mode="readonly" value-member="value" display-value-member="label"></web-multiselect>
     </div>
@@ -96,10 +101,14 @@
         customElements.whenDefined('web-multiselect').then(() => {
             for (const id of [
                 'filter', 'navigate', 'navigate-fs', 'filter-fs', 'readonly', 'hidden-input', 'no-search',
-                'empty-msg', 'min-len', 'keep-options', 'clear-on-close', 'before-search'
+                'empty-msg', 'min-len', 'keep-options', 'clear-on-close', 'before-search', 'popover-fs'
             ]) {
                 document.getElementById(id).options = fruits;
             }
+
+            // popover-fs: preselect a few so the count badge (data-action="show-selected")
+            // is present and opens a non-empty fullscreen selected-items popover.
+            document.getElementById('popover-fs').setSelected(['apple', 'banana', 'cherry']);
 
             // keep-options picker — async; below threshold, the initial options stay.
             const keepOptions = document.getElementById('keep-options');

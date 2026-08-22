@@ -90,6 +90,7 @@
   align-items: var(--ms-checkbox-align, center); /* Support checkbox alignment */
   gap: var(--ms-option-gap);
   padding: var(--ms-option-padding);
+  position: relative; /* anchor for the matched leading-accent overlay (::before) */
   min-height: var(--ms-option-min-height, auto);
   color: var(--ms-option-text-color);
   background: var(--ms-option-bg);
@@ -123,7 +124,21 @@
 .ms__option--matched {
   background: var(--ms-option-bg-matched);
   color: var(--ms-option-color-matched, inherit);
-  border-inline-start: var(--ms-option-border-matched); /* leading-edge accent bar; flips in RTL */
+}
+
+/* Leading-edge accent bar for the current match. Painted as an absolutely-positioned
+   overlay rather than a real `border-inline-start` on the row: a border eats into the
+   row's inline size only in the matched state, so the checkbox/label jumped ~3px inward
+   as focus stepped between matches (navigate mode). The overlay is out of flow, so it
+   never shifts content; it still uses the same --ms-option-border-matched shorthand and
+   flips in RTL via the logical inset/border. Covers selected+matched too (same class). */
+.ms__option--matched::before {
+  content: '';
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  border-inline-start: var(--ms-option-border-matched);
+  pointer-events: none;
 }
 
 .ms__option--selected {
@@ -167,10 +182,9 @@
   outline-offset: var(--ms-option-focus-outline-offset);
 }
 
-/* Selected + Matched */
+/* Selected + Matched (the accent bar is drawn by .ms__option--matched::before above) */
 .ms__option--selected.ms__option--matched {
   background: var(--ms-option-bg-selected-matched);
-  border-inline-start: var(--ms-option-border-matched); /* leading-edge accent bar; flips in RTL */
 }
 
 /* Disabled + Selected */
