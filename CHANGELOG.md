@@ -5,6 +5,29 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0-rc05] - 2026-08-22 [PUBLISHED]
+
+### Fixed
+
+- **Full-screen overlays clipped under the landscape system bars / display cutout.**
+  Rotating a phone to landscape with the full-screen dropdown (or the selected-items
+  popover) open pushed the search field and option rows **under the side navigation
+  bar and the camera cutout** — the field looked "too wide for the screen" and each
+  row's leading edge was hidden. Cause: the sheets are `width: 100vw` (the full
+  *physical* width) with no safe-area handling, so their content ran beneath the
+  landscape insets. The sheets now set `box-sizing: border-box` and inset their content
+  box by `env(safe-area-inset-{top,right,bottom,left})` — the background stays
+  edge-to-edge (full-bleed, no corner gaps) while the header · list · actions column is
+  pulled into the visible region. The fullscreen toast also lifts above the bottom
+  safe area. `env()` is `0` unless the page opts into edge-to-edge, so this is a no-op
+  on non-cutout / letterboxed pages — a fix where needed, never a regression.
+  - **Consumer note:** for the insets to be non-zero the host page must set
+    `<meta name="viewport" content="… viewport-fit=cover">` (the mobile examples/tests
+    now do). This is a page-level responsibility the component can't self-serve.
+  - Aligns with BlissFramework `responsive-overlay.md` constraint #4 (four-edge
+    safe-area) / anti-pattern #7 (landscape side-bar clip); the auto-check C-RO-9 now
+    flags a full-screen sheet that lacks left/right insets.
+
 ## [2.0.0-rc04] - 2026-08-20 [PUBLISHED]
 
 ### Added

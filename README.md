@@ -21,6 +21,10 @@ Reads `--base-*` variables from the page if [`@keenmate/theme-designer`](https:/
 - Custom rendering callbacks for options, badges, and group headers.
 - Form integration via standard hidden inputs (FormData-compatible).
 
+## What's New in v2.0.0-rc05
+
+- **Full-screen overlays — content no longer clipped under landscape system bars** — Rotating a phone to landscape with the full-screen dropdown (or the selected-items popover) open used to push the search field and option rows *under* the Android navigation bar and camera cutout — the field looked "too wide for the screen" and each row's leading edge was hidden. Cause: the sheets are `width: 100vw` (the full physical width) with no safe-area handling. They now set `box-sizing: border-box` and inset their content box by `env(safe-area-inset-{top,right,bottom,left})` on all four edges — the background stays edge-to-edge (full-bleed, no corner gaps) while the header · list · actions column is pulled into the visible region, and the fullscreen toast lifts above the bottom safe area. `env()` resolves to `0` unless the host page opts into edge-to-edge, so this is a no-op on non-cutout / letterboxed pages — a fix where needed, never a regression. Consumer note: for the insets to engage the host page must set `<meta name="viewport" content="… viewport-fit=cover">` (the mobile examples/tests now do).
+
 ## What's New in v2.0.0-rc04
 
 **Phone search — one-tap clear and a keyboard that gets out of the way** — The
@@ -46,63 +50,6 @@ stealing taps from the first option row or the search field.
 phones, floating on tablet and desktop — with one refinement from the new capability
 gate: a narrowed desktop window (fine pointer, hover) now stays `desktop` and keeps its
 floating dropdown at any width, instead of ever flipping to the full-screen sheet.
-
-See `CHANGELOG.md` for the full list.
-
-## What's New in v2.0.0-rc03
-
-**Full-screen dropdown on phones (`mobile-presentation`).** On a phone, a dropdown
-that floats next to the input fights the on-screen keyboard. `<web-multiselect>`
-now detects phones and, by default (`mobile-presentation="auto"`), presents the
-open dropdown as a **full-screen overlay** with its own search field and close (✕)
-button — while desktop and tablets keep the familiar floating panel, unchanged. A
-"phone" is a touch-primary device whose **shorter** viewport side is `< 600px`
-(the Material `sw600dp` line), so a phone in **landscape** still gets the overlay
-and tablets never do. The **selected-items popover** goes full-screen on phones
-too, with a matching header. The phone view is scaled up ~1.2× for comfortable
-touch targets via the `--ms-fullscreen-rem` knob (default `12px` vs the base
-`--ms-rem: 10px`) — one value grows rows, text, checkboxes, header and search
-together. Override the mode per instance with `mobile-presentation="floating"`
-(anchored panel everywhere) or `"fullscreen"` (force the overlay on any device —
-handy for previews). Theme it with the new `--ms-fullscreen-*` CSS variables.
-
-```html
-<!-- auto (default): full-screen on phones, floating on desktop/tablet -->
-<web-multiselect mobile-presentation="auto"></web-multiselect>
-
-<!-- never go full-screen -->
-<web-multiselect mobile-presentation="floating"></web-multiselect>
-
-<!-- always full-screen (preview the mobile view on desktop) -->
-<web-multiselect mobile-presentation="fullscreen"></web-multiselect>
-```
-
-This is powered by device/viewport/orientation detection in
-[`@keenmate/web-components-core`](https://www.npmjs.com/package/@keenmate/web-components-core)
-(via `BlissElement`'s `environmentChanged` hook), which this release pins at
-**1.0.0-rc06** — rc04 also **dropped `loglevel`** as a transitive runtime
-dependency. The floating dropdown additionally gains a viewport-width safety cap so
-a wide panel can't overflow the screen edge.
-
-**Right-to-left, done properly — including runtime switching.** Give the element (or
-any ancestor) `dir="rtl"` and the whole component mirrors: the toggle and in-input
-counter move to the left, checkboxes sit on the right of each row, badges reverse,
-and the full-screen overlay mirrors too (search/close swap sides, the match
-navigator flips). RTL is now built on CSS **logical properties** driven by the
-inherited direction, which fixes cases that silently never worked before — the
-dropdown, hint, and selected-popover live in the shadow root, so the old `.ms--rtl`
-override rules never reached them. And flipping `dir` at runtime — an app-wide
-language switch — re-mirrors the live picker without a rebuild (via core rc06's new
-`directionChanged` hook).
-
-**Friendlier phone browsing.** The full-screen sheet opens with the **keyboard
-closed** by default, so you can scan long lists and reach the bottom action buttons
-before typing (opt into immediate type-to-filter with `fullscreen-autofocus="true"`).
-The phone **Back gesture** now closes the sheet instead of navigating the page away.
-In `search-mode="navigate"`, an on-screen **match navigator** (an `N of M` count plus
-prev/next buttons) stands in for the desktop `Ctrl`+`Arrow` match-stepping that touch
-can't do — and the focused match now stays visible above the keyboard instead of
-scrolling behind it. Tapping an option no longer pops the keyboard mid-browse.
 
 See `CHANGELOG.md` for the full list.
 
