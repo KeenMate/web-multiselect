@@ -117,7 +117,7 @@ multiselect.setSelected(['js', 'ts']);
 | Attribute | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `multiple` | `boolean` | `true` | Allow multiple selections |
-| `search-placeholder` | `string` | `'Search...'` | Placeholder text shown while search is usable |
+| `search-placeholder` | `string` | `'Search...'` | Placeholder text shown while search is usable. When unset and `show-search-mode-toggle` is on, the default becomes mode-aware (`Search…` in navigate, `Filter…` in filter) and switches with the toggle; an explicit value always wins and stays fixed |
 | `select-placeholder` | `string` | `'Pick an option...'` | Placeholder shown when search is disabled (`enable-search="false"`, or `search-input-mode` `readonly`/`hidden`) — the input acts as a picker, not a search box |
 | `no-data-placeholder` | `string` | - | Opt-in placeholder shown when the option list is empty, so users see there's no data without opening. Highest priority when the list is empty. Useful for cascade multiselects (a child whose parent isn't resolved yet) |
 | `search-hint` | `string` | - | Hint text shown above input when focused |
@@ -155,6 +155,7 @@ multiselect.setSelected(['js', 'ts']);
 | `enable-search` | `boolean` | `true` | Enable/disable search functionality |
 | `search-input-mode` | `'normal' \| 'readonly' \| 'hidden'` | `'normal'` | Search input display mode |
 | `search-mode` | `'filter' \| 'navigate'` | `'filter'` | Search behavior: `filter` hides non-matches, `navigate` jumps to matches |
+| `show-search-mode-toggle` | `boolean` | `false` | In the phone fullscreen overlay, show a leading icon in the search bar that flips `search-mode` between `filter` and `navigate` live (no reopen). Fullscreen-only |
 | `allow-add-new` | `boolean` | `false` | Allow adding new options not in the list |
 | `value-member` | `string` | - | Property name for value/ID extraction from custom objects |
 | `display-value-member` | `string` | - | Property name for display text extraction from custom objects |

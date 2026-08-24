@@ -71,7 +71,7 @@ const cb = (): ReturnType<typeof toFunction> => toFunction();
 const INPUTS: readonly InputDef[] = [
   // ── Strings (cosmetic → update). Optional ones are nullable: absent → null ─
   { configKey: 'searchHint',              attribute: 'search-hint',                 converter: toText({ isNullable: true }),            on: 'update', description: 'Small hint text shown beneath the search input.' },
-  { configKey: 'searchPlaceholder',       attribute: 'search-placeholder',          converter: toText({ default: 'Search...' }),      on: 'update', description: 'Placeholder text for the search input.' },
+  { configKey: 'searchPlaceholder',       attribute: 'search-placeholder',          converter: toText({ isNullable: true }),          on: 'update', description: 'Placeholder text for the search input. When unset it defaults to "Search..."; if `show-search-mode-toggle` is on, the default instead becomes mode-aware ("Search…" in navigate, "Filter…" in filter). An explicit value always wins and stays fixed.' },
   { configKey: 'selectPlaceholder',       attribute: 'select-placeholder',          converter: toText({ default: 'Pick an option...' }), on: 'update', description: 'Placeholder shown on the control when nothing is selected.' },
   { configKey: 'noDataPlaceholder',       attribute: 'no-data-placeholder',         converter: toText({ isNullable: true }),            on: 'update', description: 'Text shown when there are no options at all.' },
   { configKey: 'dropdownMinWidth',        attribute: 'dropdown-min-width',          converter: toText({ isNullable: true }),            on: 'update', description: 'Minimum width of the dropdown panel (any CSS length).' },
@@ -167,6 +167,7 @@ Tree + multiple only.` },
   { configKey: 'isBadgeTooltipsEnabled',  attribute: 'enable-badge-tooltips',       converter: toBool('default-false'), on: 'update', description: 'Enable tooltips on badges.' },
   { configKey: 'isOptionTooltipsEnabled', attribute: 'enable-option-tooltips',      converter: toBool('default-false'), on: 'update', description: 'Enable tooltips on options.' },
   { configKey: 'isOptionTooltipFollowCursor', attribute: 'option-tooltip-follow-cursor', converter: toBool('default-false'), on: 'update', description: 'Make option tooltips follow the pointer.' },
+  { configKey: 'isSearchModeToggleShown',  attribute: 'show-search-mode-toggle',      converter: toBool('default-false'), on: 'update', description: 'Show a clickable toggle in the phone fullscreen overlay search header that flips `search-mode` between `filter` and `navigate` live. Fullscreen-only; no effect in the floating presentation or when search is disabled.' },
 
   // ── Special attributes ───────────────────────────────────────────────────
   { configKey: 'initialValues',           attribute: 'initial-values',              converter: toInitialValues(), default: [], on: 'reinit', type: 'Array<string | number>', description: 'Values selected on first render. Accepts a JSON array (`["a","b"]`) or a bare CSV (`a,b,c`).' },

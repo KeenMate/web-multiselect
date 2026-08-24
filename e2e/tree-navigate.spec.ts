@@ -132,3 +132,68 @@ test.describe('tree — navigate mode (fullscreen match navigator)', () => {
         await expect(p.locator('.ms__fullscreen-nav-btn--prev')).toBeDisabled();
     });
 });
+
+test.describe('tree — fullscreen search-mode toggle (show-search-mode-toggle)', () => {
+    const fsSearch = (p: Locator) => p.locator('.ms__fullscreen-search');
+    const nav = (p: Locator) => p.locator('.ms__fullscreen-nav');
+    const toggle = (p: Locator) => p.locator('.ms__fullscreen-mode-toggle');
+
+    // Fixture tree-navigate-fs-toggle starts in FILTER mode, so the toggle builds the
+    // navigator on demand when switched to navigate. Term "e" matches 4 of 8.
+    async function openFullscreen(p: Locator): Promise<void> {
+        await input(p).click();
+        await expect(p.locator('.ms__dropdown--fullscreen')).toBeVisible();
+    }
+
+    test('toggle reflects the current mode and is present at the search leading edge', async ({ page }) => {
+        const p = picker(page, 'tree-navigate-fs-toggle');
+        await openFullscreen(p);
+        // Starts in filter mode → funnel icon, label points to the other mode.
+        await expect(toggle(p)).toHaveAttribute('data-mode', 'filter');
+        await expect(toggle(p)).toHaveAttribute('aria-label', 'Switch to navigate mode');
+    });
+
+    test('the placeholder is mode-aware and switches with the toggle', async ({ page }) => {
+        const p = picker(page, 'tree-navigate-fs-toggle');
+        await openFullscreen(p);
+        // No explicit search-placeholder + toggle on → mode-aware default.
+        await expect(fsSearch(p)).toHaveAttribute('placeholder', 'Filter…');
+        await toggle(p).click();
+        await expect(fsSearch(p)).toHaveAttribute('placeholder', 'Search…');
+        await toggle(p).click();
+        await expect(fsSearch(p)).toHaveAttribute('placeholder', 'Filter…');
+    });
+
+    test('clicking flips filter → navigate live: whole tree returns, navigator appears', async ({ page }) => {
+        const p = picker(page, 'tree-navigate-fs-toggle');
+        await openFullscreen(p);
+
+        // Filter mode: typing narrows the tree to matches + ancestors, no navigator.
+        await fsSearch(p).fill('e');
+        await expect(nav(p)).toBeHidden();
+        await expect(options(p)).toHaveCount(5); // Fruit>Apple, Pear, Vegetables>Kale (matches + ancestors)
+
+        // Flip to navigate in place — no reopen.
+        await toggle(p).click();
+        await expect(p.locator('.ms__dropdown--fullscreen')).toBeVisible(); // still open
+        await expect(toggle(p)).toHaveAttribute('data-mode', 'navigate');
+        await expect(options(p)).toHaveCount(8); // whole tree back
+        await expect(matched(p)).toHaveCount(4);
+        await expect(nav(p)).toBeVisible();
+        await expect(p.locator('.ms__fullscreen-nav-count')).toHaveText('1 of 4');
+    });
+
+    test('flipping navigate → filter removes the navigator and re-narrows the list', async ({ page }) => {
+        const p = picker(page, 'tree-navigate-fs-toggle');
+        await openFullscreen(p);
+        await fsSearch(p).fill('e');
+
+        await toggle(p).click(); // → navigate
+        await expect(nav(p)).toBeVisible();
+
+        await toggle(p).click(); // → filter
+        await expect(toggle(p)).toHaveAttribute('data-mode', 'filter');
+        await expect(nav(p)).toBeHidden();
+        await expect(options(p)).toHaveCount(5);
+    });
+});

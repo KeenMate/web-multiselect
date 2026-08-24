@@ -76,8 +76,11 @@ h1 {
     color: #2d3748;
     font-size: 1.5rem;
     /* Flex so an inline `.badge` sits centered next to the heading text.
-       Single-child headings (the common case) render identically. */
+       Single-child headings (the common case) render identically. `flex-wrap`
+       keeps longer headings that mix text with inline `<code>` chips flowing
+       onto new lines instead of squishing each flex item to one word per line. */
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 0.5rem;
 }

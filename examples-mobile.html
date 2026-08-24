@@ -119,39 +119,55 @@ el.fullscreenAutofocus = true;</code></pre>
         <!-- 3. fullscreen navigate-mode match navigator                 -->
         <!-- ============================================================ -->
         <div class="card">
-            <h2>3 · fullscreen <code>search-mode="navigate"</code> — match navigator</h2>
+            <h2>3 · <code>filter</code> vs <code>navigate</code> — live switch</h2>
             <p>
-                In <code>search-mode="navigate"</code> the list stays whole and typing <em>jumps focus</em>
-                to matches instead of hiding non-matches. On desktop you step through them with
-                <kbd>Ctrl</kbd>+<kbd>↑</kbd>/<kbd>↓</kbd> — but touch has no such shortcut. So in the
-                <strong>fullscreen overlay</strong> a <strong>match navigator</strong> appears under the search
-                box: a <code>N of M</code> result count plus <strong>prev/next</strong> buttons that walk the
-                matches. It shows up only once you type, and the buttons disable when nothing matches.
+                <code>search-mode</code> decides what typing does. In <strong>filter</strong> (the default)
+                non-matches are hidden and the list shrinks to the results. In <strong>navigate</strong> the
+                list stays <em>whole</em> and typing <em>jumps focus</em> between matches instead. On desktop
+                you step through matches with <kbd>Ctrl</kbd>+<kbd>↑</kbd>/<kbd>↓</kbd> — but touch has no such
+                shortcut, so in the <strong>fullscreen overlay</strong> a <strong>match navigator</strong>
+                appears under the search box: a <code>N of M</code> count plus <strong>prev/next</strong>
+                buttons that walk the matches. It shows only in navigate mode, only once you type, and the
+                buttons disable when nothing matches.
             </p>
             <p>
-                The picker below uses <code>mobile-presentation="auto"</code>, so on desktop it's a normal
-                floating dropdown. Tick <em>Preview as fullscreen</em> to force the overlay here, then type
-                (e.g. <code>e</code>) to see the navigator.
+                Type (e.g. <code>e</code>) to feel the difference in the same overlay. There are two ways to
+                switch here: the <strong>built-in toggle</strong> — the leading icon in the overlay's search
+                bar (magnifier = navigate, funnel = filter), enabled with
+                <code>show-search-mode-toggle</code> — flips the mode <em>in place</em> without closing the
+                sheet; the host-page radios below do the same by setting the <code>search-mode</code> attribute.
+                The picker uses <code>mobile-presentation="auto"</code>, so on desktop it's a normal floating
+                dropdown — tick <em>Preview as fullscreen</em> to force the overlay and reveal the built-in toggle.
             </p>
+            <div class="controls">
+                <span>Search mode:</span>
+                <label><input type="radio" name="nav-fs-mode" value="filter"> <code>filter</code></label>
+                <label><input type="radio" name="nav-fs-mode" value="navigate" checked> <code>navigate</code></label>
+            </div>
             <label class="toggle-label">
                 <input type="checkbox" id="nav-fs-preview"> Preview as fullscreen (desktop)
             </label>
             <div class="form-group" style="max-width:320px;">
-                <label><code>search-mode="navigate"</code></label>
-                <web-multiselect id="nav-fs-select" multiple="true" search-mode="navigate"
+                <label>live <code>search-mode</code> switch</label>
+                <web-multiselect id="nav-fs-select" multiple="true" search-mode="navigate" show-search-mode-toggle
                     badges-display-mode="partial" badges-max-visible="2"
-                    value-member="value" display-value-member="label" group-member="group"
-                    search-placeholder="Type to jump to matches…"></web-multiselect>
-                <small class="form-text">Fullscreen: type, then use the ↑/↓ next to the count to jump.</small>
+                    value-member="value" display-value-member="label" group-member="group"></web-multiselect>
+                <small class="form-text">Fullscreen: tap the leading icon in the search bar to switch. navigate: type, then use the ↑/↓ next to the count to jump. filter: the list narrows to matches.</small>
             </div>
 
             <details class="mt-1">
                 <summary>Show code</summary>
-<pre><code>&lt;!-- navigate mode: matches are highlighted, focus jumps between them --&gt;
-&lt;web-multiselect search-mode="navigate"&gt;&lt;/web-multiselect&gt;
+<pre><code>&lt;!-- navigate mode + a built-in in-overlay mode toggle (fullscreen only) --&gt;
+&lt;web-multiselect search-mode="navigate" show-search-mode-toggle&gt;&lt;/web-multiselect&gt;
 
-&lt;!-- On phones (fullscreen overlay) a count + prev/next navigator
-     appears under the search box automatically. Desktop uses
+&lt;!-- show-search-mode-toggle adds a clickable icon at the search field's leading
+     edge in the fullscreen sheet; tapping it flips filter&lt;-&gt;navigate in place. --&gt;
+
+&lt;!-- Or switch from the host page — it's just an attribute --&gt;
+picker.setAttribute('search-mode', 'filter');   // or 'navigate'
+
+&lt;!-- On phones (fullscreen overlay) navigate mode adds a count + prev/next
+     navigator under the search box automatically. Desktop uses
      Ctrl+ArrowUp / Ctrl+ArrowDown for the same jumps. --&gt;</code></pre>
             </details>
         </div>
@@ -229,6 +245,16 @@ el.fullscreenAutofocus = true;</code></pre>
                 });
             };
 
+            // A radio group that flips search-mode ('filter' | 'navigate') at runtime —
+            // it's just an attribute, so the same open overlay re-renders in the new mode.
+            const wireSearchMode = (radioName, el) => {
+                document.querySelectorAll(`input[name="${radioName}"]`).forEach((r) => {
+                    r.addEventListener('change', () => {
+                        if (r.checked) el.setAttribute('search-mode', r.value);
+                    });
+                });
+            };
+
             // --- 1. mobile-presentation intro ------------------------
             const intro = document.getElementById('intro-select');
             intro.options = options;
@@ -247,6 +273,7 @@ el.fullscreenAutofocus = true;</code></pre>
             // Preselect 4 so partial mode shows 2 badges + a "+2 more" counter badge.
             navFs.setSelected(['0-0', '0-1', '1-0', '2-0']);
             wirePreview('nav-fs-preview', navFs);
+            wireSearchMode('nav-fs-mode', navFs);
 
             // --- 4. RTL ---------------------------------------------
             const rtlSelect = document.getElementById('rtl-select');

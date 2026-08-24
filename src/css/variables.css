@@ -375,6 +375,15 @@
   --ms-fullscreen-search-clear-gutter: calc(3.4 * var(--ms-fullscreen-rem));
   --ms-fullscreen-search-clear-color: var(--ms-text-muted-color, var(--ms-dropdown-text-color));
   --ms-fullscreen-search-clear-bg-hover: var(--ms-option-bg-matched, transparent);
+  /* Leading search-mode toggle (opt-in): a small round mask-icon button at the field's
+     leading edge, sized like the clear button. Icon swaps by mode (see the [data-mode]
+     rules in floating.css). */
+  --ms-fullscreen-mode-toggle-size: calc(2.8 * var(--ms-fullscreen-rem));
+  --ms-fullscreen-mode-toggle-icon-size: calc(1.5 * var(--ms-fullscreen-rem));
+  --ms-fullscreen-mode-toggle-gap: calc(0.4 * var(--ms-fullscreen-rem));
+  --ms-fullscreen-mode-toggle-color: var(--ms-text-muted-color, var(--ms-dropdown-text-color));
+  --ms-fullscreen-mode-toggle-bg: transparent;
+  --ms-fullscreen-mode-toggle-bg-hover: var(--ms-option-bg-matched, transparent);
   --ms-fullscreen-close-size: calc(3.6 * var(--ms-fullscreen-rem));
   --ms-fullscreen-close-icon-size: calc(1.6 * var(--ms-fullscreen-rem));
   --ms-fullscreen-close-color: var(--ms-dropdown-text-color);
@@ -414,7 +423,12 @@
   --ms-fullscreen-nav-btn-icon-size: calc(1.6 * var(--ms-fullscreen-rem));
   --ms-fullscreen-nav-btn-color: var(--ms-dropdown-text-color);
   --ms-fullscreen-nav-btn-bg: var(--ms-option-bg-matched, transparent);
-  --ms-fullscreen-nav-btn-bg-hover: var(--ms-accent-color-light, var(--ms-option-bg-matched, transparent));
+  /* Hover = a stronger accent tint than the resting state (8%). A translucent color-mix
+     of the accent adapts to any panel background — unlike --ms-accent-color-light, which is
+     a fixed light-dark() pair that resolves to its pale light branch on dark themes that set
+     --base-* colors but not color-scheme (e.g. the neon example), producing a jarring near-white
+     chip. Stays fully themeable via this variable. */
+  --ms-fullscreen-nav-btn-bg-hover: color-mix(in srgb, var(--ms-accent-color) 22%, transparent);
   /* SVG chevron glyph — rendered via mask so it inherits the button color via currentColor.
      Points up; the "next" button flips it with scaleY(-1). Override with any mask-friendly SVG. */
   --ms-icon-chevron: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M5 15l7-7 7 7' stroke='black' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round' fill='none'/></svg>");
@@ -527,7 +541,12 @@
   --ms-option-subtitle-line-height: var(--base-line-height-tight, 1.25);
 
   /* Checkbox */
-  --ms-checkbox-margin-top: calc(0.2 * var(--ms-rem));
+  /* Zero by default: the row centers the checkbox via `align-items: center`, so any
+     top margin would decenter it (the checkbox sat ~1px low against the label — most
+     visible in fullscreen where --ms-rem is larger). The small top nudge is only
+     meaningful when the checkbox aligns to the top of a wrapping label; it's applied
+     there via [data-checkbox-align="top"] in options.css. */
+  --ms-checkbox-margin-top: 0;
   --ms-checkbox-margin-right: 0;
   --ms-checkbox-margin-bottom: 0;
   --ms-checkbox-margin-left: 0;
@@ -624,6 +643,12 @@
      ✕. Rendered via mask, so it inherits its color via currentColor; override with any
      mask-friendly SVG url(). */
   --ms-icon-search-clear: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='m13.5 8.5-5 5'/><path d='m8.5 8.5 5 5'/><circle cx='11' cy='11' r='8'/><path d='m21 21-4.3-4.3'/></svg>");
+  /* Mode-toggle glyphs for the fullscreen search-mode switch. The button shows the
+     CURRENT mode: a plain magnifier (Lucide `search`) for navigate, a funnel (Lucide
+     `filter`) for filter. Rendered via mask (inherit color via currentColor); override
+     with any mask-friendly SVG url(). */
+  --ms-icon-search: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><circle cx='11' cy='11' r='8'/><path d='m21 21-4.3-4.3'/></svg>");
+  --ms-icon-filter: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><polygon points='22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3'/></svg>");
 
   /* Badge Counter Indicator (layout-only properties, colors come from semantic section) */
   --ms-badge-counter-bg: transparent;

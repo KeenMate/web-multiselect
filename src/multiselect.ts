@@ -78,6 +78,10 @@ export class WebMultiSelect<T = any> {
     // Inline ✕ inside the fullscreen search box that clears the term. Shown only while
     // there's text; touch has no keyboard Escape, so this is the way to reset a search.
     private fullscreenSearchClear: HTMLButtonElement | null = null;
+    // Leading mode toggle inside the fullscreen search box (opt-in via
+    // isSearchModeToggleShown) that flips searchMode filter<->navigate live. Its icon
+    // reflects the current mode; clicking re-projects the current term in place.
+    private fullscreenModeToggle: HTMLButtonElement | null = null;
     // Navigate-mode match navigator shown under the fullscreen search box: a result
     // count ("3 of 12") plus prev/next buttons that step through matches. Touch has no
     // Ctrl+Arrow shortcut, so these buttons are the on-screen substitute. Only built in
@@ -329,7 +333,7 @@ export class WebMultiSelect<T = any> {
         this.options = {
             // String options
             searchHint: element.dataset.searchHint || '',
-            searchPlaceholder: element.dataset.searchPlaceholder || 'Search...',
+            searchPlaceholder: element.dataset.searchPlaceholder || undefined,
             selectPlaceholder: element.dataset.selectPlaceholder || 'Pick an option...',
             noDataPlaceholder: element.dataset.noDataPlaceholder || undefined,
             dropdownMinWidth: element.dataset.dropdownMinWidth || undefined,
@@ -358,6 +362,7 @@ export class WebMultiSelect<T = any> {
             isSearchEnabled: element.dataset.enableSearch !== 'false',
             isAddNewAllowed: element.dataset.allowAddNew === 'true',
             isCounterShown: element.dataset.showCounter === 'true',
+            isSearchModeToggleShown: element.dataset.showSearchModeToggle === 'true',
             isKeepOptionsOnSearch: element.dataset.keepOptionsOnSearch !== 'false',
             shouldKeepSearchOnClose: element.dataset.keepSearchOnClose !== 'false',
 
@@ -1369,9 +1374,31 @@ export class WebMultiSelect<T = any> {
             return this.options.noDataPlaceholder;
         }
         if (!this.isSearchUsable) {
-            return this.options.selectPlaceholder || this.options.searchPlaceholder;
+            return this.options.selectPlaceholder || this.getSearchPlaceholder();
         }
-        return this.options.searchPlaceholder;
+        return this.getSearchPlaceholder();
+    }
+
+    /**
+     * The search field placeholder. An explicit `searchPlaceholder` always wins and stays
+     * fixed. Otherwise the default is "Search..." — except when the in-overlay mode toggle
+     * is enabled (`isSearchModeToggleShown`), where it becomes mode-aware so the field labels
+     * the current behavior: "Search…" in navigate mode, "Filter…" in filter mode. Refreshed
+     * on a live mode switch (see setSearchModeLive → refreshSearchPlaceholder).
+     */
+    private getSearchPlaceholder(): string {
+        if (this.options.searchPlaceholder) return this.options.searchPlaceholder;
+        if (this.options.isSearchModeToggleShown) {
+            return (this.options.searchMode || 'filter') === 'navigate' ? 'Search…' : 'Filter…';
+        }
+        return 'Search...';
+    }
+
+    /** Re-apply the (possibly mode-aware) placeholder to the live inputs after a mode switch. */
+    private refreshSearchPlaceholder(): void {
+        const ph = this.getPlaceholderText();
+        if (this.input) this.input.placeholder = ph;
+        if (this.fullscreenSearchInput) this.fullscreenSearchInput.placeholder = ph;
     }
 
     private renderBadges(): void {
@@ -2916,6 +2943,7 @@ export class WebMultiSelect<T = any> {
             this.fullscreenHeader = null;
             this.fullscreenSearchInput = null;
             this.fullscreenSearchClear = null;
+            this.fullscreenModeToggle = null;
             this.fullscreenNav = null;
             this.fullscreenNavCount = null;
             this.fullscreenNavPrev = null;
@@ -2982,6 +3010,22 @@ export class WebMultiSelect<T = any> {
             const searchWrapper = document.createElement('div');
             searchWrapper.className = 'ms__fullscreen-search-wrapper';
 
+            // Opt-in leading mode toggle (filter <-> navigate). Built first so it sits at
+            // the field's leading edge: [toggle][input …clear]. Readonly search can still
+            // switch modes (the mode governs how the list reacts, not typing), so it's not
+            // gated on the readonly branch like the clear button is.
+            if (this.options.isSearchModeToggleShown) {
+                const toggle = document.createElement('button');
+                toggle.type = 'button';
+                toggle.className = 'ms__fullscreen-mode-toggle';
+                // Don't blur the search field on tap (parity with the clear button), then
+                // flip the mode and restore focus in the click handler.
+                toggle.addEventListener('mousedown', (e) => e.preventDefault());
+                toggle.addEventListener('click', () => this.toggleSearchModeLive());
+                searchWrapper.appendChild(toggle);
+                this.fullscreenModeToggle = toggle;
+            }
+
             const search = document.createElement('input');
             search.type = 'text';
             search.className = 'ms__fullscreen-search';
@@ -3031,48 +3075,108 @@ export class WebMultiSelect<T = any> {
         header.appendChild(close);
 
         // Navigate mode keeps the whole list visible and jumps focus between matches.
-        // Desktop uses Ctrl+Arrow for that; touch has no such shortcut, so append a
-        // match navigator (count + prev/next) that wraps onto its own row under the
-        // search box (header is flex-wrap; the nav takes 100% basis). Filter mode
-        // shrinks the list to matches, so it needs no jump UI.
-        if (this.options.isSearchEnabled && (this.options.searchMode || 'filter') === 'navigate') {
-            const nav = document.createElement('div');
-            nav.className = 'ms__fullscreen-nav';
-
-            const count = document.createElement('span');
-            count.className = 'ms__fullscreen-nav-count';
-            nav.appendChild(count);
-
-            const controls = document.createElement('div');
-            controls.className = 'ms__fullscreen-nav-controls';
-
-            const prev = document.createElement('button');
-            prev.type = 'button';
-            prev.className = 'ms__fullscreen-nav-btn ms__fullscreen-nav-btn--prev';
-            prev.setAttribute('aria-label', 'Previous match');
-            prev.addEventListener('click', () => this.focusPreviousMatch());
-
-            const next = document.createElement('button');
-            next.type = 'button';
-            next.className = 'ms__fullscreen-nav-btn ms__fullscreen-nav-btn--next';
-            next.setAttribute('aria-label', 'Next match');
-            next.addEventListener('click', () => this.focusNextMatch());
-
-            controls.appendChild(prev);
-            controls.appendChild(next);
-            nav.appendChild(controls);
-            header.appendChild(nav);
-
-            this.fullscreenNav = nav;
-            this.fullscreenNavCount = count;
-            this.fullscreenNavPrev = prev;
-            this.fullscreenNavNext = next;
-        }
-
+        // Desktop uses Ctrl+Arrow for that; touch has no such shortcut, so append a match
+        // navigator (count + prev/next). Filter mode shrinks the list to matches, so it
+        // needs no jump UI. Only built in navigate mode; the live mode toggle builds/tears
+        // it down on switch (ensureFullscreenNav / removeFullscreenNav).
         this.dropdown.insertBefore(header, this.dropdownInner);
         this.fullscreenHeader = header;
+        if (this.options.isSearchEnabled && (this.options.searchMode || 'filter') === 'navigate') {
+            this.ensureFullscreenNav();
+        }
+        this.updateFullscreenModeToggle();
         this.updateFullscreenNav();
         this.updateFullscreenSearchClear();
+    }
+
+    /** Build the navigate-mode match navigator (count + prev/next) and append it to the
+     *  fullscreen header, once. No-op if already built or the header isn't present. The
+     *  nav wraps onto its own full-width row under the search box (header is flex-wrap;
+     *  the nav takes 100% basis). */
+    private ensureFullscreenNav(): void {
+        if (this.fullscreenNav || !this.fullscreenHeader) return;
+
+        const nav = document.createElement('div');
+        nav.className = 'ms__fullscreen-nav';
+
+        const count = document.createElement('span');
+        count.className = 'ms__fullscreen-nav-count';
+        nav.appendChild(count);
+
+        const controls = document.createElement('div');
+        controls.className = 'ms__fullscreen-nav-controls';
+
+        const prev = document.createElement('button');
+        prev.type = 'button';
+        prev.className = 'ms__fullscreen-nav-btn ms__fullscreen-nav-btn--prev';
+        prev.setAttribute('aria-label', 'Previous match');
+        prev.addEventListener('click', () => this.focusPreviousMatch());
+
+        const next = document.createElement('button');
+        next.type = 'button';
+        next.className = 'ms__fullscreen-nav-btn ms__fullscreen-nav-btn--next';
+        next.setAttribute('aria-label', 'Next match');
+        next.addEventListener('click', () => this.focusNextMatch());
+
+        controls.appendChild(prev);
+        controls.appendChild(next);
+        nav.appendChild(controls);
+        this.fullscreenHeader.appendChild(nav);
+
+        this.fullscreenNav = nav;
+        this.fullscreenNavCount = count;
+        this.fullscreenNavPrev = prev;
+        this.fullscreenNavNext = next;
+    }
+
+    /** Remove the match navigator (switching to filter mode, which has no jump UI). */
+    private removeFullscreenNav(): void {
+        if (!this.fullscreenNav) return;
+        this.fullscreenNav.remove();
+        this.fullscreenNav = null;
+        this.fullscreenNavCount = null;
+        this.fullscreenNavPrev = null;
+        this.fullscreenNavNext = null;
+    }
+
+    /** Flip searchMode filter<->navigate from the in-overlay toggle. */
+    private toggleSearchModeLive(): void {
+        const next: SearchMode = (this.options.searchMode || 'filter') === 'navigate' ? 'filter' : 'navigate';
+        this.setSearchModeLive(next);
+    }
+
+    /**
+     * Switch searchMode in place — the overlay's toggle path. The `search-mode` attribute
+     * is reinit-on-change (it rebuilds and closes the overlay); this instead mutates the
+     * live config, adds/removes the match navigator to match, and re-projects the current
+     * term under the new mode (filter narrows the list / navigate keeps all + highlights),
+     * all without tearing the open sheet down. Focus stays on the search field.
+     */
+    private setSearchModeLive(mode: SearchMode): void {
+        if ((this.options.searchMode || 'filter') === mode) return;
+        this.options.searchMode = mode;
+        if (mode === 'navigate') this.ensureFullscreenNav();
+        else this.removeFullscreenNav();
+        this.updateFullscreenModeToggle();
+        this.refreshSearchPlaceholder();
+        // Re-run the current search so the list re-projects under the new mode. handleSearch
+        // reads the (now-updated) searchMode and refreshes the navigator via updateFullscreenNav.
+        void this.handleSearch(this.searchTerm);
+        this.fullscreenSearchInput?.focus();
+    }
+
+    /** Sync the mode toggle's icon (via data-mode) and labels with the current searchMode.
+     *  No-op when the toggle isn't built (opt-out, floating panel, or search hidden). */
+    private updateFullscreenModeToggle(): void {
+        if (!this.fullscreenModeToggle) return;
+        const mode = (this.options.searchMode || 'filter');
+        this.fullscreenModeToggle.dataset.mode = mode;
+        // The button switches TO the other mode; label it by the action, expose current
+        // mode via aria-pressed(=navigate) for assistive tech.
+        const target = mode === 'navigate' ? 'filter' : 'navigate';
+        this.fullscreenModeToggle.setAttribute('aria-label', `Switch to ${target} mode`);
+        this.fullscreenModeToggle.setAttribute('title', `Switch to ${target} mode`);
+        this.fullscreenModeToggle.setAttribute('aria-pressed', String(mode === 'navigate'));
     }
 
     /**

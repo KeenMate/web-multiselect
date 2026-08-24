@@ -209,6 +209,20 @@
   border-bottom: var(--ms-fullscreen-header-border);
 }
 
+/* Keep the search field's top padding constant whether or not the navigate-mode nav row
+   is showing. The dropdown header wraps the nav onto a second line; with the default
+   `align-content` a single line is re-centered inside the header's min-height, so when the
+   nav appears the freed slack snapped the search field up a few px. Top-anchor the wrapped
+   lines instead, and give the first-row search wrapper the bar's min-height (minus the
+   header's vertical padding) so single-row mode still fills the bar with no bottom gap. */
+.ms__fullscreen-header {
+  align-content: flex-start;
+}
+
+.ms__fullscreen-header > .ms__fullscreen-search-wrapper {
+  min-height: var(--ms-fullscreen-header-min-height);
+}
+
 /* Match navigator (navigate searchMode only): result count on the lead edge, round
    prev/next buttons on the trailing edge, forced onto its own full-width row. Hidden
    inline (display:none) by JS until there's a search term. */
@@ -279,10 +293,13 @@
   min-width: 0;
 }
 
-/* Positioned context for the inline clear (✕); the input fills it fully. */
+/* Positioned context for the inline clear (✕); the input fills it fully. Center the
+   cross axis so the optional leading mode toggle (shorter than the padded input) sits
+   on the input's vertical center rather than at the top of the field. */
 .ms__fullscreen-search-wrapper {
   position: relative;
   display: flex;
+  align-items: center;
 }
 
 /* Popover title typography in fullscreen (matches a header title, not the small
@@ -346,6 +363,49 @@
   /* Lucide search-x (magnifier + x), not the bare ✕ — see --ms-icon-search-clear. */
   -webkit-mask: var(--ms-icon-search-clear) center / contain no-repeat;
           mask: var(--ms-icon-search-clear) center / contain no-repeat;
+}
+
+/* Leading search-mode toggle (opt-in: show-search-mode-toggle). In-flow at the field's
+   leading edge — [toggle][input …clear] — so it pushes the input rather than overlaying
+   it (unlike the absolutely-pinned clear). The icon reflects the current mode and swaps
+   via the [data-mode] rules below; JS flips the mode in place on click. */
+.ms__fullscreen-mode-toggle {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--ms-fullscreen-mode-toggle-size);
+  height: var(--ms-fullscreen-mode-toggle-size);
+  margin-inline-end: var(--ms-fullscreen-mode-toggle-gap);
+  padding: 0;
+  color: var(--ms-fullscreen-mode-toggle-color);
+  background: var(--ms-fullscreen-mode-toggle-bg);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.ms__fullscreen-mode-toggle:hover {
+  background: var(--ms-fullscreen-mode-toggle-bg-hover);
+}
+
+.ms__fullscreen-mode-toggle::before {
+  content: "";
+  display: block;
+  width: var(--ms-fullscreen-mode-toggle-icon-size);
+  height: var(--ms-fullscreen-mode-toggle-icon-size);
+  background-color: currentColor;
+  -webkit-mask: var(--ms-fullscreen-mode-toggle-icon, var(--ms-icon-search)) center / contain no-repeat;
+          mask: var(--ms-fullscreen-mode-toggle-icon, var(--ms-icon-search)) center / contain no-repeat;
+}
+
+/* Current mode → glyph: magnifier for navigate, funnel for filter. */
+.ms__fullscreen-mode-toggle[data-mode="navigate"] {
+  --ms-fullscreen-mode-toggle-icon: var(--ms-icon-search);
+}
+
+.ms__fullscreen-mode-toggle[data-mode="filter"] {
+  --ms-fullscreen-mode-toggle-icon: var(--ms-icon-filter);
 }
 
 /* Shared close button — a fixed-size chip in both overlays: mask-icon ✕ centered in a

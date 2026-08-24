@@ -476,6 +476,48 @@ web-multiselect {
     --ms-selected-popover-width: 30rem;
 }</pre></div>
         </section>
+
+        <!-- Example 15: Navigate mode on a tree (with fullscreen preview) -->
+        <section class="example-section">
+            <h2>15. Navigate Mode — Jump Between Matches</h2>
+            <p class="description">
+                Section 3 shows the default <strong>filter</strong> search (the hierarchy narrows to matches
+                plus their ancestors). <code>search-mode="navigate"</code> is the alternative: the
+                <strong>whole tree stays visible</strong> and typing <em>jumps focus</em> between matching
+                nodes instead of hiding anything — handy on a tree, where filtering can hide the structure you
+                were reading. Matched rows keep a highlight; step through them with
+                <kbd>Ctrl</kbd>+<kbd>↑</kbd>/<kbd>↓</kbd> on desktop. In the <strong>fullscreen overlay</strong>
+                (touch, or the preview toggle below) a <code>N of M</code> count with prev/next buttons appears
+                under the search box, since touch has no keyboard shortcut.
+            </p>
+            <p class="description">
+                This picker also sets <code>show-search-mode-toggle</code>, which adds a
+                <strong>built-in mode switch</strong> to the fullscreen search bar: the leading icon
+                (magnifier = navigate, funnel = filter) flips the mode <em>in place</em> on tap — no reopen.
+                Enable fullscreen preview, then tap the icon to switch without touching the host-page radios.
+            </p>
+            <div class="controls">
+                <span>Search mode:</span>
+                <label><input type="radio" name="tree-nav-mode" value="filter"> <code>filter</code></label>
+                <label><input type="radio" name="tree-nav-mode" value="navigate" checked> <code>navigate</code></label>
+            </div>
+            <label class="toggle-label">
+                <input type="checkbox" id="tree-nav-fs-preview"> Preview as fullscreen (desktop)
+            </label>
+            <div class="demo-area">
+                <label class="demo-label">Open the tree and type <code>a</code> — in navigate mode every node stays put and focus jumps between the matches:</label>
+                <web-multiselect id="tree-navigate" multiple="true" search-mode="navigate" show-search-mode-toggle></web-multiselect>
+            </div>
+
+            <div class="code-block"><pre>&lt;!-- keep the whole tree on screen; jump focus between matches --&gt;
+&lt;web-multiselect path-member="path" search-mode="navigate"&gt;&lt;/web-multiselect&gt;
+
+&lt;!-- add a built-in filter&lt;-&gt;navigate toggle to the fullscreen search bar --&gt;
+&lt;web-multiselect path-member="path" search-mode="navigate" show-search-mode-toggle&gt;&lt;/web-multiselect&gt;
+
+/* Fullscreen (phones) adds a count + prev/next match navigator automatically;
+   desktop steps with Ctrl+ArrowUp / Ctrl+ArrowDown. */</pre></div>
+        </section>
     </div>
 
     <script type="module" src="/src/index.ts"></script>
@@ -708,6 +750,23 @@ web-multiselect {
             widths.fullTitleMember = 'fullTitle';
             widths.getBadgeDisplayCallback = (item) => item.fullTitle || item.label;
             widths.options = withFullTitles;
+
+            // Navigate mode on a tree — whole tree stays visible, focus jumps between
+            // matches. A radio group flips search-mode live; a checkbox previews the
+            // fullscreen overlay (where the N-of-M match navigator shows) on desktop.
+            const treeNav = document.querySelector('#tree-navigate');
+            treeNav.valueMember = 'value';
+            treeNav.displayValueMember = 'label';
+            treeNav.pathMember = 'path';
+            treeNav.options = categories;
+            document.querySelectorAll('input[name="tree-nav-mode"]').forEach((r) => {
+                r.addEventListener('change', () => {
+                    if (r.checked) treeNav.setAttribute('search-mode', r.value);
+                });
+            });
+            document.querySelector('#tree-nav-fs-preview').addEventListener('change', (e) => {
+                treeNav.setAttribute('mobile-presentation', e.target.checked ? 'fullscreen' : 'auto');
+            });
 
             // Bold the branch (parent) rows via a shadow-DOM stylesheet.
             const bold = document.querySelector('#tree-bold');

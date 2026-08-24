@@ -440,6 +440,17 @@ export interface MultiSelectConfig<T = any> {
      */
     searchMode?: SearchMode;
     /**
+     * Show a clickable mode toggle in the phone fullscreen overlay's search header that
+     * flips `searchMode` between `filter` and `navigate` live (no reopen). Default `false`.
+     *
+     * The overlay has room for the affordance and touch users can't reach the desktop
+     * `Ctrl`+`Arrow` match-stepping, so this exposes both modes on the device where it
+     * matters most. The toggle sits at the leading edge of the search field; its icon
+     * reflects the current mode (magnifier = navigate, funnel = filter). No effect in the
+     * floating presentation or when search is disabled/hidden.
+     */
+    isSearchModeToggleShown?: boolean;
+    /**
      * Layout mode for the action buttons. Default: `nowrap`.
      *
      * - `nowrap` — buttons stay on a single row

@@ -200,6 +200,10 @@
 /* Checkbox alignment variants (center is default, defined in variables.css) */
 .ms__option[data-checkbox-align="top"] {
   --ms-checkbox-align: flex-start;
+  /* Nudge the top-aligned checkbox down to sit on the label's first text line
+     (line-height leaves the glyph inset from the line-box top). Only meaningful
+     for top alignment — center/bottom keep the 0 default so they stay centered. */
+  --ms-checkbox-margin-top: calc(0.2 * var(--ms-rem));
 }
 
 .ms__option[data-checkbox-align="bottom"] {

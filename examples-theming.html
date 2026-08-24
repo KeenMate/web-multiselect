@@ -281,85 +281,64 @@
             --ms-scrollbar-thumb-bg-hover: #1976d2;
         }
 
-        /* Glassmorphism Theme */
-        .glass-theme {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            position: relative;
-            overflow: visible;
-        }
-
-        .glass-theme::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="20" cy="20" r="15" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="40" r="20" fill="rgba(255,255,255,0.05)"/><circle cx="50" cy="80" r="25" fill="rgba(255,255,255,0.08)"/></svg>');
-            background-size: 200px 200px;
-            pointer-events: none;
-        }
-
-        .glass-theme h2,
-        .glass-theme p,
-        .glass-theme label {
-            color: #ffffff;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-
-        #glass-mode {
-            /* Base theme variables */
-            --base-input-bg: rgba(255, 255, 255, 0.15);
-            --base-dropdown-bg: rgba(255, 255, 255, 0.15);
-            --base-actions-bg: rgba(255, 255, 255, 0.15);
-            --base-text-color-1: #ffffff;
-            --base-text-color-3: rgba(255, 255, 255, 0.7);
-            --base-border-color: rgba(255, 255, 255, 0.3);
-            --base-hover-bg: rgba(255, 255, 255, 0.25);
-            --base-accent-color: #667eea;
-
-            /* Component-specific overrides */
-            --ms-input-border-radius: 12px;
-            --ms-input-placeholder-color: rgba(255, 255, 255, 0.5);
-            --ms-dropdown-border-radius: 12px;
-            --ms-dropdown-box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-
-            /* Options */
-            --ms-option-bg-selected: rgba(255, 255, 255, 0.4);
-
-            /* Badges */
-            --ms-badge-text-bg: rgba(255, 255, 255, 0.25);
-            --ms-badge-text-border: 1px solid rgba(255, 255, 255, 0.3);
-            --ms-badge-border-radius: 16px;
-            --ms-badge-remove-bg: rgba(255, 255, 255, 0.4);
-            --ms-badge-remove-color: #667eea;
-
-            /* Checkboxes */
-            --ms-checkbox-bg: rgba(255, 255, 255, 0.15);
-            --ms-checkbox-border: 1px solid rgba(255, 255, 255, 0.4);
-            --ms-checkbox-border-radius: 4px;
-            --ms-checkbox-checked-bg: rgba(255, 255, 255, 0.4);
-            --ms-checkbox-checked-border: 1px solid rgba(255, 255, 255, 0.6);
-            --ms-checkbox-checkmark-color: #667eea;
-            --ms-checkbox-hover-border-color: rgba(255, 255, 255, 0.6);
-
-            /* Scrollbar */
-            --ms-scrollbar-track-bg: rgba(255, 255, 255, 0.1);
-            --ms-scrollbar-thumb-bg: rgba(255, 255, 255, 0.3);
-            --ms-scrollbar-thumb-bg-hover: rgba(255, 255, 255, 0.5);
-        }
-
-        /* Add backdrop blur for glass effect */
-        #glass-mode::part(input),
-        #glass-mode::part(dropdown),
-        #glass-mode::part(actions) {
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
-        }
-
         .form-text {
             display: block;
             margin-top: 0.25rem;
             font-size: 0.75rem;
             opacity: 0.7;
         }
+
+        /* Built-in color-scheme demo. The card's OWN chrome follows the same signal it
+           passes to the picker, so the whole panel flips coherently:
+           - Auto  → JS sets `color-scheme: light dark` (no data-theme); light-dark() below
+                     resolves per the OS, and the picker inherits that color-scheme.
+           - Light → data-theme="light"  (ancestor signal, matched by :host-context in dark-mode.css)
+           - Dark  → data-theme="dark"
+           No component color overrides here (no --ms- or --base- vars): dark styling is 100%
+           the component built-in light-dark() fallbacks, driven only by color-scheme. */
+        .scheme-demo {
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid;
+            transition: background-color .2s ease, color .2s ease, border-color .2s ease;
+            /* Auto (no data-theme): follow the used color-scheme (set to `light dark` by JS). */
+            background: light-dark(#ffffff, #1a1a1a);
+            color: light-dark(#111827, #e5e5e5);
+            border-color: light-dark(#e2e8f0, #333333);
+        }
+        .scheme-demo[data-theme="light"] {
+            color-scheme: light;
+            background: #ffffff;
+            color: #111827;
+            border-color: #e2e8f0;
+        }
+        .scheme-demo[data-theme="dark"] {
+            color-scheme: dark;
+            background: #1a1a1a;
+            color: #e5e5e5;
+            border-color: #333333;
+        }
+        .scheme-demo .form-text { color: inherit; }
+
+        /* Segmented Auto / Light / Dark switch built from radios. */
+        .segmented {
+            display: inline-flex;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 1.25rem;
+        }
+        .segmented label {
+            padding: 0.4rem 1rem;
+            cursor: pointer;
+            font-size: 0.9rem;
+            background: #f8fafc;
+            color: #334155;
+            border-inline-start: 1px solid #cbd5e1;
+        }
+        .segmented label:first-of-type { border-inline-start: none; }
+        .segmented input { position: absolute; opacity: 0; pointer-events: none; }
+        .segmented label:has(input:checked) { background: #667eea; color: #fff; }
     </style>
 </head>
 <body>
@@ -369,6 +348,106 @@
             <h1>🎭 Theming</h1>
             <p class="subtitle">Customize appearance with CSS custom properties. Dark mode, neon, corporate, and more</p>
         </header>
+
+        <!-- Built-in Color Scheme (auto / light / dark) -->
+        <section class="example-section" style="margin-bottom: 3rem;">
+            <h2>🌗 Built-in Color Scheme — auto / light / dark</h2>
+            <p>
+                Every picker ships <strong>dark-ready</strong>: all <code>--ms-*</code> color defaults are
+                wrapped in CSS <code>light-dark()</code>, keyed on the host's <code>color-scheme</code>. You
+                never override <code>--base-*</code> to go dark (that's what the theme cards further down do,
+                for <em>custom</em> palettes) — you just <strong>signal the scheme</strong> and the component
+                picks the right branch. Three ways, in priority order:
+            </p>
+            <ul>
+                <li><strong>Per-instance</strong> — <code>data-theme="dark"</code> / <code>"light"</code> on the
+                    <code>&lt;web-multiselect&gt;</code> itself (highest priority; overrides any ancestor).</li>
+                <li><strong>Framework class on an ancestor</strong> — <code>.dark</code> (Tailwind),
+                    <code>[data-bs-theme="dark"]</code> (Bootstrap 5.3+), or <code>[data-theme="dark"]</code>.</li>
+                <li><strong>Follow the OS</strong> — set no explicit signal and let the page opt into
+                    <code>color-scheme: light dark</code>; both the page and the picker track the system setting.</li>
+            </ul>
+
+            <div class="segmented" role="radiogroup" aria-label="Color scheme">
+                <label><input type="radio" name="scheme" value="auto" checked> Auto (OS)</label>
+                <label><input type="radio" name="scheme" value="light"> Light</label>
+                <label><input type="radio" name="scheme" value="dark"> Dark</label>
+            </div>
+
+            <!-- The card carries the signal; the picker inside inherits it. -->
+            <div class="scheme-demo" id="scheme-demo">
+                <div class="form-group" style="max-width: 420px;">
+                    <label for="scheme-select" style="display:block; margin-bottom:.4rem; font-weight:600;">Select technologies</label>
+                    <web-multiselect id="scheme-select" multiple="true" show-checkboxes="true"
+                        badges-display-mode="badges"></web-multiselect>
+                    <span class="form-text">Open the dropdown — the panel, options, checkboxes, badges and scrollbar all flip with the scheme. No per-instance color overrides in play.</span>
+                </div>
+            </div>
+
+            <details class="mt-1">
+                <summary>Show code</summary>
+<pre><code>&lt;!-- 1. Per-instance (wins over everything) --&gt;
+&lt;web-multiselect data-theme="dark"&gt;&lt;/web-multiselect&gt;
+
+&lt;!-- 2. Framework class on an ancestor --&gt;
+&lt;html class="dark"&gt;                    &lt;!-- Tailwind --&gt;
+&lt;html data-bs-theme="dark"&gt;           &lt;!-- Bootstrap 5.3+ --&gt;
+&lt;div data-theme="dark"&gt; … &lt;web-multiselect&gt;&lt;/web-multiselect&gt; … &lt;/div&gt;
+
+&lt;!-- 3. Follow the OS: opt the page into system switching --&gt;
+&lt;style&gt; html { color-scheme: light dark; } &lt;/style&gt;
+&lt;web-multiselect&gt;&lt;/web-multiselect&gt;   &lt;!-- no signal → tracks prefers-color-scheme --&gt;
+
+// switch at runtime — it's just an attribute
+picker.setAttribute('data-theme', 'dark');   // or 'light'
+picker.removeAttribute('data-theme');        // back to inherit/OS</code></pre>
+            </details>
+        </section>
+
+        <!-- Grouped options + fullscreen mode switch, themed -->
+        <section class="example-section" style="margin-bottom: 3rem;">
+            <h2>🗂️ Grouped options + fullscreen mode switch</h2>
+            <p>
+                Everything at once: <strong>grouped options</strong> (<code>group-member</code>) rendered in the
+                <strong>fullscreen overlay</strong>, with the built-in <code>filter</code>↔<code>navigate</code>
+                toggle (<code>show-search-mode-toggle</code>) in the search header — all following the same
+                built-in color scheme. Pick a scheme, tick <em>Preview as fullscreen</em>, open the picker, then
+                tap the leading icon in the search bar (magnifier = navigate, funnel = filter). Group headers,
+                matched rows, checkboxes, badges and the <code>N of M</code> match navigator all stay themed
+                with zero per-instance color overrides.
+            </p>
+
+            <div class="segmented" role="radiogroup" aria-label="Color scheme">
+                <label><input type="radio" name="scheme2" value="auto" checked> Auto (OS)</label>
+                <label><input type="radio" name="scheme2" value="light"> Light</label>
+                <label><input type="radio" name="scheme2" value="dark"> Dark</label>
+            </div>
+            <label class="toggle-label" style="margin-inline-start: 1rem;">
+                <input type="checkbox" id="grouped-fs-preview"> Preview as fullscreen (desktop)
+            </label>
+
+            <div class="scheme-demo" id="grouped-demo">
+                <div class="form-group" style="max-width: 420px;">
+                    <label for="grouped-select" style="display:block; margin-bottom:.4rem; font-weight:600;">Select technologies</label>
+                    <web-multiselect id="grouped-select" multiple="true" show-checkboxes="true"
+                        group-member="group" search-mode="navigate" show-search-mode-toggle
+                        badges-display-mode="partial" badges-max-visible="3"></web-multiselect>
+                    <span class="form-text">Grouped by Frontend / Runtimes / Languages. In the fullscreen sheet, tap the leading search icon to switch filter ↔ navigate.</span>
+                </div>
+            </div>
+
+            <details class="mt-1">
+                <summary>Show code</summary>
+<pre><code>&lt;web-multiselect
+    group-member="group"          &lt;!-- render options under group headers --&gt;
+    search-mode="navigate"        &lt;!-- start in navigate; typing jumps between matches --&gt;
+    show-search-mode-toggle&gt;      &lt;!-- fullscreen: leading icon flips filter↔navigate live --&gt;
+&lt;/web-multiselect&gt;
+
+&lt;!-- Theme it exactly like everything else: just signal the scheme. --&gt;
+&lt;div data-theme="dark"&gt; … &lt;/div&gt;   // or data-theme="light", or OS-auto</code></pre>
+            </details>
+        </section>
 
         <!-- Input Sizes Section -->
         <section class="example-section" style="margin-bottom: 3rem;">
@@ -575,26 +654,11 @@
                 </div>
             </div>
 
-            <!-- Glassmorphism Theme -->
-            <div class="theme-card glass-theme">
-                <h2>🔮 Glassmorphism</h2>
-                <p>Frosted glass effect with backdrop blur and transparency</p>
-                <div class="form-group">
-                    <label for="glass-mode">Select Technologies</label>
-                    <web-multiselect
-                        id="glass-mode"
-                        placeholder="Choose your stack..."
-                        show-checkboxes="true"
-                        show-select-all="true">
-                    </web-multiselect>
-                    <span class="form-text">Translucent with blur effect (requires modern browser)</span>
-                </div>
-            </div>
         </div>
     </div>
 
     <script type="module">
-        // Sample data for all examples
+        // Sample data for all examples — one grouped dataset shared by every demo.
         const technologies = [
             { value: 'react', label: 'React' },
             { value: 'vue', label: 'Vue.js' },
@@ -612,31 +676,70 @@
             { value: 'php', label: 'PHP' },
             { value: 'ruby', label: 'Ruby' }
         ];
+        const groupOf = { react: 'Frontend', vue: 'Frontend', angular: 'Frontend', svelte: 'Frontend',
+            nodejs: 'Runtimes', deno: 'Runtimes',
+            typescript: 'Languages', javascript: 'Languages', python: 'Languages', rust: 'Languages',
+            go: 'Languages', java: 'Languages', csharp: 'Languages', php: 'Languages', ruby: 'Languages' };
+        const groupedTech = technologies.map((t) => ({ ...t, group: groupOf[t.value] || 'Other' }));
 
         // Initialize all multiselects after custom element is defined
         customElements.whenDefined('web-multiselect').then(() => {
-            // Theme examples
-            const themeIds = ['dark-mode', 'neon-mode', 'audi-mode', 'rounded-mode', 'sharp-mode', 'material-mode', 'glass-mode'];
+            // One shared config for every picker on the page: the same grouped dataset and the
+            // same feature settings (grouped headers, checkboxes, navigate search + the fullscreen
+            // filter↔navigate toggle, partial badges). Per-demo attributes set in the HTML
+            // (theme class, input-size) are left untouched, so each demo still shows its own thing.
+            const commonInit = (el, selected) => {
+                if (!el) return;
+                el.setAttribute('multiple', 'true');
+                el.setAttribute('show-checkboxes', 'true');
+                el.setAttribute('search-mode', 'navigate');
+                el.setAttribute('show-search-mode-toggle', '');
+                el.setAttribute('badges-display-mode', 'partial');
+                el.setAttribute('badges-max-visible', '3');
+                el.valueMember = 'value';
+                el.displayValueMember = 'label';
+                el.groupMember = 'group';
+                el.options = groupedTech;
+                if (selected) el.setSelected(selected);
+            };
 
-            themeIds.forEach(id => {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.options = technologies;
-                    element.valueMember = 'value';
-                    element.displayValueMember = 'label';
+            const preset = ['react', 'vue', 'typescript', 'rust'];
+
+            // Theme examples + size examples — same data + settings, different theme / input-size.
+            ['dark-mode', 'neon-mode', 'audi-mode', 'rounded-mode', 'sharp-mode', 'material-mode',
+             'size-xs', 'size-sm', 'size-md', 'size-lg', 'size-xl']
+                .forEach((id) => commonInit(document.getElementById(id), preset));
+
+            // Reusable Auto/Light/Dark switcher — drives the signal on a demo card that the
+            // picker inside inherits. Auto = no signal + OS switching; light/dark = data-theme.
+            const applySchemeTo = (card, value) => {
+                if (value === 'auto') {
+                    card.removeAttribute('data-theme');
+                    card.style.colorScheme = 'light dark';
+                } else {
+                    card.style.colorScheme = '';
+                    card.setAttribute('data-theme', value);
                 }
-            });
+            };
+            const wireScheme = (radioName, card) => {
+                document.querySelectorAll(`input[name="${radioName}"]`).forEach((r) => {
+                    r.addEventListener('change', () => { if (r.checked) applySchemeTo(card, r.value); });
+                });
+                applySchemeTo(card, 'auto'); // match the checked radio on load
+            };
 
-            // Size examples
-            const sizeIds = ['size-xs', 'size-sm', 'size-md', 'size-lg', 'size-xl'];
+            // Built-in color-scheme demo.
+            commonInit(document.getElementById('scheme-select'), preset);
+            wireScheme('scheme', document.getElementById('scheme-demo'));
 
-            sizeIds.forEach(id => {
-                const element = document.getElementById(id);
-                if (element) {
-                    element.options = technologies;
-                    element.valueMember = 'value';
-                    element.displayValueMember = 'label';
-                }
+            // Grouped options + fullscreen mode switch, themed.
+            const groupedSelect = document.getElementById('grouped-select');
+            commonInit(groupedSelect, preset);
+            wireScheme('scheme2', document.getElementById('grouped-demo'));
+
+            // Preview-as-fullscreen toggle (forces the overlay on desktop so the mode toggle shows).
+            document.getElementById('grouped-fs-preview').addEventListener('change', (e) => {
+                groupedSelect.setAttribute('mobile-presentation', e.target.checked ? 'fullscreen' : 'auto');
             });
         });
     </script>

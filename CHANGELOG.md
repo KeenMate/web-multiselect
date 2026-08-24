@@ -5,6 +5,61 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0-rc07] - 2026-08-23
+
+### Added
+
+- **`show-search-mode-toggle` — flip filter ↔ navigate from inside the fullscreen overlay.**
+  A new opt-in boolean attribute (config `isSearchModeToggleShown`, default `false`) that adds
+  a clickable mode toggle at the leading edge of the phone fullscreen sheet's search field:
+  `[toggle][search input …clear][✕ close]`. Its icon reflects the current mode (a magnifier for
+  `navigate`, a funnel for `filter`, via the new `--ms-icon-search` / `--ms-icon-filter` mask
+  glyphs), and tapping it flips `searchMode` **in place** — the `search-mode` *attribute* is
+  reinit-on-change (it rebuilds and closes the sheet), so the toggle instead mutates the live
+  config, adds or removes the navigate-mode match navigator to match, and re-projects the current
+  search term under the new mode (filter narrows the list / navigate keeps it whole and highlights),
+  all without tearing the open overlay down; focus stays on the search field. Fullscreen-only —
+  the affordance is where touch users can't reach the desktop `Ctrl`+`Arrow` match-stepping — and a
+  no-op in the floating presentation or when search is disabled/hidden. Fully themeable via the
+  `--ms-fullscreen-mode-toggle-*` variables. `aria-pressed` reflects navigate; the label announces
+  the target mode.
+
+  When the toggle is enabled and no explicit `search-placeholder` is set, the placeholder becomes
+  **mode-aware** and switches with the toggle — `Search…` in navigate, `Filter…` in filter — so the
+  field labels the current behavior. An explicit `search-placeholder` always wins and stays fixed;
+  without the toggle the default is unchanged (`Search...`). To enable this, the `search-placeholder`
+  attribute's default is no longer baked in — it resolves to `Search...` (or the mode-aware pair) at
+  render time, so the documented default is unchanged for existing consumers.
+
+### Fixed
+
+- **Fullscreen match-navigator buttons flashed a pale chip on dark/custom themes.** The prev/next
+  step buttons' hover default was `--ms-fullscreen-nav-btn-bg-hover: var(--ms-accent-color-light)`,
+  a fixed `light-dark()` pair that resolves to its **light** branch (`#eff6ff`) on any theme that sets
+  dark `--base-*` colors but not `color-scheme` (e.g. the neon example) — a near-white circle that
+  clashed with the panel, and on touch it lingered because `:hover` sticks after a tap. The default is
+  now a translucent accent tint (`color-mix(in srgb, var(--ms-accent-color) 22%, transparent)`),
+  matching the resting `--ms-option-bg-matched` treatment, so it darkens/lightens against whatever
+  background. Still overridable via `--ms-fullscreen-nav-btn-bg-hover`.
+
+- **Fullscreen search field jumped up when the navigate-mode "N of M" nav row appeared.** The header
+  is a `flex-wrap` bar with a `min-height`; in the single-row (search-only) state that min-height slack
+  was split above/below the field by `align-items: center`, but as soon as the nav row wrapped in, the
+  freed slack collapsed and the search field snapped up a few px. The header now top-anchors its wrapped
+  lines (`align-content: flex-start`) and the first-row search wrapper carries the bar's min-height, so
+  the search field keeps a constant top padding and the nav row simply extends the header downward.
+
+- **Option checkbox sat ~1px below the label's center line.** The checkbox carried a
+  default `--ms-checkbox-margin-top` of `0.2 * --ms-rem`, but rows center their contents
+  with `align-items: center` — an asymmetric top margin therefore *decentered* the
+  checkbox, pushing its box below the label's optical center. The offset scaled with
+  `--ms-rem`, so it was most visible in the fullscreen overlay (where `--ms-rem` is the
+  larger `--ms-fullscreen-rem` and labels are big) — e.g. on a fullscreen tree the
+  checkbox read as low against each node label. The top nudge only makes sense when the
+  checkbox aligns to the *top* of a wrapping label, so the default is now `0` (center/bottom
+  alignment stays perfectly centered) and the `0.2 * --ms-rem` nudge is scoped to
+  `[data-checkbox-align="top"]`. Themeable via `--ms-checkbox-margin-top` as before.
+
 ## [2.0.0-rc06] - 2026-08-22 [PUBLISHED]
 
 ### Added
