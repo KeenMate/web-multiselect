@@ -9,6 +9,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- **Render callbacks know the panel presentation — responsive custom rendering.** The
+  `renderOptionContentCallback` context (`OptionContentRenderContext`) — and the badge context
+  (`BadgeContentRenderContext`) — now extend the shared `PresentationContext` from
+  `@keenmate/web-components-core`, so they carry `presentation` (`'floating' | 'modal' |
+  'fullscreen'` — this component only ever emits `floating`/`fullscreen`), `isFullscreen`, and
+  `isModal`, resolved from the same device/viewport classification that drives the overlay. A single
+  callback can now render rich rows on the anchored desktop dropdown (price, popularity, thumbnails)
+  and a leaner variant in the phone fullscreen sheet where there's less room — no `matchMedia`/resize
+  wiring in the host page. It's reactive: swapping presentation (rotate/resize across the phone
+  boundary, or a live `mobile-presentation` change) re-renders and re-invokes the callback with the
+  new value. The flags are built via core's new `presentationContext()` helper (added there so every
+  KM component surfaces the same shape).
+
 - **`show-search-mode-toggle` — flip filter ↔ navigate from inside the fullscreen overlay.**
   A new opt-in boolean attribute (config `isSearchModeToggleShown`, default `false`) that adds
   a clickable mode toggle at the leading edge of the phone fullscreen sheet's search field:
@@ -30,6 +43,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   without the toggle the default is unchanged (`Search...`). To enable this, the `search-placeholder`
   attribute's default is no longer baked in — it resolves to `Search...` (or the mode-aware pair) at
   render time, so the documented default is unchanged for existing consumers.
+
+### Changed
+
+- **Requires `@keenmate/web-components-core` `1.0.0-rc08`** (was `rc07`) — for the shared
+  `presentationContext()` / `PresentationContext` used by the responsive-rendering context above.
 
 ### Fixed
 

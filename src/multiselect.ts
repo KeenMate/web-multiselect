@@ -11,7 +11,7 @@
 import { anchor, createTooltip, createPopover, type Placement, type TooltipHandle, type PopoverHandle, type DriftReport } from '@keenmate/web-components-core/positioning';
 // Fullscreen-overlay primitives (SPEC §12.9) — shared with any component that swaps a
 // floating panel for a full-viewport sheet on phones (daterangepicker's fullscreen calendar).
-import { lockBodyScroll, observeKeyboardInset } from '@keenmate/web-components-core';
+import { lockBodyScroll, observeKeyboardInset, presentationContext } from '@keenmate/web-components-core';
 import type { MultiSelectConfig, BadgesPosition, SearchInputMode, SearchMode, OptionContentRenderContext, BadgeContentRenderContext, MessageOptions } from './types';
 import { initLogger, dataLogger, uiLogger, interactionLogger } from './logger';
 import { VirtualScroll } from './virtual-scroll';
@@ -1190,6 +1190,7 @@ export class WebMultiSelect<T = any> {
                 isFocused,
                 isMatched,
                 isDisabled: disabled,
+                ...presentationContext(this.presentationMode),
                 isTreeNode: false
             };
             const customContent = this.options.renderOptionContentCallback(option, context);
@@ -1303,6 +1304,7 @@ export class WebMultiSelect<T = any> {
                 isFocused,
                 isMatched,
                 isDisabled: disabled,
+                ...presentationContext(this.presentationMode),
                 // Tree metadata — lets the callback branch on depth / branch-vs-leaf /
                 // tristate without re-deriving any of it from the raw data item.
                 isTreeNode: true,
@@ -3468,8 +3470,15 @@ export class WebMultiSelect<T = any> {
      * - The `data-value` and aria-label both go through `getItemBadgeDisplayValue` so badge text and
      *   accessible name stay in sync.
      */
-    private renderBadgeHTML(option: T, ctx: BadgeContentRenderContext): string {
+    private renderBadgeHTML(option: T, ctx: Omit<BadgeContentRenderContext, 'presentation' | 'isFullscreen' | 'isModal'>): string {
         const value = this.getItemValue(option);
+
+        // Enrich the caller's context with the current presentation before handing it to a
+        // consumer callback (call sites only supply displayMode + isInPopover).
+        const renderCtx: BadgeContentRenderContext = {
+            ...ctx,
+            ...presentationContext(this.presentationMode),
+        };
 
         // Resolve content
         let badgeContent: string;
@@ -3478,7 +3487,7 @@ export class WebMultiSelect<T = any> {
             const c = popoverCallback(option);
             badgeContent = typeof c === 'string' ? c : c.outerHTML;
         } else if (this.options.renderBadgeContentCallback) {
-            const c = this.options.renderBadgeContentCallback(option, ctx);
+            const c = this.options.renderBadgeContentCallback(option, renderCtx);
             badgeContent = typeof c === 'string' ? c : c.outerHTML;
         } else {
             badgeContent = this.getItemBadgeDisplayValue(option);

@@ -3,6 +3,7 @@
  */
 
 import type { Placement } from '@keenmate/web-components-core/positioning';
+import type { PresentationContext } from '@keenmate/web-components-core';
 import type { LTreeNode } from './tree/ltree-node';
 
 
@@ -75,9 +76,15 @@ export type ActionsPosition = 'top' | 'bottom';
 export type ActionsAlign = 'stretch' | 'left' | 'right' | 'center' | 'space-between';
 
 /**
- * Context provided to renderOptionContentCallback
+ * Context provided to renderOptionContentCallback.
+ *
+ * Extends the shared {@link PresentationContext} from `@keenmate/web-components-core`, so it
+ * also carries `presentation` (`'floating' | 'modal' | 'fullscreen'` — this component only ever
+ * emits `floating`/`fullscreen`), `isFullscreen`, and `isModal`. Branch on `isFullscreen` to
+ * render leaner content in the phone overlay. Reactive: swapping presentation re-renders and
+ * re-invokes the callback with the new value.
  */
-export interface OptionContentRenderContext {
+export interface OptionContentRenderContext extends PresentationContext {
     /** Index of the option in the filtered list */
     index: number;
     /** Whether the option is currently selected */
@@ -113,7 +120,7 @@ export interface OptionContentRenderContext {
 /**
  * Context provided to renderBadgeContentCallback
  */
-export interface BadgeContentRenderContext {
+export interface BadgeContentRenderContext extends PresentationContext {
     /** Current badges display mode */
     displayMode: BadgesDisplayMode;
     /** Whether the badge is being rendered in the selected items popover */

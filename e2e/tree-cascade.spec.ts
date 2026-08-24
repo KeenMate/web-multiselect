@@ -249,6 +249,22 @@ test.describe('renderOptionContentCallback tree context', () => {
         await optAt(p, '1.1.2').click(); // Fuji too → Apple fully checked
         await expect(probe(p, '1.1')).toHaveAttribute('data-is-indeterminate', 'false');
     });
+
+    test('the context reports the panel presentation (floating vs fullscreen)', async ({ page }) => {
+        const p = picker(page, 'tree-render-ctx');
+
+        // Default: anchored floating dropdown on desktop.
+        await openDropdown(p);
+        await expect(probe(p, '1.1')).toHaveAttribute('data-presentation', 'floating');
+        await expect(probe(p, '1.1')).toHaveAttribute('data-is-fullscreen', 'false');
+
+        // Force the fullscreen overlay while open — it live-swaps and re-renders the rows,
+        // so the callback is re-invoked with the new presentation (no reopen needed).
+        await p.evaluate((el) => el.setAttribute('mobile-presentation', 'fullscreen'));
+        await expect(p.locator('.ms__dropdown--fullscreen')).toBeVisible();
+        await expect(probe(p, '1.1')).toHaveAttribute('data-presentation', 'fullscreen');
+        await expect(probe(p, '1.1')).toHaveAttribute('data-is-fullscreen', 'true');
+    });
 });
 
 test.describe('counter chip counts the rolled-up cover, not the emit policy', () => {

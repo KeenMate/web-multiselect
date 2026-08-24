@@ -531,7 +531,8 @@ Customize how options appear in the dropdown:
   ];
 
   select.renderOptionContentCallback = (item, context) => {
-    // Context provides: { index, isSelected, isFocused, isMatched, isDisabled }
+    // Context provides: { index, isSelected, isFocused, isMatched, isDisabled,
+    //                     presentation, isFullscreen, + tree fields }
 
     return `
       <div style="display: flex; align-items: center; gap: 0.5rem;">
@@ -551,6 +552,26 @@ Customize how options appear in the dropdown:
 - `isFocused: boolean` — whether the option is currently focused (keyboard navigation).
 - `isMatched: boolean` — whether the option matches the current search term (navigate mode only).
 - `isDisabled: boolean` — whether the option is disabled.
+- `presentation: 'floating' | 'modal' | 'fullscreen'` — how the open panel is presented (this
+  component only ever emits `floating` — the anchored desktop/tablet dropdown — or `fullscreen`,
+  the phone overlay). Resolved from the device/viewport and **reactive**: rotating/resizing across
+  the phone boundary re-renders and re-invokes the callback with the new value. (This is the shared
+  `PresentationContext` shape from `@keenmate/web-components-core`.)
+- `isFullscreen: boolean` — convenience for `presentation === 'fullscreen'`.
+- `isModal: boolean` — convenience for `presentation === 'modal'` (always `false` here).
+- Tree-mode rows also carry `isTreeNode / isBranch / isLeaf / childCount / level / depth / path /
+  isSelectable / isIndeterminate`.
+
+**Responsive rendering** — render rich rows on desktop and a leaner variant on the phone, from
+one callback (no `matchMedia` wiring; the component drives it):
+
+```javascript
+select.renderOptionContentCallback = (item, ctx) =>
+  ctx.isFullscreen
+    ? `<span>${item.name}</span>`                                  // lean on the phone sheet
+    : `<div class="rich"><strong>${item.name}</strong>
+         <small>${item.price} · ⭐${item.popularity}</small></div>`; // rich on desktop
+```
 
 ### Custom badge rendering
 

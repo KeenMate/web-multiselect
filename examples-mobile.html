@@ -173,10 +173,45 @@ picker.setAttribute('search-mode', 'filter');   // or 'navigate'
         </div>
 
         <!-- ============================================================ -->
-        <!-- 4. RTL — the whole component mirrors, overlay included       -->
+        <!-- 4. Responsive custom rendering (rich desktop / lean phone)   -->
         <!-- ============================================================ -->
         <div class="card">
-            <h2>4 · RTL — right-to-left, overlay included</h2>
+            <h2>4 · Responsive rendering — rich on desktop, lean on the phone</h2>
+            <p>
+                <code>renderOptionContentCallback</code> receives a <code>presentation</code> field
+                (<code>'floating'</code> or <code>'fullscreen'</code>, plus an <code>isFullscreen</code>
+                convenience) resolved from the same device/viewport check that chooses the overlay. So a
+                <strong>single callback</strong> can render a rich row on the anchored desktop dropdown
+                — price, popularity, a category chip — and a <strong>leaner</strong> one in the phone
+                fullscreen sheet where there's less room. No <code>matchMedia</code> in your page; it's
+                reactive, so flipping presentation re-renders the rows with the new value.
+            </p>
+            <label class="toggle-label">
+                <input type="checkbox" id="responsive-fs-preview"> Preview as fullscreen (desktop)
+            </label>
+            <div class="form-group" style="max-width:340px;">
+                <label>Pick a plan</label>
+                <web-multiselect id="responsive-select" multiple="true" value-member="value"
+                    display-value-member="label" search-placeholder="Search plans…"></web-multiselect>
+                <small class="form-text">Open it, then toggle fullscreen: the desktop rows show price · ⭐ popularity · chip; the phone rows drop to just the name + price.</small>
+            </div>
+
+            <details class="mt-1">
+                <summary>Show code</summary>
+<pre><code>picker.renderOptionContentCallback = (item, ctx) =&gt;
+  ctx.isFullscreen
+    ? `&lt;div class="row-lean"&gt;&lt;strong&gt;${item.label}&lt;/strong&gt;
+         &lt;span&gt;${item.price}&lt;/span&gt;&lt;/div&gt;`                       // lean on the phone sheet
+    : `&lt;div class="row-rich"&gt;&lt;strong&gt;${item.label}&lt;/strong&gt;
+         &lt;small&gt;${item.price} · ⭐${item.popularity} · ${item.tier}&lt;/small&gt;&lt;/div&gt;`; // rich on desktop</code></pre>
+            </details>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 5. RTL — the whole component mirrors, overlay included       -->
+        <!-- ============================================================ -->
+        <div class="card">
+            <h2>5 · RTL — right-to-left, overlay included</h2>
             <p>
                 Give the element (or any ancestor) <code>dir="rtl"</code> and the whole component
                 mirrors: the toggle icon and in-input counter move to the left, checkboxes sit on the
@@ -275,7 +310,32 @@ picker.setAttribute('search-mode', 'filter');   // or 'navigate'
             wirePreview('nav-fs-preview', navFs);
             wireSearchMode('nav-fs-mode', navFs);
 
-            // --- 4. RTL ---------------------------------------------
+            // --- 4. Responsive rendering (rich desktop / lean phone) ---
+            const plans = [
+                { value: 'starter',    label: 'Starter',      price: '$9/mo',   popularity: '4.2', tier: 'Basic' },
+                { value: 'pro',        label: 'Pro',          price: '$29/mo',  popularity: '4.8', tier: 'Popular' },
+                { value: 'team',       label: 'Team',         price: '$79/mo',  popularity: '4.6', tier: 'Growth' },
+                { value: 'business',   label: 'Business',     price: '$149/mo', popularity: '4.5', tier: 'Scale' },
+                { value: 'enterprise', label: 'Enterprise',   price: 'Custom',  popularity: '4.9', tier: 'Premium' }
+            ];
+            const responsive = document.getElementById('responsive-select');
+            responsive.options = plans;
+            // Content HTML is injected into the shadow DOM, so styling is inline here (page
+            // CSS classes wouldn't reach it). ctx.isFullscreen picks the layout.
+            responsive.renderOptionContentCallback = (item, ctx) => ctx.isFullscreen
+                ? `<div style="display:flex;justify-content:space-between;align-items:center;gap:.6rem;width:100%;">
+                       <strong>${item.label}</strong>
+                       <span style="color:#667eea;">${item.price}</span>
+                   </div>`
+                : `<div style="display:flex;align-items:center;gap:.6rem;width:100%;">
+                       <strong>${item.label}</strong>
+                       <small style="color:#718096;">${item.price} · ⭐${item.popularity}</small>
+                       <span style="margin-inline-start:auto;background:#eef2ff;color:#4338ca;padding:.1rem .45rem;border-radius:.3rem;font-size:.72rem;">${item.tier}</span>
+                   </div>`;
+            responsive.setSelected(['pro']);
+            wirePreview('responsive-fs-preview', responsive);
+
+            // --- 5. RTL ---------------------------------------------
             const rtlSelect = document.getElementById('rtl-select');
             // ~50 grouped Arabic options so the mirroring (and grouped headers) are
             // visually meaningful in both the floating panel and the fullscreen sheet.
