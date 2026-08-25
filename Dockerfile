@@ -62,6 +62,16 @@ COPY --from=build /app/dist              /usr/share/nginx/html/dist/
 # left untouched so `vite dev` keeps working locally.
 RUN sed -i 's#/src/index\.ts#/dist/multiselect.js#g' /usr/share/nginx/html/*.html
 
+# Inject the Plausible analytics snippet into every served page, right after the
+# opening <head>. The snippet lives in plausible-snippet.html (kept out of the
+# page sources so `vite dev` serves untracked, analytics-free HTML); sed's `r`
+# reads it in and appends it after the matched line. Applies to the top-level
+# example pages and the docs.
+COPY --from=build /app/plausible-snippet.html /tmp/plausible-snippet.html
+RUN for f in /usr/share/nginx/html/*.html /usr/share/nginx/html/docs/*.html; do \
+        [ -f "$f" ] && sed -i '/<head>/r /tmp/plausible-snippet.html' "$f"; \
+    done; rm /tmp/plausible-snippet.html /usr/share/nginx/html/plausible-snippet.html
+
 # Note: index.html's version badge uses a Vite-only JSON import
 # (`import { version } from './package.json'`) that a plain static server can't
 # transform — the badge silently stays blank; every example page works fully.
