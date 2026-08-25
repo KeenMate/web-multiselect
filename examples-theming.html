@@ -296,15 +296,18 @@
            - Dark  → data-theme="dark"
            No component color overrides here (no --ms- or --base- vars): dark styling is 100%
            the component built-in light-dark() fallbacks, driven only by color-scheme. */
+        /* The dark card is a near-black *page* surface, deliberately DARKER than the
+           component's built-in dark input background (~#1a1a1a) so the picker reads as an
+           elevated panel and its border doesn't vanish into a same-colour card. */
         .scheme-demo {
             padding: 1.5rem;
             border-radius: 8px;
             border: 1px solid;
             transition: background-color .2s ease, color .2s ease, border-color .2s ease;
             /* Auto (no data-theme): follow the used color-scheme (set to `light dark` by JS). */
-            background: light-dark(#ffffff, #1a1a1a);
+            background: light-dark(#ffffff, #0c0c0e);
             color: light-dark(#111827, #e5e5e5);
-            border-color: light-dark(#e2e8f0, #333333);
+            border-color: light-dark(#e2e8f0, #2e2e33);
         }
         .scheme-demo[data-theme="light"] {
             color-scheme: light;
@@ -314,9 +317,9 @@
         }
         .scheme-demo[data-theme="dark"] {
             color-scheme: dark;
-            background: #1a1a1a;
+            background: #0c0c0e;
             color: #e5e5e5;
-            border-color: #333333;
+            border-color: #2e2e33;
         }
         .scheme-demo .form-text { color: inherit; }
 
@@ -451,55 +454,61 @@ picker.removeAttribute('data-theme');        // back to inherit/OS</code></pre>
 
         <!-- Input Sizes Section -->
         <section class="example-section" style="margin-bottom: 3rem;">
-            <h2>📏 Input Sizes</h2>
-            <p>Control input field dimensions with the <code>input-size</code> attribute. Five sizes available: xs, sm, md (default), lg, xl.</p>
+            <h2>📏 Sizing — scale the whole picker with <code>--ms-rem</code></h2>
+            <p>
+                There's no <code>size</code> attribute — the component scales everything (input height, font,
+                padding, checkboxes, badges, dropdown) off a single base unit, <code>--ms-rem</code>
+                (default <code>10px</code>). Set it on the element (or a theme layer) and the whole picker
+                scales proportionally. For one-off tweaks, override the individual <code>--ms-input-*</code>
+                variables instead. The presets below are just different <code>--ms-rem</code> values.</p>
 
-            <!-- Size Reference Table -->
+            <!-- Size Reference Table — --ms-rem drives input height (3.5×) and font (1.4×). -->
             <table class="reference-table">
                 <thead>
                     <tr>
-                        <th>Size</th>
-                        <th>Height</th>
-                        <th>Font</th>
-                        <th>Calc Formula</th>
+                        <th>Preset</th>
+                        <th><code>--ms-rem</code></th>
+                        <th>Input height <span style="font-weight:400;">(3.5×)</span></th>
+                        <th>Font <span style="font-weight:400;">(1.4×)</span></th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
                         <td><code>xs</code></td>
-                        <td>31px</td>
-                        <td>12px</td>
-                        <td><code>calc(3.1 * var(--ms-rem))</code></td>
+                        <td><code>8px</code></td>
+                        <td>28px</td>
+                        <td>11px</td>
                     </tr>
                     <tr>
                         <td><code>sm</code></td>
-                        <td>33px</td>
+                        <td><code>9px</code></td>
+                        <td>31px</td>
                         <td>13px</td>
-                        <td><code>calc(3.3 * var(--ms-rem))</code></td>
                     </tr>
                     <tr class="is-highlight">
                         <td><code>md</code> (default)</td>
+                        <td><strong>10px</strong></td>
                         <td><strong>35px</strong></td>
                         <td>14px</td>
-                        <td><code>calc(3.5 * var(--ms-rem))</code></td>
                     </tr>
                     <tr>
                         <td><code>lg</code></td>
-                        <td>38px</td>
-                        <td>16px</td>
-                        <td><code>calc(3.8 * var(--ms-rem))</code></td>
+                        <td><code>12px</code></td>
+                        <td>42px</td>
+                        <td>17px</td>
                     </tr>
                     <tr>
                         <td><code>xl</code></td>
-                        <td>41px</td>
-                        <td>18px</td>
-                        <td><code>calc(4.1 * var(--ms-rem))</code></td>
+                        <td><code>14px</code></td>
+                        <td>49px</td>
+                        <td>20px</td>
                     </tr>
                 </tbody>
             </table>
             <p style="font-size: 0.875rem; color: #6b7280; margin-bottom: 1.5rem;">
-                <strong>Note:</strong> Heights use Pure Admin standard. Base unit <code>--ms-rem: 10px</code> (default).
-                Set <code>--ms-rem: 1rem</code> for Pure Admin integration.
+                <strong>Note:</strong> the input height is <code>calc(3.5 * var(--ms-rem))</code> and font
+                <code>calc(1.4 * var(--ms-rem))</code>, so both track the base unit. For Pure Admin, set
+                <code>--ms-rem: 1rem</code> (with <code>html { font-size: 10px }</code>).
             </p>
 
             <div style="display: flex; flex-direction: column; gap: 1.5rem; max-width: 500px;">
@@ -507,7 +516,7 @@ picker.removeAttribute('data-theme');        // back to inherit/OS</code></pre>
                     <label>Extra Small (xs)</label>
                     <web-multiselect
                         id="size-xs"
-                        input-size="xs"
+                        style="--ms-rem: 8px"
                         placeholder="Extra small input..."
                         multiple="false">
                     </web-multiselect>
@@ -517,7 +526,7 @@ picker.removeAttribute('data-theme');        // back to inherit/OS</code></pre>
                     <label>Small (sm)</label>
                     <web-multiselect
                         id="size-sm"
-                        input-size="sm"
+                        style="--ms-rem: 9px"
                         placeholder="Small input..."
                         multiple="false">
                     </web-multiselect>
@@ -527,7 +536,7 @@ picker.removeAttribute('data-theme');        // back to inherit/OS</code></pre>
                     <label>Medium (md) - Default</label>
                     <web-multiselect
                         id="size-md"
-                        input-size="md"
+                        style="--ms-rem: 10px"
                         placeholder="Medium input (default)..."
                         multiple="false">
                     </web-multiselect>
@@ -537,7 +546,7 @@ picker.removeAttribute('data-theme');        // back to inherit/OS</code></pre>
                     <label>Large (lg)</label>
                     <web-multiselect
                         id="size-lg"
-                        input-size="lg"
+                        style="--ms-rem: 12px"
                         placeholder="Large input..."
                         multiple="false">
                     </web-multiselect>
@@ -547,7 +556,7 @@ picker.removeAttribute('data-theme');        // back to inherit/OS</code></pre>
                     <label>Extra Large (xl)</label>
                     <web-multiselect
                         id="size-xl"
-                        input-size="xl"
+                        style="--ms-rem: 14px"
                         placeholder="Extra large input..."
                         multiple="false">
                     </web-multiselect>
@@ -686,8 +695,8 @@ picker.removeAttribute('data-theme');        // back to inherit/OS</code></pre>
         customElements.whenDefined('web-multiselect').then(() => {
             // One shared config for every picker on the page: the same grouped dataset and the
             // same feature settings (grouped headers, checkboxes, navigate search + the fullscreen
-            // filter↔navigate toggle, partial badges). Per-demo attributes set in the HTML
-            // (theme class, input-size) are left untouched, so each demo still shows its own thing.
+            // filter↔navigate toggle, partial badges). Per-demo attributes/styles set in the HTML
+            // (theme class, --ms-rem scale) are left untouched, so each demo still shows its own thing.
             const commonInit = (el, selected) => {
                 if (!el) return;
                 el.setAttribute('multiple', 'true');
@@ -705,7 +714,7 @@ picker.removeAttribute('data-theme');        // back to inherit/OS</code></pre>
 
             const preset = ['react', 'vue', 'typescript', 'rust'];
 
-            // Theme examples + size examples — same data + settings, different theme / input-size.
+            // Theme examples + size examples — same data + settings, different theme / --ms-rem scale.
             ['dark-mode', 'neon-mode', 'audi-mode', 'rounded-mode', 'sharp-mode', 'material-mode',
              'size-xs', 'size-sm', 'size-md', 'size-lg', 'size-xl']
                 .forEach((id) => commonInit(document.getElementById(id), preset));

@@ -153,6 +153,20 @@ test.describe('tree — fullscreen search-mode toggle (show-search-mode-toggle)'
         await expect(toggle(p)).toHaveAttribute('aria-label', 'Switch to navigate mode');
     });
 
+    test('switching mode on an empty search box leaves nothing focused', async ({ page }) => {
+        const p = picker(page, 'tree-navigate-fs-toggle');
+        await openFullscreen(p);
+        // Empty box on open: no row focused (parity with a fresh open).
+        await expect(focused(p)).toHaveCount(0);
+        await toggle(p).click(); // → navigate, still empty
+        await expect(focused(p)).toHaveCount(0);
+        await toggle(p).click(); // → filter, still empty (the reported bug)
+        await expect(focused(p)).toHaveCount(0);
+        // Typing still auto-focuses the first result.
+        await fsSearch(p).fill('e');
+        await expect(focused(p)).toHaveCount(1);
+    });
+
     test('the placeholder is mode-aware and switches with the toggle', async ({ page }) => {
         const p = picker(page, 'tree-navigate-fs-toggle');
         await openFullscreen(p);

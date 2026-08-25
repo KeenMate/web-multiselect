@@ -98,7 +98,11 @@
   --ms-primary-bg-hover: var(--base-active-bg, color-mix(in srgb, var(--ms-text-color-1) 14%, var(--base-main-bg, light-dark(#ffffff, #1a1a1a))));
 
   /* Border Base Variables */
-  --ms-border-color: var(--base-border-color, light-dark(#e5e7eb, #3a3a3a));
+  /* Default border colour. The previous fallbacks (#e5e7eb light / #3a3a3a dark) were very
+     low contrast against white / near-black surfaces — the 1px input/panel edge nearly
+     vanished, especially on phones. Bumped to a clearly-visible gray on each side (still
+     soft, not harsh). Consumers with `--base-border-color` set are unaffected. */
+  --ms-border-color: var(--base-border-color, light-dark(#cbd5e1, #52525b));
   --ms-border: var(--base-border, 1px solid var(--ms-border-color));
 
   /* ==========================================================================

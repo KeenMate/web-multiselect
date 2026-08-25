@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0-rc07] - 2026-08-23
+## [2.0.0-rc07] - 2026-08-25 [PUBLISHED]
 
 ### Added
 
@@ -46,10 +46,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Default border colour bumped for visibility.** `--ms-border-color`'s fallbacks were very
+  low-contrast — `#e5e7eb` on white and `#3a3a3a` on near-black — so the 1px input/panel edge
+  nearly vanished, especially on phones. Now `light-dark(#cbd5e1, #52525b)`: a clearly-visible
+  (still soft) gray on each side. Drives `--ms-border` / `--ms-input-border` and every border that
+  inherits it. Consumers who set `--base-border-color` (or `--ms-*` border overrides) are unaffected.
+
 - **Requires `@keenmate/web-components-core` `1.0.0-rc08`** (was `rc07`) — for the shared
   `presentationContext()` / `PresentationContext` used by the responsive-rendering context above.
 
 ### Fixed
+
+- **Switching search mode (or clearing the box) auto-focused the first row on an empty search.**
+  `handleSearch('')` — which the search-mode toggle and a cleared field both trigger — took the
+  empty-search branch and set `focusedIndex = 0`, highlighting the first row as if it were picked.
+  A fresh `open()` leaves nothing focused (`-1`); auto-focusing the top row is only meaningful once
+  the user types (so Enter selects the top result). The empty-search branches (flat + tree, both
+  modes) now leave `focusedIndex = -1`, so an empty box never highlights a row; typing still
+  auto-focuses the first result.
 
 - **Fullscreen match-navigator buttons flashed a pale chip on dark/custom themes.** The prev/next
   step buttons' hover default was `--ms-fullscreen-nav-btn-bg-hover: var(--ms-accent-color-light)`,

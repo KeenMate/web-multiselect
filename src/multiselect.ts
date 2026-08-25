@@ -1763,7 +1763,7 @@ export class WebMultiSelect<T = any> {
                     // (parity with the flat-list navigate branch below).
                     const firstMatchIndex = this.rebuildTreeVisibleForNavigate();
                     if (!this.searchTerm.trim()) {
-                        this.focusedIndex = this.filteredOptions.length > 0 ? 0 : -1;
+                        this.focusedIndex = -1; // empty box: nothing focused (parity with open())
                     } else if (firstMatchIndex >= 0) {
                         this.focusedIndex = firstMatchIndex;
                     } // else: term with no matches — keep previous focus (flat-navigate parity)
@@ -1776,15 +1776,21 @@ export class WebMultiSelect<T = any> {
                 // rather than the flat option list, keeping indentation coherent.
                 this.rebuildTreeVisible();
                 this.matchingIndices.clear();
-                this.focusedIndex = this.filteredOptions.length > 0 ? 0 : -1;
+                // Auto-focus the first row only once there's a term (parity with open() and
+                // the flat branches) — an empty box leaves nothing focused.
+                this.focusedIndex = this.searchTerm.trim() && this.filteredOptions.length > 0 ? 0 : -1;
                 this.renderDropdown();
                 return;
             }
             if (!processedValue) {
-                // Empty search - show all options
+                // Empty search - show all options. Leave nothing focused (focusedIndex -1),
+                // matching a fresh open(): auto-focusing the first row is only meaningful once
+                // the user types (so Enter picks the top result). Without this, calling
+                // handleSearch('') — e.g. the search-mode toggle, or clearing the box — would
+                // highlight the first row on an empty box, which reads as an accidental selection.
                 this.filteredOptions = [...this.allOptions];
                 this.matchingIndices.clear();
-                this.focusedIndex = this.filteredOptions.length > 0 ? 0 : -1;
+                this.focusedIndex = -1;
             } else {
                 const searchMode = this.options.searchMode || 'filter';
                 const lowerSearch = processedValue.toLowerCase();
