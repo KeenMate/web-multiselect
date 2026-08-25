@@ -5,6 +5,34 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0-rc08] - 2026-08-25
+
+### Added
+
+- **`keydownCallback` — a consumer keyboard hook.** A new property-only callback (config
+  `keydownCallback`, set via `el.keydownCallback = …`) that runs on **every** keydown, before all
+  built-in handling, with a `MultiSelectKeydownContext`: the raw `event`, `key`, `isOpen`,
+  `presentation`, `searchTerm`, `focusedIndex` / `focusedOption`, `filteredOptions`, `selectedValues`,
+  and a `controller` — an imperative facade (`MultiSelectKeyboardController`) mirroring the built-in
+  actions (`focusNext/Previous/First/Last`, `focusPageUp/Down`, `focusNextMatch/PreviousMatch`,
+  `focusIndex`, `toggleFocused`, `toggleValue`, `selectValue`, `deselectValue`, `open`, `close`,
+  `setSearch`, `clearSearch`). Return
+  `true` to mark the key fully handled — the component runs none of its own logic for it (you own
+  `preventDefault`); return `false`/`undefined` to fall through to the defaults. Use it to remap keys
+  (Vim `j`/`k`), add shortcuts (Ctrl+A → select all), or suppress a default — the veto-hook shape KM
+  components share (cf. svelte-treeview's `onTreeKeydown`). Reactive; no reinit.
+
+### Fixed
+
+- **`Home` / `End` in the search box stole the text caret to jump the list.** Both keys were
+  intercepted unconditionally (`preventDefault` + focus first/last), so pressing `Home` to move the
+  caret to the start of the search text jumped list focus instead — breaking normal text-field muscle
+  memory. They're now **caret-aware**: in an editable search field the key moves the caret first, and
+  only navigates the list when the caret is already at that end (or the box is empty / has no editable
+  caret); an active text selection is left to the browser. So `Home` moves the caret to the start, and
+  a second `Home` (already there) jumps to the first option. Empty-box `Home`/`End` navigation is
+  unchanged.
+
 ## [2.0.0-rc07] - 2026-08-25 [PUBLISHED]
 
 ### Added

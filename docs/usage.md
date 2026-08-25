@@ -219,6 +219,29 @@ multiselect.beforeDeselectCallback = (option, selectedOptions) => {
   if (option.value === 'item1') return false;
 };
 
+// Keyboard hook — runs on every keydown BEFORE the built-in handling.
+// Return true to mark the key fully handled (you own preventDefault; the
+// component runs none of its own logic for it); return false/undefined to
+// fall through to the defaults. `ctx.controller` mirrors the built-in actions.
+multiselect.keydownCallback = (ctx) => {
+  // Vim-style navigation. Returning true means you own the key — call
+  // preventDefault() so a printable key like 'j' isn't also typed into search.
+  if (ctx.key === 'j') { ctx.event.preventDefault(); ctx.controller.focusNext(); return true; }
+  if (ctx.key === 'k') { ctx.event.preventDefault(); ctx.controller.focusPrevious(); return true; }
+  // Ctrl+A → select all currently-filtered options (selectValue is a no-op if
+  // already selected — so it's a true "select all", not a toggle/invert)
+  if ((ctx.event.ctrlKey || ctx.event.metaKey) && ctx.key === 'a') {
+    ctx.event.preventDefault();
+    ctx.filteredOptions.forEach(o => ctx.controller.selectValue(o.value));
+    return true;
+  }
+  // ctx also exposes: event, key, isOpen, presentation, searchTerm,
+  // focusedIndex, focusedOption, filteredOptions, selectedValues.
+  // controller: focusNext/Previous/First/Last, focusPageUp/Down,
+  // focusNextMatch/PreviousMatch, focusIndex, toggleFocused, toggleValue,
+  // selectValue, deselectValue, open, close, setSearch, clearSearch.
+};
+
 // Event handler properties. Since v2 these are real listeners: each receives
 // the same CustomEvent addEventListener('select', ...) would get, so read the
 // payload off `e.detail` — NOT as a bare argument.

@@ -12,7 +12,7 @@ import { anchor, createTooltip, createPopover, type Placement, type TooltipHandl
 // Fullscreen-overlay primitives (SPEC §12.9) — shared with any component that swaps a
 // floating panel for a full-viewport sheet on phones (daterangepicker's fullscreen calendar).
 import { lockBodyScroll, observeKeyboardInset, presentationContext } from '@keenmate/web-components-core';
-import type { MultiSelectConfig, BadgesPosition, SearchInputMode, SearchMode, OptionContentRenderContext, BadgeContentRenderContext, MessageOptions } from './types';
+import type { MultiSelectConfig, BadgesPosition, SearchInputMode, SearchMode, OptionContentRenderContext, BadgeContentRenderContext, MultiSelectKeyboardController, MultiSelectKeydownContext, MessageOptions } from './types';
 import { initLogger, dataLogger, uiLogger, interactionLogger } from './logger';
 import { VirtualScroll } from './virtual-scroll';
 import { createLTree, type LTree } from './tree/ltree';
@@ -49,6 +49,8 @@ export class WebMultiSelect<T = any> {
     private cascadeCheckedAtoms: Set<string> = new Set();
     private hiddenInputs: HTMLInputElement[] = [];
     private focusedIndex = -1;
+    // Stable imperative facade handed to keydownCallback (built once, reused). See getKeyboardController().
+    private keyboardController: MultiSelectKeyboardController<T> | null = null;
     private matchingIndices: Set<number> = new Set();
     private searchTerm = '';
     private isLoading = false;
@@ -1919,6 +1921,25 @@ export class WebMultiSelect<T = any> {
     }
 
     private handleKeydown(e: KeyboardEvent): void {
+        // Consumer keyboard hook: runs before ALL built-in handling (open or closed). Returning
+        // true marks the key fully handled — the consumer owns preventDefault and we run none of
+        // our own logic for it. Anything else falls through to the defaults below.
+        if (this.options.keydownCallback) {
+            const handled = this.options.keydownCallback({
+                event: e,
+                key: e.key,
+                isOpen: this.isOpen,
+                presentation: this.presentationMode,
+                searchTerm: this.searchTerm,
+                focusedIndex: this.focusedIndex,
+                focusedOption: (this.focusedIndex >= 0 ? this.filteredOptions[this.focusedIndex] : null) ?? null,
+                filteredOptions: this.filteredOptions,
+                selectedValues: [...this.selectedValues],
+                controller: this.getKeyboardController(),
+            });
+            if (handled === true) return;
+        }
+
         if (!this.isOpen) {
             if (e.key === 'Enter' || e.key === 'ArrowDown') {
                 e.preventDefault();
@@ -1979,12 +2000,7 @@ export class WebMultiSelect<T = any> {
                 if (this.showSelectedPopover) {
                     this.hideSelectedPopover();
                 } else if (this.input.value) {
-                    this.input.value = '';
-                    this.searchTerm = '';
-                    this.resetVisibleToAll();
-                    this.matchingIndices.clear();
-                    this.focusedIndex = -1;
-                    this.renderDropdown();
+                    this.clearSearch();
                 } else {
                     this.close();
                 }
@@ -2001,13 +2017,29 @@ export class WebMultiSelect<T = any> {
                 this.focusPageDown();
                 break;
             case 'Home':
-                e.preventDefault();
-                this.focusFirst();
+            case 'End': {
+                // Caret-aware: in an editable search field, let Home/End move the text caret
+                // first; only navigate the list when the caret is already at that end (or the
+                // box is empty / there's no editable caret). Pressing Home in a search box with
+                // text no longer steals the caret to jump to the first option. An active text
+                // selection is left to the browser (native collapse), not treated as a boundary.
+                const inp = e.target instanceof HTMLInputElement ? e.target : null;
+                let atBoundary: boolean;
+                if (!inp) {
+                    atBoundary = true;
+                } else if (inp.selectionStart !== inp.selectionEnd) {
+                    atBoundary = false;
+                } else {
+                    const caret = inp.selectionStart ?? 0;
+                    atBoundary = e.key === 'Home' ? caret === 0 : caret === inp.value.length;
+                }
+                if (atBoundary) {
+                    e.preventDefault();
+                    if (e.key === 'Home') this.focusFirst();
+                    else this.focusLast();
+                }
                 break;
-            case 'End':
-                e.preventDefault();
-                this.focusLast();
-                break;
+            }
         }
     }
 
@@ -2258,6 +2290,64 @@ export class WebMultiSelect<T = any> {
         const prevIndex = currentIndex <= 0 ? matched.length - 1 : currentIndex - 1;
         this.focusBy(() => matched[prevIndex]);
         interactionLogger.debug(`[${this.instanceId}] Jumped to previous match: index ${this.focusedIndex} (${currentIndex + 1} of ${matched.length})`);
+    }
+
+    /** Lazily build (and cache) the imperative facade passed to `keydownCallback`. Bound to the
+     *  same private actions the built-in key handling uses, so consumer shortcuts behave identically. */
+    private getKeyboardController(): MultiSelectKeyboardController<T> {
+        if (this.keyboardController) return this.keyboardController;
+        this.keyboardController = {
+            focusNext: () => this.focusNext(),
+            focusPrevious: () => this.focusPrevious(),
+            focusFirst: () => this.focusFirst(),
+            focusLast: () => this.focusLast(),
+            focusPageUp: () => this.focusPageUp(),
+            focusPageDown: () => this.focusPageDown(),
+            focusNextMatch: () => this.focusNextMatch(),
+            focusPreviousMatch: () => this.focusPreviousMatch(),
+            focusIndex: (index: number) => this.focusBy(() => index, 1),
+            toggleFocused: () => {
+                if (this.focusedIndex >= 0) this.toggleOption(this.filteredOptions[this.focusedIndex]);
+            },
+            toggleValue: (value: string | number) => {
+                const opt = this.allOptions.find(o => String(this.getItemValue(o)) === String(value));
+                if (opt) this.toggleOption(opt);
+            },
+            selectValue: (value: string | number) => {
+                if (this.selectedValues.has(String(value))) return; // already selected — no-op
+                const opt = this.allOptions.find(o => String(this.getItemValue(o)) === String(value));
+                if (opt) this.toggleOption(opt);
+            },
+            deselectValue: (value: string | number) => {
+                if (!this.selectedValues.has(String(value))) return; // not selected — no-op
+                const opt = this.selectedOptions.get(String(value))
+                    ?? this.allOptions.find(o => String(this.getItemValue(o)) === String(value));
+                if (opt) this.toggleOption(opt);
+            },
+            open: () => this.open(),
+            close: () => this.close(),
+            setSearch: (term: string) => {
+                this.input.value = term;
+                if (this.fullscreenSearchInput) this.fullscreenSearchInput.value = term;
+                void this.handleSearch(term);
+            },
+            clearSearch: () => this.clearSearch(),
+        };
+        return this.keyboardController;
+    }
+
+    /** Clear the search box (both the main input and the fullscreen search) and reset the visible
+     *  list. Shared by Escape and the keyboard controller. */
+    private clearSearch(): void {
+        this.input.value = '';
+        if (this.fullscreenSearchInput) this.fullscreenSearchInput.value = '';
+        this.searchTerm = '';
+        this.resetVisibleToAll();
+        this.matchingIndices.clear();
+        this.focusedIndex = -1;
+        this.renderDropdown();
+        this.updateFullscreenNav();
+        this.updateFullscreenSearchClear();
     }
 
     private scrollToFocused(): void {

@@ -63,6 +63,30 @@ test.describe('basic arrow navigation', () => {
         await expect(focused(p)).toContainText('Item 19');
     });
 
+    test('Home/End are caret-aware in the search box (move the caret before navigating)', async ({ page }) => {
+        const p = picker(page, 'kb-filter');
+        const input = p.locator('.ms__input');
+        await openWithKeyboard(p);
+        await input.type('item');                 // filters + auto-focuses the first result
+        await page.keyboard.press('ArrowDown');
+        await page.keyboard.press('ArrowDown');
+        await page.keyboard.press('ArrowDown');    // focus Item 03; caret sits at end (4)
+        await expect(focused(p)).toContainText('Item 03');
+
+        // Home with the caret NOT at 0 → moves the caret, does NOT steal list focus.
+        await page.keyboard.press('Home');
+        await expect(input).toHaveJSProperty('selectionStart', 0);
+        await expect(focused(p)).toContainText('Item 03');
+
+        // Home again (caret already at 0) → now it navigates to the first option.
+        await page.keyboard.press('Home');
+        await expect(focused(p)).toContainText('Item 00');
+
+        // End with the caret at 0 → moves the caret to the end (no navigation yet).
+        await page.keyboard.press('End');
+        await expect(input).toHaveJSProperty('selectionStart', 4);
+    });
+
     test('PageDown moves 10 options', async ({ page }) => {
         const p = picker(page, 'kb-filter');
         await openWithKeyboard(p);
@@ -166,5 +190,63 @@ test.describe('focused option scrolls into view', () => {
         // The focused last option must be visible (in viewport).
         const focusedOpt = focused(p);
         await expect(focusedOpt).toBeInViewport();
+    });
+});
+
+test.describe('keydownCallback — consumer keyboard hook', () => {
+    test('a custom shortcut can navigate via the controller and suppress the default', async ({ page }) => {
+        const p = picker(page, 'kb-filter');
+        // Bind before opening: pressing "g" jumps to the last option and swallows the key.
+        await p.evaluate((el: any) => {
+            el.keydownCallback = ({ key, event, controller }: any) => {
+                if (key === 'g') { event.preventDefault(); controller.focusLast(); return true; }
+            };
+        });
+        await openWithKeyboard(p);
+
+        await page.keyboard.press('g');
+        // Focus jumped to the last option, and "g" was NOT typed into the search box.
+        await expect(focused(p)).toContainText('Item 19');
+        await expect(p.locator('.ms__input')).toHaveValue('');
+    });
+
+    test('returning falsy lets the built-in handling run', async ({ page }) => {
+        const p = picker(page, 'kb-filter');
+        // A hook that only cares about "g" — every other key falls through to defaults.
+        await p.evaluate((el: any) => {
+            el.keydownCallback = ({ key }: any) => (key === 'g' ? true : undefined);
+        });
+        await openWithKeyboard(p);
+
+        await page.keyboard.press('ArrowDown');       // default nav still works
+        await expect(focused(p)).toContainText('Item 00');
+        await p.locator('.ms__input').type('x');      // default typing still works
+        await expect(p.locator('.ms__input')).toHaveValue('x');
+    });
+
+    test('controller.selectValue is a true select-all (idempotent, not a toggle)', async ({ page }) => {
+        const p = picker(page, 'kb-filter');
+        await p.evaluate((el: any) => {
+            el.keydownCallback = ({ key, event, controller, filteredOptions }: any) => {
+                if ((event.ctrlKey || event.metaKey) && key.toLowerCase() === 'a') {
+                    event.preventDefault();
+                    filteredOptions.forEach((o: any) => controller.selectValue(o.value));
+                    return true;
+                }
+            };
+        });
+        await openWithKeyboard(p);
+
+        const total = await p.locator('.ms__option').count();
+        // Pre-select one so a toggle would DEselect it — selectValue must not.
+        await page.keyboard.press('ArrowDown');
+        await page.keyboard.press('Enter');
+        expect(await p.evaluate((el: any) => el.getValue().length)).toBe(1);
+
+        await page.keyboard.press('Control+a');
+        expect(await p.evaluate((el: any) => el.getValue().length)).toBe(total);
+        // Pressing it again keeps them all selected (idempotent), not inverted.
+        await page.keyboard.press('Control+a');
+        expect(await p.evaluate((el: any) => el.getValue().length)).toBe(total);
     });
 });

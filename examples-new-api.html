@@ -782,6 +782,53 @@ buSelect.addEventListener('change', async (e) =&gt; {
         </section>
 
         <section class="example-section">
+            <h2>⌨️ Keyboard Hook — redefine key behavior <span class="badge new">NEW</span></h2>
+            <p class="description">
+                <code>keydownCallback</code> runs on <strong>every keydown before</strong> the built-in
+                handling. Return <code>true</code> to fully handle a key (the component then does nothing
+                else for it — you own <code>preventDefault</code>); return falsy to fall through to the
+                defaults. It receives the event, current state, and a <code>controller</code> that mirrors
+                the built-in actions. Open the picker and try the custom keys:
+            </p>
+            <ul>
+                <li><kbd>j</kbd> / <kbd>k</kbd> — move focus down / up (Vim style)</li>
+                <li><kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>a</kbd> — select all currently-filtered options</li>
+                <li><kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>i</kbd> — invert the selection of the filtered options</li>
+                <li>everything else (arrows, Enter, typing…) still works — those keys fall through</li>
+            </ul>
+
+            <div class="demo-area">
+                <label class="demo-label">Frameworks (open, then press <kbd>j</kbd>/<kbd>k</kbd>):</label>
+                <web-multiselect id="kbd-hook" multiple value-member="value" display-value-member="label"
+                    search-placeholder="Type to filter, j/k to move…"></web-multiselect>
+                <div class="output">
+                    <div class="output-label">Last hook action:</div>
+                    <pre id="kbd-hook-log">—</pre>
+                </div>
+            </div>
+
+            <p class="code-label">Implementation:</p>
+            <div class="code-block"><pre>picker.keydownCallback = (ctx) =&gt; {
+    const { key, event, controller, filteredOptions } = ctx;
+    // Returning true means YOU fully own the key — call preventDefault() so a
+    // printable key like 'j' isn't also typed into the search box.
+    if (key === 'j') { event.preventDefault(); controller.focusNext();     return true; }  // Vim down
+    if (key === 'k') { event.preventDefault(); controller.focusPrevious(); return true; }  // Vim up
+    if ((event.ctrlKey || event.metaKey) &amp;&amp; key.toLowerCase() === 'a') {
+        event.preventDefault();
+        filteredOptions.forEach(o =&gt; controller.selectValue(o.value)); // select all shown (no-op if already selected)
+        return true;
+    }
+    if ((event.ctrlKey || event.metaKey) &amp;&amp; key.toLowerCase() === 'i') {
+        event.preventDefault();
+        filteredOptions.forEach(o =&gt; controller.toggleValue(o.value)); // invert = toggle each
+        return true;
+    }
+    // return nothing → the built-in handling runs (arrows, Enter, typing, …)
+};</pre></div>
+        </section>
+
+        <section class="example-section">
             <h2>✨ Benefits Summary</h2>
             <div class="grid-2">
                 <div>
@@ -809,10 +856,38 @@ buSelect.addEventListener('change', async (e) =&gt; {
     </div>
 
     <script type="module">
-        import './dist/multiselect.js';
+        import '/src/index.ts';
 
         // Wait for custom element to be defined
         customElements.whenDefined('web-multiselect').then(() => {
+            // Keyboard hook demo — remap keys via keydownCallback + its controller.
+            const kbdHook = document.getElementById('kbd-hook');
+            kbdHook.options = [
+                { value: 'react', label: 'React' }, { value: 'vue', label: 'Vue.js' },
+                { value: 'angular', label: 'Angular' }, { value: 'svelte', label: 'Svelte' },
+                { value: 'solid', label: 'SolidJS' }, { value: 'qwik', label: 'Qwik' },
+                { value: 'lit', label: 'Lit' }, { value: 'preact', label: 'Preact' }
+            ];
+            const kbdLog = document.getElementById('kbd-hook-log');
+            kbdHook.keydownCallback = (ctx) => {
+                const { key, event, controller, filteredOptions } = ctx;
+                if (key === 'j') { event.preventDefault(); controller.focusNext();     kbdLog.textContent = "'j' → focus next"; return true; }
+                if (key === 'k') { event.preventDefault(); controller.focusPrevious(); kbdLog.textContent = "'k' → focus previous"; return true; }
+                if ((event.ctrlKey || event.metaKey) && key.toLowerCase() === 'a') {
+                    event.preventDefault();
+                    filteredOptions.forEach(o => controller.selectValue(o.value));
+                    kbdLog.textContent = `Ctrl/Cmd+A → selected all ${filteredOptions.length} filtered`;
+                    return true;
+                }
+                if ((event.ctrlKey || event.metaKey) && key.toLowerCase() === 'i') {
+                    event.preventDefault();
+                    filteredOptions.forEach(o => controller.toggleValue(o.value));
+                    kbdLog.textContent = `Ctrl/Cmd+I → inverted ${filteredOptions.length} filtered`;
+                    return true;
+                }
+                // falsy → built-in handling runs
+            };
+
             // Example 1: Custom Objects
             const customObjectsSelect = document.querySelector('#custom-objects');
             customObjectsSelect.options = [

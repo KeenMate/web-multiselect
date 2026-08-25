@@ -215,6 +215,7 @@ Tree + multiple only.` },
   { configKey: 'beforeSelectCallback',    converter: cb(), on: 'update', type: '(option: unknown, selectedOptions: unknown[]) => boolean | string | void', description: 'Runs before selecting; return false to veto, or a string to veto and show it as a message.' },
   { configKey: 'beforeDeselectCallback',  converter: cb(), on: 'update', type: '(option: unknown, selectedOptions: unknown[]) => boolean | string | void', description: 'Runs before deselecting; return false to veto, or a string to veto and show it as a message.' },
   { configKey: 'addNewCallback',          converter: cb(), on: 'update', type: '(value: string) => unknown | Promise<unknown>', description: 'Create a new option from the typed text.' },
+  { configKey: 'keydownCallback',         converter: cb(), on: 'update', type: '(context: MultiSelectKeydownContext) => boolean | void', description: 'Intercept keydown before built-in handling; return true to suppress the default. Gets the event, current state, and an imperative controller.' },
 ];
 
 // Outward events (core §12.5). These install managed `onSelect`/`onDeselect`/

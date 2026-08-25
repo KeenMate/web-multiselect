@@ -128,6 +128,71 @@ export interface BadgeContentRenderContext extends PresentationContext {
 }
 
 /**
+ * Imperative facade handed to `keydownCallback` so a consumer can drive the picker without
+ * reaching into internals. Every method mirrors a built-in keyboard action.
+ */
+export interface MultiSelectKeyboardController<T = any> {
+    /** Move focus to the next / previous option. */
+    focusNext(): void;
+    focusPrevious(): void;
+    /** Move focus to the first / last option. */
+    focusFirst(): void;
+    focusLast(): void;
+    /** Move focus by a page (10 rows). */
+    focusPageUp(): void;
+    focusPageDown(): void;
+    /** Navigate-mode only: jump focus to the next / previous match. */
+    focusNextMatch(): void;
+    focusPreviousMatch(): void;
+    /** Focus a specific index in the filtered list (ignored if out of range). */
+    focusIndex(index: number): void;
+    /** Toggle the currently focused option (no-op if nothing is focused). */
+    toggleFocused(): void;
+    /** Toggle a specific option by its value (select ⇄ deselect). */
+    toggleValue(value: string | number): void;
+    /** Select a specific option by its value (no-op if already selected). */
+    selectValue(value: string | number): void;
+    /** Deselect a specific option by its value (no-op if not selected). */
+    deselectValue(value: string | number): void;
+    /** Open / close the dropdown. */
+    open(): void;
+    close(): void;
+    /** Set the search box text (runs the search). */
+    setSearch(term: string): void;
+    /** Clear the search box and reset the visible list. */
+    clearSearch(): void;
+}
+
+/**
+ * Context passed to `keydownCallback`, which runs before all built-in keyboard handling.
+ * Return `true` to mark the key fully handled (the component then runs none of its own
+ * key logic — you own `preventDefault`); return `false`/`undefined` to fall through to the
+ * defaults. Mirrors the veto-hook shape used across KM components.
+ */
+export interface MultiSelectKeydownContext<T = any> {
+    /** The raw keyboard event — call `preventDefault()` yourself if you handle the key. */
+    event: KeyboardEvent;
+    /** `event.key`, for convenience. */
+    key: string;
+    /** Whether the dropdown is currently open. */
+    isOpen: boolean;
+    /** How the open panel is presented (`floating` / `fullscreen`). */
+    presentation: 'floating' | 'fullscreen';
+    /** The current search term. */
+    searchTerm: string;
+    /** Index of the focused option in the filtered list (`-1` when nothing is focused). */
+    focusedIndex: number;
+    /** The focused option object, or `null`. */
+    focusedOption: T | null;
+    /** The options currently visible (after filtering). */
+    filteredOptions: ReadonlyArray<T>;
+    /** The currently selected values. */
+    selectedValues: ReadonlyArray<string>;
+    /** Imperative actions mirroring the built-in keyboard behavior. */
+    controller: MultiSelectKeyboardController<T>;
+}
+
+/**
  * Action button configuration for dropdown actions (Select All, Clear All, custom actions)
  * @template T The type of data items
  */
@@ -543,6 +608,15 @@ export interface MultiSelectConfig<T = any> {
     searchCallback?: ((searchTerm: string, signal?: AbortSignal) => Promise<T[]>) | null;
     /** Callback to add a new option when isAddNewAllowed is true */
     addNewCallback?: ((value: string) => T | Promise<T>) | null;
+    /**
+     * Intercept keyboard input before the built-in handling. Runs on every keydown (open or
+     * closed) with a {@link MultiSelectKeydownContext} carrying the event, current state, and a
+     * {@link MultiSelectKeyboardController}. Return `true` to mark the key fully handled — the
+     * component then runs none of its own key logic (you own `preventDefault`); return
+     * `false`/`undefined` to fall through to the defaults. Use it to remap keys (Vim `j`/`k`),
+     * add shortcuts (Ctrl+A → select all), or suppress a default. Property-only.
+     */
+    keydownCallback?: ((context: MultiSelectKeydownContext<T>) => boolean | void) | null;
     /** Event handler: an option was selected (fire-and-forget; return value ignored). Mirrors the bubbling `select` CustomEvent on the element. */
     onSelect?: ((option: T) => void) | null;
     /** Event handler: an option was deselected (fire-and-forget). Mirrors the bubbling `deselect` CustomEvent on the element. */
