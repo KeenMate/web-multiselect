@@ -796,6 +796,13 @@ buSelect.addEventListener('change', async (e) =&gt; {
                 <li><kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>i</kbd> — invert the selection of the filtered options</li>
                 <li>everything else (arrows, Enter, typing…) still works — those keys fall through</li>
             </ul>
+            <div class="note">
+                <strong>Note:</strong> mapping bare <kbd>j</kbd>/<kbd>k</kbd> means you can no longer
+                <em>type</em> those letters into the search box (the hook claims them). That's fine here —
+                this demo just shows <em>how</em> a hook can remap keys. In a real app you'd bind
+                modifier combos (like the <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> shortcuts above) or gate a plain
+                key on the dropdown being open with an empty search, so normal typing isn't affected.
+            </div>
 
             <div class="demo-area">
                 <label class="demo-label">Frameworks (open, then press <kbd>j</kbd>/<kbd>k</kbd>):</label>
