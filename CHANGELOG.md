@@ -5,6 +5,46 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0-rc09] - 2026-08-26 [PUBLISHED]
+
+### Changed
+
+- **Close/remove `×` icon is now true Lucide `x`.** `--ms-icon-remove` (the badge remove `×`
+  and the fullscreen/popover close `✕`) was a hand-drawn X — two crossing lines in one path at
+  stroke-width `2.5`. Swapped to Lucide's exact `x` (two paths, stroke-width `2`, round joins) so
+  the whole icon set is Lucide-consistent (matching `search-x`, the magnifier, and the funnel).
+  Purely cosmetic — a hair thinner; still themeable via `--ms-icon-remove`.
+
+### Fixed
+
+- **Fullscreen close (`✕`) button dropped onto a second line on narrower phones.** The overlay
+  header is `flex-wrap: wrap` (so the navigate-mode match-nav row can drop below), and flex decides
+  which items share a line from each item's flex-basis *before* flex-shrink is applied. The leading
+  search wrapper used `flex: 1 1 auto`, so its hypothetical size was its full content width (toggle +
+  input + placeholder + clear gutter); once that plus the gap plus the close button overflowed the
+  line by even a sub-pixel, the close wrapped to its own row — even though the wrapper was fully
+  shrinkable and could have made room. That's why it reproduced only on *some* (narrower) phones.
+  Changed to `flex: 1 1 0` so the wrapper's hypothetical size is 0 and never forces the close to
+  wrap; flex-grow still fills the bar. Same fix applied to the selected-items popover header.
+
+- **Fullscreen search-mode toggle (magnifier/funnel) and the close (`✕`) weren't visually
+  symmetric across the bar.** The close is pulled toward the trailing edge by
+  `--ms-fullscreen-close-edge-nudge`; the leading mode toggle had no matching inset and used a
+  smaller default gap, so the two glyphs sat at different distances from their respective edges. The
+  toggle now takes a mirrored `margin-inline-start` — `(close-size − toggle-size)/2 − edge-nudge` —
+  that lands its drawn glyph centre the same distance from the leading edge as the close's is from
+  the trailing edge (the size term compensates for the toggle being a smaller chip), and
+  `--ms-fullscreen-mode-toggle-gap` now defaults to `--ms-fullscreen-header-gap` so the
+  toggle↔field and field↔close spacings match. Measured glyph centres now both land 26.4px from
+  their edges.
+
+- **Fullscreen action buttons (Select All / Clear All) started ~0.4rem further out than the rest of
+  the content.** The actions row inherited `--ms-actions-padding: 0.8rem` (uniform), while the header
+  search field and the option rows use a 1.2rem horizontal gutter (`--ms-fullscreen-header-padding-h`
+  / `--ms-option-padding-h`), so the buttons' outer edges didn't line up with the search field or the
+  option checkboxes. The overlay now sets `--ms-actions-padding: 0.8rem 1.2rem` — horizontal matches
+  the shared gutter, vertical keeps the row's own rhythm — so everything aligns on one vertical edge.
+
 ## [2.0.0-rc08] - 2026-08-25 [PUBLISHED]
 
 ### Added

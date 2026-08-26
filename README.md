@@ -21,25 +21,21 @@ Reads `--base-*` variables from the page if [`@keenmate/theme-designer`](https:/
 - Custom rendering callbacks for options, badges, and group headers.
 - Form integration via standard hidden inputs (FormData-compatible).
 
+## What's New in v2.0.0-rc09
+
+- **Fullscreen header — the close (✕) button no longer wraps to a second line** — On narrower phones the ✕ could drop below the search field instead of sharing its row, and only on *some* devices. The overlay header is `flex-wrap: wrap` (so the navigate-mode match-nav row can drop below), and flex chooses which items share a line from each item's flex-basis *before* shrinking — so the leading search wrapper's `flex: 1 1 auto` reserved its full content width and pushed the ✕ over the edge even though it was fully shrinkable. Switching the wrapper (and the selected-items popover header) to `flex: 1 1 0` keeps the ✕ on the header row at every width while flex-grow still fills the bar.
+
+- **Fullscreen header — the search-mode toggle and the close button are now symmetric** — With `show-search-mode-toggle` enabled, the leading magnifier/funnel toggle and the trailing ✕ sat at different distances from their edges: the ✕ is nudged toward the trailing edge but the toggle had no matching inset and used a smaller gap. The toggle now takes a mirrored `margin-inline-start` that lands its drawn glyph centre the same distance from the leading edge as the ✕'s is from the trailing edge (compensating for the toggle being a smaller chip), and its gap defaults to the header gap — measured glyph centres now both land 26.4px in.
+
+- **Fullscreen action buttons align with the rest of the content** — Select All / Clear All started ~0.4rem further out than the search field and option checkboxes, because the actions row used a uniform 0.8rem padding while the header and options use a 1.2rem horizontal gutter. The overlay now sets `--ms-actions-padding: 0.8rem 1.2rem`, so the buttons' outer edges line up on the same vertical edge as everything above them.
+
+- **Consistent Lucide `x` close icon** — `--ms-icon-remove` (the badge remove × and the fullscreen/popover close ✕) was a hand-drawn X at stroke-width 2.5; it's now Lucide's exact `x` (stroke-width 2, round joins) so the whole icon set stays Lucide-consistent with the magnifier, funnel, and `search-x`. Cosmetic only, still themeable via `--ms-icon-remove`.
+
 ## What's New in v2.0.0-rc08
 
 - **Keyboard hook — redefine key behavior with `keydownCallback`** — A new property-only callback that runs on every keydown *before* the built-in handling, receiving the raw event, the current state (open, presentation, search term, focused option, filtered options, selection), and a `controller` — an imperative facade mirroring every built-in action (`focusNext/Previous/First/Last`, `focusPageUp/Down`, `focusNextMatch/PreviousMatch`, `focusIndex`, `toggleFocused`, `toggleValue`, `selectValue`, `deselectValue`, `open`, `close`, `setSearch`, `clearSearch`). Return `true` to fully own a key (you call `preventDefault`); return falsy to fall through to the defaults. Use it to remap keys (Vim `j`/`k`), add shortcuts (`Ctrl`+`A` → select all, `Ctrl`+`I` → invert), or suppress a default — the same veto-hook shape KM components share. Reactive, no reinit; set it as `el.keydownCallback = …`.
 
 - **`Home` / `End` no longer steal the caret in the search box** — Both keys were intercepted unconditionally to jump list focus to the first/last option, so pressing `Home` to move the caret to the start of the search text jumped the list instead — breaking normal text-field muscle memory. They're now caret-aware: in an editable search field the key moves the caret first, and only navigates the list when the caret is already at that end (or the box is empty / has no editable caret; an active selection is left to the browser). So `Home` moves the caret to the start, and a second `Home` (already there) jumps to the first option. Empty-box `Home`/`End` navigation is unchanged.
-
-## What's New in v2.0.0-rc07
-
-- **Responsive custom rendering — one callback, rich on desktop, lean on the phone** — `renderOptionContentCallback` (and the badge callback) now receive a `presentation` field (`'floating' | 'fullscreen'`) plus an `isFullscreen` convenience, resolved from the same device/viewport classification that chooses the overlay. A single callback can render a rich desktop row — price, popularity, a thumbnail — and a leaner one in the phone fullscreen sheet where space is tight, with no `matchMedia` or resize wiring in your page. It's reactive: rotating or resizing across the phone boundary re-renders and re-invokes the callback with the new value. The flags come from the shared `PresentationContext` in `@keenmate/web-components-core` (rc08), so the shape stays consistent across KM components.
-
-- **In-overlay filter ↔ navigate switch — `show-search-mode-toggle`** — An opt-in toggle at the leading edge of the phone fullscreen search field that flips `search-mode` between `filter` (narrow the list) and `navigate` (keep it whole, jump between matches) in place — no reopen. Its icon reflects the current mode (magnifier for navigate, funnel for filter), and switching rebuilds the `N of M` match navigator and re-projects the current term live. It's the touch stand-in for the desktop `Ctrl`+`Arrow` match-stepping phones can't reach. Enabled without an explicit `search-placeholder`, the placeholder also becomes mode-aware — `Search…` in navigate, `Filter…` in filter.
-
-- **More visible borders by default** — The default `--ms-border-color` was very low-contrast (`#e5e7eb` on white, `#3a3a3a` on near-black), so the 1px input and panel edges nearly disappeared, especially on phones. It's now `light-dark(#cbd5e1, #52525b)` — a clearly-visible but still soft gray on each side — driving every border that inherits it. Apps that set `--base-border-color` or their own `--ms-*` border overrides are unchanged.
-
-- **Fullscreen overlay polish** — Several phone-overlay rough edges are gone: the match-navigator prev/next buttons no longer flash a near-white chip on dark or custom themes (hover is now a translucent accent tint that adapts to any background), and the search field no longer jumps upward when the `N of M` navigator row appears (the header anchors its rows to the top so the field keeps a constant position).
-
-- **Sharper option checkboxes** — The option checkbox used to sit ~1px below the label's optical center because an asymmetric top margin fought the row's centering — most visible at larger scales like the fullscreen overlay. The default nudge is now `0` (center alignment is truly centered), scoped back only to the explicit top-aligned checkbox mode.
-
-- **No more phantom first-row highlight** — Switching search mode or clearing the box on an empty search used to highlight the first row as if it were selected. An empty box now leaves nothing focused (matching a fresh open); typing still auto-focuses the first result so Enter picks it.
 
 ## Demos & docs
 

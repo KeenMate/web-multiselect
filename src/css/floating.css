@@ -109,7 +109,11 @@
    the selected-items popover has no actions row. */
 .ms__dropdown--fullscreen {
   --ms-actions-gap: calc(0.4 * var(--ms-rem));
-  --ms-actions-padding: calc(0.8 * var(--ms-rem));
+  /* Horizontal padding matches the header (--ms-fullscreen-header-padding-h) and the
+     option rows (--ms-option-padding-h), both 1.2rem, so the action buttons' outer edges
+     line up with the search field and the option checkboxes instead of starting ~0.4rem
+     further out. Vertical stays 0.8rem for the row's own rhythm. */
+  --ms-actions-padding: calc(0.8 * var(--ms-rem)) calc(1.2 * var(--ms-rem));
   --ms-action-btn-padding: calc(0.6 * var(--ms-rem)) calc(1.2 * var(--ms-rem));
   --ms-action-btn-font-size: calc(var(--base-font-size-sm, 1.4) * var(--ms-rem));
 }
@@ -286,10 +290,20 @@
 }
 
 /* The leading element (search field's wrapper or the title) fills the bar, pushing
-   the close button to the trailing edge in both overlays. */
+   the close button to the trailing edge in both overlays.
+
+   flex-basis MUST be 0, not auto. The header is `flex-wrap: wrap` (so the navigate
+   nav row can drop below), and flex decides which items share a line using each
+   item's flex-basis BEFORE applying flex-shrink. With `auto`, this element's
+   hypothetical size is its CONTENT width (toggle + input + placeholder + clear
+   gutter); once that + gap + the close button overflows the line by even a
+   sub-pixel, the close wraps onto its own row — even though this element is fully
+   shrinkable and could have made room. That's the "close on a second line, but only
+   on some (narrower) phones" bug. Basis 0 keeps its hypothetical size at 0 so it
+   never forces the close to wrap; flex-grow still fills the bar. */
 .ms__fullscreen-header > .ms__fullscreen-search-wrapper,
 .ms__selected-popover--fullscreen .ms__selected-popover-header > span {
-  flex: 1 1 auto;
+  flex: 1 1 0;
   min-width: 0;
 }
 
@@ -377,6 +391,16 @@
   width: var(--ms-fullscreen-mode-toggle-size);
   height: var(--ms-fullscreen-mode-toggle-size);
   margin-inline-end: var(--ms-fullscreen-mode-toggle-gap);
+  /* Mirror the close (✕) so both icons read as symmetric across the bar. The close is
+     pulled toward the trailing edge by --ms-fullscreen-close-edge-nudge, landing its
+     GLYPH centre at `header-padding-h - edge-nudge + close-size/2` from that edge. This
+     nudge lands the toggle's glyph centre the same distance from the LEADING edge — the
+     `(close-size - toggle-size)/2` term compensates for the toggle being a smaller chip
+     than the close, so it's the drawn glyphs (not just the button boxes) that align. */
+  margin-inline-start: calc(
+    (var(--ms-fullscreen-close-size) - var(--ms-fullscreen-mode-toggle-size)) / 2
+    - var(--ms-fullscreen-close-edge-nudge)
+  );
   padding: 0;
   color: var(--ms-fullscreen-mode-toggle-color);
   background: var(--ms-fullscreen-mode-toggle-bg);

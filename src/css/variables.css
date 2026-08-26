@@ -384,7 +384,10 @@
      rules in floating.css). */
   --ms-fullscreen-mode-toggle-size: calc(2.8 * var(--ms-fullscreen-rem));
   --ms-fullscreen-mode-toggle-icon-size: calc(1.5 * var(--ms-fullscreen-rem));
-  --ms-fullscreen-mode-toggle-gap: calc(0.4 * var(--ms-fullscreen-rem));
+  /* Gap between the leading toggle and the search field. Defaults to the header gap so it
+     matches the field↔close spacing on the trailing side (symmetric bar); override to
+     decouple. */
+  --ms-fullscreen-mode-toggle-gap: var(--ms-fullscreen-header-gap);
   --ms-fullscreen-mode-toggle-color: var(--ms-text-muted-color, var(--ms-dropdown-text-color));
   --ms-fullscreen-mode-toggle-bg: transparent;
   --ms-fullscreen-mode-toggle-bg-hover: var(--ms-option-bg-matched, transparent);
@@ -638,9 +641,11 @@
   --ms-badge-remove-bg-hover: var(--ms-accent-color-hover);
   --ms-badge-remove-box-shadow-focus: 0 0 0 2px color-mix(in srgb, var(--ms-accent-color) 50%, transparent);
   --ms-badge-remove-icon-size: calc(1.0 * var(--ms-rem));
-  /* SVG X glyph — rendered via mask so it inherits --ms-badge-remove-color via currentColor.
-     Override this var to use a different shape; the value must be a CSS url() pointing to a mask-friendly SVG. */
-  --ms-icon-remove: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M6 6L18 18M18 6L6 18' stroke='black' stroke-width='2.5' stroke-linecap='round' fill='none'/></svg>");
+  /* SVG X glyph (Lucide `x`) — rendered via mask so it inherits --ms-badge-remove-color via
+     currentColor. Drives the badge remove (×) and the fullscreen/popover close (✕). Kept in
+     lockstep with the other icons (all Lucide) so the set stays visually consistent. Override
+     this var to use a different shape; the value must be a CSS url() to a mask-friendly SVG. */
+  --ms-icon-remove: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M18 6 6 18'/><path d='m6 6 12 12'/></svg>");
   /* SVG "clear search" glyph (Lucide `search-x`: a magnifier with an x) used by the
      fullscreen search field's clear button. Deliberately NOT the bare X of
      --ms-icon-remove so it doesn't read as a second close button beside the overlay
