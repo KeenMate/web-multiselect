@@ -990,6 +990,60 @@ export class WebMultiSelect<T = any> {
         this.attachOptionTooltips();
         // Flag clipped labels so their fullscreen info affordance appears.
         this.markTruncatedOptions();
+        // Round the first/last rows so a focused row's outline follows the panel corners.
+        this.applyEdgeOptionRadii();
+    }
+
+    /**
+     * Round the OUTER corners of the row at the very top and the row at the very
+     * bottom of the list so a focused/selected row's background — and crucially its
+     * focus `outline`, which traces the row's OWN box and follows its border-radius
+     * but NOT an ancestor's overflow clip — curves with the panel instead of poking a
+     * square corner past it.
+     *
+     * Keyed off DOM order, not option index, so grouping works: when grouped the top
+     * row is a `.ms__group-label` (not the first option, which sits below it), so we
+     * round whichever element is physically first/last. VirtualScroll renders rows in
+     * index order into one innerHTML, so DOM order == visual order there too.
+     *
+     * Logical corners (`border-start-*` / `border-end-*`) so it mirrors in RTL. A
+     * space-taking vertical scrollbar occupies the inline-END gutter, so the END-side
+     * corners stay square then (the panel's rounded end corner is the scrollbar
+     * track's). The radius is 0 in the fullscreen sheet (that scope zeroes the var).
+     */
+    private applyEdgeOptionRadii(): void {
+        const optionsEl = this.dropdownInner.querySelector('.ms__options') as HTMLElement | null;
+        if (!optionsEl) return;
+        // The scroll container is the options list itself (fullscreen / virtual, where it
+        // sets its own overflow) or the inner wrapper (floating non-virtual). Pick whichever
+        // actually scrolls; reading layout here forces a sync reflow so the metrics are fresh.
+        const scroller = (optionsEl.scrollHeight > optionsEl.clientHeight + 1) ? optionsEl : this.dropdownInner;
+        // Overlay scrollbars take no width, so both sides round; a classic scrollbar means
+        // the END-side corners stay square. `offsetWidth - clientWidth` is the gutter.
+        const roundEnd = (scroller.offsetWidth - scroller.clientWidth) <= 0;
+        const R = 'var(--ms-dropdown-inner-border-radius)';
+
+        // Reset any previously-set corners (option nodes get recycled by virtual scroll).
+        optionsEl.querySelectorAll<HTMLElement>('.ms__option, .ms__group-label').forEach((el) => {
+            el.style.borderStartStartRadius = '';
+            el.style.borderStartEndRadius = '';
+            el.style.borderEndStartRadius = '';
+            el.style.borderEndEndRadius = '';
+        });
+
+        // TOP edge = first content row: a group label when grouped, else the first option.
+        const firstRow = optionsEl.querySelector('.ms__group-label, .ms__option') as HTMLElement | null;
+        if (firstRow) {
+            firstRow.style.borderStartStartRadius = R;
+            if (roundEnd) firstRow.style.borderStartEndRadius = R;
+        }
+        // BOTTOM edge = last option (a group label never sits at the bottom of the list).
+        const optionRows = optionsEl.querySelectorAll<HTMLElement>('.ms__option');
+        const lastRow = optionRows[optionRows.length - 1];
+        if (lastRow) {
+            lastRow.style.borderEndStartRadius = R;
+            if (roundEnd) lastRow.style.borderEndEndRadius = R;
+        }
     }
 
     /**
@@ -1060,6 +1114,8 @@ export class WebMultiSelect<T = any> {
                         this.attachOptionTooltips();
                         // Re-flag clipped labels on the freshly-rendered rows.
                         this.markTruncatedOptions();
+                        // Re-round the edge rows as they're recycled into/out of view.
+                        this.applyEdgeOptionRadii();
                     }
                 });
             } else {

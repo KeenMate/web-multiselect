@@ -32,17 +32,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- **Dropdown corners: a highlighted first/last row no longer bleeds past the rounded border.**
-  The panel has a rounded 1px border and clips with `overflow: hidden`, but a square-cornered child
-  with a solid background (a hovered/selected/focused option at the top or bottom row, or the sticky
-  Select-All/Clear actions bar that occupies the top corners by default) leaked ~1px past the rounded
-  border at each corner — the classic rounded-parent + bordered-box rendering artifact. Fixed by
-  rounding the inner content wrapper (`.ms__dropdown-inner`) to a new
-  `--ms-dropdown-inner-border-radius` (panel radius − border width, clamped at 0) so all content clips
-  *inside* the border. Because it's the scroll box — not a specific row — it stays correct while the
-  list scrolls (whatever row is at the edge is clipped to the curve) and in virtual-scroll mode (the
-  inner now clips instead of leaving scrolling to a nested container). The fullscreen sheet stays
-  square (inner radius forced to 0). Themeable via `--ms-dropdown-inner-border-radius`.
+- **Dropdown corners: a focused/selected first or last row no longer pokes a square corner past the
+  rounded panel.** The panel clips with `overflow: hidden` + `border-radius`, but a row's focus
+  `outline` (and background) traces the row's OWN box and follows the row's own `border-radius`, not an
+  ancestor's clip — so the top/bottom rows' square corners showed through the rounded panel corner
+  (the classic rounded-parent + bordered-child artifact). Two-part fix: (1) the inner content wrapper
+  (`.ms__dropdown-inner`) is rounded to a new `--ms-dropdown-inner-border-radius` (panel radius −
+  border width, clamped at 0) so the background clips *inside* the 1px border; (2) `applyEdgeOptionRadii()`
+  rounds the outer corners of the actual top and bottom rows on every render. It works in **DOM order**,
+  so grouped lists round the top `.ms__group-label` (not the first option beneath it) and the last
+  option; uses **logical** corners (`border-start-*` / `border-end-*`) so it mirrors in RTL; keeps the
+  inline-**end** corners square when a space-taking scrollbar occupies that gutter; and stays correct
+  under virtual scrolling (rows render in index order, DOM order == visual order) and while scrolling.
+  The fullscreen sheet forces the radius to 0 (stays square); the whole thing is theme-driven via
+  `--ms-dropdown-inner-border-radius` / `--ms-dropdown-border-radius`.
 
 ### Internal
 
