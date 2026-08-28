@@ -516,66 +516,70 @@ multiselect.actionButtons = [
             </div>
         </section>
 
-        <!-- Example 10: Actions Layout - Wrap Mode -->
+        <!-- Example 10: Device-adaptive actions -->
         <section class="example-section">
-            <h2>10. Actions Layout - Wrap Mode</h2>
+            <h2>10. Device-Adaptive Actions</h2>
             <p class="description">
-                When you have many action buttons, use <code>actions-layout="wrap"</code> to allow buttons to wrap to multiple rows instead of being squeezed into a single row. Compare the behavior with 12 buttons below.
+                Twelve action buttons fit one row on a wide desktop, but there's no room on a phone, a
+                tablet, or a narrowed window — squeezed into one line they run past the edge or become
+                unreadable. The fix isn't a CSS trick: define your action sets and pick the right one for
+                the space. The library re-exports the same device/viewport signal the component uses
+                internally, so you react to the <em>event that tells you the device and width</em> and
+                choose accordingly — here, granularly:
             </p>
+            <ul>
+                <li><strong>Desktop, wide (&gt; 600px):</strong> all twelve buttons, one row (<code>nowrap</code>).</li>
+                <li><strong>Desktop, narrowed (≤ 600px):</strong> all twelve, but flowed onto two rows (<code>wrap</code>).</li>
+                <li><strong>Tablet:</strong> all twelve wrapped — a single row would run beyond the edge.</li>
+                <li><strong>Phone:</strong> the three essentials only, wrapped.</li>
+            </ul>
 
-            <div class="grid-2">
-                <div>
-                    <h3>Default (nowrap)</h3>
-                    <div class="demo-area">
-                        <label class="demo-label">12 buttons squeezed into one row:</label>
-                        <web-multiselect id="layout-nowrap" multiple="true" actions-layout="nowrap"></web-multiselect>
-
-                        <div class="output">
-                            <div class="output-label">Selected:</div>
-                            <pre id="output-nowrap">[]</pre>
-                        </div>
-                    </div>
-                </div>
-
-                <div>
-                    <h3>Wrap Mode</h3>
-                    <div class="demo-area">
-                        <label class="demo-label">12 buttons wrap naturally across rows:</label>
-                        <web-multiselect id="layout-wrap" multiple="true" actions-layout="wrap"></web-multiselect>
-
-                        <div class="output">
-                            <div class="output-label">Selected:</div>
-                            <pre id="output-wrap">[]</pre>
-                        </div>
-                    </div>
+            <div class="demo-area">
+                <label class="demo-label">
+                    <code id="adaptive-device">…</code>
+                    <span class="form-text" style="display:inline;">— resize the window (cross 600px) or toggle the device toolbar (DevTools) to see the toolbar re-shape.</span>
+                </label>
+                <web-multiselect id="layout-adaptive" multiple="true"></web-multiselect>
+                <div class="output">
+                    <div class="output-label">Selected:</div>
+                    <pre id="output-adaptive">[]</pre>
                 </div>
             </div>
 
-            <div class="code-block"><pre>// Example with 12 action buttons
-multiselect.actionButtons = [
-  { action: 'select-all', text: 'Select All Items' },
-  { action: 'clear-all', text: 'Clear Selection' },
-  { action: 'custom', text: 'First 3 Items', onClick: ... },
-  { action: 'custom', text: 'Last 3 Items', onClick: ... },
-  { action: 'custom', text: 'Even Positions', onClick: ... },
-  { action: 'custom', text: 'Odd Positions', onClick: ... },
-  { action: 'custom', text: 'Random Selection', onClick: ... },
-  { action: 'custom', text: 'First Half', onClick: ... },
-  { action: 'custom', text: 'Second Half', onClick: ... },
-  { action: 'custom', text: 'Invert', onClick: ... },
-  { action: 'custom', text: 'Every Third', onClick: ... },
-  { action: 'custom', text: 'Shuffle All', onClick: ... }
+            <div class="code-block"><pre><span class="comment">// Device + viewport signal, re-exported from the component package — one import,
+// one dependency, the same signal the component reacts to internally.</span>
+import { observeViewport, classifyDevice } from '@keenmate/web-multiselect';
+
+<span class="comment">// Two configurations. Full toolbar for roomy layouts; essentials for a phone.</span>
+const desktopActions = [ /* Select All, Clear, First 3, Even, Odd, Invert, … 12 total */ ];
+const mobileActions  = [
+  { action: 'select-all', text: 'All' },
+  { action: 'clear-all',  text: 'Clear' },
+  { action: 'custom', text: 'Invert', onClick: (ms) => { /* … */ } },
 ];
 
-// Default - buttons squeezed in single row
-&lt;web-multiselect actions-layout="nowrap"&gt;&lt;/web-multiselect&gt;
-
-// Wrap mode - buttons wrap to multiple rows
-&lt;web-multiselect actions-layout="wrap"&gt;&lt;/web-multiselect&gt;</pre></div>
+<span class="comment">// observeViewport fires on every (throttled) width change, so the ≤600px desktop
+// rule updates smoothly; classifyDevice adds the capability axis (phone/tablet).</span>
+observeViewport((env) => {
+  const device = classifyDevice(env);           <span class="comment">// 'mobile' | 'tablet' | 'desktop'</span>
+  if (device === 'mobile') {                     <span class="comment">// phone: essentials, wrapped</span>
+    el.actionButtons = mobileActions;  el.actionsLayout = 'wrap';
+  } else if (device === 'tablet') {              <span class="comment">// tablet: full set, wrapped (won't fit one row)</span>
+    el.actionButtons = desktopActions; el.actionsLayout = 'wrap';
+  } else {                                        <span class="comment">// desktop: two rows once ≤ 600px, else one</span>
+    el.actionButtons = desktopActions;
+    el.actionsLayout = env.viewportWidth &lt;= 600 ? 'wrap' : 'nowrap';
+  }
+});</pre></div>
 
             <div class="note">
-                <div class="note-title">Visual Difference:</div>
-                With 12 buttons, the difference is clear: <strong>nowrap</strong> forces all buttons into one row (they become very narrow), while <strong>wrap</strong> allows them to flow naturally across multiple rows with comfortable sizing.
+                <div class="note-title">Device class <em>and</em> width, together</div>
+                <code>classifyDevice(env)</code> keys off capability + physical size (orientation-robust —
+                a landscape phone still reads as <code>mobile</code>), which is the right axis for the
+                phone/tablet split. But whether twelve buttons <em>fit one row</em> is a width question, so
+                the desktop branch also consults <code>env.viewportWidth</code> for the 600px rule.
+                <code>observeViewport</code> (vs. <code>observeEnvironment</code>) is what makes that
+                threshold react continuously as you drag the window, not just on discrete breakpoint flips.
             </div>
         </section>
 
@@ -805,6 +809,11 @@ getTooltipCallback?: (multiselect) => string      // Dynamic tooltip</pre></div>
 
     <script type="module" src="/src/index.ts"></script>
     <script type="module">
+        // Device detection re-exported from the component package (same module the
+        // page already loads), so the demo reacts to the device the same way a real
+        // consumer would — one import, no separate dependency. The build rewrites
+        // /src/index.ts → /dist/multiselect.js for the static site.
+        import { observeViewport, classifyDevice } from '/src/index.ts';
 
         const languageOptions = [
             ['js', 'JavaScript'],
@@ -1234,18 +1243,55 @@ getTooltipCallback?: (multiselect) => string      // Dynamic tooltip</pre></div>
                 }}
             ];
 
-            const layoutNowrap = document.querySelector('#layout-nowrap');
-            layoutNowrap.options = itemOptions;
-            layoutNowrap.actionButtons = manyButtons;
-            layoutNowrap.addEventListener('change', () => {
-                document.getElementById('output-nowrap').textContent = JSON.stringify(layoutNowrap.getValue(), null, 2);
+            // `manyButtons` (all 12) is the desktop set. On mobile we keep only the
+            // essentials — a real consumer's second configuration.
+            const desktopActions = manyButtons;
+            const mobileActions = [
+                { action: 'select-all', text: 'All' },
+                { action: 'clear-all', text: 'Clear' },
+                { action: 'custom', text: 'Invert', onClick: (ms) => {
+                    const allValues = itemOptions.map(o => o[0]);
+                    const selectedValues = ms.getValue();
+                    ms.setSelected(allValues.filter(v => !selectedValues.includes(v)));
+                }}
+            ];
+
+            const adaptive = document.querySelector('#layout-adaptive');
+            adaptive.options = itemOptions;
+            adaptive.addEventListener('change', () => {
+                document.getElementById('output-adaptive').textContent = JSON.stringify(adaptive.getValue(), null, 2);
             });
 
-            const layoutWrap = document.querySelector('#layout-wrap');
-            layoutWrap.options = itemOptions;
-            layoutWrap.actionButtons = manyButtons;
-            layoutWrap.addEventListener('change', () => {
-                document.getElementById('output-wrap').textContent = JSON.stringify(layoutWrap.getValue(), null, 2);
+            // React to the viewport signal: pick the action set + layout granularly by
+            // BOTH device class (capability) and width. observeViewport fires on every
+            // (throttled) width change, so the ≤600px desktop rule reacts continuously
+            // as the window is dragged — not just on discrete breakpoint flips.
+            const deviceReadout = document.getElementById('adaptive-device');
+            let lastKey = '';
+            observeViewport((env) => {
+                const device = classifyDevice(env);          // 'mobile' | 'tablet' | 'desktop'
+                let actions, layout;
+                if (device === 'mobile') {
+                    actions = mobileActions;  layout = 'wrap';           // phone: essentials, two rows
+                } else if (device === 'tablet') {
+                    actions = desktopActions; layout = 'wrap';           // tablet: full set, wrapped (won't fit one row)
+                } else {
+                    actions = desktopActions;
+                    layout = env.viewportWidth <= 600 ? 'wrap' : 'nowrap'; // desktop: two rows once narrow
+                }
+                // Only touch the component when the resolved config actually changes —
+                // observeViewport ticks on every resize, but actionButtons/actionsLayout
+                // are reinit inputs, so re-assigning identical values would rebuild needlessly.
+                const key = `${device}|${layout}|${actions.length}`;
+                if (key !== lastKey) {
+                    lastKey = key;
+                    adaptive.actionButtons = actions;
+                    adaptive.actionsLayout = layout;
+                }
+                if (deviceReadout) {
+                    const rows = layout === 'wrap' ? 'two rows' : 'one row';
+                    deviceReadout.textContent = `${device} · ${Math.round(env.viewportWidth)}px · ${actions.length} buttons · ${rows}`;
+                }
             });
 
             // Example 11: Font Awesome Icons
@@ -1445,5 +1491,6 @@ getTooltipCallback?: (multiselect) => string      // Dynamic tooltip</pre></div>
             ];
         });
     </script>
+    <script src="examples-chapter-nav.js" defer></script>
 </body>
 </html>

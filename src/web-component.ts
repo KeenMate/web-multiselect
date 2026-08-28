@@ -36,6 +36,7 @@ import {
   type InputDef,
   type StyleSlot,
   type EnvironmentSnapshot,
+  type ElementSize,
   type MobilePresentation,
 } from '@keenmate/web-components-core';
 import { WebMultiSelect } from './multiselect';
@@ -137,6 +138,7 @@ Tree + multiple only.` },
   // ── Numbers ──────────────────────────────────────────────────────────────
   { configKey: 'badgesThreshold',         attribute: 'badges-threshold',            converter: toInt(),               on: 'update', description: 'Threshold at which badges collapse to a count/compact view.' },
   { configKey: 'badgesMaxVisible',        attribute: 'badges-max-visible',          converter: toInt(),               on: 'update', description: 'Maximum number of badges rendered before overflow.' },
+  { configKey: 'collapseBadgesBelow',     attribute: 'collapse-badges-below',       converter: toInt(),               on: 'update', description: 'Container-responsive opt-in (off by default). When set to a px width, the control watches its OWN border box (not the window, via the core `resized` hook / a shared ResizeObserver) and collapses `badges-display-mode` to `count` ("N selected") while the box is narrower than this — so a picker in a narrow column/sidebar never overflows with pills, even on a wide monitor. Widening past the threshold restores the configured badges mode. Element-only: the override is applied to the live picker, never to your `badges-display-mode` config.' },
   { configKey: 'minSearchLength',         attribute: 'min-search-length',           converter: toInt({ default: 0 }), on: 'update', description: 'Minimum characters before searching/filtering starts.' },
   { configKey: 'searchDebounce',          attribute: 'search-debounce',             converter: toInt({ default: 0 }), on: 'update', description: 'Debounce delay in ms applied to the search input.' },
   { configKey: 'virtualScrollThreshold',  attribute: 'virtual-scroll-threshold',    converter: toInt({ default: 100 }), on: 'reinit', description: 'Option count above which virtual scrolling turns on.' },
@@ -238,7 +240,7 @@ const EVENTS = [
  * this element directly (CSS-var sugar, debug panel, initial values). Stripped
  * before the merged config is handed to the picker.
  */
-const NON_PICKER_KEYS = new Set(['dropdownWidth', 'selectedPopoverWidth', 'showDebugInfo', 'initialValues', 'optionsSource', 'optionsFormat', 'optionsSplitter', 'optionsRowSplitter', 'mobilePresentation']);
+const NON_PICKER_KEYS = new Set(['dropdownWidth', 'selectedPopoverWidth', 'showDebugInfo', 'initialValues', 'optionsSource', 'optionsFormat', 'optionsSplitter', 'optionsRowSplitter', 'mobilePresentation', 'collapseBadgesBelow']);
 
 /** CSS-var sugar: configKey → the host CSS custom property it mirrors to. */
 const CSS_VARS: Record<string, string> = {
@@ -364,6 +366,11 @@ export class MultiSelectElement<T = any> extends BlissElement<MultiSelectEvents>
     // against the current environment ourselves (environmentChanged only fires on an
     // env change, not an attribute change).
     if ('mobilePresentation' in partial) this.#applyPresentation(getEnvironment());
+
+    // `collapseBadgesBelow` is element-only too — re-evaluate against the current
+    // box when the threshold is set/changed/cleared (the `resized` hook only fires
+    // on a box change, not an attribute change).
+    if ('collapseBadgesBelow' in partial) this.#applyBadgeCollapse(this.getBoundingClientRect().width);
   }
 
   /** Activate: ensure the picker exists (a DOM move destroyed it in disconnect()). */
@@ -404,6 +411,54 @@ export class MultiSelectElement<T = any> extends BlissElement<MultiSelectEvents>
     this.#picker?.setPresentation(resolved === 'modal' ? 'fullscreen' : resolved);
   }
 
+  // ── container-responsive badge collapse (core §12.9 `resized`) ─────────────
+
+  /** Whether the live picker is currently forced to the collapsed count view. */
+  #badgesCollapsed = false;
+
+  /**
+   * This element's own border box changed (core §12.9 `resized`). Overriding the
+   * hook opts us into a shared page-wide ResizeObserver, subscribed on connect and
+   * dropped on disconnect. Unlike `environmentChanged`/`viewportChanged` (the
+   * WINDOW), this is our OWN box — a picker in a 400px sidebar on a 2560px monitor
+   * reflows on its width, not the viewport's. We only act when `collapse-badges-
+   * below` is set; otherwise it's a cheap no-op.
+   */
+  protected override resized({ width }: ElementSize): void {
+    this.#applyBadgeCollapse(width);
+  }
+
+  /**
+   * Resolve `collapse-badges-below` against `width` and relay the decision to the
+   * live picker. The override is pushed via `updateOptions` (never written back to
+   * `this.config`), so `this.config.badgesDisplayMode` stays the consumer's truth
+   * and widening past the threshold restores it exactly. A structural JS decision,
+   * so it lives here rather than in a CSS container query.
+   */
+  #applyBadgeCollapse(width: number): void {
+    const threshold = this.config.collapseBadgesBelow as number | null | undefined;
+    // Feature off (attribute unset) → lift any collapse we applied, then bail.
+    if (threshold == null) {
+      if (this.#badgesCollapsed) { this.#badgesCollapsed = false; this.#restoreBadgesMode(); }
+      return;
+    }
+    // width 0 = not laid out yet (the hook fires post-layout, but guard anyway).
+    const collapse = width > 0 && width < threshold;
+    if (collapse === this.#badgesCollapsed) return;
+    this.#badgesCollapsed = collapse;
+    if (collapse) {
+      this.#picker?.updateOptions({ badgesDisplayMode: 'count' } as Partial<MultiSelectConfig<T>>);
+    } else {
+      this.#restoreBadgesMode();
+    }
+  }
+
+  /** Re-assert the consumer's configured badges mode from the pristine base config. */
+  #restoreBadgesMode(): void {
+    const base = (this.config.badgesDisplayMode as MultiSelectConfig<T>['badgesDisplayMode']) ?? 'badges';
+    this.#picker?.updateOptions({ badgesDisplayMode: base } as Partial<MultiSelectConfig<T>>);
+  }
+
   // ── picker lifecycle ──────────────────────────────────────────────────────
 
   #rebuildPicker(): void {
@@ -432,6 +487,12 @@ export class MultiSelectElement<T = any> extends BlissElement<MultiSelectEvents>
     // A fresh picker starts 'floating'; re-assert the resolved presentation so a
     // rebuild (reinit) doesn't drop a fullscreen setting until the next env change.
     this.#applyPresentation(getEnvironment());
+    // Likewise re-assert the container-responsive badge collapse: the fresh picker
+    // is at the base badges mode, so reset our flag and re-evaluate the current box
+    // (the throttled `resized` hook would otherwise leave it uncollapsed until the
+    // next box change). getBoundingClientRect is the synchronous read core suggests.
+    this.#badgesCollapsed = false;
+    this.#applyBadgeCollapse(this.getBoundingClientRect().width);
   }
 
   #ensureContainer(): void {

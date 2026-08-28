@@ -3,10 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Theming Examples - MultiSelect</title>
+    <title>Theming &amp; Sizing — MultiSelect</title>
 
     <!-- Shared example styles -->
     <link rel="stylesheet" href="examples-shared.css">
+
+    <!-- Merged from base-variables page: page-specific styles -->
+    <style>
+    /* Controls Panel */
+    .controls {
+      background: white;
+      border-radius: 0.5rem;
+      padding: 1.5rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    }
+
+    .controls-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .controls-header h2 {
+      margin: 0;
+      font-size: 1.25rem;
+      border: none;
+      padding: 0;
+    }
+
+    /* Red danger button for reset */
+    .reset-btn {
+      background: #e53e3e;
+    }
+
+    .reset-btn:hover {
+      background: #c53030;
+    }
+
+    .control-section {
+      margin-bottom: 1.5rem;
+    }
+
+    .control-section:last-child {
+      margin-bottom: 0;
+    }
+
+    .control-section h3 {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #6b7280;
+      margin: 0 0 0.75rem 0;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 0.5rem;
+    }
+
+    .section-desc {
+      font-size: 0.75rem;
+      color: #6b7280;
+      margin: 0 0 0.75rem 0;
+      line-height: 1.4;
+    }
+
+    .section-desc strong {
+      color: #374151;
+    }
+
+    .control-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+      align-items: flex-end;
+    }
+
+    .control-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .control-group label {
+      font-size: 0.75rem;
+      color: #374151;
+      font-weight: 500;
+    }
+
+    .control-group input {
+      padding: 0.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.375rem;
+      font-size: 0.875rem;
+    }
+
+    .control-group input[type="text"] {
+      width: 250px;
+    }
+
+    .control-group input[type="number"] {
+      width: 80px;
+    }
+
+    .font-link-input {
+      width: 500px !important;
+    }
+
+
+    /* Shadow variant of the shared `.demo-card` (no border). */
+    .demo-card {
+      --demo-card-border: none;
+      box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+    }
+
+    /* Multiselect wrapper for better layout */
+    .multiselect-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    /* Current values dump — box from shared `.log-panel--dark`; kept green +
+       preformatted for the terminal-style values readout. */
+    .current-values {
+      --log-max-height: 300px;
+      color: #a5d6a7;
+      margin-top: 2rem;
+      font-size: 0.75rem;
+      line-height: 1.6;
+      white-space: pre-wrap;
+    }
+
+    .current-values-header {
+      color: #93c5fd;
+      font-weight: bold;
+      margin-bottom: 0.5rem;
+    }
+    </style>
+
+    <!-- Merged from sizes page: Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@400;500;600&family=Fira+Code:wght@400;500&family=Quicksand:wght@400;500;600&family=Lexend:wght@400;500;600&display=swap" rel="stylesheet">
+
+    <!-- Merged from sizes page: page-specific styles -->
+    <style>
+        /* Size examples using --ms-rem */
+        #rem-compact { --ms-rem: 8px; }
+        #rem-default { --ms-rem: 10px; }
+        #rem-large { --ms-rem: 12px; }
+        #rem-xl { --ms-rem: 15px; }
+
+        /* Custom variable override example */
+        #custom-vars {
+            --ms-input-font-size: 18px;
+            --ms-input-padding: 12px 16px;
+            --ms-option-title-font-size: 16px;
+        }
+
+        /* Narrow input examples */
+        .narrow-demo-grid {
+            display: flex;
+            gap: 2rem;
+            flex-wrap: wrap;
+            align-items: flex-start;
+        }
+
+        .narrow-demo-card {
+            flex: 0 0 auto;
+            text-align: center;
+        }
+
+        .narrow-demo-card h4 {
+            margin: 0 0 0.25rem 0;
+            font-size: 0.875rem;
+            color: #374151;
+        }
+
+        .narrow-demo-card p {
+            margin: 0 0 0.75rem 0;
+            font-size: 0.7rem;
+            color: #6b7280;
+        }
+
+        .narrow-demo-card code {
+            background: #f3f4f6;
+            padding: 0.125rem 0.375rem;
+            border-radius: 3px;
+            font-size: 0.65rem;
+        }
+
+        /* Font family overrides via --base-font-family */
+        #font-system { --base-font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+        #font-inter { --base-font-family: "Inter", sans-serif; }
+        #font-montserrat { --base-font-family: "Montserrat", sans-serif; }
+        #font-quicksand { --base-font-family: "Quicksand", sans-serif; }
+        #font-lexend { --base-font-family: "Lexend", sans-serif; }
+        #font-mono { --base-font-family: "Fira Code", monospace; }
+
+        /* Gray-fill variant of the shared `.demo-card`. */
+        .comparison-card {
+            --demo-card-bg: #f9fafb;
+            --demo-card-border: none;
+        }
+    </style>
 
     <!-- Page-specific styles -->
     <style>
@@ -348,8 +548,8 @@
     <div class="container">
         <header>
             <a href="index.html" class="back-link">← Back to Examples</a>
-            <h1>🎭 Theming</h1>
-            <p class="subtitle">Customize appearance with CSS custom properties. Dark mode, neon, corporate, and more</p>
+            <h1>🎨 Theming &amp; Sizing</h1>
+            <p class="subtitle">Customize appearance with CSS custom properties — dark mode and theme presets, the --base-* typography integration, and REM-based sizing of inputs and fonts.</p>
         </header>
 
         <!-- Built-in Color Scheme (auto / light / dark) -->
@@ -664,6 +864,565 @@ picker.removeAttribute('data-theme');        // back to inherit/OS</code></pre>
             </div>
 
         </div>
+
+    <!-- ===== Merged from base-variables page ===== -->
+
+    <!-- Controls Panel -->
+    <div class="controls">
+      <div class="controls-header">
+        <h2>Typography Controls</h2>
+        <button class="reset-btn" id="resetBtn">Reset All</button>
+      </div>
+
+      <!-- Font Link -->
+      <div class="control-section">
+        <h3>Font Link (Google Fonts, etc.)</h3>
+        <div class="control-row">
+          <div class="control-group">
+            <label for="fontLink">Paste &lt;link&gt; tag or URL</label>
+            <input type="text" id="fontLink" class="font-link-input" placeholder="e.g., https://fonts.googleapis.com/css2?family=Lexend...">
+          </div>
+          <button id="loadFontBtn" class="btn-outline">Load Font</button>
+        </div>
+      </div>
+
+      <!-- Font Family -->
+      <div class="control-section">
+        <h3>Font Family</h3>
+        <div class="control-row">
+          <div class="control-group">
+            <label for="fontFamily">--base-font-family</label>
+            <input type="text" id="fontFamily" placeholder="e.g., 'Lexend', sans-serif">
+          </div>
+        </div>
+      </div>
+
+      <!-- Font Sizes -->
+      <div class="control-section">
+        <h3>Font Sizes (unitless multipliers)</h3>
+        <p class="section-desc">
+          <strong>2xs:</strong> tiny labels &bull;
+          <strong>xs:</strong> group labels, hints &bull;
+          <strong>sm:</strong> option text, badges &bull;
+          <strong>base:</strong> input text &bull;
+          <strong>lg:</strong> large displays
+        </p>
+        <div class="control-row">
+          <div class="control-group">
+            <label for="fontSize2xs">2xs</label>
+            <input type="number" id="fontSize2xs" value="1" step="0.1">
+          </div>
+          <div class="control-group">
+            <label for="fontSizeXs">xs</label>
+            <input type="number" id="fontSizeXs" value="1.2" step="0.1">
+          </div>
+          <div class="control-group">
+            <label for="fontSizeSm">sm</label>
+            <input type="number" id="fontSizeSm" value="1.4" step="0.1">
+          </div>
+          <div class="control-group">
+            <label for="fontSizeBase">base</label>
+            <input type="number" id="fontSizeBase" value="1.6" step="0.1">
+          </div>
+          <div class="control-group">
+            <label for="fontSizeLg">lg</label>
+            <input type="number" id="fontSizeLg" value="1.8" step="0.1">
+          </div>
+        </div>
+      </div>
+
+      <!-- Font Weights -->
+      <div class="control-section">
+        <h3>Font Weights</h3>
+        <div class="control-row">
+          <div class="control-group">
+            <label for="fontWeightNormal">normal</label>
+            <input type="number" id="fontWeightNormal" value="400" step="100" min="100" max="900">
+          </div>
+          <div class="control-group">
+            <label for="fontWeightMedium">medium</label>
+            <input type="number" id="fontWeightMedium" value="500" step="100" min="100" max="900">
+          </div>
+          <div class="control-group">
+            <label for="fontWeightSemibold">semibold</label>
+            <input type="number" id="fontWeightSemibold" value="600" step="100" min="100" max="900">
+          </div>
+        </div>
+      </div>
+
+      <!-- Line Heights -->
+      <div class="control-section">
+        <h3>Line Heights</h3>
+        <div class="control-row">
+          <div class="control-group">
+            <label for="lineHeightTight">tight</label>
+            <input type="number" id="lineHeightTight" value="1.25" step="0.05" min="1" max="3">
+          </div>
+          <div class="control-group">
+            <label for="lineHeightNormal">normal</label>
+            <input type="number" id="lineHeightNormal" value="1.5" step="0.05" min="1" max="3">
+          </div>
+          <div class="control-group">
+            <label for="lineHeightRelaxed">relaxed</label>
+            <input type="number" id="lineHeightRelaxed" value="1.75" step="0.05" min="1" max="3">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Demo Cards -->
+    <div class="grid-2">
+      <!-- Single Select -->
+      <div class="demo-card">
+        <h3>Single Select</h3>
+        <p>Basic single selection. Tests input styling and dropdown typography.</p>
+        <web-multiselect
+          id="singleSelect"
+          placeholder="Select a framework..."
+          multiple="false"
+        ></web-multiselect>
+      </div>
+
+      <!-- Multi Select with Badges -->
+      <div class="demo-card">
+        <h3>Multi Select with Badges</h3>
+        <p>Multiple selection with badge display. Tests badge typography and sizing.</p>
+        <web-multiselect
+          id="multiBadges"
+          placeholder="Select frameworks..."
+          badges-display-mode="badges"
+          show-checkboxes="true"
+        ></web-multiselect>
+      </div>
+
+      <!-- Multi Select with Count -->
+      <div class="demo-card">
+        <h3>Multi Select with Count</h3>
+        <p>Count display mode. Tests counter typography.</p>
+        <web-multiselect
+          id="multiCount"
+          placeholder="Select languages..."
+          badges-display-mode="count"
+          show-checkboxes="true"
+        ></web-multiselect>
+      </div>
+
+      <!-- With Groups -->
+      <div class="demo-card">
+        <h3>Grouped Options</h3>
+        <p>Tests group label typography and styling.</p>
+        <web-multiselect
+          id="grouped"
+          placeholder="Select technologies..."
+          show-checkboxes="true"
+        ></web-multiselect>
+      </div>
+    </div>
+
+    <!-- Current Values Display -->
+    <div class="log-panel log-panel--dark current-values">
+      <div class="current-values-header">/* Current --base-* CSS Variables */</div>
+      <div id="currentValues">:root {
+  /* No overrides set - using component defaults */
+}</div>
+    </div>
+
+    <!-- ===== Merged from sizes page ===== -->
+
+        <!-- Scaling with --ms-rem -->
+        <section class="example-section">
+            <h2>Global Scaling with --ms-rem</h2>
+            <p>The <code>--ms-rem</code> CSS variable (default: 10px) controls the base unit for all dimensions. Change it to scale the entire component proportionally.</p>
+
+            <div class="code-block"><pre>&lt;!-- Scale entire component by changing --ms-rem --&gt;
+&lt;web-multiselect style="--ms-rem: 8px;"&gt;&lt;/web-multiselect&gt;  &lt;!-- 80% size --&gt;
+&lt;web-multiselect style="--ms-rem: 12px;"&gt;&lt;/web-multiselect&gt; &lt;!-- 120% size --&gt;
+
+&lt;!-- Or via CSS class --&gt;
+&lt;style&gt;
+  web-multiselect.compact { --ms-rem: 8px; }
+  web-multiselect.large { --ms-rem: 15px; }
+&lt;/style&gt;</pre></div>
+
+            <div class="card-grid" style="--grid-min: 280px; --grid-gap: 1.5rem;">
+                <div class="demo-card">
+                    <h4>Compact (--ms-rem: 8px)</h4>
+                    <p>80% of default size - great for dense UIs</p>
+                    <web-multiselect
+                        id="rem-compact"
+                        placeholder="Compact scaling..."
+                        multiple="false">
+                    </web-multiselect>
+                </div>
+
+                <div class="demo-card">
+                    <h4>Default (--ms-rem: 10px)</h4>
+                    <p>Standard sizing - balanced for most uses</p>
+                    <web-multiselect
+                        id="rem-default"
+                        placeholder="Default scaling..."
+                        multiple="false">
+                    </web-multiselect>
+                </div>
+
+                <div class="demo-card">
+                    <h4>Large (--ms-rem: 12px)</h4>
+                    <p>120% of default - better touch targets</p>
+                    <web-multiselect
+                        id="rem-large"
+                        placeholder="Large scaling..."
+                        multiple="false">
+                    </web-multiselect>
+                </div>
+
+                <div class="demo-card">
+                    <h4>Extra Large (--ms-rem: 15px)</h4>
+                    <p>150% of default - accessibility focused</p>
+                    <web-multiselect
+                        id="rem-xl"
+                        placeholder="Extra large scaling..."
+                        multiple="false">
+                    </web-multiselect>
+                </div>
+            </div>
+        </section>
+
+        <!-- Fine-grained Control -->
+        <section class="example-section">
+            <h2>Fine-Grained Control</h2>
+            <p>Override individual CSS variables for precise control over specific dimensions.</p>
+
+            <div class="code-block"><pre>&lt;style&gt;
+  #my-multiselect {
+    --ms-input-font-size: 18px;
+    --ms-input-padding: 12px 16px;
+    --ms-option-title-font-size: 16px;
+  }
+&lt;/style&gt;</pre></div>
+
+            <div class="card-grid" style="--grid-min: 250px; --grid-gap: 1.5rem;">
+                <div class="demo-card comparison-card">
+                    <h3>Custom Variables Override</h3>
+                    <p>Larger font, more padding</p>
+                    <web-multiselect
+                        id="custom-vars"
+                        placeholder="Custom sizing..."
+                        multiple="false">
+                    </web-multiselect>
+                </div>
+
+                <div class="demo-card comparison-card">
+                    <h3>Default for Comparison</h3>
+                    <p>Standard defaults</p>
+                    <web-multiselect
+                        id="default-compare"
+                        placeholder="Default sizing..."
+                        multiple="false">
+                    </web-multiselect>
+                </div>
+            </div>
+        </section>
+
+        <!-- Narrow Input, Wide Dropdown -->
+        <section class="example-section">
+            <h2>Narrow Input, Wide Dropdown</h2>
+            <p>For dense forms where input space is limited: show just a code in the input, but use <code>dropdown-min-width</code> to ensure the dropdown is comfortable for selection.</p>
+
+            <div class="code-block"><pre>&lt;!-- Narrow input with wide dropdown --&gt;
+&lt;web-multiselect
+  style="width: 4rem;"
+  dropdown-min-width="20rem"
+  multiple="false"&gt;
+&lt;/web-multiselect&gt;
+
+&lt;script&gt;
+  // Show just the code in the closed input
+  select.renderSelectedContentCallback = (item) =&gt; item.code;
+  // Show full label in dropdown
+  select.getDisplayValueCallback = (item) =&gt; `${item.flag} ${item.name}`;
+&lt;/script&gt;</pre></div>
+
+            <div class="narrow-demo-grid">
+                <div class="narrow-demo-card">
+                    <h4>Country Selector</h4>
+                    <p>Input: 6rem, Dropdown: 18rem</p>
+                    <web-multiselect
+                        id="narrow-country"
+                        style="width: 6rem;"
+                        dropdown-min-width="18rem"
+                        multiple="false"
+                        placeholder="--">
+                    </web-multiselect>
+                </div>
+
+                <div class="narrow-demo-card">
+                    <h4>Currency Selector</h4>
+                    <p>Input: 7rem, Dropdown: 16rem</p>
+                    <web-multiselect
+                        id="narrow-currency"
+                        style="width: 7rem;"
+                        dropdown-min-width="16rem"
+                        multiple="false"
+                        placeholder="---">
+                    </web-multiselect>
+                </div>
+
+                <div class="narrow-demo-card">
+                    <h4>Priority Selector</h4>
+                    <p>Input: 5rem, Dropdown: 14rem</p>
+                    <web-multiselect
+                        id="narrow-priority"
+                        style="width: 5rem;"
+                        dropdown-min-width="14rem"
+                        multiple="false"
+                        placeholder="-">
+                    </web-multiselect>
+                </div>
+            </div>
+        </section>
+
+        <!-- With Multiple Selection -->
+        <section class="example-section">
+            <h2>Scaled with Multiple Selection</h2>
+            <p>All component parts (badges, options, checkboxes) scale together.</p>
+
+            <div class="card-grid" style="--grid-min: 250px; --grid-gap: 1.5rem;">
+                <div class="demo-card comparison-card">
+                    <h3>Compact with Badges</h3>
+                    <p><code>--ms-rem: 8px</code></p>
+                    <web-multiselect
+                        id="multi-compact"
+                        style="--ms-rem: 8px;"
+                        placeholder="Select items..."
+                        show-checkboxes="true"
+                        badges-display-mode="badges">
+                    </web-multiselect>
+                </div>
+
+                <div class="demo-card comparison-card">
+                    <h3>Default with Badges</h3>
+                    <p><code>--ms-rem: 10px</code></p>
+                    <web-multiselect
+                        id="multi-default"
+                        placeholder="Select items..."
+                        show-checkboxes="true"
+                        badges-display-mode="badges">
+                    </web-multiselect>
+                </div>
+
+                <div class="demo-card comparison-card">
+                    <h3>Large with Badges</h3>
+                    <p><code>--ms-rem: 12px</code></p>
+                    <web-multiselect
+                        id="multi-large"
+                        style="--ms-rem: 12px;"
+                        placeholder="Select items..."
+                        show-checkboxes="true"
+                        badges-display-mode="badges">
+                    </web-multiselect>
+                </div>
+
+                <div class="demo-card comparison-card">
+                    <h3>XL with Count Display</h3>
+                    <p><code>--ms-rem: 15px</code></p>
+                    <web-multiselect
+                        id="multi-xl"
+                        style="--ms-rem: 15px;"
+                        placeholder="Select items..."
+                        show-checkboxes="true"
+                        badges-display-mode="count">
+                    </web-multiselect>
+                </div>
+            </div>
+        </section>
+
+        <!-- Font Families -->
+        <section class="example-section">
+            <h2>Font Families</h2>
+            <p>Set <code>--base-font-family</code> on the element to change the font. Works with any CSS font stack.</p>
+
+            <div class="card-grid" style="--grid-gap: 1.5rem;">
+                <div class="demo-card">
+                    <h4>System UI (Default)</h4>
+                    <p><code>--base-font-family: system-ui, ...</code></p>
+                    <web-multiselect
+                        id="font-system"
+                        placeholder="System font stack..."
+                        multiple="false">
+                    </web-multiselect>
+                </div>
+
+                <div class="demo-card">
+                    <h4>Inter</h4>
+                    <p><code>--base-font-family: "Inter", sans-serif</code></p>
+                    <web-multiselect
+                        id="font-inter"
+                        placeholder="Modern, clean typeface..."
+                        multiple="false">
+                    </web-multiselect>
+                </div>
+
+                <div class="demo-card">
+                    <h4>Montserrat</h4>
+                    <p><code>--base-font-family: "Montserrat", sans-serif</code></p>
+                    <web-multiselect
+                        id="font-montserrat"
+                        placeholder="Geometric elegance..."
+                        multiple="false">
+                    </web-multiselect>
+                </div>
+
+                <div class="demo-card">
+                    <h4>Quicksand</h4>
+                    <p><code>--base-font-family: "Quicksand", sans-serif</code></p>
+                    <web-multiselect
+                        id="font-quicksand"
+                        placeholder="Rounded and friendly..."
+                        multiple="false">
+                    </web-multiselect>
+                </div>
+
+                <div class="demo-card">
+                    <h4>Lexend</h4>
+                    <p><code>--base-font-family: "Lexend", sans-serif</code></p>
+                    <web-multiselect
+                        id="font-lexend"
+                        placeholder="Optimized for readability..."
+                        multiple="false">
+                    </web-multiselect>
+                </div>
+
+                <div class="demo-card">
+                    <h4>Fira Code (Monospace)</h4>
+                    <p><code>--base-font-family: "Fira Code", monospace</code></p>
+                    <web-multiselect
+                        id="font-mono"
+                        placeholder="For code-like UIs..."
+                        multiple="false">
+                    </web-multiselect>
+                </div>
+            </div>
+        </section>
+
+        <!-- Key CSS Variables -->
+        <section class="example-section">
+            <h2>Key CSS Variables</h2>
+            <p>Important variables for sizing and typography:</p>
+
+            <table class="reference-table">
+                <thead>
+                    <tr>
+                        <th>Variable</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>--ms-rem</code></td>
+                        <td>10px</td>
+                        <td>Base unit - scales everything proportionally</td>
+                    </tr>
+                    <tr>
+                        <td><code>--ms-input-font-size</code></td>
+                        <td>calc(1.4 * var(--ms-rem))</td>
+                        <td>Input text size (14px default)</td>
+                    </tr>
+                    <tr>
+                        <td><code>--ms-input-padding</code></td>
+                        <td>calc(0.8 * var(--ms-rem)) calc(1.2 * var(--ms-rem))</td>
+                        <td>Input padding</td>
+                    </tr>
+                    <tr>
+                        <td><code>--ms-option-title-font-size</code></td>
+                        <td>calc(1.4 * var(--ms-rem))</td>
+                        <td>Option text size</td>
+                    </tr>
+                    <tr>
+                        <td><code>--ms-badge-font-size</code></td>
+                        <td>calc(1.2 * var(--ms-rem))</td>
+                        <td>Badge text size</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <p style="font-size: 0.875rem; color: #6b7280; margin-top: 1rem;">
+                <strong>Note:</strong> CSS variables must be set on the <code>&lt;web-multiselect&gt;</code> element itself (or via inherited CSS), not on wrapper divs, due to Shadow DOM encapsulation.
+            </p>
+        </section>
+
+        <!-- Typography Variables Reference -->
+        <section class="example-section">
+            <h2>Typography Variables</h2>
+            <p>All typography variables with their theme-designer integration:</p>
+
+            <table class="reference-table">
+                <thead>
+                    <tr>
+                        <th>Variable</th>
+                        <th>Default</th>
+                        <th>Theme Designer Source</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>--ms-font-size-2xs</code></td>
+                        <td>10px</td>
+                        <td><code>--base-font-size-2xs</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>--ms-font-size-xs</code></td>
+                        <td>12px</td>
+                        <td><code>--base-font-size-xs</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>--ms-font-size-sm</code></td>
+                        <td>14px</td>
+                        <td><code>--base-font-size-sm</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>--ms-font-size-base</code></td>
+                        <td>16px</td>
+                        <td><code>--base-font-size-base</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>--ms-font-size-lg</code></td>
+                        <td>18px</td>
+                        <td><code>--base-font-size-lg</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>--ms-font-weight-normal</code></td>
+                        <td>400</td>
+                        <td><code>--base-font-weight-normal</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>--ms-font-weight-medium</code></td>
+                        <td>500</td>
+                        <td><code>--base-font-weight-medium</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>--ms-font-weight-semibold</code></td>
+                        <td>600</td>
+                        <td><code>--base-font-weight-semibold</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>--ms-line-height-tight</code></td>
+                        <td>1.25</td>
+                        <td><code>--base-line-height-tight</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>--ms-line-height-normal</code></td>
+                        <td>1.5</td>
+                        <td><code>--base-line-height-normal</code></td>
+                    </tr>
+                    <tr>
+                        <td><code>--ms-line-height-relaxed</code></td>
+                        <td>1.75</td>
+                        <td><code>--base-line-height-relaxed</code></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
     </div>
 
     <script type="module">
@@ -753,6 +1512,342 @@ picker.removeAttribute('data-theme');        // back to inherit/OS</code></pre>
         });
     </script>
 
+    <!-- ===== Merged inline demo script from base-variables page ===== -->
+    <script type="module">
+    // Variable mappings
+    const variableMap = {
+      fontFamily: '--base-font-family',
+      fontSize2xs: '--base-font-size-2xs',
+      fontSizeXs: '--base-font-size-xs',
+      fontSizeSm: '--base-font-size-sm',
+      fontSizeBase: '--base-font-size-base',
+      fontSizeLg: '--base-font-size-lg',
+      fontWeightNormal: '--base-font-weight-normal',
+      fontWeightMedium: '--base-font-weight-medium',
+      fontWeightSemibold: '--base-font-weight-semibold',
+      lineHeightTight: '--base-line-height-tight',
+      lineHeightNormal: '--base-line-height-normal',
+      lineHeightRelaxed: '--base-line-height-relaxed'
+    };
+
+    // Track current values
+    const currentValues = {};
+
+    // Current font URL for Shadow DOM injection
+    let currentFontUrl = '';
+
+    // Update CSS variable
+    function updateVariable(inputId, value) {
+      const varName = variableMap[inputId];
+      if (!varName) return;
+
+      if (value === '' || value === null || value === undefined) {
+        // Remove the variable
+        document.documentElement.style.removeProperty(varName);
+        delete currentValues[varName];
+      } else {
+        // Set the variable
+        // Font sizes are unitless multipliers (component multiplies by --ms-rem)
+        document.documentElement.style.setProperty(varName, value);
+        currentValues[varName] = value;
+      }
+
+      updateDisplay();
+    }
+
+    // Update the display of current values
+    function updateDisplay() {
+      const display = document.getElementById('currentValues');
+      const keys = Object.keys(currentValues);
+
+      if (keys.length === 0) {
+        display.textContent = `:root {
+  /* No overrides set - using component defaults */
+}`;
+      } else {
+        const lines = keys.map(k => `  ${k}: ${currentValues[k]};`).join('\n');
+        display.textContent = `:root {\n${lines}\n}`;
+      }
+    }
+
+    // Reset all variables
+    function resetAll() {
+      // Clear all inputs
+      Object.keys(variableMap).forEach(inputId => {
+        const input = document.getElementById(inputId);
+        if (input) {
+          input.value = '';
+        }
+        const varName = variableMap[inputId];
+        document.documentElement.style.removeProperty(varName);
+      });
+
+      // Clear font link
+      document.getElementById('fontLink').value = '';
+      currentFontUrl = '';
+      const existingLink = document.getElementById('customFontLink');
+      if (existingLink) {
+        existingLink.remove();
+      }
+
+      // Clear tracking
+      Object.keys(currentValues).forEach(k => delete currentValues[k]);
+      updateDisplay();
+
+      // Re-initialize multiselects to refresh custom styles
+      initMultiselects();
+    }
+
+    // Set up event listeners
+    Object.keys(variableMap).forEach(inputId => {
+      const input = document.getElementById(inputId);
+      if (input) {
+        input.addEventListener('input', (e) => {
+          updateVariable(inputId, e.target.value);
+        });
+      }
+    });
+
+    // Reset button
+    document.getElementById('resetBtn').addEventListener('click', resetAll);
+
+    // Load font button
+    document.getElementById('loadFontBtn').addEventListener('click', () => {
+      const input = document.getElementById('fontLink');
+      let value = input.value.trim();
+
+      if (!value) return;
+
+      // Extract URL if it's a full <link> tag
+      const hrefMatch = value.match(/href=["']([^"']+)["']/);
+      if (hrefMatch) {
+        value = hrefMatch[1];
+      }
+
+      currentFontUrl = value;
+
+      // Remove existing font link if present
+      const existingLink = document.getElementById('customFontLink');
+      if (existingLink) {
+        existingLink.remove();
+      }
+
+      // Create and add new link
+      const link = document.createElement('link');
+      link.id = 'customFontLink';
+      link.rel = 'stylesheet';
+      link.href = value;
+      document.head.appendChild(link);
+
+      // Try to extract font family name from URL
+      const familyMatch = value.match(/family=([^:&]+)/);
+      if (familyMatch) {
+        const fontName = decodeURIComponent(familyMatch[1].replace(/\+/g, ' '));
+        const fontFamilyInput = document.getElementById('fontFamily');
+        fontFamilyInput.value = `'${fontName}', sans-serif`;
+        updateVariable('fontFamily', fontFamilyInput.value);
+      }
+
+      // Re-initialize multiselects to inject fonts into Shadow DOM
+      initMultiselects();
+    });
+
+    // Sample data
+    const frameworks = [
+      { value: 'react', label: 'React', subtitle: 'Meta' },
+      { value: 'vue', label: 'Vue.js', subtitle: 'Evan You' },
+      { value: 'angular', label: 'Angular', subtitle: 'Google' },
+      { value: 'svelte', label: 'Svelte', subtitle: 'Rich Harris' },
+      { value: 'solid', label: 'SolidJS', subtitle: 'Ryan Carniato' }
+    ];
+
+    const languages = [
+      { value: 'typescript', label: 'TypeScript' },
+      { value: 'javascript', label: 'JavaScript' },
+      { value: 'python', label: 'Python' },
+      { value: 'rust', label: 'Rust' },
+      { value: 'go', label: 'Go' }
+    ];
+
+    const grouped = [
+      { value: 'react', label: 'React', group: 'Frontend' },
+      { value: 'vue', label: 'Vue.js', group: 'Frontend' },
+      { value: 'angular', label: 'Angular', group: 'Frontend' },
+      { value: 'nodejs', label: 'Node.js', group: 'Backend' },
+      { value: 'django', label: 'Django', group: 'Backend' },
+      { value: 'rails', label: 'Ruby on Rails', group: 'Backend' },
+      { value: 'postgres', label: 'PostgreSQL', group: 'Database' },
+      { value: 'mongodb', label: 'MongoDB', group: 'Database' },
+      { value: 'redis', label: 'Redis', group: 'Database' }
+    ];
+
+    function initMultiselects() {
+      // Generate custom styles callback with current font URL
+      const customStylesCallback = () => {
+        if (currentFontUrl) {
+          return `@import url('${currentFontUrl}');`;
+        }
+        return '';
+      };
+
+      // Single select
+      const singleSelect = document.getElementById('singleSelect');
+      singleSelect.options = frameworks;
+      singleSelect.valueMember = 'value';
+      singleSelect.displayValueMember = 'label';
+      singleSelect.subtitleMember = 'subtitle';
+      singleSelect.customStylesCallback = customStylesCallback;
+
+      // Multi select with badges
+      const multiBadges = document.getElementById('multiBadges');
+      multiBadges.options = frameworks;
+      multiBadges.valueMember = 'value';
+      multiBadges.displayValueMember = 'label';
+      multiBadges.subtitleMember = 'subtitle';
+      multiBadges.customStylesCallback = customStylesCallback;
+      multiBadges.setSelected(['react', 'vue']);
+
+      // Multi select with count
+      const multiCount = document.getElementById('multiCount');
+      multiCount.options = languages;
+      multiCount.valueMember = 'value';
+      multiCount.displayValueMember = 'label';
+      multiCount.customStylesCallback = customStylesCallback;
+      multiCount.setSelected(['typescript', 'javascript', 'rust']);
+
+      // Grouped
+      const groupedEl = document.getElementById('grouped');
+      groupedEl.options = grouped;
+      groupedEl.valueMember = 'value';
+      groupedEl.displayValueMember = 'label';
+      groupedEl.groupMember = 'group';
+      groupedEl.customStylesCallback = customStylesCallback;
+      groupedEl.setSelected(['react', 'nodejs']);
+    }
+
+    // Initialize on DOM ready
+    window.addEventListener('DOMContentLoaded', () => {
+      // Apply initial values on page load
+      Object.keys(variableMap).forEach(inputId => {
+        const input = document.getElementById(inputId);
+        if (input && input.value) {
+          updateVariable(inputId, input.value);
+        }
+      });
+
+      // Wait for custom element to be defined
+      customElements.whenDefined('web-multiselect').then(() => {
+        initMultiselects();
+      });
+    });
+    </script>
+
+    <!-- ===== Merged inline demo script from sizes page ===== -->
+    <script type="module">
+        const options = [
+            { value: 'react', label: 'React' },
+            { value: 'vue', label: 'Vue.js' },
+            { value: 'angular', label: 'Angular' },
+            { value: 'svelte', label: 'Svelte' },
+            { value: 'typescript', label: 'TypeScript' },
+            { value: 'javascript', label: 'JavaScript' },
+            { value: 'python', label: 'Python' },
+            { value: 'nodejs', label: 'Node.js' },
+            { value: 'rust', label: 'Rust' },
+            { value: 'go', label: 'Go' }
+        ];
+
+        // Narrow input demo data
+        const countries = [
+            { code: 'US', name: 'United States', flag: '🇺🇸' },
+            { code: 'CZ', name: 'Czech Republic', flag: '🇨🇿' },
+            { code: 'DE', name: 'Germany', flag: '🇩🇪' },
+            { code: 'GB', name: 'United Kingdom', flag: '🇬🇧' },
+            { code: 'FR', name: 'France', flag: '🇫🇷' },
+            { code: 'JP', name: 'Japan', flag: '🇯🇵' },
+            { code: 'CA', name: 'Canada', flag: '🇨🇦' },
+            { code: 'AU', name: 'Australia', flag: '🇦🇺' }
+        ];
+
+        const currencies = [
+            { code: 'USD', name: 'US Dollar', symbol: '$' },
+            { code: 'EUR', name: 'Euro', symbol: '€' },
+            { code: 'GBP', name: 'British Pound', symbol: '£' },
+            { code: 'JPY', name: 'Japanese Yen', symbol: '¥' },
+            { code: 'CZK', name: 'Czech Koruna', symbol: 'Kč' },
+            { code: 'CHF', name: 'Swiss Franc', symbol: 'Fr' }
+        ];
+
+        const priorities = [
+            { code: 'H', name: 'High Priority', color: '🔴' },
+            { code: 'M', name: 'Medium Priority', color: '🟡' },
+            { code: 'L', name: 'Low Priority', color: '🟢' }
+        ];
+
+        // Google Fonts @import for Shadow DOM injection
+        const googleFontsImport = `
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Montserrat:wght@400;500;600&family=Fira+Code:wght@400;500&family=Quicksand:wght@400;500;600&family=Lexend:wght@400;500;600&display=swap');
+        `;
+
+        window.addEventListener('DOMContentLoaded', () => {
+            // Initialize all multiselects with font injection
+            document.querySelectorAll('web-multiselect').forEach(el => {
+                el.options = options;
+                el.valueMember = 'value';
+                el.displayValueMember = 'label';
+
+                // Inject Google Fonts into Shadow DOM
+                el.customStylesCallback = () => googleFontsImport;
+            });
+
+            // Pre-select some items for multi-select demos
+            ['multi-compact', 'multi-default', 'multi-large', 'multi-xl'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) {
+                    el.setSelected(['react', 'typescript']);
+                }
+            });
+
+            // Initialize narrow input demos
+            const countrySelect = document.getElementById('narrow-country');
+            if (countrySelect) {
+                countrySelect.options = countries;
+                countrySelect.valueMember = 'code';
+                countrySelect.displayValueMember = 'name';
+                // Show flag + name in dropdown
+                countrySelect.getDisplayValueCallback = (item) => `${item.flag} ${item.name}`;
+                // Show just code in closed input
+                countrySelect.renderSelectedContentCallback = (item) => item.code;
+                countrySelect.value = 'US';
+            }
+
+            const currencySelect = document.getElementById('narrow-currency');
+            if (currencySelect) {
+                currencySelect.options = currencies;
+                currencySelect.valueMember = 'code';
+                currencySelect.displayValueMember = 'name';
+                // Show symbol + code + name in dropdown
+                currencySelect.getDisplayValueCallback = (item) => `${item.symbol} ${item.code} - ${item.name}`;
+                // Show just code in closed input
+                currencySelect.renderSelectedContentCallback = (item) => item.code;
+                currencySelect.value = 'USD';
+            }
+
+            const prioritySelect = document.getElementById('narrow-priority');
+            if (prioritySelect) {
+                prioritySelect.options = priorities;
+                prioritySelect.valueMember = 'code';
+                prioritySelect.displayValueMember = 'name';
+                // Show color + name in dropdown
+                prioritySelect.getDisplayValueCallback = (item) => `${item.color} ${item.name}`;
+                // Show just code in closed input
+                prioritySelect.renderSelectedContentCallback = (item) => item.code;
+                prioritySelect.value = 'M';
+            }
+        });
+    </script>
+
     <script type="module" src="/src/index.ts"></script>
+    <script src="examples-chapter-nav.js" defer></script>
 </body>
 </html>

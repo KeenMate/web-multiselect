@@ -5,6 +5,51 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.0.0-rc10] - 2026-08-28
+
+### Added
+
+- **`collapse-badges-below` — container-responsive badge collapse.** A new opt-in attribute/property
+  (off by default) that makes the control react to its **own border box** rather than the window. Set it
+  to a pixel width and the control watches its box via the core `resized` lifecycle hook (rc09; backed by
+  a single shared page-wide `ResizeObserver`) and collapses `badges-display-mode` to `count` ("N selected")
+  while the box is narrower than that — so a picker in a narrow column/sidebar never overflows with pills,
+  even on a wide monitor where a viewport check would read "desktop". Widening back past the threshold
+  restores the configured badges mode. The override is applied to the live picker only, never written back
+  to `badges-display-mode`, so custom modes (`compact`, `partial`, …) are restored exactly; it is
+  re-asserted after a structural rebuild, and the hook is throttled (~30ms, leading + trailing) so a
+  drag-resize reflows a bounded number of times. This is a distinct axis from `mobile-presentation`
+  (device → floating vs. fullscreen) and composes with it. New demo: `examples-responsive.html`.
+
+- **Device-detection helpers re-exported from the package entry.** `observeEnvironment`,
+  `classifyDevice`, `getEnvironment`, `observeViewport`, `configureBreakpoints` and
+  `TABLET_MIN_SHORT_SIDE` (plus the `EnvironmentSnapshot` / `DeviceClass` / … types) are now re-exported
+  from `@keenmate/web-multiselect` — the same device signal the component reacts to internally
+  (`environmentChanged`). Consumers get it from one import and one dependency, so per-device
+  configuration is a plain pattern (no component flags): react to the event and assign a different
+  `actionButtons` set on mobile vs. desktop. Demonstrated in `examples-action-buttons.html` §10, which
+  previously squeezed 12 buttons into a single unreadable row on phones.
+
+### Fixed
+
+- **Dropdown corners: a highlighted first/last row no longer bleeds past the rounded border.**
+  The panel has a rounded 1px border and clips with `overflow: hidden`, but a square-cornered child
+  with a solid background (a hovered/selected/focused option at the top or bottom row, or the sticky
+  Select-All/Clear actions bar that occupies the top corners by default) leaked ~1px past the rounded
+  border at each corner — the classic rounded-parent + bordered-box rendering artifact. Fixed by
+  rounding the inner content wrapper (`.ms__dropdown-inner`) to a new
+  `--ms-dropdown-inner-border-radius` (panel radius − border width, clamped at 0) so all content clips
+  *inside* the border. Because it's the scroll box — not a specific row — it stays correct while the
+  list scrolls (whatever row is at the edge is clipped to the curve) and in virtual-scroll mode (the
+  inner now clips instead of leaving scrolling to a nested container). The fullscreen sheet stays
+  square (inner radius forced to 0). Themeable via `--ms-dropdown-inner-border-radius`.
+
+### Internal
+
+- **Bumped `@keenmate/web-components-core` to `1.0.0-rc09`** for the new `resized` / `viewportChanged`
+  size-reactivity hooks. `environmentChanged` is unaffected here — presentation resolution keys off the
+  discrete device classification, which still fires on breakpoint/orientation flips.
+
 ## [2.0.0-rc09] - 2026-08-26 [PUBLISHED]
 
 ### Changed

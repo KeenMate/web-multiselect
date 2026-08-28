@@ -3,21 +3,81 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>MultiSelect — Mobile & Fullscreen</title>
+    <title>MultiSelect — Responsive & Mobile</title>
 
     <!-- Shared example styles -->
     <link rel="stylesheet" href="examples-shared.css">
+
+    <style>
+        /* A user-resizable frame around a picker so you can drag its OWN width and
+           watch the component react to its box (not the window). `resize` needs a
+           non-visible overflow; the floating dropdown is fixed-positioned so it
+           isn't clipped by this. The grab handle sits at the bottom-right corner. */
+        .resizable {
+            resize: horizontal;
+            overflow: auto;
+            width: 520px;
+            min-width: 200px;
+            max-width: 760px;
+            padding: 1rem;
+            border: 2px dashed #cbd5e1;
+            border-radius: 10px;
+            background: #fff;
+        }
+        .resizable .form-group { margin-bottom: 0; }
+
+        /* Live width read-out chip driven by a page-side ResizeObserver (display
+           only — the collapse itself is the component's job). Flips accent when the
+           box is under the threshold so the cause/effect is obvious. */
+        .width-readout {
+            display: inline-flex;
+            align-items: baseline;
+            gap: 0.4rem;
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: 0.85rem;
+            padding: 0.25rem 0.6rem;
+            border-radius: 999px;
+            background: #eef2ff;
+            color: #4338ca;
+            margin-bottom: 0.75rem;
+        }
+        .width-readout.is-narrow { background: #fef3c7; color: #b45309; }
+        .width-readout strong { font-size: 1rem; }
+
+        /* A deliberately narrow fixed column on a wide page — the "sidebar on a big
+           monitor" case: the window is wide, but the picker's box isn't. */
+        .sidebar-layout { display: flex; gap: 1.5rem; align-items: flex-start; }
+        .sidebar-layout .sidebar {
+            flex: 0 0 260px;
+            padding: 1rem;
+            border-radius: 10px;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+        }
+        .sidebar-layout .main {
+            flex: 1 1 auto;
+            min-width: 0;
+            padding: 1rem;
+            color: #94a3b8;
+            border: 1px dashed #e2e8f0;
+            border-radius: 10px;
+        }
+        @media (max-width: 640px) {
+            .sidebar-layout { flex-direction: column; }
+            .sidebar-layout .sidebar { flex-basis: auto; width: 100%; }
+        }
+    </style>
 </head>
 <body>
     <div class="container">
         <header>
             <a href="index.html" class="back-link">← Back to Examples</a>
-            <h1>📱 Mobile &amp; Fullscreen</h1>
+            <h1>📱 Responsive &amp; Mobile</h1>
             <p class="subtitle">
-                On phones the dropdown opens as a <strong>fullscreen overlay</strong> instead of a
-                floating panel — a touch-friendly sheet with its own search header, big rows, and a
-                close button. These demos cover the phone-only behaviors: how the presentation is
-                chosen, the soft-keyboard policy, and the touch stand-in for keyboard match-stepping.
+                Everything responsive in one place. First, how the dropdown <strong>presents on phones</strong>
+                — a fullscreen overlay with its own search header, the soft-keyboard policy, and a touch
+                stand-in for keyboard match-stepping. Then how it reacts to its <strong>own box</strong> in a
+                narrow column (independent of the device), and RTL mirroring of the whole thing.
             </p>
         </header>
 
@@ -247,8 +307,150 @@ picker.setAttribute('search-mode', 'filter');   // or 'navigate'
 &lt;/div&gt;</code></pre>
             </details>
         </div>
+
+        <!-- ============================================================ -->
+        <!-- 6. Own box vs the window (container-responsive)              -->
+        <!-- ============================================================ -->
+        <div class="card">
+            <h2>6 · Own box vs. the window <span class="badge new">NEW</span></h2>
+            <p>
+                The sections above react to the <em>device / viewport</em> — a phone opens the sheet.
+                That's the wrong signal when the picker sits in a <strong>narrow column on a wide
+                screen</strong>: the window is 2560px, but the control's box is 300px.
+                <code>collapse-badges-below</code> keys off the element's <strong>own border box</strong>
+                instead, via the core <code>resized</code> lifecycle hook (backed by a single page-wide
+                <code>ResizeObserver</code>, so a page of N pickers pays for one observer).
+            </p>
+            <p>
+                When set to a pixel width, the control watches its box and switches
+                <code>badges-display-mode</code> to <code>count</code> (<em>"N selected"</em>) while it's
+                narrower than that — then restores your configured mode when it widens back. It's an
+                <strong>opt-in</strong>: leave the attribute off and nothing changes.
+            </p>
+            <div class="note">
+                <div class="note-title">CSS container queries first</div>
+                Purely <em>visual</em> reflow (padding, font-size, hiding a label) belongs in a
+                <code>@container</code> query — native and cheaper. Reach for this JS hook only for a
+                <em>structural</em> change like swapping the badge display, which can't be expressed in CSS.
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 7. Live: drag the box                                        -->
+        <!-- ============================================================ -->
+        <div class="card">
+            <h2>7 · Drag the box — <code>collapse-badges-below="360"</code></h2>
+            <p>
+                Grab the handle at the <strong>bottom-right corner</strong> of the dashed frame and drag it
+                narrower. Below <strong>360px</strong> the four badges collapse to a single
+                <em>"4 selected"</em> count; widen it back and the pills return. The window never changes —
+                only the picker's box does.
+            </p>
+            <div class="width-readout" id="drag-readout">picker box: <strong>—</strong></div>
+            <div class="resizable" id="drag-frame">
+                <div class="form-group">
+                    <label>Cloud services</label>
+                    <web-multiselect id="drag-select" multiple="true" collapse-badges-below="360"
+                        value-member="value" display-value-member="label" group-member="group"
+                        search-placeholder="Filter…"></web-multiselect>
+                    <small class="form-text">Preselected with 4 so the collapse is visible. Threshold: 360px.</small>
+                </div>
+            </div>
+
+            <details class="mt-1">
+                <summary>Show code</summary>
+<pre><code>&lt;!-- opt in: below 360px of its OWN width, badges collapse to a count --&gt;
+&lt;web-multiselect collapse-badges-below="360"&gt;&lt;/web-multiselect&gt;
+
+// or via property
+el.collapseBadgesBelow = 360;
+
+// clear it to turn the behavior off (restores your badges-display-mode)
+el.collapseBadgesBelow = null;</code></pre>
+            </details>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 8. Sidebar on a wide page — the real use case                -->
+        <!-- ============================================================ -->
+        <div class="card">
+            <h2>8 · A picker in a narrow sidebar (window stays wide)</h2>
+            <p>
+                Here the page is full-width but the picker lives in a fixed <strong>260px</strong> sidebar.
+                A viewport check would call this "desktop" and leave the badges to overflow; the own-box
+                check collapses them because the <em>box</em> is narrow. This is exactly the case the
+                window signal gets wrong.
+            </p>
+            <div class="sidebar-layout">
+                <div class="sidebar">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label>Filters</label>
+                        <web-multiselect id="sidebar-select" multiple="true" collapse-badges-below="300"
+                            value-member="value" display-value-member="label" group-member="group"
+                            search-placeholder="Filter…"></web-multiselect>
+                        <small class="form-text">260px column · threshold 300px → collapsed.</small>
+                    </div>
+                </div>
+                <div class="main">
+                    <p style="margin:0;">Main content area — plenty of room here, but the sidebar picker still
+                    collapses because it reacts to <em>its</em> box, not the page.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- 9. How it resolves                                           -->
+        <!-- ============================================================ -->
+        <div class="card">
+            <h2>9 · How it resolves</h2>
+            <table class="reference-table">
+                <thead>
+                    <tr>
+                        <th>Box width</th>
+                        <th><code>collapse-badges-below</code></th>
+                        <th>Effective badges mode</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>any</td>
+                        <td><em>unset</em> (default)</td>
+                        <td>your <code>badges-display-mode</code> (unchanged)</td>
+                    </tr>
+                    <tr>
+                        <td>≥ threshold</td>
+                        <td>e.g. <code>360</code></td>
+                        <td>your <code>badges-display-mode</code></td>
+                    </tr>
+                    <tr class="is-highlight">
+                        <td>&lt; threshold</td>
+                        <td>e.g. <code>360</code></td>
+                        <td><code>count</code> (forced, live)</td>
+                    </tr>
+                </tbody>
+            </table>
+            <ul>
+                <li><strong>Non-destructive.</strong> The override is applied to the live picker; your
+                    <code>badges-display-mode</code> config is never rewritten, so widening restores it
+                    exactly — including custom modes like <code>compact</code> or <code>partial</code>.</li>
+                <li><strong>Throttled.</strong> The <code>resized</code> hook coalesces a drag to ~30ms
+                    (leading + trailing), so a resize reflows a bounded number of times.</li>
+                <li><strong>Survives rebuilds.</strong> Changing a structural attribute rebuilds the picker;
+                    the collapse is re-asserted from the current box afterward.</li>
+            </ul>
+            <div class="note warning">
+                <div class="note-title">Two independent axes</div>
+                <code>mobile-presentation</code> (§1) picks <em>floating vs. fullscreen</em> from the device;
+                <code>collapse-badges-below</code> picks the <em>badge display</em> from the element's box.
+                They compose — a phone can open fullscreen while a desktop sidebar collapses badges. For a
+                third pattern — swapping a whole config (e.g. a different <code>actionButtons</code> set) by
+                device — see the device-adaptive actions demo on the
+                <a href="examples-action-buttons.html">Action Buttons</a> page.
+            </div>
+        </div>
     </div>
 
+    <!-- Mobile / fullscreen demos (own module scope) -->
     <script type="module">
         document.addEventListener('DOMContentLoaded', () => {
             // Build a flat [{ value, label, group }] list from a category → items map.
@@ -353,7 +555,52 @@ picker.setAttribute('search-mode', 'filter');   // or 'navigate'
         });
     </script>
 
+    <!-- Container-responsive demos (own module scope) -->
+    <script type="module">
+        document.addEventListener('DOMContentLoaded', () => {
+            // Build a flat [{ value, label, group }] list from a category → items map.
+            const toOptions = (catalog) =>
+                Object.entries(catalog).flatMap(([group, labels], gi) =>
+                    labels.map((label, i) => ({ value: `${gi}-${i}`, label, group })));
+
+            const options = toOptions({
+                'Compute': ['Virtual Machines', 'Kubernetes', 'Serverless Functions', 'Container Registry', 'Batch', 'Auto Scaling', 'Load Balancer'],
+                'Storage': ['Object Storage', 'Block Storage', 'File Storage', 'Cold Archive', 'Backup Vault', 'CDN'],
+                'Networking': ['Virtual Network', 'DNS', 'VPN Gateway', 'Firewall', 'NAT Gateway', 'Private Link'],
+                'Databases': ['SQL Database', 'NoSQL Store', 'In-Memory Cache', 'Data Warehouse', 'Graph Database', 'Search Engine'],
+                'Security': ['Identity & Access', 'Secrets Manager', 'Key Vault', 'Web App Firewall', 'DDoS Protection', 'Audit Logs']
+            });
+
+            // --- 7. Drag the box -------------------------------------
+            const dragSelect = document.getElementById('drag-select');
+            dragSelect.options = options;
+            dragSelect.setSelected(['0-0', '0-1', '1-0', '2-0']); // 4 → visible collapse at 360px
+
+            // Page-side ResizeObserver: purely a read-out of the picker's OWN box so the
+            // cause (box narrowing) is visible next to the effect (badges collapsing). It
+            // watches the same element and reports the border box (borderBoxSize), so the
+            // number matches exactly what the component's `resized` hook sees. The COMPONENT
+            // does its own observing via the hook — this is display only.
+            const readout = document.getElementById('drag-readout');
+            const THRESHOLD = 360;
+            const ro = new ResizeObserver((entries) => {
+                for (const entry of entries) {
+                    const w = Math.round(entry.borderBoxSize?.[0]?.inlineSize ?? entry.contentRect.width);
+                    readout.innerHTML = `picker box: <strong>${w}px</strong>`;
+                    readout.classList.toggle('is-narrow', w < THRESHOLD);
+                }
+            });
+            ro.observe(dragSelect);
+
+            // --- 8. Sidebar -----------------------------------------
+            const sidebarSelect = document.getElementById('sidebar-select');
+            sidebarSelect.options = options;
+            sidebarSelect.setSelected(['0-0', '3-0', '4-0']);
+        });
+    </script>
+
     <!-- Development mode: Load from src -->
     <script type="module" src="/src/index.ts"></script>
+    <script src="examples-chapter-nav.js" defer></script>
 </body>
 </html>

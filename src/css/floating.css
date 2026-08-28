@@ -133,6 +133,10 @@
   max-height: 100dvh;
   border: none;
   border-radius: 0;
+  /* The sheet is a squared full-viewport overlay, so the inner content must not
+     round its corners — zero the inner clip radius here (the base var derives from
+     --ms-dropdown-border-radius, which isn't 0 in this scope). */
+  --ms-dropdown-inner-border-radius: 0;
   background: var(--ms-fullscreen-bg);
   color: var(--ms-fullscreen-text-color);
   z-index: var(--ms-z-index-fullscreen);
@@ -532,10 +536,16 @@
           mask: var(--ms-icon-info) center / contain no-repeat;
 }
 
-/* Inner scrolling container — clips scrollbar to rounded corners */
+/* Inner scrolling container — the single content clip for the panel (holds the
+   actions bar + options in every render mode). Rounding it to the inner radius makes
+   whatever sits in a corner (the sticky actions bar, the first/last option, or —
+   because it's the scroll box, not a specific row — whatever row is at the scrolled
+   edge) follow the panel's rounded corners, instead of a square background bleeding
+   past the rounded 1px border. Also rounds the scrollbar into the corners. */
 .ms__dropdown-inner {
   flex: 1;
   overflow-y: auto;
+  border-radius: var(--ms-dropdown-inner-border-radius);
   overscroll-behavior: contain;
   touch-action: pan-y;
   -webkit-overflow-scrolling: touch;
@@ -568,7 +578,11 @@
 }
 
 .ms__dropdown--virtual .ms__dropdown-inner {
-  overflow-y: visible;
+  /* Virtual mode: .ms__options--virtual owns the scroll, so the inner must NOT
+     scroll too (two nested scrollers strand the last row). Clip (not `visible`) so
+     it still bounds content to its rounded corners — same one-scroller pattern the
+     fullscreen inner uses — otherwise the corner artifact returns for virtual lists. */
+  overflow: hidden;
 }
 
 /* ==============================================================================

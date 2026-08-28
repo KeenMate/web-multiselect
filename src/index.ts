@@ -15,6 +15,29 @@ export { WebMultiSelect } from './multiselect';
 export { parseOptionsData, OPTIONS_FORMATS } from './option-formats';
 export type { OptionsFormat, ParsedOptions } from './option-formats';
 
+// Device / viewport detection — re-exported from the core so consumers get the
+// same "what device am I on" signal the component itself reacts to
+// (environmentChanged), from ONE import surface and ONE dependency. Use it to
+// drive per-device configuration (e.g. a different `actionButtons` set on mobile):
+//   import { observeEnvironment, classifyDevice } from '@keenmate/web-multiselect';
+//   observeEnvironment(env => { el.actionButtons = classifyDevice(env) === 'mobile' ? mobile : desktop; });
+export {
+  getEnvironment,
+  observeEnvironment,
+  observeViewport,
+  classifyDevice,
+  configureBreakpoints,
+  TABLET_MIN_SHORT_SIDE,
+} from '@keenmate/web-components-core';
+export type {
+  EnvironmentSnapshot,
+  DeviceClass,
+  Orientation,
+  PointerType,
+  OS,
+  BreakpointMap,
+} from '@keenmate/web-components-core';
+
 // Export types
 export type {
   MultiSelectOption,

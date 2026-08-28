@@ -318,6 +318,13 @@
      ========================================================================== */
   --ms-dropdown-border: var(--base-dropdown-border, 1px solid var(--ms-dropdown-border-color));
   --ms-dropdown-border-radius: var(--ms-border-radius-lg);
+  /* Inner content clip radius — a hair tighter than the panel so a highlighted
+     first/last row (or the sticky Select-All/Clear actions bar) follows the panel's
+     rounded corners instead of its square background bleeding ~1px past the rounded
+     border (the classic rounded-parent + bordered-box corner artifact). Assumes the
+     default 1px --ms-dropdown-border; if you theme a thicker border, override this to
+     match (panel radius − border width). Clamped at 0 so a squared panel stays square. */
+  --ms-dropdown-inner-border-radius: max(0px, calc(var(--ms-dropdown-border-radius) - 1px));
   --ms-dropdown-box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
   /* Live input width, published by JS each positioning frame. It's the only panel
      dimension CSS can't measure itself, so panels that "match the input" read it. */
