@@ -448,17 +448,19 @@ export class MultiSelectElement<T = any> extends BlissElement<MultiSelectEvents>
     const collapse = width > 0 && width < threshold;
     if (collapse === this.#badgesCollapsed) return;
     this.#badgesCollapsed = collapse;
-    if (collapse) {
-      this.#picker?.updateOptions({ badgesDisplayMode: 'count' } as Partial<MultiSelectConfig<T>>);
-    } else {
-      this.#restoreBadgesMode();
-    }
+    if (collapse) this.#pushBadgesMode('count');
+    else this.#restoreBadgesMode();
   }
 
   /** Re-assert the consumer's configured badges mode from the pristine base config. */
   #restoreBadgesMode(): void {
     const base = (this.config.badgesDisplayMode as MultiSelectConfig<T>['badgesDisplayMode']) ?? 'badges';
-    this.#picker?.updateOptions({ badgesDisplayMode: base } as Partial<MultiSelectConfig<T>>);
+    this.#pushBadgesMode(base);
+  }
+
+  /** Relay a badges-display-mode override to the live picker (never written to `this.config`). */
+  #pushBadgesMode(mode: MultiSelectConfig<T>['badgesDisplayMode']): void {
+    this.#picker?.updateOptions({ badgesDisplayMode: mode } as Partial<MultiSelectConfig<T>>);
   }
 
   // ── picker lifecycle ──────────────────────────────────────────────────────

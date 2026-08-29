@@ -1026,10 +1026,12 @@ export class WebMultiSelect<T = any> {
         // Overlay scrollbars take no width, so both sides round; a classic scrollbar means
         // the END-side corners stay square. `offsetWidth - clientWidth` is the gutter.
         const roundEnd = (scroller.offsetWidth - scroller.clientWidth) <= 0;
-        const R = 'var(--ms-dropdown-inner-border-radius)';
+        const radius = 'var(--ms-dropdown-inner-border-radius)';
 
-        // Reset any previously-set corners (option nodes get recycled by virtual scroll).
-        optionsEl.querySelectorAll<HTMLElement>('.ms__option, .ms__group-label').forEach((el) => {
+        // All content rows in DOM (== visual) order. Reset any previously-set corners first
+        // (option nodes get recycled by virtual scroll), then round the physical edges.
+        const rows = Array.from(optionsEl.querySelectorAll<HTMLElement>('.ms__option, .ms__group-label'));
+        rows.forEach((el) => {
             el.style.borderStartStartRadius = '';
             el.style.borderStartEndRadius = '';
             el.style.borderEndStartRadius = '';
@@ -1037,17 +1039,20 @@ export class WebMultiSelect<T = any> {
         });
 
         // TOP edge = first content row: a group label when grouped, else the first option.
-        const firstRow = optionsEl.querySelector('.ms__group-label, .ms__option') as HTMLElement | null;
+        const firstRow = rows[0];
         if (firstRow) {
-            firstRow.style.borderStartStartRadius = R;
-            if (roundEnd) firstRow.style.borderStartEndRadius = R;
+            firstRow.style.borderStartStartRadius = radius;
+            if (roundEnd) firstRow.style.borderStartEndRadius = radius;
         }
-        // BOTTOM edge = last option (a group label never sits at the bottom of the list).
-        const optionRows = optionsEl.querySelectorAll<HTMLElement>('.ms__option');
-        const lastRow = optionRows[optionRows.length - 1];
+        // BOTTOM edge = last option (a group label never sits at the bottom of the list, so
+        // walk back past any trailing label to the real last option).
+        let lastRow: HTMLElement | undefined;
+        for (let i = rows.length - 1; i >= 0; i--) {
+            if (rows[i].classList.contains('ms__option')) { lastRow = rows[i]; break; }
+        }
         if (lastRow) {
-            lastRow.style.borderEndStartRadius = R;
-            if (roundEnd) lastRow.style.borderEndEndRadius = R;
+            lastRow.style.borderEndStartRadius = radius;
+            if (roundEnd) lastRow.style.borderEndEndRadius = radius;
         }
     }
 
@@ -1192,8 +1197,8 @@ export class WebMultiSelect<T = any> {
 
             let cssClass = '';
             if (button.getClassCallback) {
-                const classes = button.getClassCallback(this);
-                cssClass = Array.isArray(classes) ? ` ${classes.join(' ')}` : (classes ? ` ${classes}` : '');
+                const extra = this.classSuffix(button.getClassCallback(this));
+                if (extra) cssClass = ` ${extra}`;
             } else if (button.cssClass) {
                 cssClass = ` ${button.cssClass}`;
             }
@@ -1256,14 +1261,7 @@ export class WebMultiSelect<T = any> {
                 ...presentationContext(this.presentationMode),
                 isTreeNode: false
             };
-            const customContent = this.options.renderOptionContentCallback(option, context);
-
-            if (typeof customContent === 'string') {
-                html += customContent;
-            } else {
-                // HTMLElement - convert to HTML string
-                html += customContent.outerHTML;
-            }
+            html += this.toHtml(this.options.renderOptionContentCallback(option, context));
         } else {
             // Default rendering
             if (icon) {
@@ -1380,8 +1378,7 @@ export class WebMultiSelect<T = any> {
                 isSelectable: selectable,
                 isIndeterminate
             };
-            const customContent = this.options.renderOptionContentCallback(option, context);
-            html += typeof customContent === 'string' ? customContent : customContent.outerHTML;
+            html += this.toHtml(this.options.renderOptionContentCallback(option, context));
         } else {
             if (icon) {
                 html += `<span class="ms__option-icon">${icon}</span>`;
@@ -3632,6 +3629,27 @@ export class WebMultiSelect<T = any> {
     }
 
     /**
+     * Coerce a render-callback result to an HTML string. Callbacks may return a string
+     * (HTML) or an HTMLElement (serialized via `outerHTML`); null/undefined → ''. Used by
+     * every "return string | HTMLElement" content callback that builds into an innerHTML
+     * string. (DOM sinks that hold a live node instead — the reveal/message panels — use
+     * textContent/appendChild directly and intentionally don't go through here.)
+     */
+    private toHtml(v: string | HTMLElement | null | undefined): string {
+        return v == null ? '' : typeof v === 'string' ? v : v.outerHTML;
+    }
+
+    /**
+     * Normalize a class callback result (`string | string[] | null`) to a single
+     * space-joined string with falsy entries dropped — e.g. `['a', '', 'b'] → "a b"`,
+     * `null → ""`. Callers add their own leading space / base class as needed.
+     */
+    private classSuffix(v: string | string[] | null | undefined): string {
+        const arr = v == null ? [] : Array.isArray(v) ? v : [v];
+        return arr.filter(Boolean).join(' ');
+    }
+
+    /**
      * Render a removable badge for a selected option (used by the badges/partial display modes
      * and by the selected-items popover).
      *
@@ -3655,14 +3673,13 @@ export class WebMultiSelect<T = any> {
         // `data-value`, and the click handler deselects on any inner `[data-action="remove"]`
         // (or `.ms__badge-remove`). Falls back to the default pill when it returns nothing.
         if (!ctx.isInPopover && this.options.renderBadgeCallback) {
-            const custom = this.options.renderBadgeCallback(option, renderCtx);
-            const customHtml = custom == null ? '' : (typeof custom === 'string' ? custom : custom.outerHTML);
+            const customHtml = this.toHtml(this.options.renderBadgeCallback(option, renderCtx));
             if (customHtml.trim() !== '') {
                 const classCb = this.options.getBadgeClassCallback;
                 let wrapperClasses = 'ms__badge ms__badge--custom';
                 if (classCb) {
-                    const cc = classCb(option);
-                    wrapperClasses += ' ' + (Array.isArray(cc) ? cc : [cc]).filter(Boolean).join(' ');
+                    const extra = this.classSuffix(classCb(option));
+                    if (extra) wrapperClasses += ' ' + extra;
                 }
                 return `<div class="${wrapperClasses}" data-value="${value}">${customHtml}</div>`;
             }
@@ -3672,11 +3689,9 @@ export class WebMultiSelect<T = any> {
         let badgeContent: string;
         const popoverCallback = ctx.isInPopover ? this.options.renderSelectedItemContentCallback : undefined;
         if (popoverCallback) {
-            const c = popoverCallback(option);
-            badgeContent = typeof c === 'string' ? c : c.outerHTML;
+            badgeContent = this.toHtml(popoverCallback(option));
         } else if (this.options.renderBadgeContentCallback) {
-            const c = this.options.renderBadgeContentCallback(option, renderCtx);
-            badgeContent = typeof c === 'string' ? c : c.outerHTML;
+            badgeContent = this.toHtml(this.options.renderBadgeContentCallback(option, renderCtx));
         } else {
             badgeContent = this.getItemBadgeDisplayValue(option);
         }
@@ -3687,9 +3702,8 @@ export class WebMultiSelect<T = any> {
             : this.options.getBadgeClassCallback;
         let badgeClasses = 'ms__badge';
         if (classCallback) {
-            const customClasses = classCallback(option);
-            const classArray = Array.isArray(customClasses) ? customClasses : [customClasses];
-            badgeClasses += ' ' + classArray.filter(c => c).join(' ');
+            const extra = this.classSuffix(classCallback(option));
+            if (extra) badgeClasses += ' ' + extra;
         }
 
         const removeLabel = this.getItemBadgeDisplayValue(option);

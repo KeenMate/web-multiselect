@@ -195,6 +195,7 @@
     }
 
     // ── open / close ───────────────────────────────────────────────────────
+    function isOpen() { return root.getAttribute('data-open') === 'true'; }
     function setOpen(open) {
       root.setAttribute('data-open', open ? 'true' : 'false');
       toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
@@ -202,16 +203,16 @@
       else stopPositioning();
     }
     toggle.addEventListener('click', function () {
-      setOpen(root.getAttribute('data-open') !== 'true');
+      setOpen(!isOpen());
     });
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape' && root.getAttribute('data-open') === 'true') {
+      if (e.key === 'Escape' && isOpen()) {
         setOpen(false);
         toggle.focus();
       }
     });
     document.addEventListener('click', function (e) {
-      if (root.getAttribute('data-open') === 'true' && !root.contains(e.target)) setOpen(false);
+      if (isOpen() && !root.contains(e.target)) setOpen(false);
     });
 
     // ── scroll-spy: highlight the chapter nearest the top ────────────────────
