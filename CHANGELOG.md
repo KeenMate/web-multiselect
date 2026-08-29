@@ -99,6 +99,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   size-reactivity hooks. `environmentChanged` is unaffected here — presentation resolution keys off the
   discrete device classification, which still fires on breakpoint/orientation flips.
 
+- **Deduped render-callback normalization in the core class.** Extracted two private helpers in
+  `multiselect.ts` — `toHtml()` (coerce a `string | HTMLElement | null` callback result to an HTML
+  string) and `classSuffix()` (normalize a `string | string[] | null` class-callback result to a
+  filtered space-joined string) — and routed the option / badge / popover content callbacks and the
+  action-button class callback through them, removing five inline HTML coercions and three class
+  normalizations. Also folded the duplicated `badges-display-mode` override push in `web-component.ts`
+  into one `#pushBadgesMode()`, tidied `applyEdgeOptionRadii()` (one row query instead of three), and
+  added an `isOpen()` reader in the example chapter-nav. No behavior change.
+
+- **Repointed e2e specs orphaned by the example-page renames.** `search-index.spec.ts` →
+  `external-search.spec.ts` (targets `examples-external-search.html`), and `sync-imperative.spec.ts`
+  now targets `examples-data-api.html`. The synchronous `options`-then-`setSelected` regression guard
+  lost its `#partial-mode` / `#compact-mode` fixture in the classic→data-api split, so it was re-added
+  as the page's "API06 · Synchronous options + setSelected" demo. Full suite green (259 passing).
+
 ## [2.0.0-rc09] - 2026-08-26 [PUBLISHED]
 
 ### Changed
