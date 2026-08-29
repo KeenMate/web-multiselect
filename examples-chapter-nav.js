@@ -33,38 +33,51 @@
   }
 
   function init() {
-    var container = document.querySelector('.container') || document.body;
-    var headings = Array.prototype.slice.call(container.querySelectorAll('h2'));
-    // Nothing to navigate on single-section / index-style pages.
-    if (headings.length < 2) return;
+    // Two data sources. Default: the current page's <h2> section headings (in-page
+    // chapter jumps). Or, if the page exposes `window.CHAPTER_NAV_ITEMS` (an array of
+    // { label, href } — e.g. the examples index feeding its page registry), a
+    // cross-page jump list instead. `id` is null in the cross-page case (no scroll-spy).
+    var explicit = Array.isArray(window.CHAPTER_NAV_ITEMS) ? window.CHAPTER_NAV_ITEMS : null;
+
+    var chapters;
+    if (explicit) {
+      chapters = explicit
+        .filter(function (it) { return it && it.href; })
+        .map(function (it, i) {
+          return { id: null, section: null, label: it.label || ('Item ' + (i + 1)), href: it.href };
+        });
+      if (chapters.length < 2) return;
+    } else {
+      var container = document.querySelector('.container') || document.body;
+      var headings = Array.prototype.slice.call(container.querySelectorAll('h2'));
+      // Nothing to navigate on single-section / index-style pages.
+      if (headings.length < 2) return;
+
+      var used = Object.create(null);
+      // Turn a heading into { id, label, section, href }. Reuses an existing id, else
+      // slugs the heading text; labels drop any inline badge chip (e.g. a "NEW" pill).
+      chapters = headings.map(function (h2, i) {
+        var section = h2.closest('.card, .example-section') || h2.parentElement || h2;
+
+        var clone = h2.cloneNode(true);
+        Array.prototype.forEach.call(clone.querySelectorAll('.badge'), function (b) { b.remove(); });
+        var label = (clone.textContent || '').replace(/\s+/g, ' ').trim() || ('Section ' + (i + 1));
+
+        var id = section.id || h2.id;
+        if (!id) {
+          id = label.toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-+|-+$/g, '') || ('section-' + (i + 1));
+          if (used[id]) { var n = 2; while (used[id + '-' + n]) n++; id = id + '-' + n; }
+          section.id = id;
+        }
+        used[id] = true;
+        return { id: id, label: label, section: section, href: '#' + id };
+      });
+    }
 
     // Warm the Floating UI import now so the panel is ready to anchor on first open.
     loadFloatingUi();
-
-    var used = Object.create(null);
-
-    // Turn a heading into { id, label, section }. Reuses an existing id, else slugs
-    // the heading text; labels drop any inline badge chip (e.g. a "NEW" pill).
-    var chapters = headings.map(function (h2, i) {
-      var section = h2.closest('.card, .example-section') || h2.parentElement || h2;
-
-      // Label: heading text without badge spans.
-      var clone = h2.cloneNode(true);
-      Array.prototype.forEach.call(clone.querySelectorAll('.badge'), function (b) { b.remove(); });
-      var label = (clone.textContent || '').replace(/\s+/g, ' ').trim() || ('Section ' + (i + 1));
-
-      // Anchor id: prefer an existing one, else slugify (unique).
-      var id = section.id || h2.id;
-      if (!id) {
-        id = label.toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/^-+|-+$/g, '') || ('section-' + (i + 1));
-        if (used[id]) { var n = 2; while (used[id + '-' + n]) n++; id = id + '-' + n; }
-        section.id = id;
-      }
-      used[id] = true;
-      return { id: id, label: label, section: section };
-    });
 
     // ── build the nav ────────────────────────────────────────────────────────
     var root = document.createElement('div');
@@ -75,11 +88,20 @@
     var nav = document.createElement('nav');
     nav.className = 'chapter-nav__panel';
     nav.id = panelId;
-    nav.setAttribute('aria-label', 'On this page');
+    nav.setAttribute('aria-label', explicit ? 'Examples' : 'On this page');
+
+    // Back to the examples index — only on example pages (not the index itself).
+    if (!explicit) {
+      var back = document.createElement('a');
+      back.className = 'chapter-nav__back';
+      back.href = 'index.html';
+      back.textContent = '← Back to Examples';
+      nav.appendChild(back);
+    }
 
     var title = document.createElement('div');
     title.className = 'chapter-nav__title';
-    title.textContent = 'On this page';
+    title.textContent = explicit ? 'Examples' : 'On this page';
     nav.appendChild(title);
 
     var list = document.createElement('ul');
@@ -90,14 +112,14 @@
       var li = document.createElement('li');
       var a = document.createElement('a');
       a.className = 'chapter-nav__item';
-      a.href = '#' + c.id;
+      a.href = c.href;
       a.textContent = c.label;
-      // Native hash jump handles the scroll (smooth via CSS); keep the panel open
-      // so you can hop back and forth without reopening it.
-      a.addEventListener('click', function () { setActive(c.id); });
+      // Chapters: native hash jump scrolls (smooth via CSS). Pages: the href navigates.
+      // Either way, close the panel on pick so it gets out of the way.
+      a.addEventListener('click', function () { if (c.id) setActive(c.id); setOpen(false); });
       li.appendChild(a);
       list.appendChild(li);
-      itemsById[c.id] = a;
+      if (c.id) itemsById[c.id] = a;
     });
     nav.appendChild(list);
 
@@ -106,7 +128,7 @@
     toggle.className = 'chapter-nav__toggle';
     toggle.setAttribute('aria-expanded', 'false');
     toggle.setAttribute('aria-controls', panelId);
-    toggle.setAttribute('aria-label', 'Jump to a section on this page');
+    toggle.setAttribute('aria-label', explicit ? 'Jump to an example page' : 'Jump to a section on this page');
     toggle.innerHTML =
       '<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">' +
       '<line x1="8" y1="6" x2="20" y2="6"></line>' +
@@ -219,9 +241,12 @@
       ticking = true;
       window.requestAnimationFrame(function () { updateActive(); ticking = false; });
     }
-    window.addEventListener('scroll', onScroll, { passive: true });
-    window.addEventListener('resize', onScroll, { passive: true });
-    updateActive();
+    // Scroll-spy only applies to in-page chapters (a cross-page list has no sections).
+    if (!explicit) {
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll, { passive: true });
+      updateActive();
+    }
   }
 
   if (document.readyState === 'loading') {

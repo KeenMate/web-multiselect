@@ -634,6 +634,26 @@ html {
     transform: translateX(0);
 }
 
+/* "Back to Examples" link at the top of the panel (example pages only). */
+.chapter-nav__back {
+    display: block;
+    margin-bottom: 0.35rem;
+    padding: 0.45rem 0.6rem;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #4c51bf;
+    text-decoration: none;
+    background: #eef2ff;
+    transition: background 0.15s, color 0.15s;
+}
+
+.chapter-nav__back:hover {
+    background: #e0e7ff;
+    color: #3730a3;
+    text-decoration: none;
+}
+
 .chapter-nav__title {
     font-size: 0.72rem;
     font-weight: 700;
