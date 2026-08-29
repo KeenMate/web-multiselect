@@ -157,7 +157,47 @@ computed CSS.</pre>
 
         <!-- ────────────────────────────────────────────────────────────────────── -->
         <div class="card">
-            <h2>PO05 · Background</h2>
+            <h2>PO05 · Fullscreen overlay &amp; containing blocks (mobile)</h2>
+            <p>
+                On phones the dropdown switches to a <code>position: fixed</code>, full-viewport
+                <strong>sheet</strong> (see <a href="examples-responsive.html">Responsive &amp; Mobile</a>) instead of
+                anchoring under the input. The same containing-block rule applies — but the failure mode is worse.
+                A fixed element whose ancestor establishes a containing block is anchored to <em>that ancestor's box</em>,
+                not the viewport, so the sheet no longer covers the screen: it ends up offset, clipped, or mis-sized.
+            </p>
+            <p>
+                Note the asymmetry with PO02: an ancestor <code>transform</code> is <em>harmless</em> for the floating
+                dropdown (it just anchors under the input), but it <em>breaks</em> the fullscreen sheet, because the sheet
+                needs the viewport as its containing block to span it. The properties that trigger this are the ones
+                browsers reliably honor — <code>transform</code>, <code>perspective</code>, <code>filter</code>,
+                <code>backdrop-filter</code>, and qualifying <code>will-change</code>. <code>contain</code> and
+                <code>container-type</code> do <strong>not</strong> break the sheet (browsers don't honor them for fixed
+                positioning), which is exactly why the floating path has to override them but the sheet doesn't care.
+            </p>
+            <p>
+                Because nothing anchors the sheet, there's no drift to measure the way PO04 does. Instead the library
+                asks its containing-block heuristic, when the sheet opens, whether the true offset parent is the viewport
+                or an element — and if it's an element, fires a <code>console.warn</code> once per instance pointing at
+                the culprit. The consumer-side fixes are the same: move the <code>&lt;web-multiselect&gt;</code> out of
+                that subtree, or remove the property.
+            </p>
+
+            <div class="note warning">
+                <div class="note-title">What the fullscreen warning looks like</div>
+                <pre>[@keenmate/web-multiselect] Fullscreen overlay is anchored to an ancestor
+&lt;div.wrap-transform&gt; (has transform) instead of the viewport, so it may not cover
+the screen (offset, clipped, or mis-sized). An ancestor of &lt;web-multiselect&gt;
+establishes a fixed-positioning containing block (transform / perspective / filter /
+backdrop-filter / will-change). Fix on your side: move the component out of that
+ancestor's subtree, OR remove/replace that property. If neither is acceptable, please
+file an issue at https://github.com/keenmate/web-multiselect/issues with the
+ancestor's computed CSS.</pre>
+            </div>
+        </div>
+
+        <!-- ────────────────────────────────────────────────────────────────────── -->
+        <div class="card">
+            <h2>PO06 · Background</h2>
             <p>
                 The CSS spec lists seven properties as containing-block-establishing for fixed positioning:
                 <code>transform</code>, <code>perspective</code>, <code>filter</code>,

@@ -53,6 +53,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   page: a playlist builder that owns its selection panel entirely (layout, running total duration, remove
   / clear-all) and routes removal back through `setSelected(..., { notify: true })`.
 
+- **Fullscreen overlay now warns when an ancestor mis-anchors it.** The phone overlay is a
+  `position: fixed`, full-viewport sheet — but a `transform` / `perspective` / `filter` /
+  `backdrop-filter` / qualifying `will-change` on any ancestor of the host establishes a fixed-positioning
+  containing block, so the browser anchors the sheet to that ancestor's box instead of the viewport and it
+  stops covering the screen (offset / clipped / mis-sized). The floating dropdown already surfaced this via
+  drift detection (`warnDrift`); the fullscreen path had no equivalent and failed silently. It now checks
+  core's shared containing-block heuristic (`getFixedPositionOffsetParent`) when the sheet opens and, if
+  the true offset parent is an element rather than the viewport, emits a once-per-instance `console.warn`
+  naming the culprit element + its containing-block CSS and the consumer-side fix (move the component out
+  of that subtree, or drop the property). Note the asymmetry: an ancestor `transform` is harmless for the
+  floating dropdown but breaks the fullscreen sheet, because the sheet needs the viewport as its containing
+  block. `contain` / `container-type` don't break the sheet (browsers don't honour them for fixed
+  positioning). Documented on the Positioning Edge Cases page (new **PO05** card).
+
 ### Changed
 
 - **Example pages: coded sections + a split of the "Data & API" kitchen sink.** Every example section now

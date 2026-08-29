@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Test — fullscreen containing-block warning</title>
+    <link rel="stylesheet" href="test-fixtures.css">
+    <style>
+        web-multiselect { display: block; max-width: 320px; }
+        /* An ancestor that establishes a fixed-positioning containing block. The forced
+           fullscreen sheet inside it is anchored to this box instead of the viewport. */
+        .wrap-transform { transform: translateZ(0); }
+    </style>
+</head>
+<body>
+    <h1>fullscreen containing-block warning</h1>
+    <p>Targeted by <code>e2e/fullscreen-containing-block.spec.ts</code>.</p>
+
+    <div class="fixture">
+        <div class="fixture-label">plain ancestor — sheet anchors to the viewport (no warning)</div>
+        <web-multiselect id="fs-plain" mobile-presentation="fullscreen" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <div class="fixture wrap-transform">
+        <div class="fixture-label">transform ancestor — sheet mis-anchored (warns once)</div>
+        <web-multiselect id="fs-transform" mobile-presentation="fullscreen" value-member="value" display-value-member="label"></web-multiselect>
+    </div>
+
+    <script type="module">
+        import '/src/index.ts';
+
+        const fruits = [
+            { value: 'apple',      label: 'Apple' },
+            { value: 'banana',     label: 'Banana' },
+            { value: 'cherry',     label: 'Cherry' },
+            { value: 'date',       label: 'Date' },
+            { value: 'elderberry', label: 'Elderberry' }
+        ];
+
+        customElements.whenDefined('web-multiselect').then(() => {
+            for (const id of ['fs-plain', 'fs-transform']) {
+                document.getElementById(id).options = fruits;
+            }
+        });
+    </script>
+</body>
+</html>

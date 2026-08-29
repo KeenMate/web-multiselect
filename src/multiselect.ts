@@ -8,7 +8,7 @@
 // the fixed-position containing-block heuristic and the drift measurement; this file
 // keeps only the multiselect-branded warning copy (see warnDrift). No direct
 // `@floating-ui/dom` dependency: core owns the one pinned version.
-import { anchor, createTooltip, createPopover, type Placement, type TooltipHandle, type PopoverHandle, type DriftReport } from '@keenmate/web-components-core/positioning';
+import { anchor, createTooltip, createPopover, getFixedPositionOffsetParent, describeContainingBlockProps, type Placement, type TooltipHandle, type PopoverHandle, type DriftReport } from '@keenmate/web-components-core/positioning';
 // Fullscreen-overlay primitives (SPEC §12.9) — shared with any component that swaps a
 // floating panel for a full-viewport sheet on phones (daterangepicker's fullscreen calendar).
 import { lockBodyScroll, observeKeyboardInset, presentationContext } from '@keenmate/web-components-core';
@@ -69,6 +69,10 @@ export class WebMultiSelect<T = any> {
     // that one click. See attachEvents() (mousedown) and handleClickOutside().
     private justOpenedViaClick = false;
     private positioningDriftWarned = false;
+    // Fullscreen counterpart of positioningDriftWarned: warn once per instance when an
+    // ancestor establishes a fixed-positioning containing block, so the full-viewport
+    // sheet is anchored to that ancestor instead of the viewport (see warnFullscreenContainingBlock).
+    private fullscreenContainingBlockWarned = false;
 
     // How the open dropdown is presented. 'floating' anchors it to the input (the
     // default); 'fullscreen' renders it as a full-viewport overlay with its own
@@ -2858,6 +2862,44 @@ export class WebMultiSelect<T = any> {
         );
     }
 
+    /**
+     * Fullscreen counterpart of {@link warnDrift}. The overlay is a `position: fixed`,
+     * full-viewport sheet — but if an ancestor of the host establishes a fixed-positioning
+     * containing block (`transform` / `perspective` / `filter` / `backdrop-filter` / a
+     * qualifying `will-change`), the browser anchors the sheet to THAT ancestor's box instead
+     * of the viewport, so it no longer covers the screen (offset, clipped, or mis-sized).
+     *
+     * Unlike the floating path — where core measures real drift after positioning — nothing
+     * anchors the sheet, so there's no drift to observe. Instead we ask core's shared
+     * heuristic (`getFixedPositionOffsetParent`, the same one that feeds the floating platform)
+     * whether the sheet's true offset parent is the viewport (`window`) or an element. An
+     * element means it WILL be mis-anchored; warn once, pointing at the culprit. We only check
+     * the reliably-honoured properties core lists (transform family) — `contain` /
+     * `container-type` are omitted because browsers don't honour them for fixed positioning,
+     * so they don't actually break the sheet.
+     */
+    private warnFullscreenContainingBlock(): void {
+        if (this.fullscreenContainingBlockWarned || typeof window === 'undefined') return;
+        const offsetParent = getFixedPositionOffsetParent(this.dropdown);
+        if (offsetParent === window) return; // viewport-anchored → sheet covers the screen, all good
+        this.fullscreenContainingBlockWarned = true;
+        const culprit = offsetParent as Element;
+        const id = culprit.id ? `#${culprit.id}` : '';
+        const cls = culprit.classList.length ? `.${Array.from(culprit.classList).join('.')}` : '';
+        const desc = `<${culprit.tagName.toLowerCase()}${id}${cls}>`;
+        const css = describeContainingBlockProps(culprit);
+        console.warn(
+            `[@keenmate/web-multiselect] Fullscreen overlay is anchored to an ancestor ${desc}` +
+            (css ? ` (has ${css})` : '') + ` instead of the viewport, so it may not cover the ` +
+            `screen (offset, clipped, or mis-sized).\n` +
+            `An ancestor of <web-multiselect> establishes a fixed-positioning containing block ` +
+            `(transform / perspective / filter / backdrop-filter / will-change). Fix on your side: ` +
+            `move the component out of that ancestor's subtree, OR remove/replace that property. If ` +
+            `neither is acceptable, please file an issue at ` +
+            `https://github.com/keenmate/web-multiselect/issues with the ancestor's computed CSS.`
+        );
+    }
+
     private positionDropdown(): void {
         // The fullscreen overlay is CSS-positioned (fixed, inset:0) — never anchored.
         if (this.presentationMode === 'fullscreen') return;
@@ -3065,6 +3107,9 @@ export class WebMultiSelect<T = any> {
     private enterFullscreen(): void {
         this.clearFloatingInlineGeometry(this.dropdown);
         this.dropdown.classList.add('ms__dropdown--fullscreen');
+        // A transform/filter/… on an ancestor anchors this fixed sheet to that ancestor
+        // instead of the viewport — warn once, since it can't be fixed from inside the library.
+        this.warnFullscreenContainingBlock();
         this.buildFullscreenHeader();
         this.lockBodyScroll();
         // Drop any host-page horizontal overflow so the browser's shrink-to-fit zoom can't
