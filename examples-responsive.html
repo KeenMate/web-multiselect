@@ -75,7 +75,7 @@
     <div class="container">
         <header>
             <a href="index.html" class="back-link">← Back to Examples</a>
-            <h1>📱 Responsive &amp; Mobile</h1>
+            <h1>Responsive &amp; Mobile</h1>
             <p class="subtitle">
                 Everything responsive in one place. First, how the dropdown <strong>presents on phones</strong>
                 — a fullscreen overlay with its own search header, the soft-keyboard policy, and a touch
@@ -88,7 +88,7 @@
         <!-- 1. mobile-presentation — how the overlay is chosen           -->
         <!-- ============================================================ -->
         <div class="card">
-            <h2>1 · <code>mobile-presentation</code> — floating vs fullscreen</h2>
+            <h2>RS01 · <code>mobile-presentation</code> — floating vs fullscreen</h2>
             <p>
                 The <code>mobile-presentation</code> attribute decides how the open dropdown is
                 presented:
@@ -132,7 +132,7 @@
         <!-- 2. fullscreen-autofocus — soft keyboard on phones           -->
         <!-- ============================================================ -->
         <div class="card">
-            <h2>2 · <code>fullscreen-autofocus</code> — soft keyboard on phones</h2>
+            <h2>RS02 · <code>fullscreen-autofocus</code> — soft keyboard on phones</h2>
             <p>
                 By <strong>default the keyboard stays closed</strong> when the fullscreen sheet opens —
                 it shows the list first, so you can browse long lists and reach the bottom action
@@ -182,7 +182,7 @@ el.fullscreenAutofocus = true;</code></pre>
         <!-- 3. fullscreen navigate-mode match navigator                 -->
         <!-- ============================================================ -->
         <div class="card">
-            <h2>3 · <code>filter</code> vs <code>navigate</code> — live switch</h2>
+            <h2>RS03 · <code>filter</code> vs <code>navigate</code> — live switch</h2>
             <p>
                 <code>search-mode</code> decides what typing does. In <strong>filter</strong> (the default)
                 non-matches are hidden and the list shrinks to the results. In <strong>navigate</strong> the
@@ -239,7 +239,7 @@ picker.setAttribute('search-mode', 'filter');   // or 'navigate'
         <!-- 4. Responsive custom rendering (rich desktop / lean phone)   -->
         <!-- ============================================================ -->
         <div class="card">
-            <h2>4 · Responsive rendering — rich on desktop, lean on the phone</h2>
+            <h2>RS04 · Responsive rendering — rich on desktop, lean on the phone</h2>
             <p>
                 <code>renderOptionContentCallback</code> receives a <code>presentation</code> field
                 (<code>'floating'</code> or <code>'fullscreen'</code>, plus an <code>isFullscreen</code>
@@ -274,7 +274,7 @@ picker.setAttribute('search-mode', 'filter');   // or 'navigate'
         <!-- 5. RTL — the whole component mirrors, overlay included       -->
         <!-- ============================================================ -->
         <div class="card">
-            <h2>5 · RTL — right-to-left, overlay included</h2>
+            <h2>RS05 · RTL — right-to-left, overlay included</h2>
             <p>
                 Give the element (or any ancestor) <code>dir="rtl"</code> and the whole component
                 mirrors: the toggle icon and in-input counter move to the left, checkboxes sit on the
@@ -315,7 +315,7 @@ picker.setAttribute('search-mode', 'filter');   // or 'navigate'
         <!-- 6. Own box vs the window (container-responsive)              -->
         <!-- ============================================================ -->
         <div class="card">
-            <h2>6 · Own box vs. the window <span class="badge new">NEW</span></h2>
+            <h2>RS06 · Own box vs. the window</h2>
             <p>
                 The sections above react to the <em>device / viewport</em> — a phone opens the sheet.
                 That's the wrong signal when the picker sits in a <strong>narrow column on a wide
@@ -342,7 +342,7 @@ picker.setAttribute('search-mode', 'filter');   // or 'navigate'
         <!-- 7. Live: drag the box                                        -->
         <!-- ============================================================ -->
         <div class="card">
-            <h2>7 · Drag the box — <code>collapse-badges-below="360"</code></h2>
+            <h2>RS07 · Drag the box — <code>collapse-badges-below="360"</code></h2>
             <p>
                 Grab the handle at the <strong>bottom-right corner</strong> of the dashed frame and drag it
                 narrower. Below <strong>360px</strong> the four badges collapse to a single
@@ -377,7 +377,7 @@ el.collapseBadgesBelow = null;</code></pre>
         <!-- 8. Sidebar on a wide page — the real use case                -->
         <!-- ============================================================ -->
         <div class="card">
-            <h2>8 · A picker in a narrow sidebar (window stays wide)</h2>
+            <h2>RS08 · A picker in a narrow sidebar (window stays wide)</h2>
             <p>
                 Here the page is full-width but the picker lives in a fixed <strong>260px</strong> sidebar.
                 A viewport check would call this "desktop" and leave the badges to overflow; the own-box
@@ -405,7 +405,7 @@ el.collapseBadgesBelow = null;</code></pre>
         <!-- 9. How it resolves                                           -->
         <!-- ============================================================ -->
         <div class="card">
-            <h2>9 · How it resolves</h2>
+            <h2>RS09 · How it resolves</h2>
             <table class="reference-table">
                 <thead>
                     <tr>

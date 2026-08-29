@@ -11,12 +11,12 @@
     <div class="container">
         <header>
             <a href="index.html" class="back-link">← Back to Examples</a>
-            <h1>🔎 External Search (FlexSearch)</h1>
+            <h1>External Search (FlexSearch)</h1>
             <p class="subtitle">Plug a real search engine into <code>searchCallback</code> — the library stays dependency-free</p>
         </header>
 
         <section class="example-section">
-            <h2>Why</h2>
+            <h2>ES01 · Why</h2>
             <p class="description">
                 The component's built-in search is a plain case-insensitive <strong>substring</strong> match
                 (<code>String.includes</code>) — deliberately lean, since that covers most multiselects. When you
@@ -39,7 +39,7 @@ el.searchCallback = (term) =&gt; ix.search(term, 50);   // externalize the whole
 
         <!-- Demo A: flat + accent folding -->
         <section class="example-section">
-            <h2>1. Fuzzy &amp; Accent-Insensitive (flat list)</h2>
+            <h2>ES02 · Fuzzy &amp; Accent-Insensitive (flat list)</h2>
             <p class="description">
                 A flat list of cities with accented names. FlexSearch's <code>Charset.Normalize</code> folds accents
                 and <code>tokenize: "full"</code> matches partial tokens anywhere, with results in relevance order.
@@ -55,7 +55,7 @@ el.searchCallback = (term) =&gt; ix.search(term, 50);   // externalize the whole
 
         <!-- Demo B: ISCO tree + external index -->
         <section class="example-section">
-            <h2>2. External Search on a Tree (full ISCO-08)</h2>
+            <h2>ES03 · External Search on a Tree (full ISCO-08)</h2>
             <p class="description">
                 External search now composes with <strong>tree mode</strong>: <code>searchCallback</code> returns the
                 matching nodes from the FlexSearch index and the component rebuilds the hierarchy from them, keeping

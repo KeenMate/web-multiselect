@@ -37,7 +37,7 @@
     <div class="container">
         <header>
             <a href="index.html" class="back-link">← Back to Examples</a>
-            <h1>📐 Positioning Edge Cases</h1>
+            <h1>Positioning Edge Cases</h1>
             <p class="subtitle">
                 How the dropdown anchors across CSS containing-block scenarios, and what the library
                 does when it can't position the panel correctly on its own.
@@ -46,7 +46,7 @@
 
         <!-- ────────────────────────────────────────────────────────────────────── -->
         <div class="card">
-            <h2>1. Baseline (no special ancestor CSS)</h2>
+            <h2>PO01 · Baseline (no special ancestor CSS)</h2>
             <p>
                 The simplest case: no ancestor establishes a containing block for fixed positioning. The
                 dropdown anchors to the viewport and sits under the input.
@@ -65,7 +65,7 @@
 
         <!-- ────────────────────────────────────────────────────────────────────── -->
         <div class="card">
-            <h2>2. Ancestor with <code>transform</code> (works correctly)</h2>
+            <h2>PO02 · Ancestor with <code>transform</code> (works correctly)</h2>
             <p>
                 <code>transform</code>, <code>perspective</code>, <code>filter</code>, <code>backdrop-filter</code>,
                 and qualifying <code>will-change</code> values establish a containing block for fixed-positioned
@@ -86,7 +86,7 @@
 
         <!-- ────────────────────────────────────────────────────────────────────── -->
         <div class="card">
-            <h2>3. Ancestor with <code>container-type</code> (the heuristic-override case)</h2>
+            <h2>PO03 · Ancestor with <code>container-type</code> (the heuristic-override case)</h2>
             <p>
                 <code>container-type</code> establishes a containing block per spec, and Floating UI's default
                 <code>getOffsetParent</code> walks up to use the wrapper. But for some real-world layouts
@@ -113,7 +113,7 @@
 
         <!-- ────────────────────────────────────────────────────────────────────── -->
         <div class="card">
-            <h2>4. The drift-detection warning (interactive)</h2>
+            <h2>PO04 · The drift-detection warning (interactive)</h2>
             <p>
                 The library's containing-block heuristic isn't bulletproof — an ancestor can genuinely anchor
                 fixed positioning (per spec) without being on the library's reliable-properties list. Every
@@ -157,7 +157,7 @@ computed CSS.</pre>
 
         <!-- ────────────────────────────────────────────────────────────────────── -->
         <div class="card">
-            <h2>Background</h2>
+            <h2>PO05 · Background</h2>
             <p>
                 The CSS spec lists seven properties as containing-block-establishing for fixed positioning:
                 <code>transform</code>, <code>perspective</code>, <code>filter</code>,

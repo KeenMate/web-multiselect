@@ -15,13 +15,13 @@
     <div class="container">
         <header>
             <a href="index.html" class="back-link">← Back to Examples</a>
-            <h1>🎛️ Action Buttons Examples</h1>
+            <h1>Action Buttons Examples</h1>
             <p class="subtitle">Comprehensive guide to all action button configuration options</p>
         </header>
 
         <!-- Example 1: Basic Built-in Actions -->
         <section class="example-section">
-            <h2>1. Basic Built-in Actions</h2>
+            <h2>AB01 · Basic Built-in Actions</h2>
             <p class="description">
                 Simple select-all and clear-all buttons with default settings.
             </p>
@@ -50,7 +50,7 @@
 
         <!-- Example 2: Static Properties -->
         <section class="example-section">
-            <h2>2. Static Properties</h2>
+            <h2>AB02 · Static Properties</h2>
             <p class="description">
                 Using static properties: <code>isVisible</code>, <code>isDisabled</code>, <code>cssClass</code>, and <code>tooltip</code>.
             </p>
@@ -106,7 +106,7 @@
 
         <!-- Example 3: Dynamic Visibility -->
         <section class="example-section">
-            <h2>3. Dynamic Visibility (getIsVisibleCallback)</h2>
+            <h2>AB03 · Dynamic Visibility (getIsVisibleCallback)</h2>
             <p class="description">
                 Show/hide buttons based on current selection state using <code>getIsVisibleCallback</code>.
             </p>
@@ -150,7 +150,7 @@
 
         <!-- Example 4: Dynamic Disabled State -->
         <section class="example-section">
-            <h2>4. Dynamic Disabled State (getIsDisabledCallback)</h2>
+            <h2>AB04 · Dynamic Disabled State (getIsDisabledCallback)</h2>
             <p class="description">
                 Enable/disable buttons based on conditions using <code>getIsDisabledCallback</code>.
             </p>
@@ -202,7 +202,7 @@
 
         <!-- Example 5: Dynamic Text -->
         <section class="example-section">
-            <h2>5. Dynamic Text (getTextCallback)</h2>
+            <h2>AB05 · Dynamic Text (getTextCallback)</h2>
             <p class="description">
                 Change button text based on current state using <code>getTextCallback</code>.
             </p>
@@ -265,7 +265,7 @@
 
         <!-- Example 6: Dynamic CSS Classes -->
         <section class="example-section">
-            <h2>6. Dynamic CSS Classes (getClassCallback)</h2>
+            <h2>AB06 · Dynamic CSS Classes (getClassCallback)</h2>
             <p class="description">
                 Apply CSS classes dynamically based on state using <code>getClassCallback</code>. Custom styles are injected via <code>customStylesCallback</code> into the Shadow DOM.
             </p>
@@ -325,7 +325,7 @@ multiselect.actionButtons = [
 
         <!-- Example 7: Dynamic Tooltip -->
         <section class="example-section">
-            <h2>7. Dynamic Tooltip (getTooltipCallback)</h2>
+            <h2>AB07 · Dynamic Tooltip (getTooltipCallback)</h2>
             <p class="description">
                 Show contextual information in tooltips using <code>getTooltipCallback</code>.
             </p>
@@ -389,7 +389,7 @@ multiselect.actionButtons = [
 
         <!-- Example 8: Custom Actions -->
         <section class="example-section">
-            <h2>8. Custom Actions with onClick</h2>
+            <h2>AB08 · Custom Actions with onClick</h2>
             <p class="description">
                 Create custom buttons with <code>action: 'custom'</code> and custom <code>onClick</code> handlers.
             </p>
@@ -445,7 +445,7 @@ multiselect.actionButtons = [
 
         <!-- Example 9: Combined Features -->
         <section class="example-section">
-            <h2>9. Combined Features & Callback Priority</h2>
+            <h2>AB09 · Combined Features & Callback Priority</h2>
             <p class="description">
                 Demonstrating multiple callbacks working together and callback priority over static properties.
             </p>
@@ -518,7 +518,7 @@ multiselect.actionButtons = [
 
         <!-- Example 10: Device-adaptive actions -->
         <section class="example-section">
-            <h2>10. Device-Adaptive Actions</h2>
+            <h2>AB10 · Device-Adaptive Actions</h2>
             <p class="description">
                 Twelve action buttons fit one row on a wide desktop, but there's no room on a phone, a
                 tablet, or a narrowed window — squeezed into one line they run past the edge or become
@@ -585,7 +585,7 @@ observeViewport((env) => {
 
         <!-- Example 11: Font Awesome Icons -->
         <section class="example-section">
-            <h2>11. Font Awesome Icons in Buttons</h2>
+            <h2>AB11 · Font Awesome Icons in Buttons</h2>
             <p class="description">
                 Action buttons accept HTML, so Font Awesome icons work — but Font Awesome is <strong>font-based</strong>, which needs <strong>two</strong> things in a Shadow DOM component:
                 <strong>(1)</strong> the <code>@font-face</code> must be registered at the <em>document</em> level (a normal <code>&lt;link&gt;</code> in the page <code>&lt;head&gt;</code>) — a shadow-scoped <code>@font-face</code> is ignored by browsers, so the glyphs would render as empty boxes; and
@@ -675,7 +675,7 @@ multiselect.actionButtons = [
 
         <!-- Example 12: Lucide SVG Icons -->
         <section class="example-section" id="lucide">
-            <h2>12. Lucide (SVG) Icons in Buttons</h2>
+            <h2>AB12 · Lucide (SVG) Icons in Buttons</h2>
             <p class="description">
                 Unlike font icons, <strong>inline SVG icons render natively inside Shadow DOM</strong> — no <code>@font-face</code>, no <code>&lt;head&gt;</code> link, no <code>customStylesCallback</code>. You just put the SVG markup in the button <code>text</code>. These are <a href="https://lucide.dev" target="_blank" rel="noopener">Lucide</a> icons; they use <code>stroke="currentColor"</code>, so they automatically match the button's text color (including dark mode).
             </p>
@@ -715,7 +715,7 @@ multiselect.actionButtons = [
 
         <!-- Example 13: Positioning, Rows & Alignment -->
         <section class="example-section">
-            <h2>13. Positioning, Rows &amp; Alignment</h2>
+            <h2>AB13 · Positioning, Rows &amp; Alignment</h2>
             <p class="description">
                 Place the actions block at the <code>top</code> (default) or <code>bottom</code> of the dropdown,
                 arrange buttons across multiple rows with the per-button <code>row</code> property, and control
@@ -774,7 +774,7 @@ multiselect.actionButtons = [
 
         <!-- Summary -->
         <section class="example-section">
-            <h2>📋 Summary</h2>
+            <h2>AB14 · Summary</h2>
 
             <h3>Static Properties</h3>
             <div class="code-block"><pre>action: 'select-all' | 'clear-all' | 'custom'  // Required

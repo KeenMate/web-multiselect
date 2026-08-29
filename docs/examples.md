@@ -7,13 +7,13 @@ Working examples and recipes for `@keenmate/web-multiselect`. For the runnable d
 | [`examples-basic.html`](../examples-basic.html) | Basic usage — declarative markup, single/multi, keyboard nav, search modes, RTL |
 | [`examples-data-api.html`](../examples-data-api.html) | Data feeding (objects, tuples, callbacks, async, cascading) + public API, forms, events |
 | [`examples-new-api.html`](../examples-new-api.html) | Modern programmatic API |
-| [`examples-templating.html`](../examples-templating.html) | Custom rendering callbacks |
+| [`examples-custom-rendering.html`](../examples-custom-rendering.html) | Custom rendering callbacks |
 | [`examples-action-buttons.html`](../examples-action-buttons.html) | Select All / Clear All / custom actions |
 | [`examples-base-variables.html`](../examples-base-variables.html) | `--base-*` two-layer theming |
 | [`examples-theming.html`](../examples-theming.html) | Full `--ms-*` theming surface |
 | [`examples-sizes.html`](../examples-sizes.html) | Size variants and `--ms-rem` scaling |
 | [`examples-positioning.html`](../examples-positioning.html) | Floating UI positioning edge cases |
-| [`examples-performance.html`](../examples-performance.html) | Virtual scroll with 15,000 items |
+| [`examples-virtual-scrolling.html`](../examples-virtual-scrolling.html) | Virtual scroll with 15,000 items |
 | [`examples-logging.html`](../examples-logging.html) | Debug logging |
 
 ## Rich content with icons
@@ -267,7 +267,7 @@ Handle 10,000+ options with smooth 60fps performance by rendering only visible i
 </script>
 ```
 
-**Live demo:** [`examples-performance.html`](../examples-performance.html) — working demo with 15,000 randomly generated options.
+**Live demo:** [`examples-virtual-scrolling.html`](../examples-virtual-scrolling.html) — working demo with 15,000 randomly generated options.
 
 ## Search modes: filter vs navigate
 

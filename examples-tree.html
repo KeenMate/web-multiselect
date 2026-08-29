@@ -18,13 +18,13 @@
     <div class="container">
         <header>
             <a href="index.html" class="back-link">← Back to Examples</a>
-            <h1>🌳 Tree of Options</h1>
+            <h1>Tree of Options</h1>
             <p class="subtitle">Render options as an always-expanded hierarchy, indented by depth</p>
         </header>
 
         <!-- Example 1: Basic tree -->
         <section class="example-section">
-            <h2>1. Basic Tree</h2>
+            <h2>TR01 · Basic Tree</h2>
             <p class="description">
                 Give each option a materialized dot-path (<code>"1"</code>, <code>"1.1"</code>,
                 <code>"1.1.1"</code>, …) and set <code>path-member</code>. Tree mode auto-enables:
@@ -56,7 +56,7 @@ el.pathMember = 'path';   // &lt;web-multiselect path-member="path"&gt;</pre></d
 
         <!-- Example 2: Single-select and checkboxes -->
         <section class="example-section">
-            <h2>2. Single-Select &amp; Checkboxes</h2>
+            <h2>TR02 · Single-Select &amp; Checkboxes</h2>
             <p class="description">
                 Every node — branch or leaf — is a normal, selectable option. Selection, single/multi
                 mode, and checkboxes all behave exactly as they do for a flat list.
@@ -76,7 +76,7 @@ el.pathMember = 'path';   // &lt;web-multiselect path-member="path"&gt;</pre></d
 
         <!-- Example 3: Ancestor-preserving search -->
         <section class="example-section">
-            <h2>3. Ancestor-Preserving Search</h2>
+            <h2>TR03 · Ancestor-Preserving Search</h2>
             <p class="description">
                 Typing filters the hierarchy to the <strong>matching nodes plus their ancestors</strong>,
                 so the indentation of the results still makes sense.
@@ -90,7 +90,7 @@ el.pathMember = 'path';   // &lt;web-multiselect path-member="path"&gt;</pre></d
 
         <!-- Example 4: Custom separator -->
         <section class="example-section">
-            <h2>4. Custom Path Separator</h2>
+            <h2>TR04 · Custom Path Separator</h2>
             <p class="description">
                 When your paths use a different separator (e.g. <code>1/1/2</code>), set
                 <code>tree-path-separator</code>.
@@ -106,7 +106,7 @@ el.pathMember = 'path';   // &lt;web-multiselect path-member="path"&gt;</pre></d
 
         <!-- Example 5: Full breadcrumb on badges -->
         <section class="example-section">
-            <h2>5. Full Breadcrumb on Badges</h2>
+            <h2>TR05 · Full Breadcrumb on Badges</h2>
             <p class="description">
                 A <strong>full title</strong> is a fully-qualified label that ships with the data
                 (never computed here). Set <code>full-title-member</code> (or
@@ -126,7 +126,7 @@ el.pathMember = 'path';   // &lt;web-multiselect path-member="path"&gt;</pre></d
 
         <!-- Example 6: Leaves-only selectability -->
         <section class="example-section">
-            <h2>6. Selectable Leaves Only</h2>
+            <h2>TR06 · Selectable Leaves Only</h2>
             <p class="description">
                 A node can be marked <strong>non-selectable</strong> — set
                 <code>is-selectable-member</code> (a data flag) or
@@ -152,7 +152,7 @@ el.getIsSelectableCallback = (node) =&gt; !node.hasChildren;
 
         <!-- Example 7: Styling the indentation -->
         <section class="example-section">
-            <h2>7. Styling the Indentation</h2>
+            <h2>TR07 · Styling the Indentation</h2>
             <p class="description">
                 Each row is indented via an inline <code>--ms-tree-depth</code> custom property
                 (0 at the top level). Tune the step with <code>--ms-tree-indent</code> and the
@@ -180,7 +180,7 @@ el.getIsSelectableCallback = (node) =&gt; !node.hasChildren;
 
         <!-- Example 8: Row height & long labels -->
         <section class="example-section">
-            <h2>8. Row Height &amp; Long Labels</h2>
+            <h2>TR08 · Row Height &amp; Long Labels</h2>
             <p class="description">
                 Deep indentation eats horizontal space, so long labels matter. By default a title
                 <strong>wraps</strong> to multiple lines (rows grow). Set a consistent row height with
@@ -216,7 +216,7 @@ el.getIsSelectableCallback = (node) =&gt; !node.hasChildren;
 
         <!-- Example 9: Real data — full ISCO-08 classification -->
         <section class="example-section">
-            <h2>9. Real Data — Full ISCO-08 Classification</h2>
+            <h2>TR09 · Real Data — Full ISCO-08 Classification</h2>
             <p class="description">
                 Everything at once on real data: the whole
                 <strong>International Standard Classification of Occupations</strong> (ISCO-08) —
@@ -262,7 +262,7 @@ el.getBadgeTooltipCallback = (item) =&gt; item.fullTitle || item.label;</pre></d
 
         <!-- Example 10: Cascade checkbox mode + value policy -->
         <section class="example-section">
-            <h2>10. Cascade Checkboxes &amp; Value Policy</h2>
+            <h2>TR10 · Cascade Checkboxes &amp; Value Policy</h2>
             <p class="description">
                 Two orthogonal knobs. <code>checkbox-mode</code> controls <em>how checking a branch
                 behaves</em>; <code>cascade-select-policy</code> controls <em>which values the selection
@@ -321,7 +321,7 @@ el.cascadeSelectPolicy = 'rolled-up';   // rolled-up (default) | leaves | all
 
         <!-- Example 11: Action buttons + tree -->
         <section class="example-section">
-            <h2>11. Action Buttons</h2>
+            <h2>TR11 · Action Buttons</h2>
             <p class="description">
                 Action buttons work with tree mode. The built-in <code>select-all</code> /
                 <code>clear-all</code> honour selectability (non-selectable branches are skipped), and
@@ -348,7 +348,7 @@ el.cascadeSelectPolicy = 'rolled-up';   // rolled-up (default) | leaves | all
 
         <!-- Example 12: Custom node rendering via renderOptionContentCallback -->
         <section class="example-section">
-            <h2>12. Custom Node Rendering</h2>
+            <h2>TR12 · Custom Node Rendering</h2>
             <p class="description">
                 <code>renderOptionContentCallback</code> works on tree rows too — it replaces the
                 <strong>inner content</strong> of a node (icon / title / subtitle), while the component
@@ -401,7 +401,7 @@ el.customStylesCallback = () =&gt; `
 
         <!-- Example 13: No inline badges — selections live in a popover -->
         <section class="example-section">
-            <h2>13. No Badges — Selections in a Popover</h2>
+            <h2>TR13 · No Badges — Selections in a Popover</h2>
             <p class="description">
                 For a deep tree, a wall of badges gets noisy fast. Set
                 <code>badges-display-mode="count"</code> and the component drops the individual badges
@@ -437,7 +437,7 @@ el.getBadgeDisplayCallback = (item) =&gt; item.fullTitle || item.label;
 
         <!-- Example 14: three independently-sized panels -->
         <section class="example-section">
-            <h2>14. Independent Panel Widths</h2>
+            <h2>TR14 · Independent Panel Widths</h2>
             <p class="description">
                 The control, the options dropdown, and the selected-items popover are three
                 separate panels — and they can each have their own width. Here the input is a
@@ -479,7 +479,7 @@ web-multiselect {
 
         <!-- Example 15: Navigate mode on a tree (with fullscreen preview) -->
         <section class="example-section">
-            <h2>15. Navigate Mode — Jump Between Matches</h2>
+            <h2>TR15 · Navigate Mode — Jump Between Matches</h2>
             <p class="description">
                 Section 3 shows the default <strong>filter</strong> search (the hierarchy narrows to matches
                 plus their ancestors). <code>search-mode="navigate"</code> is the alternative: the

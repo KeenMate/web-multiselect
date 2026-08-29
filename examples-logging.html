@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MultiSelect - window.components & Logging</title>
+    <title>Logging & Diagnostics — MultiSelect</title>
 
     <link rel="stylesheet" href="examples-shared.css">
     <link rel="stylesheet" href="/dist/style.css">
@@ -53,7 +53,7 @@
     <div class="container">
         <header>
             <a href="index.html" class="back-link">← Back to Examples</a>
-            <h1>🌐 <code>window.components</code> &amp; Logging</h1>
+            <h1>Logging &amp; Diagnostics</h1>
             <p class="subtitle">The global component registry from <code>@keenmate/web-components-core</code> — introspection, logging controls, and the live-instance list</p>
         </header>
 
@@ -66,7 +66,7 @@
 
         <!-- ── 1. The registry ─────────────────────────────────────────────── -->
         <div class="card">
-            <h2>1. The registry entry</h2>
+            <h2>LG01 · The registry entry</h2>
             <p>
                 Every KeenMate component publishes one entry via core's
                 <code>registerComponent()</code>. Below is a live view of
@@ -87,7 +87,7 @@
 
         <!-- ── 2. Logging through the registry ─────────────────────────────── -->
         <div class="card">
-            <h2>2. Logging controls — via <code>.logging</code></h2>
+            <h2>LG02 · Logging controls — via <code>.logging</code></h2>
             <p>
                 The <code>.logging</code> object is the flattened logger bundle. These
                 buttons call it directly (e.g.
@@ -122,7 +122,7 @@
 
         <!-- ── 3. Live instances ───────────────────────────────────────────── -->
         <div class="card">
-            <h2>3. Live instances — <code>.getInstances()</code></h2>
+            <h2>LG03 · Live instances — <code>.getInstances()</code></h2>
             <p>
                 <code>getInstances()</code> returns the connected elements of this tag —
                 maintained automatically (added on connect, removed on disconnect). Add and
@@ -141,7 +141,7 @@
 
         <!-- ── Reference ───────────────────────────────────────────────────── -->
         <div class="card">
-            <h2>📝 Log categories</h2>
+            <h2>LG04 · Log categories</h2>
             <ul>
                 <li><strong>INIT</strong> — initialization, config parsing, RTL detection, destruction</li>
                 <li><strong>DATA</strong> — async loading, option parsing, adding options, errors</li>
@@ -151,7 +151,7 @@
         </div>
 
         <div class="card">
-            <h2>💡 Usage</h2>
+            <h2>LG05 · Usage</h2>
             <div class="code-block">
 // No import needed at call sites — the registry is a global, populated the
 // moment the component module is loaded anywhere on the page.

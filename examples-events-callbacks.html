@@ -21,7 +21,7 @@
     <div class="container">
         <header>
             <a href="index.html" class="back-link">← Back to Examples</a>
-            <h1>🔔 Events, Handlers &amp; Interceptors</h1>
+            <h1>Events, Handlers &amp; Interceptors</h1>
             <p class="subtitle">
                 The notification surface, end to end: fire-and-forget <strong>events</strong>
                 (DOM <code>CustomEvent</code> + the <code>on*</code> property twin) and
@@ -33,7 +33,7 @@
         <!-- 1. EVENTS — DOM events and the on* property twin             -->
         <!-- ============================================================ -->
         <div class="card">
-            <h2>1 · Events — <code>addEventListener</code> &amp; the <code>on*</code> twin</h2>
+            <h2>EV01 · Events — <code>addEventListener</code> &amp; the <code>on*</code> twin</h2>
             <p>
                 Every notification is available two ways and <strong>both fire for the same action</strong>:
                 the bubbling DOM events <code>select</code> / <code>deselect</code> / <code>change</code>,
@@ -76,7 +76,7 @@ el.addEventListener('change', (e) =&gt; {
         <!-- 2. beforeSelectCallback — veto a selection                   -->
         <!-- ============================================================ -->
         <div class="card">
-            <h2>2 · <code>beforeSelectCallback</code> — block a selection</h2>
+            <h2>EV02 · <code>beforeSelectCallback</code> — block a selection</h2>
             <p>
                 An <strong>interceptor</strong>: runs <em>before</em> an option is added and returns
                 <code>false</code> to block it. Here <strong>Full-time</strong> and <strong>Part-time</strong>
@@ -116,7 +116,7 @@ el.beforeSelectCallback = (option, selected) =&gt; {
         <!-- 3. beforeDeselectCallback — protect a required item          -->
         <!-- ============================================================ -->
         <div class="card">
-            <h2>3 · <code>beforeDeselectCallback</code> — protect a required item</h2>
+            <h2>EV03 · <code>beforeDeselectCallback</code> — protect a required item</h2>
             <p>
                 The mirror interceptor on the way out. <strong>Team Lead</strong> is pre-selected and
                 required — trying to remove it is vetoed, while the other members can be toggled freely.
@@ -151,7 +151,7 @@ el.setSelected(['lead']);    // pre-select (bypasses the veto)</code></pre>
         <!-- 4. showMessage — surface feedback over the component         -->
         <!-- ============================================================ -->
         <div class="card">
-            <h2>4 · <code>showMessage()</code> — surface a message over the component</h2>
+            <h2>EV04 · <code>showMessage()</code> — surface a message over the component</h2>
             <p>
                 A transient toast the component renders <strong>on top of itself</strong>. Its reason for
                 being: in the <strong>fullscreen overlay</strong> (phones) the sheet covers the whole page,
@@ -220,7 +220,7 @@ el.beforeSelectCallback = (option) =&gt; {
         <!-- 5. The distinction                                           -->
         <!-- ============================================================ -->
         <div class="card">
-            <h2>Callback vs event — the one rule</h2>
+            <h2>EV05 · Callback vs event — the one rule</h2>
             <p>
                 The line is drawn by <strong>whether the component uses the return value</strong>:
             </p>

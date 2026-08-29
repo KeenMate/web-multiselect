@@ -67,6 +67,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   modes, badge tooltips/positioning, custom action buttons, custom badge display, keyboard hook) were
   removed from the page in favour of their home pages. `index.html` and the docs links were updated.
 
+- **Coded section headings across every example page + filename alignment.** The code scheme was rolled
+  out to all remaining pages (each `<h2>` is now `PREFIX## · Title`, emoji stripped): `AB` action-buttons,
+  `EV` events-callbacks, `LG` logging, `VS` virtual-scrolling, `PO` positioning, `RS` responsive,
+  `ES` external-search, `CR` custom-rendering, `TH` theming, `TT` tooltips, `TR` tree. Three files were
+  renamed to match their titles — `examples-performance.html` → `examples-virtual-scrolling.html`,
+  `examples-search-index.html` → `examples-external-search.html`, `examples-templating.html` →
+  `examples-custom-rendering.html` — and the logging page got a real heading ("Logging & Diagnostics")
+  in place of its emoji-only title. `index.html` and `docs/` links were repointed.
+
 ### Fixed
 
 - **Dropdown corners: a focused/selected first or last row no longer pokes a square corner past the

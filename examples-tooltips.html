@@ -12,13 +12,13 @@
     <div class="container">
         <header>
             <a href="index.html" class="back-link">← Back to Examples</a>
-            <h1>💬 Tooltips Examples</h1>
+            <h1>Tooltips Examples</h1>
             <p class="subtitle">Hover tooltips on dropdown options and selected badges</p>
         </header>
 
         <!-- Example 1: Option tooltips, default content -->
         <section class="example-section">
-            <h2>1. Option Tooltips (default content)</h2>
+            <h2>TT01 · Option Tooltips (default content)</h2>
             <p class="description">
                 Enable hover tooltips on the dropdown rows with <code>enable-option-tooltips</code>. With no
                 callback, the tooltip shows the option's display value, plus its subtitle on a second line when present.
@@ -39,7 +39,7 @@
 
         <!-- Example 2: Option tooltips, custom callback -->
         <section class="example-section">
-            <h2>2. Option Tooltips (custom <code>getOptionTooltipCallback</code>)</h2>
+            <h2>TT02 · Option Tooltips (custom <code>getOptionTooltipCallback</code>)</h2>
             <p class="description">
                 Build rich, per-option tooltip content with <code>getOptionTooltipCallback</code>. It receives the
                 option object and returns a <code>string</code> or an <code>HTMLElement</code>.
@@ -56,7 +56,7 @@
 
         <!-- Example 3: Option tooltips with virtual scrolling -->
         <section class="example-section">
-            <h2>3. Option Tooltips with Virtual Scrolling</h2>
+            <h2>TT03 · Option Tooltips with Virtual Scrolling</h2>
             <p class="description">
                 Tooltips re-attach as rows recycle into view, so they work seamlessly with the virtual-scrolled list
                 (this one holds 1,000 options).
@@ -73,7 +73,7 @@ multiselect.getOptionTooltipCallback = (item) =&gt; `Value: ${item.value}`;</pre
 
         <!-- Example 4: Full-width + follow cursor -->
         <section class="example-section">
-            <h2>4. Full-Width Rows — Placement & Follow-Cursor</h2>
+            <h2>TT04 · Full-Width Rows — Placement & Follow-Cursor</h2>
             <p class="description">
                 On a wide multiselect, a row-centered tooltip lands in the middle of the screen. Two fixes:
                 option tooltips default to <code>option-tooltip-placement="top-start"</code> (anchored to the
@@ -105,7 +105,7 @@ multiselect.getOptionTooltipCallback = (item) =&gt; `Value: ${item.value}`;</pre
 
         <!-- Example 5: Narrow + side placement -->
         <section class="example-section">
-            <h2>5. Narrow Multiselect — Side (start/end) Placement</h2>
+            <h2>TT05 · Narrow Multiselect — Side (start/end) Placement</h2>
             <p class="description">
                 For a small/narrow multiselect, show the tooltip on the side of the row instead of above it. Use
                 <code>option-tooltip-placement="right"</code> (end side) or <code>"left"</code> (start side). Floating
@@ -126,7 +126,7 @@ multiselect.getOptionTooltipCallback = (item) =&gt; `Value: ${item.value}`;</pre
 
         <!-- Example 6: Independent styling -->
         <section class="example-section">
-            <h2>6. Independent Styling (<code>--ms-option-tooltip-*</code>)</h2>
+            <h2>TT06 · Independent Styling (<code>--ms-option-tooltip-*</code>)</h2>
             <p class="description">
                 Option tooltips render with class <code>.ms__option-tooltip</code> and read their own
                 <code>--ms-option-tooltip-*</code> variables, which default to the shared
@@ -154,7 +154,7 @@ multiselect.getOptionTooltipCallback = (item) =&gt; `Value: ${item.value}`;</pre
 
         <!-- Example 7: Badge tooltips -->
         <section class="example-section">
-            <h2>7. Badge Tooltips</h2>
+            <h2>TT07 · Badge Tooltips</h2>
             <p class="description">
                 The same tooltip engine drives the selected-badge tooltips. Enable with
                 <code>enable-badge-tooltips</code>; customize content with <code>getBadgeTooltipCallback</code> and the
@@ -179,7 +179,7 @@ multiselect.getBadgeTooltipCallback = (item) =&gt;
 
         <!-- Summary -->
         <section class="example-section">
-            <h2>📋 Summary</h2>
+            <h2>TT08 · Summary</h2>
 
             <h3>Option tooltips</h3>
             <div class="code-block"><pre>enable-option-tooltips        // boolean, default false
