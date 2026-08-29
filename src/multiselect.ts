@@ -364,6 +364,7 @@ export class WebMultiSelect<T = any> {
             isSearchEnabled: element.dataset.enableSearch !== 'false',
             isAddNewAllowed: element.dataset.allowAddNew === 'true',
             isCounterShown: element.dataset.showCounter === 'true',
+            isSelectedPopoverEnabled: element.dataset.enableSelectedPopover !== 'false',
             isSearchModeToggleShown: element.dataset.showSearchModeToggle === 'true',
             isKeepOptionsOnSearch: element.dataset.keepOptionsOnSearch !== 'false',
             shouldKeepSearchOnClose: element.dataset.keepSearchOnClose !== 'false',
@@ -750,6 +751,10 @@ export class WebMultiSelect<T = any> {
 
         if (!this.options.isCheckboxesShown || !this.options.isMultipleEnabled) {
             this.element.classList.add('ms--no-checkboxes');
+        }
+
+        if (!this.options.isSelectedPopoverEnabled) {
+            this.element.classList.add('ms--no-selected-popover');
         }
 
         // Create input wrapper
@@ -2197,7 +2202,9 @@ export class WebMultiSelect<T = any> {
             return;
         }
 
-        const removeBtn = (e.target as HTMLElement).closest('.ms__badge-remove') as HTMLElement;
+        // Match the built-in pill's remove button OR a consumer-defined control in a
+        // renderBadgeCallback badge (`[data-action="remove"]`).
+        const removeBtn = (e.target as HTMLElement).closest('.ms__badge-remove, [data-action="remove"]') as HTMLElement;
         if (removeBtn) {
             e.preventDefault();
             e.stopPropagation();
@@ -2214,8 +2221,11 @@ export class WebMultiSelect<T = any> {
                 return;
             }
 
-            // Handle regular badge remove
-            const value = removeBtn.dataset.value!;
+            // Regular badge remove. Value is on the control itself (built-in pill) or on the
+            // nearest ancestor carrying `data-value` (the wrapper of a renderBadgeCallback badge).
+            const value = removeBtn.dataset.value
+                ?? (removeBtn.closest('[data-value]') as HTMLElement | null)?.dataset.value
+                ?? '';
             const option = this.selectedOptions.get(value);
             if (option) {
                 this.interactiveDeselect(option);
@@ -3462,6 +3472,14 @@ export class WebMultiSelect<T = any> {
     private showPopover(): void {
         uiLogger.debug(`[${this.instanceId}] showPopover() called`);
 
+        // Consumers rendering their own selection UI turn the popover off; the count badge /
+        // in-input counter still show, but their triggers are inert. Gating here covers every
+        // entry point (badge click, counter click, "+X more", keyboard) in one place.
+        if (!this.options.isSelectedPopoverEnabled) {
+            uiLogger.debug(`[${this.instanceId}] showPopover() suppressed (isSelectedPopoverEnabled=false)`);
+            return;
+        }
+
         if (this.isOpen) {
             this.close();
         }
@@ -3631,6 +3649,24 @@ export class WebMultiSelect<T = any> {
             ...ctx,
             ...presentationContext(this.presentationMode),
         };
+
+        // Whole-badge override (main badges area only). The consumer owns the entire markup;
+        // we only wrap it so removal + reconciliation keep working: the wrapper carries
+        // `data-value`, and the click handler deselects on any inner `[data-action="remove"]`
+        // (or `.ms__badge-remove`). Falls back to the default pill when it returns nothing.
+        if (!ctx.isInPopover && this.options.renderBadgeCallback) {
+            const custom = this.options.renderBadgeCallback(option, renderCtx);
+            const customHtml = custom == null ? '' : (typeof custom === 'string' ? custom : custom.outerHTML);
+            if (customHtml.trim() !== '') {
+                const classCb = this.options.getBadgeClassCallback;
+                let wrapperClasses = 'ms__badge ms__badge--custom';
+                if (classCb) {
+                    const cc = classCb(option);
+                    wrapperClasses += ' ' + (Array.isArray(cc) ? cc : [cc]).filter(Boolean).join(' ');
+                }
+                return `<div class="${wrapperClasses}" data-value="${value}">${customHtml}</div>`;
+            }
+        }
 
         // Resolve content
         let badgeContent: string;
@@ -3869,6 +3905,8 @@ export class WebMultiSelect<T = any> {
         // Structural class on host
         this.element.classList.toggle('ms--no-checkboxes',
             !this.options.isCheckboxesShown || !this.options.isMultipleEnabled);
+        this.element.classList.toggle('ms--no-selected-popover',
+            !this.options.isSelectedPopoverEnabled);
 
         // Badges position can change between block (top/bottom) and inline (left/right) layouts.
         if ('badgesPosition' in partial) {

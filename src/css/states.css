@@ -27,3 +27,13 @@
 .ms--no-checkboxes .ms__option-content {
   padding-inline-start: 0; /* No extra padding needed */
 }
+
+/* No selected-items popover modifier: the count/compact/"+X more" badge and the
+   in-input counter still show the tally, but their click is inert (gated in JS), so
+   drop the pointer cursor that would otherwise advertise them as openable. */
+.ms--no-selected-popover .ms__counter,
+.ms--no-selected-popover .ms__badge[data-action="show-selected"],
+.ms--no-selected-popover .ms__badge--counter,
+.ms--no-selected-popover .ms__badge--more {
+  cursor: default;
+}

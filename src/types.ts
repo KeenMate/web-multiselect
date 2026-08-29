@@ -363,6 +363,17 @@ export interface MultiSelectConfig<T = any> {
     renderOptionContentCallback?: (item: T, context: OptionContentRenderContext) => string | HTMLElement;
     /** Custom renderer for badge content (main badges area) - return HTML string or HTMLElement */
     renderBadgeContentCallback?: (item: T, context: BadgeContentRenderContext) => string | HTMLElement;
+    /**
+     * Custom renderer for the WHOLE badge (main badges area) — return HTML string or HTMLElement
+     * for the entire pill/card, not just its content. Unlike renderBadgeContentCallback (which fills
+     * the built-in pill), this replaces the badge markup entirely. The component wraps your output in
+     * a `.ms__badge.ms__badge--custom` element carrying `data-value`, and delegates removal to any
+     * element inside it with `data-action="remove"` (or the built-in `.ms__badge-remove` class) — so
+     * put a remove control in your markup and the component handles the deselect. Falls back to the
+     * default pill for a given item if the callback returns null/empty. Main badges area only (the
+     * selected-items popover keeps using renderSelectedItemContentCallback).
+     */
+    renderBadgeCallback?: (item: T, context: BadgeContentRenderContext) => string | HTMLElement | null | undefined;
     /** Custom renderer for selected item content in popover - return HTML string or HTMLElement */
     renderSelectedItemContentCallback?: (item: T) => string | HTMLElement;
     /** Callback to add custom CSS classes to selected items in popover - return string or array of class names */
@@ -418,6 +429,14 @@ export interface MultiSelectConfig<T = any> {
     isAddNewAllowed?: boolean;
     /** Show count badge next to toggle icon (internal: isCounterShown) */
     isCounterShown?: boolean;
+    /**
+     * Allow the selected-items popover to open. Defaults to `true`. The popover is triggered by
+     * the count / compact / "+X more" badge and by the in-input counter (`isCounterShown`). Set
+     * to `false` when you render your own selection UI (e.g. an external container fed by the
+     * `change` event) — the badge and counter still show the count, but clicking them does nothing
+     * and they lose the pointer cursor. (internal: isSelectedPopoverEnabled)
+     */
+    isSelectedPopoverEnabled?: boolean;
     /**
      * Make badges display each option's `fullTitleMember` / `getFullTitleCallback` value
      * instead of its display value. Falls back to the display value for options without a

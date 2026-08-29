@@ -30,6 +30,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `actionButtons` set on mobile vs. desktop. Demonstrated in `examples-action-buttons.html` §10, which
   previously squeezed 12 buttons into a single unreadable row on phones.
 
+- **`renderBadgeCallback` — own the whole badge, not just its content.** A new render callback
+  (property-only, main badges area) that returns the *entire* badge markup — so a selected item can be
+  a full card, not just the built-in pill. Complements `renderBadgeContentCallback` (which only fills
+  the pill). The component wraps the returned HTML/element in a `.ms__badge.ms__badge--custom` element
+  carrying `data-value` (the `--custom` modifier drops the pill's fixed height / overflow / radius so a
+  card lays out freely), and **delegates removal** to any element inside with `data-action="remove"`
+  (or the built-in `.ms__badge-remove`) — value resolved from the wrapper, so no event wiring. Returns
+  to the default pill for an item when the callback yields null/empty; `getBadgeClassCallback` classes
+  still land on the wrapper. New demo on the Custom Rendering page: an icon-pack picker where each
+  selection becomes a card with its own big Remove button.
+
+- **`enable-selected-popover` — opt out of the selected-items popover.** A new boolean
+  attribute/property (default `true`, so nothing changes by default) that makes the popover inert. It is
+  meant for the "own the whole selection UI" pattern: when you suppress the built-in badges
+  (`badges-display-mode="none"`) and keep only the in-field `[N]` counter (`show-counter="true"`) while
+  rendering your own selection list from the `change` event, the popover that used to open on clicking the
+  counter (or the count / compact / "+X more" badge) is pointless. Setting it to `false` gates
+  `showPopover()` at the source — every trigger (badge click, in-input counter click, "+X more",
+  keyboard) becomes a no-op — and the host gets a `ms--no-selected-popover` class that drops the pointer
+  cursor from those affordances so they no longer advertise as openable. New demo on the Custom Rendering
+  page: a playlist builder that owns its selection panel entirely (layout, running total duration, remove
+  / clear-all) and routes removal back through `setSelected(..., { notify: true })`.
+
 ### Fixed
 
 - **Dropdown corners: a focused/selected first or last row no longer pokes a square corner past the

@@ -60,6 +60,20 @@
   max-width: 100%;
 }
 
+/* Consumer-owned badge (renderBadgeCallback): the wrapper only carries `data-value`
+   for removal/reconciliation — drop the pill constraints (fixed height, overflow clip,
+   inline-flex, max-width, pill radius) so the returned markup (e.g. a card) lays out
+   freely. The consumer styles everything inside via customStylesCallback. */
+.ms__badge--custom {
+  display: block;
+  height: auto;
+  max-width: none;
+  overflow: visible;
+  border-radius: 0;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
 /* Badge text (like composite badge label) */
 .ms__badge-text {
   display: flex;
