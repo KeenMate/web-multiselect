@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic Usage — MultiSelect</title>
+
+    <!-- Shared example styles -->
+    <link rel="stylesheet" href="examples-shared.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <a href="index.html" class="back-link">← Back to Examples</a>
+            <h1>Basic Usage</h1>
+            <p class="subtitle">The essentials — basic multi-select and single-select, keyboard-only navigation, rich option content, search hints, declarative &lt;option&gt; markup, search modes, and RTL.</p>
+        </header>
+
+        <!-- Basic Example -->
+        <div class="card">
+            <h2>BU01 · Basic MultiSelect</h2>
+            <p>Simple multiselect with basic options</p>
+            <div class="grid">
+                <div class="form-group">
+                    <label>Select Technologies</label>
+                    <web-multiselect
+                        id="basic-select"
+                        value-member="value"
+                        display-value-member="label"
+                        search-placeholder="Search technologies...">
+                    </web-multiselect>
+                    <small class="form-text">Select multiple programming languages</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Select Countries</label>
+                    <web-multiselect
+                        id="countries-select"
+                        value-member="value"
+                        display-value-member="label"
+                        search-placeholder="Search countries...">
+                    </web-multiselect>
+                    <small class="form-text">Start typing to filter options</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Single Select Mode -->
+        <div class="card">
+            <h2>BU02 · Single-Select Mode</h2>
+            <p>Only one item can be selected at a time. Use <code>multiple="false"</code></p>
+            <div class="grid">
+                <div class="form-group">
+                    <label>Select Programming Language</label>
+                    <web-multiselect
+                        id="single-select"
+                        multiple="false"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        search-placeholder="Select language...">
+                    </web-multiselect>
+                    <small class="form-text">Only one language can be selected</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Single-Select Keyboard Navigation Only -->
+        <div class="card">
+            <h2>BU03 · Single-Select: Keyboard Navigation Only</h2>
+            <p>No search - use arrow keys, PageUp/PageDown, Home/End to navigate. Press Enter to select.</p>
+            <div class="grid">
+                <div class="form-group">
+                    <label>Select Country (No Search)</label>
+                    <web-multiselect
+                        id="keyboard-nav-select"
+                        multiple="false"
+                        enable-search="false"
+                        search-input-mode="readonly"
+                        value-member="value"
+                        display-value-member="label"
+                        search-placeholder="Use arrow keys to navigate...">
+                    </web-multiselect>
+                    <small class="form-text">
+                        Try: ↑/↓ arrows, PageUp/Down (10 items), Home/End, Enter to select
+                    </small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rich Content -->
+        <div class="card">
+            <h2>BU04 · Rich Content with Icons</h2>
+            <p>Options with icons, subtitles, and multiline content</p>
+            <div class="grid">
+                <div class="form-group">
+                    <label>Select Frameworks</label>
+                    <web-multiselect
+                        id="frameworks-select"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        subtitle-member="subtitle"
+                        search-placeholder="Search frameworks...">
+                    </web-multiselect>
+                    <small class="form-text">Options with icons and descriptions</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Hint -->
+        <div class="card">
+            <h2>BU05 · Search Hint</h2>
+            <p>Display helpful text above the input to guide users</p>
+            <div class="grid">
+                <div class="form-group">
+                    <label>With Search Hint</label>
+                    <web-multiselect
+                        id="hint-select"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        search-hint="💡 Start typing to filter options"
+                        search-placeholder="Search cities...">
+                    </web-multiselect>
+                    <small class="form-text">Open the dropdown to see the hint above the input</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Declarative Usage (No JavaScript Required) -->
+        <div class="card">
+            <h2>BU06 · Declarative Usage (No JavaScript)</h2>
+            <p>Use standard HTML <code>&lt;option&gt;</code> elements - no JavaScript needed for simple cases!</p>
+            <div class="grid">
+                <div class="form-group">
+                    <label>Simple Choice</label>
+                    <web-multiselect
+                        multiple="false"
+                        search-placeholder="Select your answer..."
+                        value-member="value"
+                        display-value-member="label">
+                        <option value="yes">Yes</option>
+                        <option value="no">No</option>
+                        <option value="maybe" selected>Maybe / I don't know</option>
+                    </web-multiselect>
+                    <small class="form-text">No JavaScript required - pure HTML!</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Multiple Fruits</label>
+                    <web-multiselect
+                        search-placeholder="Select fruits..."
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon">
+                        <option value="apple" data-icon="🍎">Apple</option>
+                        <option value="banana" data-icon="🍌" selected>Banana</option>
+                        <option value="orange" data-icon="🍊">Orange</option>
+                        <option value="grape" data-icon="🍇" selected>Grape</option>
+                        <option value="strawberry" data-icon="🍓">Strawberry</option>
+                    </web-multiselect>
+                    <small class="form-text">Icons via <code>data-icon</code> attribute</small>
+                </div>
+            </div>
+
+            <div class="grid" style="margin-top: 1.5rem;">
+                <div class="form-group">
+                    <label>Grouped Options</label>
+                    <web-multiselect
+                        search-placeholder="Select programming languages..."
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        group-member="group">
+                        <optgroup label="Frontend">
+                            <option value="js" data-icon="🟨">JavaScript</option>
+                            <option value="ts" data-icon="🔷">TypeScript</option>
+                            <option value="html" data-icon="📄">HTML</option>
+                        </optgroup>
+                        <optgroup label="Backend">
+                            <option value="python" data-icon="🐍" selected>Python</option>
+                            <option value="java" data-icon="☕">Java</option>
+                            <option value="go" data-icon="🐹">Go</option>
+                        </optgroup>
+                    </web-multiselect>
+                    <small class="form-text">Use <code>&lt;optgroup&gt;</code> for grouping</small>
+                </div>
+
+                <div class="form-group">
+                    <label>With Subtitles</label>
+                    <web-multiselect
+                        search-placeholder="Select framework..."
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        subtitle-member="subtitle">
+                        <option value="react" data-icon="⚛️" data-subtitle="A JavaScript library for building UIs">React</option>
+                        <option value="vue" data-icon="🖖" data-subtitle="The Progressive JavaScript Framework">Vue.js</option>
+                        <option value="svelte" data-icon="🔥" data-subtitle="Cybernetically enhanced web apps" selected>Svelte</option>
+                    </web-multiselect>
+                    <small class="form-text">Use <code>data-subtitle</code> for descriptions</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Custom Group Labels</label>
+                    <web-multiselect id="custom-groups-classic"></web-multiselect>
+                    <small class="form-text">Using <code>renderGroupLabelContentCallback</code> to customize group headers</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search Modes -->
+        <div class="card">
+            <h2>BU07 · Search Modes: Filter vs Navigate</h2>
+            <p>Choose between <strong>filter</strong> mode (hide non-matches) or <strong>navigate</strong> mode (jump to matches while keeping all visible)</p>
+            <div class="grid">
+                <div class="form-group">
+                    <label>Filter Mode (Default)</label>
+                    <web-multiselect
+                        id="filter-mode-example"
+                        search-mode="filter"
+                        value-member="id"
+                        display-value-member="name"
+                        icon-member="flag"
+                        search-placeholder="Type to filter countries...">
+                    </web-multiselect>
+                    <small class="form-text">Hides non-matching options (standard behavior)</small>
+                </div>
+
+                <div class="form-group">
+                    <label>Navigate Mode</label>
+                    <web-multiselect
+                        id="navigate-mode-example"
+                        search-mode="navigate"
+                        value-member="id"
+                        display-value-member="name"
+                        icon-member="flag"
+                        search-hint="Ctrl/Cmd + ↓ / ↑ to jump between matches · Enter to select · Esc to clear"
+                        search-placeholder="Type to jump to country...">
+                    </web-multiselect>
+                    <small class="form-text">Keeps all options visible, jumps to matches (highlighted with left border)</small>
+                </div>
+            </div>
+            <div class="note">
+                <p><strong>When to use each mode:</strong></p>
+                <ul>
+                    <li><strong>Filter Mode</strong>: Large lists where you want to narrow down options (e.g., product catalogs, user lists)</li>
+                    <li><strong>Navigate Mode</strong>: Quick selection from known lists (e.g., country/state selectors)</li>
+                </ul>
+                <p><strong>Navigate-mode keyboard shortcuts:</strong></p>
+                <ul>
+                    <li><kbd>type</kbd> — first match becomes focused; all matches keep a left-border highlight</li>
+                    <li><kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>↓</kbd> — jump to next match</li>
+                    <li><kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>↑</kbd> — jump to previous match</li>
+                    <li><kbd>↑</kbd> / <kbd>↓</kbd> — move focus one option at a time</li>
+                    <li><kbd>Home</kbd> / <kbd>End</kbd> — jump to first / last option</li>
+                    <li><kbd>PageUp</kbd> / <kbd>PageDown</kbd> — move 10 options at a time</li>
+                    <li><kbd>Enter</kbd> — toggle selection of the focused option</li>
+                    <li><kbd>Esc</kbd> — clear the search (or close the dropdown if search is empty)</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- RTL Support -->
+        <div class="card">
+            <h2>BU08 · RTL (Right-to-Left) Support</h2>
+            <p>Full support for RTL languages (Arabic, Hebrew, Persian, etc.) with automatic detection from <code>dir="rtl"</code></p>
+            <div class="grid">
+                <div class="form-group">
+                    <label>Basic RTL Example</label>
+                    <web-multiselect
+                        id="rtl-basic"
+                        dir="rtl"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        search-placeholder="...بحث">
+                    </web-multiselect>
+                    <small class="form-text">Toggle on left, text right-aligned, badges flow right-to-left</small>
+                </div>
+
+                <div class="form-group">
+                    <label>RTL with Arabic Text</label>
+                    <web-multiselect
+                        id="rtl-arabic"
+                        dir="rtl"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        search-placeholder="البحث عن التقنيات...">
+                    </web-multiselect>
+                    <small class="form-text">Real Arabic technology terms</small>
+                </div>
+
+                <div class="form-group">
+                    <label>RTL Count Mode</label>
+                    <web-multiselect
+                        id="rtl-count"
+                        dir="rtl"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        badges-display-mode="count"
+                        show-counter="true"
+                        search-placeholder="...بحث">
+                    </web-multiselect>
+                    <small class="form-text">Count badge on left side in RTL mode</small>
+                </div>
+
+                <div class="form-group">
+                    <label>LTR vs RTL Comparison</label>
+                    <div style="display: flex; gap: 1rem; flex-direction: column;">
+                        <div>
+                            <small style="display: block; margin-bottom: 0.25rem;">LTR (Left-to-Right)</small>
+                            <web-multiselect
+                                id="rtl-comparison-ltr"
+                                value-member="value"
+                                display-value-member="label"
+                                icon-member="icon"
+                                search-placeholder="Search...">
+                            </web-multiselect>
+                        </div>
+                        <div>
+                            <small style="display: block; margin-bottom: 0.25rem;">RTL (Right-to-Left)</small>
+                            <web-multiselect
+                                id="rtl-comparison-rtl"
+                                dir="rtl"
+                                value-member="value"
+                                display-value-member="label"
+                                icon-member="icon"
+                                search-placeholder="...بحث">
+                            </web-multiselect>
+                        </div>
+                    </div>
+                    <small class="form-text">Notice toggle position, text alignment, and badge layout differences</small>
+                </div>
+
+                <div class="form-group">
+                    <label>RTL + Badges Position: Right</label>
+                    <web-multiselect
+                        id="rtl-badges-right"
+                        dir="rtl"
+                        badges-position="right"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        search-placeholder="...بحث">
+                    </web-multiselect>
+                    <small class="form-text">Badges inline on left (visually) with proper margin</small>
+                </div>
+
+                <div class="form-group">
+                    <label>RTL + Badges Position: Left</label>
+                    <web-multiselect
+                        id="rtl-badges-left"
+                        dir="rtl"
+                        badges-position="left"
+                        value-member="value"
+                        display-value-member="label"
+                        icon-member="icon"
+                        search-placeholder="...بحث">
+                    </web-multiselect>
+                    <small class="form-text">Badges inline on right (visually) with proper margin</small>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script type="module">
+        const technologies = [
+            { value: 'js', label: 'JavaScript' },
+            { value: 'ts', label: 'TypeScript' },
+            { value: 'python', label: 'Python' },
+            { value: 'java', label: 'Java' },
+            { value: 'csharp', label: 'C#' },
+            { value: 'php', label: 'PHP' },
+            { value: 'ruby', label: 'Ruby' },
+            { value: 'go', label: 'Go' }
+        ];
+
+        const countries = [
+            { value: 'us', label: 'United States' },
+            { value: 'uk', label: 'United Kingdom' },
+            { value: 'de', label: 'Germany' },
+            { value: 'fr', label: 'France' },
+            { value: 'es', label: 'Spain' },
+            { value: 'it', label: 'Italy' },
+            { value: 'jp', label: 'Japan' },
+            { value: 'cn', label: 'China' }
+        ];
+
+        const languages = [
+            { value: 'js', label: 'JavaScript', icon: '🟨' },
+            { value: 'ts', label: 'TypeScript', icon: '🔷' },
+            { value: 'python', label: 'Python', icon: '🐍' },
+            { value: 'java', label: 'Java', icon: '☕' },
+            { value: 'csharp', label: 'C#', icon: '💜' },
+            { value: 'php', label: 'PHP', icon: '🐘' },
+            { value: 'ruby', label: 'Ruby', icon: '💎' },
+            { value: 'go', label: 'Go', icon: '🐹' }
+        ];
+
+        const frameworks = [
+            { value: 'react', label: 'React', icon: '⚛️', subtitle: 'A JavaScript library for building user interfaces' },
+            { value: 'vue', label: 'Vue.js', icon: '🖖', subtitle: 'The Progressive JavaScript Framework' },
+            { value: 'angular', label: 'Angular', icon: '🅰️', subtitle: 'Platform for building web applications' },
+            { value: 'svelte', label: 'Svelte', icon: '🔥', subtitle: 'Cybernetically enhanced web apps' },
+            { value: 'solid', label: 'Solid', icon: '💎', subtitle: 'Simple and performant reactivity' }
+        ];
+
+        const categories = [
+            { value: 'cat1', label: 'Category 1' },
+            { value: 'cat2', label: 'Category 2' },
+            { value: 'cat3', label: 'Category 3' },
+            { value: 'cat4', label: 'Category 4' },
+            { value: 'cat5', label: 'Category 5' },
+            { value: 'cat6', label: 'Category 6' }
+        ];
+
+        const cities = [
+            { value: 'nyc', label: 'New York', icon: '🗽' },
+            { value: 'lon', label: 'London', icon: '🇬🇧' },
+            { value: 'par', label: 'Paris', icon: '🇫🇷' },
+            { value: 'tok', label: 'Tokyo', icon: '🇯🇵' },
+            { value: 'syd', label: 'Sydney', icon: '🇦🇺' },
+            { value: 'ber', label: 'Berlin', icon: '🇩🇪' },
+            { value: 'rom', label: 'Rome', icon: '🇮🇹' },
+            { value: 'bar', label: 'Barcelona', icon: '🇪🇸' },
+            { value: 'ams', label: 'Amsterdam', icon: '🇳🇱' },
+            { value: 'dub', label: 'Dubai', icon: '🇦🇪' }
+        ];
+
+        const groupedTechnologies = [
+            { value: 'react', label: 'React', icon: '⚛️', group: 'frontend' },
+            { value: 'vue', label: 'Vue.js', icon: '🖖', group: 'frontend' },
+            { value: 'svelte', label: 'Svelte', icon: '🔥', group: 'frontend' },
+            { value: 'angular', label: 'Angular', icon: '🅰️', group: 'frontend' },
+            { value: 'nodejs', label: 'Node.js', icon: '🟢', group: 'backend' },
+            { value: 'django', label: 'Django', icon: '🐍', group: 'backend' },
+            { value: 'rails', label: 'Ruby on Rails', icon: '💎', group: 'backend' },
+            { value: 'express', label: 'Express', icon: '🚂', group: 'backend' },
+            { value: 'postgres', label: 'PostgreSQL', icon: '🐘', group: 'database' },
+            { value: 'mongodb', label: 'MongoDB', icon: '🍃', group: 'database' },
+            { value: 'redis', label: 'Redis', icon: '🔴', group: 'database' }
+        ];
+
+        const allCountries = [
+            { value: 'af', label: 'Afghanistan' },
+            { value: 'al', label: 'Albania' },
+            { value: 'dz', label: 'Algeria' },
+            { value: 'ar', label: 'Argentina' },
+            { value: 'am', label: 'Armenia' },
+            { value: 'au', label: 'Australia' },
+            { value: 'at', label: 'Austria' },
+            { value: 'az', label: 'Azerbaijan' },
+            { value: 'bh', label: 'Bahrain' },
+            { value: 'bd', label: 'Bangladesh' },
+            { value: 'by', label: 'Belarus' },
+            { value: 'be', label: 'Belgium' },
+            { value: 'bz', label: 'Belize' },
+            { value: 'bo', label: 'Bolivia' },
+            { value: 'br', label: 'Brazil' },
+            { value: 'bg', label: 'Bulgaria' },
+            { value: 'kh', label: 'Cambodia' },
+            { value: 'cm', label: 'Cameroon' },
+            { value: 'ca', label: 'Canada' },
+            { value: 'cl', label: 'Chile' },
+            { value: 'cn', label: 'China' },
+            { value: 'co', label: 'Colombia' },
+            { value: 'cr', label: 'Costa Rica' },
+            { value: 'hr', label: 'Croatia' },
+            { value: 'cu', label: 'Cuba' },
+            { value: 'cy', label: 'Cyprus' },
+            { value: 'cz', label: 'Czech Republic' },
+            { value: 'dk', label: 'Denmark' },
+            { value: 'ec', label: 'Ecuador' },
+            { value: 'eg', label: 'Egypt' },
+            { value: 'sv', label: 'El Salvador' },
+            { value: 'ee', label: 'Estonia' },
+            { value: 'et', label: 'Ethiopia' },
+            { value: 'fi', label: 'Finland' },
+            { value: 'fr', label: 'France' },
+            { value: 'ge', label: 'Georgia' },
+            { value: 'de', label: 'Germany' },
+            { value: 'gh', label: 'Ghana' },
+            { value: 'gr', label: 'Greece' },
+            { value: 'gt', label: 'Guatemala' },
+            { value: 'hn', label: 'Honduras' },
+            { value: 'hk', label: 'Hong Kong' },
+            { value: 'hu', label: 'Hungary' },
+            { value: 'is', label: 'Iceland' },
+            { value: 'in', label: 'India' },
+            { value: 'id', label: 'Indonesia' },
+            { value: 'ir', label: 'Iran' },
+            { value: 'iq', label: 'Iraq' },
+            { value: 'ie', label: 'Ireland' },
+            { value: 'il', label: 'Israel' },
+            { value: 'it', label: 'Italy' },
+            { value: 'jm', label: 'Jamaica' },
+            { value: 'jp', label: 'Japan' },
+            { value: 'jo', label: 'Jordan' },
+            { value: 'kz', label: 'Kazakhstan' },
+            { value: 'ke', label: 'Kenya' },
+            { value: 'kw', label: 'Kuwait' },
+            { value: 'lv', label: 'Latvia' },
+            { value: 'lb', label: 'Lebanon' },
+            { value: 'lt', label: 'Lithuania' },
+            { value: 'lu', label: 'Luxembourg' },
+            { value: 'my', label: 'Malaysia' },
+            { value: 'mt', label: 'Malta' },
+            { value: 'mx', label: 'Mexico' },
+            { value: 'ma', label: 'Morocco' },
+            { value: 'np', label: 'Nepal' },
+            { value: 'nl', label: 'Netherlands' },
+            { value: 'nz', label: 'New Zealand' },
+            { value: 'ng', label: 'Nigeria' },
+            { value: 'no', label: 'Norway' },
+            { value: 'om', label: 'Oman' },
+            { value: 'pk', label: 'Pakistan' },
+            { value: 'pa', label: 'Panama' },
+            { value: 'py', label: 'Paraguay' },
+            { value: 'pe', label: 'Peru' },
+            { value: 'ph', label: 'Philippines' },
+            { value: 'pl', label: 'Poland' },
+            { value: 'pt', label: 'Portugal' },
+            { value: 'qa', label: 'Qatar' },
+            { value: 'ro', label: 'Romania' },
+            { value: 'ru', label: 'Russia' },
+            { value: 'sa', label: 'Saudi Arabia' },
+            { value: 'rs', label: 'Serbia' },
+            { value: 'sg', label: 'Singapore' },
+            { value: 'sk', label: 'Slovakia' },
+            { value: 'si', label: 'Slovenia' },
+            { value: 'za', label: 'South Africa' },
+            { value: 'kr', label: 'South Korea' },
+            { value: 'es', label: 'Spain' },
+            { value: 'lk', label: 'Sri Lanka' },
+            { value: 'se', label: 'Sweden' },
+            { value: 'ch', label: 'Switzerland' },
+            { value: 'tw', label: 'Taiwan' },
+            { value: 'th', label: 'Thailand' },
+            { value: 'tr', label: 'Turkey' },
+            { value: 'ua', label: 'Ukraine' },
+            { value: 'ae', label: 'United Arab Emirates' },
+            { value: 'uk', label: 'United Kingdom' },
+            { value: 'us', label: 'United States' },
+            { value: 'uy', label: 'Uruguay' },
+            { value: 've', label: 'Venezuela' },
+            { value: 'vn', label: 'Vietnam' }
+        ];
+        document.addEventListener('DOMContentLoaded', () => {
+            // Basic select
+            const basicSelect = document.getElementById('basic-select');
+            if (basicSelect) {
+                basicSelect.options = technologies;
+                // Set selected values after options are loaded
+                basicSelect.setSelected(['js', 'ts']);
+            }
+
+            // Countries select
+            const countriesSelect = document.getElementById('countries-select');
+            if (countriesSelect) {
+                countriesSelect.options = countries;
+            }
+
+            // Single select
+            const singleSelect = document.getElementById('single-select');
+            if (singleSelect) {
+                singleSelect.options = languages;
+                singleSelect.setSelected(['python']);
+            }
+
+            // Keyboard navigation select (no search, 100+ options)
+            const keyboardNavSelect = document.getElementById('keyboard-nav-select');
+            if (keyboardNavSelect) {
+                keyboardNavSelect.options = allCountries;
+                keyboardNavSelect.setSelected(['us']);
+            }
+
+            // Frameworks select
+            const frameworksSelect = document.getElementById('frameworks-select');
+            if (frameworksSelect) {
+                frameworksSelect.options = frameworks;
+            }
+
+            // Hint select
+            const hintSelect = document.getElementById('hint-select');
+            if (hintSelect) {
+                hintSelect.options = cities;
+            }
+
+            // Custom group labels
+            const customGroupsClassic = document.getElementById('custom-groups-classic');
+            if (customGroupsClassic) {
+                customGroupsClassic.options = groupedTechnologies;
+                customGroupsClassic.setAttribute('value-member', 'value');
+                customGroupsClassic.setAttribute('display-value-member', 'label');
+                customGroupsClassic.setAttribute('icon-member', 'icon');
+                customGroupsClassic.setAttribute('group-member', 'group');
+
+                // Custom group label rendering
+                customGroupsClassic.renderGroupLabelContentCallback = (groupName) => {
+                    // Capitalize and add emoji based on group
+                    const emojis = {
+                        'frontend': '🎨',
+                        'backend': '🔧',
+                        'database': '🗄️'
+                    };
+                    const emoji = emojis[groupName] || '📦';
+                    return `<strong>${emoji} ${groupName.toUpperCase()}</strong>`;
+                };
+
+                customGroupsClassic.setSelected(['react', 'nodejs']);
+            }
+            // RTL Support - Basic RTL
+            const rtlBasicSelect = document.getElementById('rtl-basic');
+            if (rtlBasicSelect) {
+                rtlBasicSelect.options = languages;
+                rtlBasicSelect.setSelected(['js', 'ts', 'python']);
+            }
+
+            // RTL Support - Arabic
+            const rtlArabicSelect = document.getElementById('rtl-arabic');
+            if (rtlArabicSelect) {
+                rtlArabicSelect.options = [
+                    { value: 'js', label: 'جافا سكريبت', icon: '🟨' },
+                    { value: 'ts', label: 'تايب سكريبت', icon: '🔷' },
+                    { value: 'python', label: 'بايثون', icon: '🐍' },
+                    { value: 'java', label: 'جافا', icon: '☕' },
+                    { value: 'react', label: 'ري أكت', icon: '⚛️' },
+                    { value: 'vue', label: 'فيو', icon: '💚' }
+                ];
+                rtlArabicSelect.setSelected(['js', 'react']);
+            }
+
+            // RTL Support - Count Mode
+            const rtlCountSelect = document.getElementById('rtl-count');
+            if (rtlCountSelect) {
+                rtlCountSelect.options = languages;
+                rtlCountSelect.setSelected(['js', 'ts', 'python', 'java']);
+                // Custom RTL count callback (Arabic style)
+                rtlCountSelect.getCounterCallback = (count) => {
+                    return `${count} محدد`; // "selected" in Arabic
+                };
+            }
+
+            // RTL Support - Comparison LTR
+            const rtlComparisonLTR = document.getElementById('rtl-comparison-ltr');
+            if (rtlComparisonLTR) {
+                rtlComparisonLTR.options = languages;
+                rtlComparisonLTR.setSelected(['js', 'ts']);
+            }
+
+            // RTL Support - Comparison RTL
+            const rtlComparisonRTL = document.getElementById('rtl-comparison-rtl');
+            if (rtlComparisonRTL) {
+                rtlComparisonRTL.options = languages;
+                rtlComparisonRTL.setSelected(['js', 'ts']);
+            }
+
+            // RTL Support - Badges Position Right (BUG TEST)
+            const rtlBadgesRight = document.getElementById('rtl-badges-right');
+            if (rtlBadgesRight) {
+                rtlBadgesRight.options = languages;
+                rtlBadgesRight.setSelected(['js', 'ts', 'python']);
+            }
+
+            // RTL Support - Badges Position Left (BUG TEST)
+            const rtlBadgesLeft = document.getElementById('rtl-badges-left');
+            if (rtlBadgesLeft) {
+                rtlBadgesLeft.options = languages;
+                rtlBadgesLeft.setSelected(['js', 'ts', 'python']);
+            }
+            // Search Modes: Filter vs Navigate
+            const countriesWithFlags = [
+                { id: 1, name: 'Canada', flag: '🇨🇦' },
+                { id: 2, name: 'United States', flag: '🇺🇸' },
+                { id: 3, name: 'Mexico', flag: '🇲🇽' },
+                { id: 4, name: 'United Kingdom', flag: '🇬🇧' },
+                { id: 5, name: 'France', flag: '🇫🇷' },
+                { id: 6, name: 'Germany', flag: '🇩🇪' },
+                { id: 7, name: 'Italy', flag: '🇮🇹' },
+                { id: 8, name: 'Spain', flag: '🇪🇸' },
+                { id: 9, name: 'Japan', flag: '🇯🇵' },
+                { id: 10, name: 'China', flag: '🇨🇳' },
+                { id: 11, name: 'India', flag: '🇮🇳' },
+                { id: 12, name: 'Brazil', flag: '🇧🇷' },
+                { id: 13, name: 'Argentina', flag: '🇦🇷' },
+                { id: 14, name: 'Australia', flag: '🇦🇺' },
+                { id: 15, name: 'New Zealand', flag: '🇳🇿' },
+                { id: 16, name: 'South Africa', flag: '🇿🇦' },
+                { id: 17, name: 'Egypt', flag: '🇪🇬' },
+                { id: 18, name: 'Nigeria', flag: '🇳🇬' },
+                { id: 19, name: 'Russia', flag: '🇷🇺' },
+                { id: 20, name: 'Poland', flag: '🇵🇱' },
+                { id: 21, name: 'Sweden', flag: '🇸🇪' },
+                { id: 22, name: 'Norway', flag: '🇳🇴' },
+                { id: 23, name: 'Denmark', flag: '🇩🇰' },
+                { id: 24, name: 'Finland', flag: '🇫🇮' },
+                { id: 25, name: 'Netherlands', flag: '🇳🇱' },
+                { id: 26, name: 'Belgium', flag: '🇧🇪' },
+                { id: 27, name: 'Switzerland', flag: '🇨🇭' },
+                { id: 28, name: 'Austria', flag: '🇦🇹' },
+                { id: 29, name: 'Portugal', flag: '🇵🇹' },
+                { id: 30, name: 'Greece', flag: '🇬🇷' },
+                { id: 31, name: 'Turkey', flag: '🇹🇷' },
+                { id: 32, name: 'South Korea', flag: '🇰🇷' },
+                { id: 33, name: 'Thailand', flag: '🇹🇭' },
+                { id: 34, name: 'Vietnam', flag: '🇻🇳' },
+                { id: 35, name: 'Indonesia', flag: '🇮🇩' },
+                { id: 36, name: 'Philippines', flag: '🇵🇭' },
+                { id: 37, name: 'Singapore', flag: '🇸🇬' },
+                { id: 38, name: 'Malaysia', flag: '🇲🇾' },
+                { id: 39, name: 'Pakistan', flag: '🇵🇰' },
+                { id: 40, name: 'Bangladesh', flag: '🇧🇩' },
+                { id: 41, name: 'Colombia', flag: '🇨🇴' },
+                { id: 42, name: 'Chile', flag: '🇨🇱' },
+                { id: 43, name: 'Peru', flag: '🇵🇪' },
+                { id: 44, name: 'Venezuela', flag: '🇻🇪' },
+                { id: 45, name: 'Saudi Arabia', flag: '🇸🇦' },
+                { id: 46, name: 'United Arab Emirates', flag: '🇦🇪' },
+                { id: 47, name: 'Israel', flag: '🇮🇱' },
+                { id: 48, name: 'Iran', flag: '🇮🇷' },
+                { id: 49, name: 'Iraq', flag: '🇮🇶' },
+                { id: 50, name: 'Ukraine', flag: '🇺🇦' }
+            ];
+
+            const filterModeExample = document.getElementById('filter-mode-example');
+            if (filterModeExample) {
+                filterModeExample.options = countriesWithFlags;
+            }
+
+            const navigateModeExample = document.getElementById('navigate-mode-example');
+            if (navigateModeExample) {
+                navigateModeExample.options = countriesWithFlags;
+            }
+        });
+    </script>
+
+    <!-- Development mode: Load from src -->
+    <script type="module" src="/src/index.ts"></script>
+    <script type="module" src="examples-chapter-nav.js"></script>
+</body>
+</html>

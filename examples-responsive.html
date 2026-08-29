@@ -16,7 +16,10 @@
         .resizable {
             resize: horizontal;
             overflow: auto;
-            width: 520px;
+            /* Cap the START width to what's available so a phone viewport isn't
+               overflowed (a hard 520px would push the page wider than the screen and
+               force a zoom-out). Dragging still sets an explicit px width from here. */
+            width: min(520px, 100%);
             min-width: 200px;
             max-width: 760px;
             padding: 1rem;
@@ -601,6 +604,6 @@ el.collapseBadgesBelow = null;</code></pre>
 
     <!-- Development mode: Load from src -->
     <script type="module" src="/src/index.ts"></script>
-    <script src="examples-chapter-nav.js" defer></script>
+    <script type="module" src="examples-chapter-nav.js"></script>
 </body>
 </html>

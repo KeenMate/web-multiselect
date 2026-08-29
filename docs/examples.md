@@ -4,7 +4,8 @@ Working examples and recipes for `@keenmate/web-multiselect`. For the runnable d
 
 | File | What it shows |
 |------|---------------|
-| [`examples-classic.html`](../examples-classic.html) | Baseline declarative + programmatic usage |
+| [`examples-basic.html`](../examples-basic.html) | Basic usage — declarative markup, single/multi, keyboard nav, search modes, RTL |
+| [`examples-data-api.html`](../examples-data-api.html) | Data feeding (objects, tuples, callbacks, async, cascading) + public API, forms, events |
 | [`examples-new-api.html`](../examples-new-api.html) | Modern programmatic API |
 | [`examples-templating.html`](../examples-templating.html) | Custom rendering callbacks |
 | [`examples-action-buttons.html`](../examples-action-buttons.html) | Select All / Clear All / custom actions |

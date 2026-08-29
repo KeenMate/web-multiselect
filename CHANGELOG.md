@@ -53,6 +53,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   page: a playlist builder that owns its selection panel entirely (layout, running total duration, remove
   / clear-all) and routes removal back through `setSelected(..., { notify: true })`.
 
+### Changed
+
+- **Example pages: coded sections + a split of the "Data & API" kitchen sink.** Every example section now
+  carries a short code (page-prefix + ordinal, e.g. `DA01`, `API03`) in its heading, mirroring the
+  showcase example index, and the decorative emoji were dropped from headings. `examples-classic.html` was
+  renamed to `examples-data-api.html` and trimmed to genuine data/API content: **DA01–05** (custom
+  objects, `[key,value]` tuples, member/getter callbacks, async search, cascading reactive options) and
+  **API01–05** (form integration JSON/CSV/array, public API methods, event handling). Its basic and
+  cross-cutting demos moved to a new **`examples-basic.html`** ("Basic Usage", **BU01–08**): basic
+  multi/single select, keyboard-only navigation, rich content, search hint, declarative `<option>`
+  markup, filter-vs-navigate search modes, and RTL. Sections that duplicated dedicated pages (display
+  modes, badge tooltips/positioning, custom action buttons, custom badge display, keyboard hook) were
+  removed from the page in favour of their home pages. `index.html` and the docs links were updated.
+
 ### Fixed
 
 - **Dropdown corners: a focused/selected first or last row no longer pokes a square corner past the

@@ -550,17 +550,15 @@ html {
     scroll-margin-top: 1rem;
 }
 
-/* Row anchored to the right edge: [ panel ][ toggle ]. The toggle is always
-   visible; the panel sits to its left and reveals on open. */
+/* The grab tab, pinned to the right edge ~1/3 down. The panel is positioned
+   against it by Floating UI (see examples-chapter-nav.js), so it's out of flow
+   here — only the toggle occupies this fixed box. */
 .chapter-nav {
     position: fixed;
     top: 33vh;
     right: 0;
     z-index: 9000;
-    display: flex;
-    align-items: flex-start;
-    gap: 0.5rem;
-    /* Let clicks fall through the empty gap area to the page; children re-enable. */
+    /* Let clicks fall through to the page; children re-enable. */
     pointer-events: none;
 }
 
@@ -609,12 +607,16 @@ html {
     stroke: none;
 }
 
-/* The list panel — hidden (and non-interactive) until open. */
+/* The list panel — hidden (and non-interactive) until open. Positioned by
+   Floating UI (left/top set inline), so it's taken out of flow with fixed. */
 .chapter-nav__panel {
+    position: fixed;
+    z-index: 9000;
     width: 260px;
     max-width: 72vw;
     max-height: 60vh;
     overflow-y: auto;
+    overscroll-behavior: contain;
     background: #fff;
     border: 1px solid #e5e7eb;
     border-radius: 10px;
@@ -672,10 +674,20 @@ html {
     font-weight: 600;
 }
 
-/* On small screens, drop the panel width and nudge the tab a touch smaller. */
+/* On small screens, go near-fullscreen (touch targets + readability) and bump the
+   font so chapter titles are comfortable to tap. */
 @media (max-width: 768px) {
     .chapter-nav__panel {
-        width: 220px;
+        width: 80vw;
+        max-width: 80vw;
+        max-height: 80vh;
+    }
+    .chapter-nav__title {
+        font-size: 0.9rem;
+    }
+    .chapter-nav__item {
+        font-size: 1.05rem;
+        padding: 0.7rem 0.85rem;
     }
     .chapter-nav__toggle {
         width: 40px;

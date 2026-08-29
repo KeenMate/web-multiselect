@@ -81,4 +81,4 @@ The component does **not** currently declare a `role="combobox"` /`role="listbox
 ## See also
 
 - [Keyboard shortcuts as a search hint](./usage.md#attributes) — `search-hint` attribute reference.
-- [`examples-classic.html`](../examples-classic.html) — interactive demos including focus behavior.
+- [`examples-basic.html`](../examples-basic.html) — interactive demos including keyboard navigation and focus behavior.
