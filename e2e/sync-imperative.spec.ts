@@ -11,18 +11,19 @@ import { test, expect } from './fixtures';
  * dereferenced `selectedOptions[0]` (undefined) → "Cannot read properties of
  * undefined (reading 'label')". That threw *during* the demo's init script and
  * aborted it, leaving every picker declared after the throwing one empty — which
- * is why the "Partial Mode" example on examples-classic.html showed no options.
+ * is why the partial/compact badge examples showed no options.
  *
  * The whole failure surfaced only as an uncaught page error: the existing e2e
  * suite stayed green because nothing asserted on `pageerror`. This spec closes
- * that gap two ways — a page-level "no uncaught errors" guard on the real demo,
- * and a direct reproduction of the property-then-method pattern.
+ * that gap two ways — a page-level "no uncaught errors" guard on the real demo
+ * (the API06 section drives the partial/compact pickers via the exact
+ * options-then-setSelected pattern), and a direct reproduction of it.
  */
 
-const PAGE = '/examples-classic.html';
+const PAGE = '/examples-data-api.html';
 
 test.describe('synchronous el.options = data; el.setSelected(sel)', () => {
-    test('examples-classic init runs to completion with no uncaught page errors', async ({ page }) => {
+    test('data-api init runs to completion with no uncaught page errors', async ({ page }) => {
         const errors: string[] = [];
         page.on('pageerror', (e) => errors.push(e.message));
 

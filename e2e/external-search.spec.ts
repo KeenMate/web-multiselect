@@ -7,7 +7,7 @@ import { test, expect, Page, Locator } from './fixtures';
  * and the index covers code + breadcrumb, not just the label.
  */
 
-const PAGE = '/examples-search-index.html';
+const PAGE = '/examples-external-search.html';
 
 function picker(page: Page, id: string): Locator {
     return page.locator(`#${id}`);

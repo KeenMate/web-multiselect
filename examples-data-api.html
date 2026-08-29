@@ -606,6 +606,35 @@ buSelect.addEventListener('change', async (e) =&gt; {
                 See <a href="examples-events-callbacks.html">Events, Handlers &amp; Interceptors</a>.
             </small>
         </div>
+
+        <!-- Synchronous options + setSelected across badge modes -->
+        <section class="example-section">
+            <h2>API06 · Synchronous options + setSelected</h2>
+            <p class="description">
+                Assign <code>.options</code> and call <code>setSelected(...)</code> on the very next
+                line — no <code>await</code>. The property write coalesces onto a microtask, but the
+                imperative call flushes it, so the pre-set selection renders immediately. Shown for the
+                <code>partial</code> and <code>compact</code> badge modes (the compact composite badge
+                is what previously mis-rendered when the two calls raced).
+            </p>
+
+            <div class="code-block"><pre>const el = document.querySelector('#compact-mode');
+el.options = languages;          // reactive write (coalesces on a microtask)
+el.setSelected(['js', 'ts', 'py']); // imperative call flushes it synchronously</pre></div>
+
+            <div class="grid-2">
+                <div class="demo-area">
+                    <label class="demo-label">Partial badges (pre-selected):</label>
+                    <web-multiselect id="partial-mode" badges-display-mode="partial" badges-max-visible="2"
+                        value-member="value" display-value-member="label"></web-multiselect>
+                </div>
+                <div class="demo-area">
+                    <label class="demo-label">Compact badges (pre-selected):</label>
+                    <web-multiselect id="compact-mode" badges-display-mode="compact"
+                        value-member="value" display-value-member="label"></web-multiselect>
+                </div>
+            </div>
+        </section>
     </div>
 
     <script type="module">
@@ -639,6 +668,28 @@ buSelect.addEventListener('change', async (e) =&gt; {
                 eventsSelect.addEventListener('select', (e) => logEvent('select', { option: e.detail.option?.label, selectedValues: e.detail.selectedValues }));
                 eventsSelect.addEventListener('deselect', (e) => logEvent('deselect', { option: e.detail.option?.label, selectedValues: e.detail.selectedValues }));
                 eventsSelect.addEventListener('change', (e) => logEvent('change', { count: e.detail.selectedOptions?.length, selectedValues: e.detail.selectedValues, selectedLabels: e.detail.selectedOptions?.map(o => o.label) }));
+            }
+
+            // API06: synchronous options-then-setSelected across badge modes. Assigning
+            // .options then calling setSelected() on the next line (no await) must render the
+            // pre-set selection right away — the imperative call flushes the coalesced options
+            // write. Compact mode's composite badge is the one that regressed when they raced.
+            const badgeModeData = [
+                { value: 'js', label: 'JavaScript' },
+                { value: 'ts', label: 'TypeScript' },
+                { value: 'py', label: 'Python' },
+                { value: 'go', label: 'Go' },
+                { value: 'rust', label: 'Rust' }
+            ];
+            const partialMode = document.querySelector('#partial-mode');
+            if (partialMode) {
+                partialMode.options = badgeModeData;
+                partialMode.setSelected(['js', 'ts', 'py']);
+            }
+            const compactMode = document.querySelector('#compact-mode');
+            if (compactMode) {
+                compactMode.options = badgeModeData;
+                compactMode.setSelected(['js', 'ts', 'py']);
             }
 
             // Example 1: Custom Objects
