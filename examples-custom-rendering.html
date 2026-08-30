@@ -10,146 +10,11 @@
 
     <!-- Page-specific styles -->
     <style>
-        /* Custom styles for rendered content */
-        .framework-card {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .framework-icon {
-            font-size: 1.5rem;
-        }
-
-        .framework-details {
-            flex: 1;
-        }
-
-        .framework-name {
-            font-weight: 600;
-            color: #333;
-        }
-
-        .framework-meta {
-            font-size: 0.875rem;
-            color: #666;
-            margin-top: 0.125rem;
-        }
-
-        .badge {
-            display: inline-block;
-            padding: 0.125rem 0.5rem;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 600;
-            margin-left: 0.5rem;
-        }
-
-        .badge-new {
-            background: #10b981;
-            color: white;
-        }
-
-        .badge-trending {
-            background: #f59e0b;
-            color: white;
-        }
-
-        .badge-popular {
-            background: #3b82f6;
-            color: white;
-        }
-
-        .user-badge {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .user-avatar {
-            font-size: 1.25rem;
-        }
-
-        .user-details {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .user-name {
-            font-weight: 500;
-            line-height: 1.2;
-        }
-
-        .user-role {
-            font-size: 0.75rem;
-            color: #666;
-            line-height: 1.2;
-        }
-
-        .status-indicator {
-            display: inline-block;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            margin-right: 0.5rem;
-        }
-
-        .status-online {
-            background: #10b981;
-        }
-
-        .status-offline {
-            background: #ef4444;
-        }
-
-        .product-layout {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-        }
-
-        .product-image {
-            width: 40px;
-            height: 40px;
-            border-radius: 6px;
-            object-fit: cover;
-            background: #f0f0f0;
-        }
-
-        .product-info {
-            flex: 1;
-        }
-
-        .product-name {
-            font-weight: 500;
-            color: #333;
-        }
-
-        .product-price {
-            font-size: 0.875rem;
-            color: #10b981;
-            font-weight: 600;
-        }
-
-        .product-stock {
-            font-size: 0.75rem;
-            color: #666;
-        }
-
-        .tag {
-            display: inline-block;
-            background: #e5e7eb;
-            color: #374151;
-            padding: 0.125rem 0.5rem;
-            border-radius: 3px;
-            font-size: 0.75rem;
-            margin-right: 0.25rem;
-            margin-top: 0.25rem;
-        }
-
-        .tags-container {
-            margin-top: 0.375rem;
-        }
+        /* NOTE: option/badge/popover content is rendered inside the component's
+           shadow DOM, which page CSS can't reach — style those classes via each
+           picker's `customStylesCallback` (see the users/jobs/contextual pickers
+           below), not here. Only genuine light-DOM markup (the playlist) belongs
+           in this block. */
 
         /* External selection container (playlist demo) — plain light-DOM markup
            styled by the page. No shadow-DOM injection: your app's CSS reaches it. */
@@ -766,6 +631,20 @@ panel.addEventListener('click', (e) =&gt; {
             `;
         };
 
+        // Option content lives in the shadow DOM, so the .tag chip is styled here.
+        jobs.customStylesCallback = () => `
+            .tag {
+                display: inline-block;
+                background: #e5e7eb;
+                color: #374151;
+                padding: 0.125rem 0.5rem;
+                border-radius: 3px;
+                font-size: 0.75rem;
+                margin-right: 0.25rem;
+                margin-top: 0.25rem;
+            }
+        `;
+
         // 5. Movie/Media Selector
         const movies = document.getElementById('movies');
         movies.options = [
@@ -930,6 +809,40 @@ panel.addEventListener('click', (e) =&gt; {
                 return `${item.avatar} ${item.firstName}`;
             }
         };
+
+        // The status dot (in dropdown options) and the detailed popover badge both
+        // render inside the shadow DOM, so their classes are injected here.
+        users.customStylesCallback = () => `
+            .status-indicator {
+                display: inline-block;
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                margin-right: 0.5rem;
+            }
+            .status-online { background: #10b981; }
+            .status-offline { background: #ef4444; }
+
+            .user-badge {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+            }
+            .user-avatar { font-size: 1.25rem; }
+            .user-details {
+                display: flex;
+                flex-direction: column;
+            }
+            .user-name {
+                font-weight: 500;
+                line-height: 1.2;
+            }
+            .user-role {
+                font-size: 0.75rem;
+                color: #666;
+                line-height: 1.2;
+            }
+        `;
 
         // 7. Tags with Icons
         const tags = document.getElementById('tags');
@@ -1208,6 +1121,21 @@ panel.addEventListener('click', (e) =&gt; {
             // For tooltips: show full project details
             return `${item.name} - ${item.status} (${item.priority} priority)`;
         };
+
+        // The tag chips render in the shadow-DOM dropdown, so style them here.
+        contextual.customStylesCallback = () => `
+            .tags-container { margin-top: 0.375rem; }
+            .tag {
+                display: inline-block;
+                background: #e5e7eb;
+                color: #374151;
+                padding: 0.125rem 0.5rem;
+                border-radius: 3px;
+                font-size: 0.75rem;
+                margin-right: 0.25rem;
+                margin-top: 0.25rem;
+            }
+        `;
 
         // 11. Priority-Based Badge Styling
         const priorityBadges = document.getElementById('priority-badges');
