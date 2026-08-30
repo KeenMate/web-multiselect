@@ -1,8 +1,18 @@
-.PHONY: help setup dev build package publish publish-rc publish-dry clean lint test-e2e test-e2e-ui test-e2e-headed test-e2e-install kill-port
+.PHONY: help setup dev build package publish publish-rc publish-dry clean lint test-e2e test-e2e-ui test-e2e-headed test-e2e-install kill-port image-build image-run image-stop image-clean
+
+# Per-developer overrides (container runner, image name, port). Optional: the
+# leading `-` means it's fine if the file is absent. Defaults below apply when a
+# value isn't set, so `image-*` works out of the box. Copy or edit .makefile.env
+# to switch the runner (e.g. DOCKER_RUNNER = docker).
+-include .makefile.env
+DOCKER_RUNNER  ?= podman
+IMAGE_NAME     ?= registry.km8.es/web-multiselect-examples:prod
+CONTAINER_NAME ?= web-multiselect-examples
+IMAGE_PORT     ?= 12210
 
 help: ## Show this help message
 	@echo "Available targets:"
-	@grep -E '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-18s %s\n", $$1, $$2}'
+	@grep -hE '^[a-zA-Z0-9_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-18s %s\n", $$1, $$2}'
 
 setup: ## Install dependencies and prepare project
 	@echo "Installing dependencies..."
@@ -112,6 +122,30 @@ install-dev: ## Install as local dev dependency (for testing)
 	npm pack
 	@echo "You can now install this in another project with:"
 	@echo "npm install <path-to-tgz-file>"
+
+# ── Container image (examples site) ──────────────────────────────────────────
+# Runner is configurable via .makefile.env (DOCKER_RUNNER); defaults to podman.
+
+image-build: ## Build the examples container image (build + serve stages)
+	@echo "Building $(IMAGE_NAME) with $(DOCKER_RUNNER)..."
+	$(DOCKER_RUNNER) build -t $(IMAGE_NAME) .
+	@echo "Image built: $(IMAGE_NAME)"
+
+image-run: ## Run the examples image (serves on IMAGE_PORT, default 12210)
+	@echo "Starting $(CONTAINER_NAME) on http://localhost:$(IMAGE_PORT) ..."
+	-@$(DOCKER_RUNNER) rm -f $(CONTAINER_NAME) >/dev/null 2>&1
+	$(DOCKER_RUNNER) run -d --name $(CONTAINER_NAME) -p $(IMAGE_PORT):80 $(IMAGE_NAME)
+	@echo "Serving examples at http://localhost:$(IMAGE_PORT)"
+
+image-stop: ## Stop and remove the examples container
+	@echo "Stopping $(CONTAINER_NAME)..."
+	-@$(DOCKER_RUNNER) rm -f $(CONTAINER_NAME) >/dev/null 2>&1
+	@echo "Stopped"
+
+image-clean: image-stop ## Remove the examples container and image
+	@echo "Removing image $(IMAGE_NAME)..."
+	-@$(DOCKER_RUNNER) rmi $(IMAGE_NAME) >/dev/null 2>&1
+	@echo "Image removed"
 
 # Default target
 .DEFAULT_GOAL := help
